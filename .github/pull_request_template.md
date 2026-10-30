@@ -9,11 +9,11 @@ Task: M?-??
 
 ## How it was verified
 
-<!-- Paste real command output (pnpm check, tests, eval) and the ROADMAP 验证 result. UI: light + dark screenshots at 390×844. -->
+<!-- Paste real command output (pnpm check, tests, eval) and the ROADMAP Verify result. UI: light + dark screenshots at 390×844. -->
 
-## 讲解（给 bw）
+## Design notes
 
-<!-- 用中文解释：这个改动怎么工作、为什么这样做、考虑过但没选的做法、面试时可以怎么讲。 -->
+<!-- Key decisions and alternatives considered. Omit for trivial changes. -->
 
 ## Lessons
 
