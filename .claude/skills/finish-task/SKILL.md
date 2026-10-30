@@ -9,4 +9,4 @@ description: Finish the current Gainframe task — verify, self-review, record l
 4. Learning loop: did anything go wrong in this task (a bug, a failed approach, a wrong API, a rule that was unclear, a correction from bw)? For each, add an entry to `docs/LESSONS.md` and make the prevention change (check, test, lint rule or doc rule) in this PR. If nothing went wrong, say so.
 5. Tick the task in `docs/ROADMAP.md`; update `docs/STATUS.md` (current/next task, follow-ups, blockers).
 6. Push the branch and open the PR with `.github/pull_request_template.md` filled in — in professional English, including real command output. Title: `<type>(<scope>): <summary> [M?-??]`.
-7. Tell bw in chat, in Chinese: the PR link, how the change works and why (the interview-ready explanation), what to check first, and what you'd suggest next. Then suggest `/clear` before the next task.
+7. Tell the owner in chat: the PR link, how the change works and why, what to check first, and what you'd suggest next. Then suggest `/clear` before the next task.

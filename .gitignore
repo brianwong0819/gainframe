@@ -33,6 +33,7 @@ apps/api/evals/data/
 
 # Claude Code personal settings
 .claude/settings.local.json
+CLAUDE.local.md
 
 # OS / editor
 .DS_Store

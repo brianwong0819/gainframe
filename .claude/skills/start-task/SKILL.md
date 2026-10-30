@@ -6,7 +6,7 @@ description: Start the next Gainframe ROADMAP task — load status, lessons and 
 1. Read `docs/STATUS.md`, the "Active rules" in `docs/LESSONS.md` (plus any lessons tagged with this task's area), and the task's entry in `docs/ROADMAP.md`. If the user named a task ID in the arguments, use that one; otherwise use STATUS's current task.
 2. Read only the docs the task touches (see the table in `CLAUDE.md`). For library APIs, look them up with context7 for the versions in `package.json`.
 3. `git switch main && git pull`, then `git switch -c m<milestone>/<nn>-<slug>`.
-4. Post a plan to bw in chat, written in Chinese, covering:
+4. Post a plan to the owner in chat, covering:
    - Goal (one sentence, from ROADMAP)
    - Files to change / add
    - Approach, and any choice between options (with your recommendation)

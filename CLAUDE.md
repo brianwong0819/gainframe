@@ -1,8 +1,8 @@
 # CLAUDE.md — Gainframe
 
-Gainframe (积肌) is an offline-first PWA for skinny people trying to gain muscle: workout logging with a rest timer, AI photo-based food logging, goals/weight trends, plateau detection, a weekly AI report and a fitness-only AI coach. It is bw's daily gym tool **and** a job-hunting portfolio piece. bw reviews and merges every PR and must be able to explain every line in an interview.
+Gainframe (积肌) is an offline-first PWA for skinny people trying to gain muscle: workout logging with a rest timer, AI photo-based food logging, goals/weight trends, plateau detection, a weekly AI report and a fitness-only AI coach. It is both a daily-use tool and a portfolio project. The owner (bw) reviews and merges every PR.
 
-Talk to bw in **Simplified Chinese**, and explain what you are doing and why at each step — bw is learning from this project. Everything that lands on GitHub — code, comments, commit messages, branch names, PR titles and descriptions, issues, all docs — is in **professional English**: concise, factual, no chatty asides, jokes, emoji or Chinese (except the product name 积肌 and zh i18n strings). Write it as if a hiring manager will read it, because one will. UI strings live in the i18n catalogs (zh + en), never inline.
+All repository content — code, comments, commit messages, branch names, PR titles and descriptions, issues and docs — is written in professional English: concise and factual, with no chatty asides, jokes or emoji. Write for an engineer reviewing the project for the first time. UI strings live in the i18n catalogs (zh + en), never inline. Explain what you are doing and why at each step in chat.
 
 ## Read before you work
 
@@ -29,7 +29,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 4. **Stay in scope.** Noticed something else broken or ugly? Add it to "Follow-ups" in `docs/STATUS.md`. Do not fix it in this PR.
 5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own **Verify** step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark.
 6. **Self-review** the full diff (`git diff main...`) before asking bw to review; run `/code-review`. Remove anything that is not needed for this task.
-7. **Hand over.** PR description follows `.github/pull_request_template.md`. Separately, explain the change to bw in Chinese **in chat** (how it works, why, alternatives considered, how to talk about it in an interview) — never in the repo. Tick the task in ROADMAP and update STATUS in the same PR.
+7. **Hand over.** PR description follows `.github/pull_request_template.md`. Separately, walk the owner through the change in chat: how it works, why, and the alternatives considered. Tick the task in ROADMAP and update STATUS in the same PR.
 
 ## Hard rules
 
