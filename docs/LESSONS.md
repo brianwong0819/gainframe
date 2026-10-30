@@ -6,7 +6,8 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
-_None yet._
+- Verify a claim with the command that proves it (`git status`, `pnpm check`, `--version`) and quote its output; a file listing is not proof. ([L-002](#l-002--2026-10-30--process--reported-a-repo-move-as-correct-when-git-was-missing))
+- Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
 
@@ -26,6 +27,27 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-003 · 2026-10-30 · tooling · User-level installs from a remote session did not reach bw's terminal
+- **What happened:** fnm's Node 24 and pnpm were installed through a remote session and reported working, but in bw's own PowerShell `fnm list` showed only `system`.
+- **Root cause:** the remote session's user environment (fnm directory / PATH) differed from bw's interactive shell; the check ran in the session's shell, not bw's.
+- **Fix:** bw re-ran `fnm install 24; fnm default 24; corepack enable` in their own terminal.
+- **Prevention:** after any remote install, the final check is run by bw in a freshly opened terminal; per-user tools (fnm, Node, pnpm, shell profile) are installed in bw's own terminal.
+- **Status:** documented
+
+### L-002 · 2026-10-30 · process · Reported a repo move as correct when `.git` was missing
+- **What happened:** after bw moved the repo to `C:\dev\gainframe`, Claude listed the folder, saw the expected files and said it was correct. The `.git` folder was gone, so it was not a git repository.
+- **Root cause:** checked by eye against a file list instead of running the check the doc itself gives (`git status`); "the files look right" was taken as proof.
+- **Fix:** re-clone from GitHub; setup doc already says to verify with `git status`.
+- **Prevention:** verify with the real command's output, never by inspecting a listing (rule added under "Active rules").
+- **Status:** documented
+
+### L-001 · 2026-10-30 · tooling · Setup guide assumed `winget` exists
+- **What happened:** bw ran `winget install --id Git.Git` from `docs/setup-windows.md` and got "winget is not recognized".
+- **Root cause:** the guide was written for a fresh, fully updated Windows and never checked its own prerequisites; it also skipped "open a new terminal after installing" and the PowerShell profile/execution-policy steps.
+- **Fix:** PR `m0/02-winget-fallback`.
+- **Prevention:** setup docs start each section with a one-line check of their prerequisite and give the fallback when it fails (rule added under "Active rules").
+- **Status:** documented
 
 ## Retros
 

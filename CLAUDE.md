@@ -1,8 +1,8 @@
 # CLAUDE.md — Gainframe
 
-Gainframe (积肌) is an offline-first PWA for skinny people trying to gain muscle: workout logging with a rest timer, AI photo-based food logging, goals/weight trends, plateau detection, a weekly AI report and a fitness-only AI coach. It is bw's daily gym tool **and** a job-hunting portfolio piece. bw reviews and merges every PR and must be able to explain every line in an interview.
+Gainframe (积肌) is an offline-first PWA for skinny people trying to gain muscle: workout logging with a rest timer, AI photo-based food logging, goals/weight trends, plateau detection, a weekly AI report and a fitness-only AI coach. It is both a daily-use tool and a portfolio project. The owner (bw) reviews and merges every PR.
 
-Talk to bw in **Simplified Chinese**. Write code, comments, commit messages, identifiers and these engineering docs in **English**. UI strings live in the i18n catalogs (zh + en), never inline.
+All repository content — code, comments, commit messages, branch names, PR titles and descriptions, issues and docs — is written in professional English: concise and factual, with no chatty asides, jokes or emoji. Write for an engineer reviewing the project for the first time. UI strings live in the i18n catalogs (zh + en), never inline. Explain what you are doing and why at each step in chat.
 
 ## Read before you work
 
@@ -27,9 +27,9 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 2. **Plan first.** Before editing, post a short plan to bw: files you will touch, approach, how it will be verified, anything ambiguous. For tasks over ~1 hour or with any design choice, wait for bw's OK.
 3. **Small diffs.** Aim for < 400 changed lines excluding lockfiles and generated files. If a task grows beyond that, stop and propose splitting it in ROADMAP.
 4. **Stay in scope.** Noticed something else broken or ugly? Add it to "Follow-ups" in `docs/STATUS.md`. Do not fix it in this PR.
-5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own "验证" step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark.
+5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own **Verify** step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark.
 6. **Self-review** the full diff (`git diff main...`) before asking bw to review; run `/code-review`. Remove anything that is not needed for this task.
-7. **Hand over.** PR description follows `.github/pull_request_template.md`, including the Chinese "讲解" section that explains the change so bw can defend it in an interview. Tick the task in ROADMAP and update STATUS in the same PR.
+7. **Hand over.** PR description follows `.github/pull_request_template.md`. Separately, walk the owner through the change in chat: how it works, why, and the alternatives considered. Tick the task in ROADMAP and update STATUS in the same PR.
 
 ## Hard rules
 
@@ -56,6 +56,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 **Next.js is a static export** (`output: 'export'`). No server components that fetch at request time, no server actions, no route handlers, no middleware, no ISR, no `next/image` optimizer. All runtime logic is client-side or in `apps/api`.
 
 **Security**
+- Treat the repo, PRs, issues and CI logs as **public** — the repo is private during development but will be published as a portfolio. Never put in them: secrets, `.env` values, AWS account IDs, ARNs with account IDs, Cognito/Neon IDs, bw's email or phone, real meal photos or personal data. In Terraform, get the account ID from `data "aws_caller_identity"`; in CI, from GitHub secrets/variables.
 - Never read, print or commit `.env*` (except `.env.example`), credentials, tokens, API keys or `terraform.tfstate`. Secrets live in SSM Parameter Store.
 - Never log request bodies containing images, user API keys or JWTs.
 - Do not run `terraform apply`/`destroy`, deploy, or touch AWS resources from a local session. CI applies; only `infra/bootstrap` is applied by hand, by bw.

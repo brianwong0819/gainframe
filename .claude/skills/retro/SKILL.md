@@ -10,4 +10,4 @@ description: End-of-milestone retro for Gainframe — review lessons, promote re
 3. Prune: remove or rewrite rules that were wrong, never applied, or duplicated. Keep `CLAUDE.md` under ~200 lines — move detail into `docs/`.
 4. Check the plan: does the next milestone in ROADMAP still make sense given what we learned? Propose changes (split, reorder, drop) — don't apply them silently.
 5. Note month-to-date AWS cost and how Claude usage went (which tasks were expensive and why).
-6. Append the retro to `docs/LESSONS.md` and open one PR `docs(process): M<n> retro` with all rule changes, explained in Chinese for bw.
+6. Append the retro to `docs/LESSONS.md` and open one PR `docs(process): M<n> retro` with all rule changes, and walk the owner through the changes in chat.
