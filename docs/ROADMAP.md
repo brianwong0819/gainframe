@@ -17,9 +17,9 @@
 
 完成标准：推一次代码就自动部署到 dev；计时器原型在 iPhone 上实测可以接受。
 
-- [ ] **M0-01 仓库规则**：CLAUDE.md、本路线图、架构与规范文档、PR 模板、`.gitattributes`、`.gitignore`。
+- [x] **M0-01 仓库规则**：CLAUDE.md、本路线图、架构与规范文档、PR 模板、`.gitattributes`、`.gitignore`。
   验证：bw 读完 CLAUDE.md 和 ROADMAP，没有看不懂或不同意的条目。
-- [ ] **M0-02 👤 本机环境**：把仓库移出 OneDrive；装 Node、pnpm、Docker Desktop、Terraform、AWS CLI、gh、Claude Code 和推荐插件。步骤见 [docs/setup-windows.md](setup-windows.md)。
+- [x] **M0-02 👤 本机环境**：把仓库移出 OneDrive；装 Node、pnpm、Docker Desktop、Terraform、AWS CLI、gh、Claude Code 和推荐插件。步骤见 [docs/setup-windows.md](setup-windows.md)。
   验证：`node -v`、`pnpm -v`、`docker run hello-world`、`terraform -v`、`aws --version`、`gh auth status` 全部正常。
 - [ ] **M0-03 👤 AWS 账号安全**：root 开 MFA 后不再使用；开 IAM Identity Center，建自己的管理员用户；Budgets 设 1 美元和 5 美元两档邮件告警；打开 Cost Anomaly Detection；在 ap-southeast-1 的 Bedrock 控制台申请 Claude 模型访问，记下可用的推理配置文件（inference profile）ID。
   验证：`aws sso login` 后 `aws sts get-caller-identity` 返回你的用户；Bedrock 控制台的 playground 能用 Claude 回答一句话。
