@@ -1,6 +1,6 @@
 # Windows setup (M0-02)
 
-bw does these steps by hand once. Run commands in **PowerShell** unless noted.
+bw does these steps by hand once. Run commands in **PowerShell** unless noted — the prompt must start with `PS` (e.g. `PS C:\dev>`). A prompt without `PS` is Command Prompt (cmd), where these commands fail; type `powershell` to switch.
 
 ## 1. Move the repo out of OneDrive
 
