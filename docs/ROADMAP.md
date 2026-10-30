@@ -27,7 +27,7 @@
   验证：全新 clone 后 `pnpm install && pnpm check && pnpm build` 通过；`pnpm --filter web dev` 能打开页面。
 - [ ] **M0-05 本地数据库**：`docker-compose.yml` 起 Postgres（版本与 Neon 一致）；`.env.example`；`pnpm db:up` / `db:down` 脚本。
   验证：`pnpm db:up` 后 `pnpm --filter api dev`，访问 `/health` 显示数据库已连接。
-- [ ] **M0-06 CI**：GitHub Actions 在每个 PR 上跑 install、lint、typecheck、test（用 Postgres 服务容器）、build；pnpm 缓存。👤 bw 在 GitHub 打开 main 分支保护：必须走 PR、必须 CI 通过。
+- [ ] **M0-06 CI**：GitHub Actions 在每个 PR 上跑 install、lint、typecheck、test（用 Postgres 服务容器）、build；pnpm 缓存；gitleaks 扫描密钥（提交里混进密钥、账号 ID 时 CI 变红）。👤 bw 在 GitHub 打开 main 分支保护：必须走 PR、必须 CI 通过。
   验证：故意推一个类型错误的 PR，CI 变红；修好后变绿。
 - [ ] **M0-07 Terraform 引导**：`infra/bootstrap`：存 state 的 S3 桶（版本控制 + 加密，用 S3 原生锁，不建 DynamoDB）、GitHub OIDC 身份提供商、两个 IAM 角色（PR 用的只读 plan 角色、main 用的 apply 角色）。👤 这一步由 bw 在本地 `terraform apply` 一次，以后不再动。
   验证：`terraform plan` 显示无变化；IAM 控制台能看到两个角色，信任策略只允许这个仓库。

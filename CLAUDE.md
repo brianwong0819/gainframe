@@ -56,6 +56,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 **Next.js is a static export** (`output: 'export'`). No server components that fetch at request time, no server actions, no route handlers, no middleware, no ISR, no `next/image` optimizer. All runtime logic is client-side or in `apps/api`.
 
 **Security**
+- Treat the repo, PRs, issues and CI logs as **public** — the repo is private during development but will be published as a portfolio. Never put in them: secrets, `.env` values, AWS account IDs, ARNs with account IDs, Cognito/Neon IDs, bw's email or phone, real meal photos or personal data. In Terraform, get the account ID from `data "aws_caller_identity"`; in CI, from GitHub secrets/variables.
 - Never read, print or commit `.env*` (except `.env.example`), credentials, tokens, API keys or `terraform.tfstate`. Secrets live in SSM Parameter Store.
 - Never log request bodies containing images, user API keys or JWTs.
 - Do not run `terraform apply`/`destroy`, deploy, or touch AWS resources from a local session. CI applies; only `infra/bootstrap` is applied by hand, by bw.
