@@ -1,7 +1,12 @@
 import { Hono } from 'hono'
 
-// CloudFront forwards `/api/*` to the Lambda without stripping the prefix,
-// so every route is mounted under `/api`.
-export const app = new Hono().basePath('/api')
+import { type HealthDeps, healthRoutes } from './routes/health.ts'
 
-app.get('/health', (c) => c.json({ status: 'ok' }))
+export type AppDeps = HealthDeps
+
+// Dependencies are passed in so tests can run without a database.
+export function createApp(deps: AppDeps) {
+  // CloudFront forwards `/api/*` to the Lambda without stripping the prefix,
+  // so every route is mounted under `/api`.
+  return new Hono().basePath('/api').route('/health', healthRoutes(deps))
+}
