@@ -7,6 +7,8 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
 - Verify a claim with the command that proves it (`git status`, `pnpm check`, `--version`) and quote its output; a file listing is not proof. ([L-002](#l-002--2026-10-30--process--reported-a-repo-move-as-correct-when-git-was-missing))
+- Before planning steps against a vendor console or account model (AWS, Neon, GitHub), read the vendor's current docs for that exact flow; do not plan from memory. ([L-004](#l-004--2026-11-02--infra--m0-03-was-planned-against-the-old-aws-account-model))
+- When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
 - Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
@@ -27,6 +29,20 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-005 · 2026-11-02 · process · A password appeared in a shared screenshot
+- **What happened:** following CLI instructions that included a password argument, bw shared a terminal screenshot that showed the typed password. The command failed, so the password was never set.
+- **Root cause:** the instructions put a secret on the command line and did not say what to hide before sharing output.
+- **Fix:** bw was told not to reuse that password anywhere.
+- **Prevention:** instructions never put secrets on a command line when a prompt or console form exists, and every request for a screenshot or output names what to mask (rule added under "Active rules").
+- **Status:** documented
+
+### L-004 · 2026-11-02 · infra · M0-03 was planned against the old AWS account model
+- **What happened:** ROADMAP M0-03 told bw to create an IAM Identity Center admin user and work in `ap-southeast-1`. On the 2026 account plan, Identity Center and IAM-user console passwords are blocked by AWS-managed SCPs, and the account was region-locked to `ap-southeast-2`. Several attempts (an IAM user, CloudShell `create-login-profile`) failed before the cause was found.
+- **Root cause:** the account steps were written from memory of the pre-2026 account model; AWS's current sign-up and account-plan docs were not read while planning.
+- **Fix:** advanced features activated and the Region SCP edited ([ADR-0001](adr/0001-aws-account-model.md)); `docs/infra.md` and `docs/setup-windows.md` updated.
+- **Prevention:** `docs/infra.md` now records the account structure and guardrails; rule added under "Active rules" to read the vendor's current docs before planning console or account steps.
+- **Status:** documented
 
 ### L-003 · 2026-10-30 · tooling · User-level installs from a remote session did not reach bw's terminal
 - **What happened:** fnm's Node 24 and pnpm were installed through a remote session and reported working, but in bw's own PowerShell `fnm list` showed only `system`.
