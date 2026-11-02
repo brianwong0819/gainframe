@@ -13,6 +13,15 @@ Three uses only: estimate food from a photo; write the weekly report and plateau
 - The coach's tools are read-only and get `userId` from the server context; the model can never choose whose data to read.
 - Health safety: injury, medication, eating-disorder or extreme-diet topics → suggest a professional. UI states "not medical advice".
 
+## Bedrock model availability (ap-southeast-1)
+
+Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload account. Anthropic use-case details were submitted once (Bedrock console), which unlocks Anthropic models for the account.
+
+- Current Claude models are available only as `global.` profiles, for example `global.anthropic.claude-haiku-5-5`, `global.anthropic.claude-sonnet-5-5`, `global.anthropic.claude-opus-5-5`.
+- `apac.` profiles cover only Claude 3.x and 3.5 models; do not use them.
+- Candidates: Haiku for food-photo estimates, guardrail checks and tests; Sonnet for the weekly report and the coach. The choice per feature is made with its eval, not here.
+- Re-run the command before changing a model ID; the list changes as models launch and retire.
+
 ## Prompts
 
 - Prompts are files: `apps/api/prompts/<feature>/v<N>.md`. Changing a prompt means adding a new version, not editing the old one in place.

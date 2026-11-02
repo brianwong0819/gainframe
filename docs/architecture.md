@@ -88,7 +88,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 - **iOS PWA.** Background JS is suspended when locked; Web Push only works for home-screen apps after a user gesture; audio must be unlocked by a tap; OAuth redirects in standalone mode need testing.
 - **Next.js static export** limits — see CLAUDE.md.
 - **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda.
-- **Bedrock in ap-southeast-1** may only offer Claude via cross-region inference profiles (`apac.…` IDs). Model IDs live in config, never in code.
+- **Bedrock in ap-southeast-1** offers current Claude models only through `global.` cross-Region inference profiles, which may route requests to any commercial Region; `apac.` profiles exist only for older Claude 3.x models. Accepted for this project (no data-residency requirement). See "Bedrock model availability" in `docs/ai.md`. Model IDs live in config, never in code.
 
 ## Not in this architecture (on purpose)
 
