@@ -1,0 +1,16 @@
+{
+  "name": "@gainframe/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/dev.ts",
+    "typecheck": "tsc",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "hono": "4.13.14"
+  },
+  "devDependencies": {
+    "@hono/node-server": "2.1.5"
+  }
+}

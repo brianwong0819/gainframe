@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+docs/design/prototype.html
+.next/
+out/
+dist/
+coverage/
+next-env.d.ts
+# Markdown is hand-formatted prose; reformatting tables and lists adds review noise.
+*.md

@@ -91,16 +91,17 @@ When bw corrects you, treat it as a lesson: record it, and say in the reply whic
 
 ## Commands
 
-> Filled in by M0-04. Until then the repo has no code.
-
 ```
-pnpm install          # install all workspaces
+pnpm install          # install all workspaces (Node and pnpm versions are pinned in package.json)
 pnpm check            # lint + typecheck + unit tests (must pass before any PR)
+pnpm format           # Prettier + ESLint --fix on the whole repo
 pnpm build            # build all apps
-pnpm db:up / db:down  # local Postgres in Docker
+pnpm db:up / db:down  # local Postgres in Docker (arrives with M0-05)
 pnpm --filter web dev # web app at http://localhost:3000
-pnpm --filter api dev # API at http://localhost:8787
+pnpm --filter api dev # API at http://localhost:8787/api/health
 ```
+
+A Claude Code hook (`.claude/hooks/format.mjs`) runs Prettier and ESLint on every file Claude edits and reports remaining lint errors back. Markdown is not auto-formatted.
 
 ## Environment notes
 

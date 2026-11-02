@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true
+  },
+  "include": ["*.ts", "*.js", ".claude/hooks/*.mjs"]
+}
