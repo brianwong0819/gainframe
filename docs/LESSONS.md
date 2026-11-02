@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- At the end of every task, check the later ROADMAP tasks it affects; halfway through each milestone, review the whole repository and plan. ([L-009](#l-009--2026-11-02--process--plan-and-code-problems-surfaced-in-a-batch))
 - Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
 - Refer to an ADR by number only once it exists; for a planned ADR, name its topic. ([L-007](#l-007--2026-11-02--process--two-documents-claimed-adr-0001))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
@@ -32,6 +33,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-009 · 2026-11-02 · process · Plan and code problems surfaced in a batch
+- **What happened:** the maintainability review before M0-06 found a dozen issues at once (no logging design, an alarm that could never fire, an ADR number collision, a `.env` deny gap). bw asked for regular, proactive reviews so problems do not pile up until late.
+- **Root cause:** reviews were scheduled only at milestone retros; no step in a task checked whether the change affected later ROADMAP tasks.
+- **Fix:** PR for M0-06.
+- **Prevention:** "Look ahead" step added to the work loop in `CLAUDE.md` and to `/finish-task` (check affected later tasks; whole-repository review at each milestone's midpoint); `/retro` now walks the next milestone's tasks against the current code.
+- **Status:** documented
 
 ### L-008 · 2026-11-02 · process · A PR shipped from an auto-generated branch name
 - **What happened:** the M0-05 PR (#4) used the cloud session's branch `claude/project-thread-8yxg8c`; bw asked why the name was so odd.

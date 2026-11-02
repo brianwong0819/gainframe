@@ -32,7 +32,8 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 ## Tests
 
 - **Unit (Vitest):** every function in `packages/shared/src/domain`, every service branch, every Zod schema with tricky rules. Name tests by behaviour: `it('does not count warm-up sets toward a PR')`.
-- **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows).
+- **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows). Files end in `.int.test.ts` and run with `pnpm test:integration` (after `pnpm db:up`); `pnpm check` runs unit tests only.
+- Every test runs with `TZ=America/Los_Angeles` (set in `vitest.config.ts`, guarded by `packages/shared/src/time-zone.test.ts`), so a day derived from a UTC timestamp fails locally too.
 - **E2E (Playwright, iPhone viewport):** the critical flows listed in ROADMAP. Offline is simulated with `context.setOffline(true)`.
 - Every Dexie schema version after v1 gets an upgrade test: open at the previous version with fixture rows, upgrade, assert the rows survive. Data on the phone cannot be repaired from the server.
 - Fixtures are explicit and small; no snapshot tests of large objects; no tests that depend on the current date (inject a clock).

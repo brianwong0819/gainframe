@@ -30,6 +30,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own **Verify** step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark.
 6. **Self-review** the full diff (`git diff main...`) before asking bw to review; run `/code-review`. Remove anything that is not needed for this task.
 7. **Hand over.** PR description follows `.github/pull_request_template.md`. Separately, walk the owner through the change in chat: how it works, why, and the alternatives considered. Tick the task in ROADMAP and update STATUS in the same PR.
+8. **Look ahead.** Before handing over, re-read the remaining tasks of the milestone and any later task this change affects; fix the plan in the same PR when it no longer fits. Halfway through each milestone, review the whole repository and plan (code, docs, CI, open follow-ups) instead of waiting for the retro, and record the review in STATUS.
 
 ## Hard rules
 

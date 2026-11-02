@@ -11,7 +11,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write . && eslint --fix .",
     "typecheck": "tsc && pnpm -r typecheck",
-    "test": "vitest run",
+    "test": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
     "build": "pnpm -r build",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down"

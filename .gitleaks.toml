@@ -1,0 +1,20 @@
+# Secret scanning for CI (.github/workflows/ci.yml). The repository will be
+# public, so AWS account IDs count as secrets too (see "Security" in CLAUDE.md).
+title = "Gainframe gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aws-account-id-in-arn"
+description = "AWS account ID inside an ARN"
+regex = '''arn:aws[a-z-]*:[a-z0-9-]*:[a-z0-9-]*:(\d{12}):'''
+secretGroup = 1
+keywords = ["arn:aws"]
+
+[[rules]]
+id = "aws-account-id-labelled"
+description = "AWS account ID next to an account ID label"
+regex = '''(?i)account[ _-]?id["'`\s:=]{0,5}(\d{12})\b'''
+secretGroup = 1
+keywords = ["account"]

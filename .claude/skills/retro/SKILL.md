@@ -8,6 +8,6 @@ description: End-of-milestone retro for Gainframe — review lessons, promote re
    - Recurring or costly → promote: turn it into an automated guard if possible (lint rule, test, type, CI check, hook); otherwise a rule in `CLAUDE.md` or the matching `docs/*` file.
    - One-off and already guarded → leave it in the log.
 3. Prune: remove or rewrite rules that were wrong, never applied, or duplicated. Keep `CLAUDE.md` under ~200 lines — move detail into `docs/`.
-4. Check the plan: does the next milestone in ROADMAP still make sense given what we learned? Propose changes (split, reorder, drop) — don't apply them silently.
+4. Check the plan: does the next milestone in ROADMAP still make sense given what we learned? Walk every task of the next milestone against the code as it is now (paths, schemas, scripts, CI jobs it assumes) and list the ones that need changing. Propose changes (split, reorder, drop) — don't apply them silently.
 5. Note month-to-date AWS cost and how Claude usage went (which tasks were expensive and why). Run `pnpm outdated -r`; list major upgrades worth doing as tasks in the next milestone (Dependabot only covers security fixes).
 6. Append the retro to `docs/LESSONS.md` and open one PR `docs(process): M<n> retro` with all rule changes, and walk the owner through the changes in chat.
