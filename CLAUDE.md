@@ -96,7 +96,7 @@ pnpm install          # install all workspaces (Node and pnpm versions are pinne
 pnpm check            # lint + typecheck + unit tests (must pass before any PR)
 pnpm format           # Prettier + ESLint --fix on the whole repo
 pnpm build            # build all apps
-pnpm db:up / db:down  # local Postgres in Docker (arrives with M0-05)
+pnpm db:up / db:down  # local Postgres 18 in Docker (copy apps/api/.env.example to apps/api/.env first)
 pnpm --filter web dev # web app at http://localhost:3000
 pnpm --filter api dev # API at http://localhost:8787/api/health
 ```

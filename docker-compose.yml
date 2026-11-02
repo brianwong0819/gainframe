@@ -1,0 +1,25 @@
+# Local development database. Production uses Neon; keep the major version in
+# step with the Neon project (Postgres 18).
+name: gainframe
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      # Local-only credentials; they match apps/api/.env.example.
+      POSTGRES_USER: gainframe
+      POSTGRES_PASSWORD: gainframe
+      POSTGRES_DB: gainframe
+    ports:
+      - '5432:5432'
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/<major>/docker.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U gainframe -d gainframe']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres-data:
