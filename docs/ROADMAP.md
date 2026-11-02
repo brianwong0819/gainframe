@@ -25,7 +25,7 @@ Done when: every push to `main` deploys to dev automatically, and the rest-timer
   Verify: after `aws login`, `aws sts get-caller-identity` returns the workload account role and `aws ec2 describe-availability-zones` lists `ap-southeast-1` zones; the Bedrock playground in `ap-southeast-1` answers a prompt with Claude.
 - [x] **M0-04 Monorepo skeleton**: pnpm workspaces (`apps/web`, `apps/api`, `packages/shared`, `infra`); shared strict TypeScript config; ESLint + Prettier; Vitest; a root `pnpm check` that runs lint, typecheck and tests; a Claude Code hook in `.claude/settings.json` that runs Prettier and ESLint after every edit. Pin the newest Node major supported by Lambda in `.nvmrc` and `engines`. `web` is an empty Next.js static export; `api` is a Hono app with `/health` and a unit test.
   Verify: on a fresh clone, `pnpm install && pnpm check && pnpm build` pass; `pnpm --filter web dev` serves the page.
-- [ ] **M0-05 Local database**: `docker-compose.yml` with Postgres (same major as Neon); `.env.example`; `pnpm db:up` / `db:down`.
+- [x] **M0-05 Local database**: `docker-compose.yml` with Postgres (same major as Neon); `.env.example`; `pnpm db:up` / `db:down`.
   Verify: after `pnpm db:up`, `pnpm --filter api dev` and `/health` reports the database as connected.
 - [ ] **M0-06 CI**: GitHub Actions on every PR: install, lint, typecheck, test (Postgres service container), build; pnpm cache; gitleaks secret scanning (CI fails if a secret or account ID is committed). 👤 Owner enables branch protection on `main`: PR required, CI must pass.
   Verify: a PR with a deliberate type error turns CI red; fixing it turns it green.

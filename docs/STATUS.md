@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-04 monorepo skeleton (in review) → next: M0-05 local database
+- **Current task:** M0-05 local database (in review) → next: M0-06 CI
 - **Last updated:** 2026-11-02
 
 ## Where I stopped
@@ -13,6 +13,8 @@ M0-01 to M0-03 done. AWS: advanced features active, workload account restricted 
 Toolchain on bw's machine (2026-10-30): Node 24.22 via fnm, pnpm via corepack, Terraform 1.16, AWS CLI 2.39, gh 2.103, Docker Desktop 4.97. Repo at `C:\dev\gainframe`.
 
 M0-04 (2026-11-02): pnpm 12 workspace with `apps/web` (empty Next.js 16 static export), `apps/api` (Hono, `GET /api/health`), `packages/shared` (empty public entry), `infra/` (README only). Root `pnpm check` = ESLint + Prettier + `tsc` + Vitest. Node 24 pinned (`.nvmrc`, `engines`; Lambda `nodejs24.x`).
+
+M0-05 (2026-11-02): `docker-compose.yml` runs Postgres 18.6 (Neon supports 14–18; create the Neon project on 18). `pnpm db:up` / `db:down` at the root. The API reads `DATABASE_URL` from `apps/api/.env` (Zod-validated, see `apps/api/.env.example`), connects with `pg` (bw chose it over postgres.js and the Neon serverless driver), and `GET /api/health` returns `database: connected` or 503 `unreachable`.
 
 ## Blocked on bw
 
@@ -24,3 +26,4 @@ _None._
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.
+- The health response shape is declared in `apps/api`, not as a schema in `packages/shared`: the API cannot import `@gainframe/shared` at runtime until M0-08 settles bundling. Move it when the web app first consumes an API response.
