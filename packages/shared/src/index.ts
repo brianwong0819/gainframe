@@ -1,0 +1,3 @@
+// Public entry of @gainframe/shared: Zod schemas, inferred types and pure domain
+// functions used by both apps. Contents arrive with M1-01.
+export {}
