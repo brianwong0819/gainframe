@@ -14,7 +14,7 @@ CloudFront (one domain)
   ├─ /*      → S3 (static site, OAC)
   └─ /api/*  → Lambda Function URL (Hono, Node.js, zip)
                  ├─ Cognito JWT verification
-                 ├─ Neon Postgres (Drizzle)
+                 ├─ Neon Postgres (Drizzle over the `pg` driver)
                  ├─ AI service layer → Bedrock (Claude) | Anthropic | OpenAI
                  └─ Web Push
 EventBridge Scheduler → Lambda (weekly report, plateau check, one-off rest-timer push)
@@ -87,7 +87,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 - **CloudFront → Lambda Function URL auth.** With OAC on a Function URL, POST/PUT bodies need an `x-amz-content-sha256` header from the client. The alternative is `AuthType NONE` + a secret custom header added by CloudFront and checked in Hono. Decide in M0-08.
 - **iOS PWA.** Background JS is suspended when locked; Web Push only works for home-screen apps after a user gesture; audio must be unlocked by a tap; OAuth redirects in standalone mode need testing.
 - **Next.js static export** limits — see CLAUDE.md.
-- **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda.
+- **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda. `GET /api/health` queries the database, so an external uptime check would keep the compute awake and spend free-tier compute hours.
 - **Bedrock in ap-southeast-1** offers current Claude models only through `global.` cross-Region inference profiles, which may route requests to any commercial Region; `apac.` profiles exist only for older Claude 3.x models. Accepted for this project (no data-residency requirement). See "Bedrock model availability" in `docs/ai.md`. Model IDs live in config, never in code.
 
 ## Not in this architecture (on purpose)
