@@ -31,9 +31,10 @@
       "Bash(gh pr merge:*)"
     ],
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.local)",
-      "Read(./.env.*.local)",
+      "Read(./**/.env)",
+      "Read(./**/.env.local)",
+      "Read(./**/.env.*.local)",
+      "Read(./**/.env.production)",
       "Read(./**/*.tfstate)",
       "Read(./**/*.tfstate.backup)",
       "Bash(terraform apply:*)",

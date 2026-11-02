@@ -16,6 +16,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - Feature code lives in `src/features/<feature>`. A component used by two features moves to `src/ui`.
 - Components read data through hooks that wrap Dexie live queries (`useLiveQuery`). No fetching in components.
 - Local UI state with `useState`/`useReducer`; cross-screen state (active workout, rest timer) in one small store per concern. No global state library.
+- Unexpected errors are recorded through `src/diagnostics`, never `console.*` (which nobody can read on the iPhone).
 - Every interactive element is keyboard- and screen-reader-accessible (Radix where it applies). Tap targets ≥ 44×44 px.
 - All user-facing text through next-intl. Numbers and dates formatted with `Intl` using the user's locale.
 
@@ -24,19 +25,22 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - Route handler: parse with Zod → call a service → return. No SQL in routes.
 - Every route except `/health` requires auth middleware; `userId` comes from the context, never from input.
 - Responses are typed by shared schemas so the web app gets the same types.
-- Structured logs (JSON) with request ID; never log bodies, tokens, keys or images.
+- Log only through `src/log.ts`, with primitive fields (`log.info('sync push', { received: 12, applied: 11 })`). Never log bodies, query strings, headers, tokens, keys, images or emails. Design: "Observability" in `docs/architecture.md`.
+- Log an unexpected error once, where it is handled (normally `app.onError`); do not log and rethrow. Expected outcomes (validation failure, not found) are `info` or `warn`, not `error`, so the error alarm stays meaningful.
+- External calls (database, model providers, S3) always have a timeout.
 
 ## Tests
 
 - **Unit (Vitest):** every function in `packages/shared/src/domain`, every service branch, every Zod schema with tricky rules. Name tests by behaviour: `it('does not count warm-up sets toward a PR')`.
 - **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows).
 - **E2E (Playwright, iPhone viewport):** the critical flows listed in ROADMAP. Offline is simulated with `context.setOffline(true)`.
+- Every Dexie schema version after v1 gets an upgrade test: open at the previous version with fixture rows, upgrade, assert the rows survive. Data on the phone cannot be repaired from the server.
 - Fixtures are explicit and small; no snapshot tests of large objects; no tests that depend on the current date (inject a clock).
 - A bug fix starts with a failing test that reproduces it.
 
 ## Git
 
-- Branch: `m<milestone>/<nn>-<slug>` (e.g. `m1/05-set-logger`). Never commit to `main`.
+- Branch: `m<milestone>/<nn>-<slug>` (e.g. `m1/05-set-logger`); work outside a numbered task uses `m<milestone>/<slug>` (e.g. `m0/review-maintainability`). Never commit to `main`.
 - Commits: Conventional Commits (`feat(workout): …`, `fix(sync): …`, `chore`, `docs`, `test`, `refactor`, `ci`, `infra`). One logical change per commit.
 - PR title: `<type>(<scope>): <summary> [M1-05]`. Squash-merge.
 - Lockfile changes only with a matching `package.json` change.

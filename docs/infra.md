@@ -31,6 +31,7 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 - Names: `gainframe-<env>-<thing>`.
 - Least-privilege IAM: one role per Lambda, scoped to its own resources. No `*` actions on `*` resources.
 - Log groups always have retention (14 days dev, 30 days prod).
+- Monitoring (M2-08): a metric filter on `level=error` lines feeding an alarm, Lambda `Errors` and `Throttles` alarms, one SNS topic with an email subscription, saved Logs Insights queries (`aws_cloudwatch_query_definition`). Logging design: "Observability" in `docs/architecture.md`.
 - Secrets in SSM Parameter Store `SecureString` under `/gainframe/<env>/…`; Terraform creates the parameter with a placeholder and `lifecycle { ignore_changes = [value] }`; bw sets the real value.
 
 ## Workflows (GitHub Actions)
@@ -48,4 +49,5 @@ Actions are pinned to a full commit SHA. Workflow permissions default to `conten
 - Budgets (management account, covers the whole organization): `monthly-5usd`, credits excluded so alerts reflect real usage even while credits pay the bill; alerts at USD 1 (actual), 5 (actual) and forecast > 5.
 - Cost Anomaly Detection on (management account): AWS-created services monitor, daily email summary for anomalies above USD 1 (individual alerts require SNS; not worth a topic at this scale).
 - Bedrock spend is capped by per-user daily limits in `ai_usage`.
+- Monitoring stays inside the free tier: up to 10 alarms and 10 custom metrics (metric filters create custom metrics), 1,000 SNS email notifications and 5 GB of log ingestion per month. No CloudWatch dashboards; saved queries are free.
 - Check the Billing console at each milestone retro and note the month-to-date in STATUS.

@@ -32,6 +32,7 @@ apps/
     src/features/     one folder per feature: workout/, food/, today/, trends/, coach/, settings/
     src/db/           Dexie schema + repositories (the only code that touches IndexedDB)
     src/sync/         sync engine (the only code that calls /api/sync)
+    src/diagnostics/  client error log and Diagnostics data (the only code that records client errors)
     src/ui/           design-system primitives (Pressable, Sheet, NumberRoll, Ring…)
     src/styles/       tokens.css, globals
     messages/         i18n catalogs: zh.json, en.json
@@ -40,6 +41,7 @@ apps/
     src/services/     business logic that needs the DB or AI
     src/db/           Drizzle schema, migrations, client
     src/ai/           the only place that talks to model providers (see docs/ai.md)
+    src/log.ts        JSON-lines logger (the only code that writes to stdout/stderr)
     src/jobs/         scheduled handlers (weekly report, plateau check)
     prompts/          versioned prompt files
     evals/            eval runners + fixtures (photos are NOT committed)
@@ -70,17 +72,30 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | workout_sets | workout_id, exercise_id, superset_group, position, kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
 | meals / meal_items | eaten_at, local_date, meal_type, photo_key; name, grams, protein_g, kcal, source (ai/manual/frequent), ai_raw jsonb |
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |
-| nudges | kind (reminder/plateau), rule, snapshot jsonb, analysis, sent_at, read_at |
+| nudges | kind (reminder/plateau), rule, snapshot jsonb, analysis, model, prompt_version, sent_at, read_at |
 | push_subscriptions | endpoint, keys |
 | ai_usage | user_id, local_date, feature, calls, tokens (server-only; enforces daily caps) |
 
-## Sync rules (details in ADR-0001)
+## Sync rules (details in ADR-0002, written in M0-14)
 
 - Local first: every write goes to Dexie and an outbox row in one transaction.
 - Push: batches of outbox rows; server upserts by `id`; **last writer wins on `updated_at`**; a `deleted_at` is just another update.
 - Pull: by server cursor (monotonic `server_updated_at`), not by client clocks.
 - Idempotent: re-sending the same batch is harmless.
 - One user, few devices — no CRDTs, no merge UI.
+
+## Observability
+
+Goal: any problem bw sees on the phone can be traced to a log line in minutes, without logging personal data. No paid tools; everything sits in the CloudWatch and SNS free tiers.
+
+- **API logs.** `apps/api/src/log.ts` writes one JSON object per line to stdout: `level`, `msg`, `requestId`, `release`, plus primitive fields. CloudWatch Logs Insights discovers JSON fields automatically, so no log library or Lambda log-format setting is needed. Levels: `error` (needs action; drives the alarm), `warn` (unexpected but handled, e.g. an AI retry), `info` (one access line per request, one line per AI call, sync push and job run). No `debug` level in deployed code.
+- **Request ID.** The Lambda request ID (generated locally in dev) is attached to every line, returned as `x-request-id`, and included in error responses. The web app stores it with any failed request, so a Diagnostics entry leads straight to the server lines.
+- **Errors.** Routes throw; `app.onError` maps known errors to the shared error shape and logs unknown ones once with their stack. Code never logs and rethrows the same error.
+- **Never logged:** request or response bodies, query strings, headers (`Authorization` above all), images, user API keys, prompts or model output containing personal data, emails. `userId` is the opaque Cognito `sub`. The logger's primitive-only fields make whole objects impossible to log by accident.
+- **Client errors.** `apps/web/src/diagnostics` records errors from the root error boundary, global `error` / `unhandledrejection` handlers and failed sync requests in a capped Dexie table, shown in Settings → Diagnostics (M1-11). From M2-08 they are also sent to `POST /api/client-errors`. Sentry stays out (cost, third-party data processor, one more account).
+- **Release.** The git SHA (`RELEASE`) is stamped into the Lambda environment and the web bundle and appears on every log line and client error.
+- **Alerts** (M2-08). A metric filter on `level=error` with an SNS email alarm (Lambda's `Errors` metric only counts crashes, not 500 responses), plus Lambda `Errors` and `Throttles` alarms. Retention 14 days dev, 30 days prod.
+- **AI calls** are logged per call (see `docs/ai.md`); Bedrock model invocation logging stays off because it would store images and prompts.
 
 ## Known gotchas (verify, then record the outcome in an ADR)
 
