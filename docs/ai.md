@@ -8,7 +8,8 @@ Three uses only: estimate food from a photo; write the weekly report and plateau
 - One `AiProvider` interface with three implementations: Bedrock (default for bw + demo), Anthropic, OpenAI (bring-your-own key).
 - Model IDs, max tokens, temperature and daily caps live in config (`apps/api/src/ai/config.ts`), never inline. Look up current model IDs and Bedrock inference-profile IDs in the docs (context7 / AWS console) — do not guess.
 - Every response that code consumes is structured JSON validated with a Zod schema from `packages/shared`. On validation failure: retry once with the error message, then fail cleanly.
-- Timeouts on every call. Log model, latency, tokens in/out and feature — never the image, the user's API key or full prompts with personal data.
+- Timeouts on every call. One `info` log line per call with `requestId`, feature, provider, model, prompt version, latency, tokens in/out and outcome (`ok`, `retried`, `invalid`, `timeout`, `capped`, `provider_error`). On invalid output, log the Zod issue paths, not the output. Never log the image, the user's API key, prompts or model text.
+- Bedrock model invocation logging stays off: it would store images and prompts. To debug a bad answer, use what the product already keeps (`meal_items.ai_raw`, `weekly_summaries`, `nudges.analysis`), each stored with model and prompt version.
 - Daily caps are enforced server-side in `ai_usage` before the call is made.
 - The coach's tools are read-only and get `userId` from the server context; the model can never choose whose data to read.
 - Health safety: injury, medication, eating-disorder or extreme-diet topics → suggest a professional. UI states "not medical advice".
@@ -25,7 +26,7 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 ## Prompts
 
 - Prompts are files: `apps/api/prompts/<feature>/v<N>.md`. Changing a prompt means adding a new version, not editing the old one in place.
-- The active version per feature is set in config, and its number is stored with every result (`weekly_summaries.model`, `meal_items.ai_raw`).
+- The active version per feature is set in config, and its number is stored with every result (`weekly_summaries.model`, `meal_items.ai_raw`, `nudges.model` / `nudges.prompt_version`).
 
 ## Evals (the AI part of the portfolio)
 

@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-05 local database (in review) → next: M0-06 CI
+- **Current task:** maintainability and observability review (in review) → next: M0-06 CI
 - **Last updated:** 2026-11-02
 
 ## Where I stopped
@@ -15,6 +15,8 @@ Toolchain on bw's machine (2026-10-30): Node 24.22 via fnm, pnpm via corepack, T
 M0-04 (2026-11-02): pnpm 12 workspace with `apps/web` (empty Next.js 16 static export), `apps/api` (Hono, `GET /api/health`), `packages/shared` (empty public entry), `infra/` (README only). Root `pnpm check` = ESLint + Prettier + `tsc` + Vitest. Node 24 pinned (`.nvmrc`, `engines`; Lambda `nodejs24.x`).
 
 M0-05 (2026-11-02): `docker-compose.yml` runs Postgres 18.6 (Neon supports 14–18; create the Neon project on 18). `pnpm db:up` / `db:down` at the root. The API reads `DATABASE_URL` from `apps/api/.env` (Zod-validated, see `apps/api/.env.example`), connects with `pg` (bw chose it over postgres.js and the Neon serverless driver), and `GET /api/health` returns `database: connected` or 503 `unreachable`.
+
+Review (2026-11-02, PR `m0/review-maintainability`): added "Observability" to `docs/architecture.md`; inserted M0-09 API logging and error handling (old M0-09 to M0-13 are now M0-10 to M0-14) and M1-11 Diagnostics and data export (old M1-11/12 are now M1-12/13); tightened M0-06, M1-01/02/03, M2-01/03/04/05/08, M3-04 and M5-06; renumbered planned ADRs (sync 0002, PWA 0003, iOS timer 0004).
 
 ## Blocked on bw
 

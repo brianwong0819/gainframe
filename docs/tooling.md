@@ -15,7 +15,7 @@ Only what clearly pays for itself. Every plugin and MCP server adds tool definit
 
 | When | Tool | Why | Install |
 |---|---|---|---|
-| M0-10 (first UI) | **playwright** plugin / MCP | Claude opens the app at iPhone size, clicks through it and screenshots light/dark — lets it check its own UI work | `/plugin install playwright@claude-plugins-official` |
+| M0-11 (first UI) | **playwright** plugin / MCP | Claude opens the app at iPhone size, clicks through it and screenshots light/dark — lets it check its own UI work | `/plugin install playwright@claude-plugins-official` |
 | M0-04 (first TS code) | **typescript-lsp** plugin | Real type errors and go-to-definition instead of guessing | `npm i -g typescript typescript-language-server` then `/plugin install typescript-lsp@claude-plugins-official` |
 | M0-07 (Terraform) — optional | **HashiCorp Terraform MCP** | Exact AWS provider resource docs. Skip if context7 is enough. | see github.com/hashicorp/terraform-mcp-server |
 | M2-09 and M7-06 | **Strix** | AI pentest agents that actually attack your running app and prove findings. Needs Docker and an LLM API key; a run can cost several dollars in tokens, so use it twice, not every PR. Only against our own dev environment. | `npx skills add usestrix/strix` (skills), CLI per its README |

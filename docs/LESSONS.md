@@ -6,6 +6,9 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
+- Refer to an ADR by number only once it exists; for a planned ADR, name its topic. ([L-007](#l-007--2026-11-02--process--two-documents-claimed-adr-0001))
+- Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
 - Verify a claim with the command that proves it (`git status`, `pnpm check`, `--version`) and quote its output; a file listing is not proof. ([L-002](#l-002--2026-10-30--process--reported-a-repo-move-as-correct-when-git-was-missing))
 - Before planning steps against a vendor console or account model (AWS, Neon, GitHub), read the vendor's current docs for that exact flow; do not plan from memory. ([L-004](#l-004--2026-11-02--infra--m0-03-was-planned-against-the-old-aws-account-model))
 - When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
@@ -29,6 +32,27 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-008 · 2026-11-02 · process · A PR shipped from an auto-generated branch name
+- **What happened:** the M0-05 PR (#4) used the cloud session's branch `claude/project-thread-8yxg8c`; bw asked why the name was so odd.
+- **Root cause:** the session's suggested branch was used instead of the convention in `docs/conventions.md`.
+- **Fix:** later work uses `m0/...` branches.
+- **Prevention:** rule added under "Active rules"; `/start-task` already creates the branch by convention.
+- **Status:** documented
+
+### L-007 · 2026-11-02 · process · Two documents claimed ADR-0001
+- **What happened:** ROADMAP M0-13 and `architecture.md` reserved ADR-0001 for sync rules, but M0-03 used ADR-0001 for the AWS account model. Found in the maintainability review.
+- **Root cause:** ADR numbers were assigned in the plan before the ADRs existed; writing ADR-0001 did not trigger a search for other references.
+- **Fix:** planned ADRs renumbered (sync 0002, PWA 0003, iOS timer 0004) in PR `m0/review-maintainability`.
+- **Prevention:** rule added under "Active rules": cite planned ADRs by topic, numbers only once written.
+- **Status:** documented
+
+### L-006 · 2026-11-02 · tooling · Claude Code could read `apps/api/.env`
+- **What happened:** `.claude/settings.json` denied `Read(./.env)` at the repository root only. M0-05 added `apps/api/.env` (the database URL), which the patterns did not cover. Found in the maintainability review; no secret was read.
+- **Root cause:** the deny list was written before the monorepo had per-app env files, and M0-05 did not re-check it.
+- **Fix:** patterns changed to `./**/.env` and friends in PR `m0/review-maintainability`.
+- **Prevention:** rule added under "Active rules". gitleaks in CI (M0-06) is the automated backstop for anything committed.
+- **Status:** documented
 
 ### L-005 · 2026-11-02 · process · A password appeared in a shared screenshot
 - **What happened:** following CLI instructions that included a password argument, bw shared a terminal screenshot that showed the typed password. The command failed, so the password was never set.
