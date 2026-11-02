@@ -46,6 +46,6 @@ Actions are pinned to a full commit SHA. Workflow permissions default to `conten
 ## Cost watch
 
 - Budgets (management account, covers the whole organization): `monthly-5usd`, credits excluded so alerts reflect real usage even while credits pay the bill; alerts at USD 1 (actual), 5 (actual) and forecast > 5.
-- Cost Anomaly Detection on (management account), individual alerts above USD 1.
+- Cost Anomaly Detection on (management account): AWS-created services monitor, daily email summary for anomalies above USD 1 (individual alerts require SNS; not worth a topic at this scale).
 - Bedrock spend is capped by per-user daily limits in `ai_usage`.
 - Check the Billing console at each milestone retro and note the month-to-date in STATUS.
