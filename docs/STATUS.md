@@ -3,18 +3,20 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-03 (bw secures the AWS account); M0-04 monorepo skeleton in review → next: M0-05 local database
+- **Current task:** M0-04 monorepo skeleton (in review) → next: M0-05 local database
 - **Last updated:** 2026-11-02
 
 ## Where I stopped
 
-M0-01 and M0-02 done. Toolchain on bw's machine (2026-10-30): Node 24.22 via fnm, pnpm via corepack, Terraform 1.16, AWS CLI 2.39, gh 2.103, Docker Desktop 4.97. Repo at `C:\dev\gainframe`.
+M0-01 to M0-03 done. AWS: advanced features active, workload account restricted to `ap-southeast-1` by SCP, CLI sign-in via `aws login --profile gainframe`, Budgets and Cost Anomaly Detection in the management account, Claude available in Bedrock through `global.` inference profiles. The workload account is named `gainframe`. Details in `docs/infra.md` ("Account structure") and `docs/ai.md` ("Bedrock model availability").
+
+Toolchain on bw's machine (2026-10-30): Node 24.22 via fnm, pnpm via corepack, Terraform 1.16, AWS CLI 2.39, gh 2.103, Docker Desktop 4.97. Repo at `C:\dev\gainframe`.
 
 M0-04 (2026-11-02): pnpm 12 workspace with `apps/web` (empty Next.js 16 static export), `apps/api` (Hono, `GET /api/health`), `packages/shared` (empty public entry), `infra/` (README only). Root `pnpm check` = ESLint + Prettier + `tsc` + Vitest. Node 24 pinned (`.nvmrc`, `engines`; Lambda `nodejs24.x`).
 
 ## Blocked on bw
 
-- M0-03: AWS account security + Bedrock model access (ROADMAP M0-03).
+_None._
 
 ## Follow-ups (noticed, not in scope yet)
 

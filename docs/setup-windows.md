@@ -57,13 +57,17 @@ Claude Code: install per https://code.claude.com/docs (native Windows installer)
 
 Follow "Install now" in [docs/tooling.md](tooling.md).
 
-## 4. AWS CLI with SSO (after M0-03)
+## 4. AWS CLI sign-in (after M0-03)
+
+Requires AWS CLI 2.32 or later (`aws --version`). `aws login` opens the browser, signs in with the AWS Builder ID and writes short-lived credentials (refreshed automatically, valid up to 12 hours). No access keys are stored.
 
 ```powershell
-aws configure sso          # SSO start URL from IAM Identity Center, region ap-southeast-1, profile name: gainframe
-aws sso login --profile gainframe
+aws login --profile gainframe --region ap-southeast-1   # in the browser, choose the workload account session
+aws configure set region ap-southeast-1 --profile gainframe
 aws sts get-caller-identity --profile gainframe
 ```
+
+If the CLI offers to configure AWS skills or an MCP server for AI coding agents, answer `n`; tooling is added only through `docs/tooling.md`.
 
 ## 5. Check
 
