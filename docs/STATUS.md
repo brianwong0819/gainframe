@@ -18,6 +18,4 @@ _None._
 
 ## Follow-ups (noticed, not in scope yet)
 
-- Delete the unused IAM user created during M0-03; console access uses the AWS Builder ID.
 - Consider renaming the workload project from its default name to `gainframe` in AWS Settings.
-- Remove the four leftover `BudgetsSpendLimit*` SCPs in the management account if they are not attached anywhere.
