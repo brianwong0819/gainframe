@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseEnv } from './env.ts'
+import { loadLambdaEnv, parseEnv } from './env.ts'
 
 describe('parseEnv', () => {
   it('accepts a postgres connection string', () => {
@@ -21,5 +21,37 @@ describe('parseEnv', () => {
 
   it('rejects a non-postgres URL', () => {
     expect(() => parseEnv({ DATABASE_URL: 'https://example.com' })).toThrow(/DATABASE_URL/)
+  })
+})
+
+describe('loadLambdaEnv', () => {
+  const url = 'postgresql://app:secret@example.neon.tech/gainframe?sslmode=require'
+
+  it('reads DATABASE_URL from the SSM parameter named in the environment', async () => {
+    const getParameter = (name: string) =>
+      name === '/gainframe/dev/database-url'
+        ? Promise.resolve(url)
+        : Promise.reject(new Error(`unexpected parameter ${name}`))
+
+    const env = await loadLambdaEnv(
+      { DATABASE_URL_PARAMETER: '/gainframe/dev/database-url' },
+      getParameter,
+    )
+
+    expect(env).toEqual({ DATABASE_URL: url })
+  })
+
+  it('rejects a parameter name outside the project prefix', async () => {
+    await expect(
+      loadLambdaEnv({ DATABASE_URL_PARAMETER: '/other/database-url' }, () => Promise.resolve(url)),
+    ).rejects.toThrow(/DATABASE_URL_PARAMETER/)
+  })
+
+  it('rejects the placeholder value Terraform writes before the owner sets the real one', async () => {
+    await expect(
+      loadLambdaEnv({ DATABASE_URL_PARAMETER: '/gainframe/dev/database-url' }, () =>
+        Promise.resolve('placeholder'),
+      ),
+    ).rejects.toThrow(/DATABASE_URL/)
   })
 })
