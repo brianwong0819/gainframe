@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** maintainability and observability review (in review) → next: M0-06 CI
+- **Current task:** M0-06 CI (in review) → next: M0-07 Terraform bootstrap
 - **Last updated:** 2026-11-02
 
 ## Where I stopped
@@ -18,9 +18,12 @@ M0-05 (2026-11-02): `docker-compose.yml` runs Postgres 18.6 (Neon supports 14–
 
 Review (2026-11-02, PR `m0/review-maintainability`): added "Observability" to `docs/architecture.md`; inserted M0-09 API logging and error handling (old M0-09 to M0-13 are now M0-10 to M0-14) and M1-11 Diagnostics and data export (old M1-11/12 are now M1-12/13); tightened M0-06, M1-01/02/03, M2-01/03/04/05/08, M3-04 and M5-06; renumbered planned ADRs (sync 0002, PWA 0003, iOS timer 0004).
 
+M0-06 (2026-11-02, PR `m0/06-ci`): `.github/workflows/ci.yml` runs on every PR and push to `main`. Job "Check and build": install (pnpm store cached), lint, typecheck, unit tests, integration tests against a Postgres 18.6 service container, build. Job "Secret scan": gitleaks 8.30.1 (checksum-verified CLI, not the licensed action) over the full git history, with `.gitleaks.toml` adding two AWS account ID rules and a self-test that they fire. Every Vitest run uses `TZ=America/Los_Angeles`. Integration tests are `*.int.test.ts` and run with `pnpm test:integration`. "Look ahead" step added to the work loop (L-009).
+
 ## Blocked on bw
 
-_None._
+- Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
+- Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
 ## Follow-ups (noticed, not in scope yet)
 
@@ -28,4 +31,5 @@ _None._
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.
+- The API test for an unreachable database prints its error line to the test output; M0-09's logger should let tests capture log lines instead.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`: the API cannot import `@gainframe/shared` at runtime until M0-08 settles bundling. Move it when the web app first consumes an API response.
