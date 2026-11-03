@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-07 Terraform bootstrap (in review, awaiting bw's first apply) → next: M0-08 dev infrastructure
+- **Current task:** M0-08 dev infrastructure
 - **Last updated:** 2026-11-03
 
 ## Where I stopped
@@ -20,11 +20,10 @@ Review (2026-11-02, PR `m0/review-maintainability`): added "Observability" to `d
 
 M0-06 (2026-11-02, PR `m0/06-ci`): `.github/workflows/ci.yml` runs on every PR and push to `main`. Job "Check and build": install (pnpm store cached), lint, typecheck, unit tests, integration tests against a Postgres 18.6 service container, build. Job "Secret scan": gitleaks 8.30.1 (checksum-verified CLI, not the licensed action) over the full git history, with `.gitleaks.toml` adding two AWS account ID rules and a self-test that they fire. Every Vitest run uses `TZ=America/Los_Angeles`. Integration tests are `*.int.test.ts` and run with `pnpm test:integration`. "Look ahead" step added to the work loop (L-009).
 
-M0-07 (2026-11-03, PR `m0/07-terraform-bootstrap`): `infra/bootstrap` creates the state bucket `gainframe-tfstate`, the GitHub OIDC provider and the roles `gainframe-ci-plan` / `gainframe-ci-apply` (AWS provider 6.70, lock file covers `windows_amd64` and `linux_amd64`). bw applies it once by hand, following `infra/bootstrap/README.md`; its state then moves into the bucket under `bootstrap/`.
+M0-07 (2026-11-03, PR `m0/07-terraform-bootstrap`): `infra/bootstrap` creates the state bucket `gainframe-tfstate`, the GitHub OIDC provider and the roles `gainframe-ci-plan` / `gainframe-ci-apply` (AWS provider 6.70, lock file covers `windows_amd64` and `linux_amd64`). bw applied it on 2026-11-03 (14 resources); its state now lives in the bucket under `bootstrap/`, and `terraform plan` reports no changes.
 
 ## Blocked on bw
 
-- Apply `infra/bootstrap` (steps in its README) and paste the final `terraform plan` line.
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.

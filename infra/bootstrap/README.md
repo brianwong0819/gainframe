@@ -37,7 +37,7 @@ terraform apply bootstrap.tfplan
 # 2. Remove the override and move the state into the new bucket.
 Remove-Item backend_override.tf, bootstrap.tfplan
 terraform init -migrate-state          # answer "yes"
-Remove-Item terraform.tfstate, terraform.tfstate.backup
+Remove-Item terraform.tfstate
 
 # 3. Verify.
 terraform plan                         # expect: No changes.
