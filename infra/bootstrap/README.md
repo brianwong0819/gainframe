@@ -17,7 +17,7 @@ Terraform 1.16+ and AWS CLI 2.32+ (`terraform version`, `aws --version`), signed
 
 ## First apply (once)
 
-The backend bucket does not exist yet, so the first run uses local state and then moves it into the bucket. PowerShell, from this folder (arguments containing `=` and `.` are quoted, or PowerShell splits them):
+The backend bucket does not exist yet, so the first run uses local state and then moves it into the bucket. PowerShell, from `C:\dev\gainframe\infra\bootstrap` (arguments containing `=` and `.` are quoted, or PowerShell splits them):
 
 ```powershell
 $env:AWS_PROFILE = "gainframe"

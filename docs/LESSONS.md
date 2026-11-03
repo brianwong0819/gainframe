@@ -14,6 +14,7 @@ Short, imperative rules distilled from the lessons below. Each one links to the 
 - Before planning steps against a vendor console or account model (AWS, Neon, GitHub), read the vendor's current docs for that exact flow; do not plan from memory. ([L-004](#l-004--2026-11-02--infra--m0-03-was-planned-against-the-old-aws-account-model))
 - When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
 - Quote every PowerShell argument that contains `=` or `.` after a leading `-` (`terraform plan "-out=x.tfplan"`); bw runs commands in PowerShell, not bash. ([L-010](#l-010--2026-11-03--infra--a-terraform-flag-broke-in-powershell))
+- Every command block written for bw starts with `cd` to an absolute path (`cd C:\dev\gainframe`), and every download step names its fallback when the network fails. ([L-011](#l-011--2026-11-03--infra--the-dev-first-apply-steps-failed-on-bws-machine))
 - Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
@@ -34,6 +35,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-011 · 2026-11-03 · infra · The dev first-apply steps failed on bw's machine
+- **What happened:** following `infra/envs/dev/README.md`, `pnpm build` failed with "Command build not found" and `cd infra/envs/dev` failed, because the terminal was in `C:\Users\brian`. Then `terraform init` and `curl.exe` to CloudFront failed with connection resets over IPv6. Found by bw during the M0-08 apply.
+- **Root cause:** the steps said "from the repository root" without a `cd` command, and were checked only in the cloud container (bash, a different network). Nothing covered a provider download failing.
+- **Fix:** the README now starts with `cd C:\dev\gainframe` and `git pull`, uses `curl.exe -4`, and documents installing providers with `terraform init "-plugin-dir=..."`; the bootstrap README names its folder.
+- **Prevention:** rule added under "Active rules": every command block for bw starts with `cd` to an absolute path and gives the fallback for each download.
+- **Status:** documented
 
 ### L-010 · 2026-11-03 · infra · A Terraform flag broke in PowerShell
 - **What happened:** the M0-07 first-apply steps used `terraform plan -out=bootstrap.tfplan`; in PowerShell it failed with "Too many command line arguments". Found by bw during the apply.
