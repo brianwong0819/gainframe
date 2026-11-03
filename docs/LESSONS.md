@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Commit as bw, never as Claude; the SessionStart hook sets the identity and `/finish-task` checks it. ([L-009](#l-009--2026-11-03--process--commits-were-authored-by-claude))
 - Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
 - Refer to an ADR by number only once it exists; for a planned ADR, name its topic. ([L-007](#l-007--2026-11-02--process--two-documents-claimed-adr-0001))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
@@ -32,6 +33,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-009 · 2026-11-03 · process · Commits were authored by "Claude"
+- **What happened:** commits from cloud sessions (PR #2, #4) appear on GitHub with author "Claude"; bw wants to be the author of every commit.
+- **Root cause:** cloud containers ship a global git identity of `Claude <noreply@anthropic.com>`, and no rule or setting overrode it per repository.
+- **Fix:** PR adding the SessionStart hook and the convention. Published history on `main` is left as is (no rewriting).
+- **Prevention:** `.claude/hooks/git-identity.mjs` sets the repo-local identity at every session start; `docs/conventions.md` states the rule; `/finish-task` verifies authors before pushing.
+- **Status:** guarded (hook)
 
 ### L-008 · 2026-11-02 · process · A PR shipped from an auto-generated branch name
 - **What happened:** the M0-05 PR (#4) used the cloud session's branch `claude/project-thread-8yxg8c`; bw asked why the name was so odd.

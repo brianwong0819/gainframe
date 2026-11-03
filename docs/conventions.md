@@ -42,6 +42,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 
 - Branch: `m<milestone>/<nn>-<slug>` (e.g. `m1/05-set-logger`); work outside a numbered task uses `m<milestone>/<slug>` (e.g. `m0/review-maintainability`). Never commit to `main`.
 - Commits: Conventional Commits (`feat(workout): …`, `fix(sync): …`, `chore`, `docs`, `test`, `refactor`, `ci`, `infra`). One logical change per commit.
+- Commit author is always bw: `Wong Rong Sheng <59221587+brianwong0819@users.noreply.github.com>`. Claude is credited only through a `Co-Authored-By:` trailer, never as author or committer. The SessionStart hook `.claude/hooks/git-identity.mjs` sets this repo-local identity; before the first commit of a session, confirm it with `git config user.email`.
 - PR title: `<type>(<scope>): <summary> [M1-05]`. Squash-merge.
 - Lockfile changes only with a matching `package.json` change.
 
