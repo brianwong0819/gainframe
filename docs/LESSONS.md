@@ -13,6 +13,7 @@ Short, imperative rules distilled from the lessons below. Each one links to the 
 - Verify a claim with the command that proves it (`git status`, `pnpm check`, `--version`) and quote its output; a file listing is not proof. ([L-002](#l-002--2026-10-30--process--reported-a-repo-move-as-correct-when-git-was-missing))
 - Before planning steps against a vendor console or account model (AWS, Neon, GitHub), read the vendor's current docs for that exact flow; do not plan from memory. ([L-004](#l-004--2026-11-02--infra--m0-03-was-planned-against-the-old-aws-account-model))
 - When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
+- Quote every PowerShell argument that contains `=` or `.` after a leading `-` (`terraform plan "-out=x.tfplan"`); bw runs commands in PowerShell, not bash. ([L-010](#l-010--2026-11-03--infra--a-terraform-flag-broke-in-powershell))
 - Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
@@ -33,6 +34,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-010 · 2026-11-03 · infra · A Terraform flag broke in PowerShell
+- **What happened:** the M0-07 first-apply steps used `terraform plan -out=bootstrap.tfplan`; in PowerShell it failed with "Too many command line arguments". Found by bw during the apply.
+- **Root cause:** PowerShell splits an unquoted argument that starts with `-` at the `.`, so Terraform received two arguments. The steps were checked with bash in the cloud container, not PowerShell.
+- **Fix:** PR for M0-07 quotes the argument in `infra/bootstrap/README.md`.
+- **Prevention:** rule added under "Active rules": quote `-flag=value.ext` arguments in every PowerShell command given to bw.
+- **Status:** documented
 
 ### L-009 · 2026-11-02 · process · Plan and code problems surfaced in a batch
 - **What happened:** the maintainability review before M0-06 found a dozen issues at once (no logging design, an alarm that could never fire, an ADR number collision, a `.env` deny gap). bw asked for regular, proactive reviews so problems do not pile up until late.
