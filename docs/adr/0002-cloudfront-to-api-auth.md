@@ -1,6 +1,6 @@
 # ADR-0002: CloudFront reaches the API through origin access control
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-03
 
 ## Context
