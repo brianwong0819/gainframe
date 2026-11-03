@@ -3,7 +3,7 @@
 ## Principles
 
 - **Everything in Terraform.** The console is for reading, plus the one-off account setup in ROADMAP M0-03. If you clicked something, import it or delete it.
-- **CI applies, humans review.** PRs get a `terraform plan` comment; `main` applies to dev; prod needs bw's approval in GitHub Environments. No local `apply` except `infra/bootstrap` (bw, once).
+- **CI applies, humans review.** PRs get a `terraform plan` comment; `main` applies to dev; prod needs bw's approval in GitHub Environments. No local `apply` except `infra/bootstrap` and the first apply of `infra/envs/dev` before CD exists (bw, once each).
 - **No long-lived AWS keys.** GitHub Actions uses OIDC roles; bw uses `aws login` (short-lived credentials via the AWS Builder ID). See "Account structure".
 - **Cost guardrail:** only always-free or pay-per-request services. Forbidden: NAT gateway, RDS/Aurora, ALB/NLB, EC2, ECS/EKS, ElastiCache, OpenSearch, provisioned concurrency, KMS customer keys (unless an ADR justifies the $1/month), CloudWatch dashboards beyond the free tier.
 
@@ -22,8 +22,9 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 
 - `infra/bootstrap` — state bucket `gainframe-tfstate` (versioned, SSE-S3, TLS only, S3 native locking via `use_lockfile`), GitHub OIDC provider, `gainframe-ci-plan` (read-only, `pull_request` events) and `gainframe-ci-apply` (`main` only) roles. Trust policies pinned to `repo:brianwong0819/gainframe`. Applied by hand; its own state lives in the bucket under `bootstrap/`. Details and first-run steps: [infra/bootstrap/README.md](../infra/bootstrap/README.md).
 - **State:** every stack uses the S3 backend in `gainframe-tfstate` with key `<stack>/terraform.tfstate` (`envs/dev` → `dev/terraform.tfstate`), `use_lockfile = true`, `encrypt = true`.
-- `infra/modules/*` — `site` (S3 + CloudFront), `api` (Lambda + Function URL + log group), `auth` (Cognito), `storage` (photos bucket, 30-day lifecycle), `scheduler` (EventBridge Scheduler), `monitoring` (alarms, budget).
-- `infra/envs/{dev,prod}` — thin: call modules with env-specific variables.
+- `infra/modules/*` — `site` (S3 + CloudFront with two origins, both behind origin access control; [ADR-0002](adr/0002-cloudfront-to-api-auth.md)), `api` (Lambda zip + Function URL + log group + SSM parameters), `auth` (Cognito), `storage` (photos bucket, 30-day lifecycle), `scheduler` (EventBridge Scheduler), `monitoring` (alarms, budget).
+- `infra/envs/{dev,prod}` — thin: call modules with env-specific variables. First-apply steps: [infra/envs/dev/README.md](../infra/envs/dev/README.md).
+- **API bundle:** `pnpm --filter @gainframe/api build` runs rolldown and writes one ES module (`apps/api/dist/lambda/index.mjs`, dependencies included); the `api` module zips that folder with the `archive` provider, so build before `terraform plan`. Lambda runs `nodejs24.x` on `arm64`.
 
 ## Conventions
 
@@ -33,7 +34,7 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 - Least-privilege IAM: one role per Lambda, scoped to its own resources. No `*` actions on `*` resources.
 - Log groups always have retention (14 days dev, 30 days prod).
 - Monitoring (M2-08): a metric filter on `level=error` lines feeding an alarm, Lambda `Errors` and `Throttles` alarms, one SNS topic with an email subscription, saved Logs Insights queries (`aws_cloudwatch_query_definition`). Logging design: "Observability" in `docs/architecture.md`.
-- Secrets in SSM Parameter Store `SecureString` under `/gainframe/<env>/…`; Terraform creates the parameter with a placeholder and `lifecycle { ignore_changes = [value] }`; bw sets the real value.
+- Secrets in SSM Parameter Store `SecureString` under `/gainframe/<env>/…`. Terraform creates the parameter with a write-only placeholder (`value_wo`, never stored in state); bw sets the real value with `aws ssm put-parameter --overwrite`. Lambda reads the value at cold start; its environment holds only the parameter name.
 
 ## Workflows (GitHub Actions)
 

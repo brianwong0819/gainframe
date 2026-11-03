@@ -5,15 +5,18 @@
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch src/dev.ts",
     "typecheck": "tsc",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "rolldown -c rolldown.config.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-ssm": "3.1161.0",
+    "@hono/aws-lambda": "1.0.1",
     "hono": "4.13.14",
     "pg": "8.23.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@hono/node-server": "2.1.5",
-    "@types/pg": "8.23.1"
+    "@types/pg": "8.23.1",
+    "rolldown": "1.2.16"
   }
 }

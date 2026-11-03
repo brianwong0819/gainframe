@@ -76,7 +76,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | push_subscriptions | endpoint, keys |
 | ai_usage | user_id, local_date, feature, calls, tokens (server-only; enforces daily caps) |
 
-## Sync rules (details in ADR-0002, written in M0-14)
+## Sync rules (details in ADR-0003, written in M0-14)
 
 - Local first: every write goes to Dexie and an outbox row in one transaction.
 - Push: batches of outbox rows; server upserts by `id`; **last writer wins on `updated_at`**; a `deleted_at` is just another update.
@@ -99,7 +99,7 @@ Goal: any problem bw sees on the phone can be traced to a log line in minutes, w
 
 ## Known gotchas (verify, then record the outcome in an ADR)
 
-- **CloudFront → Lambda Function URL auth.** With OAC on a Function URL, POST/PUT bodies need an `x-amz-content-sha256` header from the client. The alternative is `AuthType NONE` + a secret custom header added by CloudFront and checked in Hono. Decide in M0-08.
+- **CloudFront → Lambda Function URL auth** (decided in [ADR-0002](adr/0002-cloudfront-to-api-auth.md)): origin access control. CloudFront overwrites `Authorization`, so the client sends its token in `x-gainframe-token`, and every `PUT`/`POST` carries `x-amz-content-sha256`.
 - **iOS PWA.** Background JS is suspended when locked; Web Push only works for home-screen apps after a user gesture; audio must be unlocked by a tap; OAuth redirects in standalone mode need testing.
 - **Next.js static export** limits — see CLAUDE.md.
 - **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda. `GET /api/health` queries the database, so an external uptime check would keep the compute awake and spend free-tier compute hours.
