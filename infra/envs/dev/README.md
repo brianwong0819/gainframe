@@ -12,9 +12,12 @@ A Neon project for the API's database: in the [Neon console](https://console.neo
 
 ## First apply (once)
 
-PowerShell, from the repository root. Arguments containing `=` and `.` are quoted, or PowerShell splits them.
+PowerShell. Arguments containing `=` and `.` are quoted, or PowerShell splits them.
 
 ```powershell
+cd C:\dev\gainframe
+git switch main
+git pull
 $env:AWS_PROFILE = "gainframe"
 aws login --profile gainframe
 
@@ -40,12 +43,31 @@ aws s3 sync ../../../apps/web/out "s3://$(terraform output -raw site_bucket)" --
 
 ## Verify
 
+From `C:\dev\gainframe\infra\envs\dev`. `-4` forces IPv4 (see "Connection reset" below).
+
 ```powershell
 $site = terraform output -raw site_url
-curl.exe -i "$site/"             # 200, the empty page
-curl.exe -i "$site/api/health"   # 200, {"status":"ok","database":"connected"}
-curl.exe -i "$(terraform output -raw api_function_url)api/health"   # 403: only CloudFront may call the function
-terraform plan                   # No changes.
+curl.exe -4 -i "$site/"             # 200, the empty page
+curl.exe -4 -i "$site/api/health"   # 200, {"status":"ok","database":"connected"}
+curl.exe -4 -i "$(terraform output -raw api_function_url)api/health"   # 403: only CloudFront may call the function
+terraform plan                      # No changes.
 ```
+
+## Connection reset during `terraform init` or `curl.exe`
+
+On the owner's home network some IPv6 connections to HashiCorp and CloudFront are reset (`An existing connection was forcibly closed by the remote host`, `curl: (35) ... Connection was reset`). Browsers fall back to IPv4 and are not affected. For `curl.exe`, add `-4`. For `terraform init`, install the providers from a local folder instead of the registry; `init` still checks every file against the hashes in `.terraform.lock.hcl`:
+
+```powershell
+cd C:\dev\gainframe\infra\envs\dev
+$mirror = "$env:USERPROFILE\tf-mirror"
+$hc = "$mirror\registry.terraform.io\hashicorp"
+New-Item -ItemType Directory -Force "$hc\archive" | Out-Null
+# The AWS provider that infra/bootstrap already downloaded (same version, 6.70.0).
+Copy-Item -Recurse -Force ..\..\bootstrap\.terraform\providers\registry.terraform.io\hashicorp\aws "$hc\aws"
+curl.exe -4 -fL -o "$hc\archive\terraform-provider-archive_2.8.1_windows_amd64.zip" "https://releases.hashicorp.com/terraform-provider-archive/2.8.1/terraform-provider-archive_2.8.1_windows_amd64.zip"
+terraform init "-plugin-dir=$mirror"
+```
+
+When a provider version in the lock file changes, add that version to the folder the same way.
 
 The connection string never appears in Terraform: the parameter is created with a write-only placeholder, which Terraform does not store in its state.

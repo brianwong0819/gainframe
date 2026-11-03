@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-09 API logging and error handling (after bw's first apply of dev)
+- **Current task:** none; paused after M0-08 at bw's request (next: M0-09 API logging and error handling)
 - **Last updated:** 2026-11-03
 
 ## Where I stopped
@@ -24,9 +24,10 @@ M0-07 (2026-11-03, PR `m0/07-terraform-bootstrap`): `infra/bootstrap` creates th
 
 M0-08 (2026-11-03, PR `m0/08-dev-infrastructure`): `infra/modules/site` (private S3 bucket + one CloudFront distribution, `/api/*` to the function URL) and `infra/modules/api` (Lambda `nodejs24.x` arm64 zip, function URL with `AWS_IAM`, 14-day log group, SSM `SecureString` `/gainframe/dev/database-url` with a write-only placeholder); `infra/envs/dev` wires them with state key `dev/terraform.tfstate`. Both origins use origin access control ([ADR-0002](adr/0002-cloudfront-to-api-auth.md)): the client must send its token in `x-gainframe-token` and hash `PUT`/`POST` bodies. `apps/api` now builds with rolldown into one ES module (`dist/lambda/index.mjs`); `src/lambda.ts` reads the database URL from SSM at cold start. ADRs for sync, PWA and the iOS timer are renumbered 0003–0005.
 
+M0-08 verified (2026-11-03): bw created the Neon project (dev branch, pooled connection string in SSM) and applied dev by hand (16 resources). Through CloudFront the page returns 200 and `/api/health` returns `{"status":"ok","database":"connected"}`; the function URL itself returns 403; the iPhone opens the site. bw's network resets some IPv6 connections, so `terraform init` there may need the local provider folder in `infra/envs/dev/README.md` (L-011).
+
 ## Blocked on bw
 
-- M0-08 first apply: create the Neon project, then follow `infra/envs/dev/README.md` (apply, set the SSM value, upload the site, run the three `curl.exe` checks).
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
