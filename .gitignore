@@ -23,6 +23,9 @@ next-env.d.ts
 *.tfvars
 !*.tfvars.example
 crash.log
+override.tf
+*_override.tf
+*.tfplan
 
 # testing & tools
 playwright-report/

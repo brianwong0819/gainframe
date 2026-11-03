@@ -20,7 +20,8 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 
 ## Layout
 
-- `infra/bootstrap` — state bucket (versioned, encrypted, S3 native locking via `use_lockfile`), GitHub OIDC provider, `gainframe-ci-plan` (read-only) and `gainframe-ci-apply` roles. Trust policy limited to `repo:brianwong0819/gainframe`.
+- `infra/bootstrap` — state bucket `gainframe-tfstate` (versioned, SSE-S3, TLS only, S3 native locking via `use_lockfile`), GitHub OIDC provider, `gainframe-ci-plan` (read-only, `pull_request` events) and `gainframe-ci-apply` (`main` only) roles. Trust policies pinned to `repo:brianwong0819/gainframe`. Applied by hand; its own state lives in the bucket under `bootstrap/`. Details and first-run steps: [infra/bootstrap/README.md](../infra/bootstrap/README.md).
+- **State:** every stack uses the S3 backend in `gainframe-tfstate` with key `<stack>/terraform.tfstate` (`envs/dev` → `dev/terraform.tfstate`), `use_lockfile = true`, `encrypt = true`.
 - `infra/modules/*` — `site` (S3 + CloudFront), `api` (Lambda + Function URL + log group), `auth` (Cognito), `storage` (photos bucket, 30-day lifecycle), `scheduler` (EventBridge Scheduler), `monitoring` (alarms, budget).
 - `infra/envs/{dev,prod}` — thin: call modules with env-specific variables.
 
