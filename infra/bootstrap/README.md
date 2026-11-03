@@ -17,7 +17,7 @@ Terraform 1.16+ and AWS CLI 2.32+ (`terraform version`, `aws --version`), signed
 
 ## First apply (once)
 
-The backend bucket does not exist yet, so the first run uses local state and then moves it into the bucket. PowerShell, from this folder:
+The backend bucket does not exist yet, so the first run uses local state and then moves it into the bucket. PowerShell, from this folder (arguments containing `=` and `.` are quoted, or PowerShell splits them):
 
 ```powershell
 $env:AWS_PROFILE = "gainframe"
@@ -31,7 +31,7 @@ terraform {
 '@ | Set-Content backend_override.tf
 
 terraform init
-terraform plan -out=bootstrap.tfplan   # review: 14 to add, 0 to change, 0 to destroy
+terraform plan "-out=bootstrap.tfplan" # review: 14 to add, 0 to change, 0 to destroy
 terraform apply bootstrap.tfplan
 
 # 2. Remove the override and move the state into the new bucket.
