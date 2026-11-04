@@ -2,7 +2,7 @@
 
 The dev environment: one CloudFront distribution in front of the static site (S3) and the API (Lambda function URL), plus the API's log group and SSM parameter. Modules: [`site`](../../modules/site), [`api`](../../modules/api). Auth between CloudFront and the API: [ADR-0002](../../../docs/adr/0002-cloudfront-to-api-auth.md).
 
-From M0-10, CI applies this stack on every merge to `main`. Until then, and once only, the owner applies it by hand.
+CI applies this stack on every merge to `main` (`.github/workflows/deploy.yml`, details in "Workflows" in [docs/infra.md](../../../docs/infra.md)), and pull requests get its plan as a comment. The first apply below was done by hand before CD existed; do not apply from a local machine any more. A local `terraform plan` shows `RELEASE` changing to `local`, because only CI passes the `release` variable.
 
 ## Prerequisites
 
