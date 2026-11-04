@@ -16,6 +16,7 @@ Short, imperative rules distilled from the lessons below. Each one links to the 
 - Quote every PowerShell argument that contains `=` or `.` after a leading `-` (`terraform plan "-out=x.tfplan"`); bw runs commands in PowerShell, not bash. ([L-010](#l-010--2026-11-03--infra--a-terraform-flag-broke-in-powershell))
 - Every command block written for bw starts with `cd` to an absolute path (`cd C:\dev\gainframe`), and every download step names its fallback when the network fails. ([L-011](#l-011--2026-11-03--infra--the-dev-first-apply-steps-failed-on-bws-machine))
 - Verify an identity or permission change (trust policy, IAM policy, secret) by exercising it from the real caller, such as a workflow run, not by reading the resource. ([L-012](#l-012--2026-11-04--infra--the-ci-roles-trust-policies-never-matched-githubs-oidc-subject))
+- In scripts, parse AWS CLI results as JSON (`--output json` piped to `jq`); text output repeats values once per page. ([L-013](#l-013--2026-11-04--ci--the-first-deploys-smoke-test-failed-on-cli-output))
 - Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
@@ -36,6 +37,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-013 · 2026-11-04 · ci · The first deploy's smoke test failed on CLI output
+- **What happened:** the first run of `deploy.yml` deployed correctly and found the access line, then failed in `jq`: `aws logs filter-log-events --output text` printed the message and a second line `None`. Found in CI.
+- **Root cause:** the AWS CLI paginates this call by default, and text output prints the queried value once per page. The step was linted but never run, because `workflow_run` workflows only run from `main`.
+- **Fix:** follow-up PR to M0-10 queries with `--output json` and picks the first event with `jq`.
+- **Prevention:** rule added under "Active rules": parse AWS CLI results as JSON (`--output json` + `jq`), never text output.
+- **Status:** documented
 
 ### L-012 · 2026-11-04 · infra · The CI roles' trust policies never matched GitHub's OIDC subject
 - **What happened:** the first workflow to assume `gainframe-ci-plan` (M0-10) failed with "Not authorized to perform sts:AssumeRoleWithWebIdentity". Decoding the token in the job showed the subject `repo:brianwong0819@59221587/gainframe@1439499232:pull_request`; the trust policies from M0-07 expected `repo:brianwong0819/gainframe:pull_request`. Found in CI.
