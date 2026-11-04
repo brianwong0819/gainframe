@@ -9,3 +9,7 @@ output "function_url" {
 output "database_url_parameter" {
   value = aws_ssm_parameter.database_url.name
 }
+
+output "log_group" {
+  value = aws_cloudwatch_log_group.api.name
+}

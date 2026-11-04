@@ -53,6 +53,12 @@ data "aws_iam_policy_document" "ci_apply_trust" {
   }
 }
 
+data "aws_kms_alias" "ssm" {
+  name = "alias/aws/ssm"
+}
+
+data "aws_region" "current" {}
+
 # --- Plan role: pull requests, read-only ---
 
 resource "aws_iam_role" "ci_plan" {
@@ -72,6 +78,27 @@ data "aws_iam_policy_document" "ci_plan" {
     sid       = "StateLock"
     actions   = ["s3:PutObject", "s3:DeleteObject"]
     resources = ["${aws_s3_bucket.state.arn}/*.tflock"]
+  }
+
+  # Refreshing an aws_ssm_parameter calls GetParameter with decryption, and
+  # ReadOnlyAccess has no kms:Decrypt. Allowed only through SSM, only for
+  # /gainframe/* parameters, only with the AWS managed key aws/ssm.
+  statement {
+    sid       = "DecryptProjectParametersViaSsm"
+    actions   = ["kms:Decrypt"]
+    resources = [data.aws_kms_alias.ssm.target_key_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${data.aws_region.current.region}.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:PARAMETER_ARN"
+      values   = ["arn:aws:ssm:${data.aws_region.current.region}:${local.account_id}:parameter/gainframe/*"]
+    }
   }
 
   # ReadOnlyAccess can read any object; a pull request must not be able to

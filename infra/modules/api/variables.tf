@@ -16,3 +16,8 @@ variable "source_dir" {
 variable "log_retention_days" {
   type = number
 }
+
+variable "release" {
+  description = "Git SHA of the deployed build, logged on every line as `release`."
+  type        = string
+}

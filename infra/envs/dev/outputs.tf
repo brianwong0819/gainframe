@@ -15,6 +15,10 @@ output "api_function_url" {
   value       = module.api.function_url
 }
 
+output "api_log_group" {
+  value = module.api.log_group
+}
+
 output "database_url_parameter" {
   value = module.api.database_url_parameter
 }

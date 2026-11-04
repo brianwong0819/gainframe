@@ -20,7 +20,7 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 
 ## Layout
 
-- `infra/bootstrap` — state bucket `gainframe-tfstate` (versioned, SSE-S3, TLS only, S3 native locking via `use_lockfile`), GitHub OIDC provider, `gainframe-ci-plan` (read-only, `pull_request` events) and `gainframe-ci-apply` (`main` only) roles. Trust policies pinned to `repo:brianwong0819/gainframe`. Applied by hand; its own state lives in the bucket under `bootstrap/`. Details and first-run steps: [infra/bootstrap/README.md](../infra/bootstrap/README.md).
+- `infra/bootstrap` — state bucket `gainframe-tfstate` (versioned, SSE-S3, TLS only, S3 native locking via `use_lockfile`), GitHub OIDC provider, `gainframe-ci-plan` (read-only, `pull_request` events) and `gainframe-ci-apply` (`main` only) roles. Trust policies pinned to the repository by its immutable OIDC subject `repo:brianwong0819@59221587/gainframe@1439499232:…` (owner and repository IDs; GitHub sends this form, not `repo:brianwong0819/gainframe:…`). Applied by hand; its own state lives in the bucket under `bootstrap/`. Details and first-run steps: [infra/bootstrap/README.md](../infra/bootstrap/README.md).
 - **State:** every stack uses the S3 backend in `gainframe-tfstate` with key `<stack>/terraform.tfstate` (`envs/dev` → `dev/terraform.tfstate`), `use_lockfile = true`, `encrypt = true`.
 - `infra/modules/*` — `site` (S3 + CloudFront with two origins, both behind origin access control; [ADR-0002](adr/0002-cloudfront-to-api-auth.md)), `api` (Lambda zip + Function URL + log group + SSM parameters), `auth` (Cognito), `storage` (photos bucket, 30-day lifecycle), `scheduler` (EventBridge Scheduler), `monitoring` (alarms, budget).
 - `infra/envs/{dev,prod}` — thin: call modules with env-specific variables. First-apply steps: [infra/envs/dev/README.md](../infra/envs/dev/README.md).
@@ -40,9 +40,17 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | PR, push to main | install, lint, typecheck, unit + integration tests (Postgres service), build, e2e |
-| `plan.yml` | PR touching `infra/**` | `terraform plan` for dev, posts the plan as a PR comment |
-| `deploy.yml` | push to main | build → migrate dev DB → `terraform apply` dev → upload site → invalidate CloudFront; then waits for approval → same for prod |
+| `ci.yml` | PR, push to main | install, lint, typecheck, unit + integration tests (Postgres service), build; `terraform fmt -check` and `validate` for every stack |
+| `plan.yml` | PR touching `infra/**`, `apps/api/**`, `packages/shared/**` or the lockfile | builds the API bundle, `terraform plan` for dev as `gainframe-ci-plan`, posts the plan as a PR comment (one comment, updated on each push; the account ID replaced) |
+| `deploy.yml` | CI succeeded on a push to main (`workflow_run`) | build with `RELEASE` = the commit SHA → `terraform apply` dev as `gainframe-ci-apply` → upload the site to S3 → invalidate CloudFront → smoke test; later: migrate the dev DB (M2-01), then prod after approval (M2-07) |
+
+Deploy details:
+
+- **Release.** The commit SHA reaches the Lambda environment as `RELEASE` (the `release` Terraform variable; a local run reports `local`) and the web bundle as `NEXT_PUBLIC_RELEASE`, rendered as `<meta name="release">`.
+- **Site upload.** Hashed assets under `_next/static` are uploaded first with `Cache-Control: public, max-age=31536000, immutable`; everything else with `no-cache`, so browsers revalidate HTML. Old hashed assets are removed only after the invalidation has completed.
+- **Smoke test.** The page must carry the new release; one `/api/health` call's `x-request-id` must find its access line in the API log group within two minutes, with the same `release`.
+- **Account ID.** Workflows build role ARNs from the `AWS_ACCOUNT_ID` repository secret. GitHub masks it in logs; the plan comment replaces it explicitly, because comments are not masked.
+- **Plan role and SSM.** Refreshing an `aws_ssm_parameter` decrypts it, so `gainframe-ci-plan` has `kms:Decrypt` on the `aws/ssm` key, only through SSM and only for `/gainframe/*` parameters. Only collaborators can trigger it: fork pull requests get no OIDC token.
 
 Actions are pinned to a full commit SHA. Workflow permissions default to `contents: read`; jobs add only what they need (`id-token: write` for OIDC, `pull-requests: write` for plan comments).
 

@@ -75,6 +75,7 @@ resource "aws_lambda_function" "api" {
     variables = {
       DATABASE_URL_PARAMETER = aws_ssm_parameter.database_url.name
       NODE_OPTIONS           = "--enable-source-maps"
+      RELEASE                = var.release
     }
   }
 

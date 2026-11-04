@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-09 done (next: M0-10 CD, waiting for bw to say continue)
+- **Current task:** none; M0-10 done (next: M0-11 design tokens, waiting for bw to say continue)
 - **Last updated:** 2026-11-04
 
 ## Where I stopped
@@ -27,6 +27,8 @@ M0-08 (2026-11-03, PR `m0/08-dev-infrastructure`): `infra/modules/site` (private
 M0-08 verified (2026-11-03): bw created the Neon project (dev branch, pooled connection string in SSM) and applied dev by hand (16 resources). Through CloudFront the page returns 200 and `/api/health` returns `{"status":"ok","database":"connected"}`; the function URL itself returns 403; the iPhone opens the site. bw's network resets some IPv6 connections, so `terraform init` there may need the local provider folder in `infra/envs/dev/README.md` (L-011).
 
 M0-09 (2026-11-04, PR `m0/09-api-logging`): `apps/api/src/log.ts` writes JSON lines (`level`, `msg`, `release`, `requestId`, primitive fields only) to stdout; tests inject a `write` function and assert on the lines. One middleware sets the request ID (the Lambda `awsRequestId`, else a random UUID), returns it as `x-request-id` and logs one access line per request (method, route pattern, status, duration). `app.notFound` / `app.onError` return `apiErrorSchema` from `packages/shared`; unexpected errors are logged once with their stack and the response never carries the error message. `RELEASE` is read from the environment (default `local`); CD stamps it in M0-10. ESLint `no-restricted-properties` blocks `process.stdout` / `process.stderr` in `apps/` and `packages/` outside the logger. The CloudWatch Logs Insights check moved into M0-10's Verify, because nothing deploys this code before CD.
+
+M0-10 (2026-11-04, PR `m0/10-cd`): `plan.yml` posts the dev plan on pull requests that touch `infra/`, the API, `packages/shared` or the lockfile (role `gainframe-ci-plan`, account ID replaced in the comment). `deploy.yml` runs after CI succeeds on `main` (`workflow_run`): build, `terraform apply` dev, S3 upload (hashed assets immutable, the rest `no-cache`), CloudFront invalidation, then a smoke test that checks the page's `<meta name="release">` and finds the `/api/health` access line in CloudWatch with the same `release`. `RELEASE` is the commit SHA in the Lambda environment and `NEXT_PUBLIC_RELEASE` in the web bundle. CI runs `terraform fmt -check` and `validate`. The plan role gained `kms:Decrypt` through SSM for `/gainframe/*` (bootstrap change, applied by bw). Role ARNs come from the `AWS_ACCOUNT_ID` repository secret. Verify: the first deploy's smoke test; result in the PR conversation.
 
 ## Blocked on bw
 

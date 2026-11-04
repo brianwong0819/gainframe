@@ -20,6 +20,12 @@ provider "aws" {
   }
 }
 
+variable "release" {
+  description = "Git SHA of the build being deployed; CD passes it, a local run reports `local`."
+  type        = string
+  default     = "local"
+}
+
 locals {
   name = "gainframe-dev"
 }
@@ -31,6 +37,7 @@ module "api" {
   ssm_prefix         = "/gainframe/dev"
   source_dir         = "${path.root}/../../../apps/api/dist/lambda"
   log_retention_days = 14
+  release            = var.release
 }
 
 module "site" {
