@@ -15,6 +15,7 @@ Short, imperative rules distilled from the lessons below. Each one links to the 
 - When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
 - Quote every PowerShell argument that contains `=` or `.` after a leading `-` (`terraform plan "-out=x.tfplan"`); bw runs commands in PowerShell, not bash. ([L-010](#l-010--2026-11-03--infra--a-terraform-flag-broke-in-powershell))
 - Every command block written for bw starts with `cd` to an absolute path (`cd C:\dev\gainframe`), and every download step names its fallback when the network fails. ([L-011](#l-011--2026-11-03--infra--the-dev-first-apply-steps-failed-on-bws-machine))
+- Verify an identity or permission change (trust policy, IAM policy, secret) by exercising it from the real caller, such as a workflow run, not by reading the resource. ([L-012](#l-012--2026-11-04--infra--the-ci-roles-trust-policies-never-matched-githubs-oidc-subject))
 - Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
 
 ## How to write a lesson
@@ -35,6 +36,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-012 · 2026-11-04 · infra · The CI roles' trust policies never matched GitHub's OIDC subject
+- **What happened:** the first workflow to assume `gainframe-ci-plan` (M0-10) failed with "Not authorized to perform sts:AssumeRoleWithWebIdentity". Decoding the token in the job showed the subject `repo:brianwong0819@59221587/gainframe@1439499232:pull_request`; the trust policies from M0-07 expected `repo:brianwong0819/gainframe:pull_request`. Found in CI.
+- **Root cause:** the trust conditions were written from the documented legacy subject format, and M0-07's Verify checked only that the roles existed, not that a workflow could assume them. GitHub sends the immutable form (owner and repository IDs) for this repository.
+- **Fix:** PR for M0-10 pins both trust policies to the immutable subject.
+- **Prevention:** the plan workflow assumes the plan role on every infrastructure pull request, and the deploy assumes the apply role on every merge, so a trust mismatch now fails a check. Rule added under "Active rules": verify an identity or permission change by exercising it from the real caller, not by reading the resource.
+- **Status:** guarded
 
 ### L-011 · 2026-11-03 · infra · The dev first-apply steps failed on bw's machine
 - **What happened:** following `infra/envs/dev/README.md`, `pnpm build` failed with "Command build not found" and `cd infra/envs/dev` failed, because the terminal was in `C:\Users\brian`. Then `terraform init` and `curl.exe` to CloudFront failed with connection resets over IPv6. Found by bw during the M0-08 apply.
