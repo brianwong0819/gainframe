@@ -99,10 +99,11 @@ jobs:
           echo "Request ID: ${request_id}"
           since=$(( ($(date +%s) - 300) * 1000 ))
           for attempt in $(seq 1 24); do
+            # JSON output: the CLI paginates, and text output prints one value per page.
             line=$(aws logs filter-log-events --log-group-name "${LOG_GROUP}" --start-time "${since}" \
               --filter-pattern "{ \$.requestId = \"${request_id}\" && \$.msg = \"request\" }" \
-              --query 'events[0].message' --output text)
-            if [ -n "${line}" ] && [ "${line}" != "None" ]; then
+              --query 'events[].message' --output json | jq -r '.[0] // empty')
+            if [ -n "${line}" ]; then
               echo "${line}"
               logged=$(jq -r '.release' <<< "${line}")
               if [ "${logged}" != "${RELEASE}" ]; then
