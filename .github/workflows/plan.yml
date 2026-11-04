@@ -48,6 +48,16 @@ jobs:
         with:
           terraform_version: 1.16.7
           terraform_wrapper: false
+      - name: Debug OIDC claims (temporary)
+        env:
+          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          echo "account id length: ${#ACCOUNT_ID}"
+          token=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r .value)
+          payload=$(cut -d. -f2 <<< "${token}" | tr '_-' '/+')
+          while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="${payload}="; done
+          base64 -d <<< "${payload}" | jq '{sub, aud, iss, event_name, ref}'
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/gainframe-ci-plan
