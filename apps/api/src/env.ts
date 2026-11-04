@@ -33,3 +33,11 @@ export async function loadLambdaEnv(
   }
   return parseEnv({ DATABASE_URL: await getParameter(result.data.DATABASE_URL_PARAMETER) })
 }
+
+// The git SHA of the deployed build, included in every log line. CD stamps it
+// into the Lambda environment (M0-10); local runs report `local`.
+const releaseSchema = z.object({ RELEASE: z.string().min(1).default('local') })
+
+export function readRelease(source: Record<string, string | undefined>): string {
+  return releaseSchema.parse(source).RELEASE
+}

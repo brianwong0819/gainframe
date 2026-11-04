@@ -37,6 +37,18 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // Application code logs through apps/api/src/log.ts or apps/web/src/diagnostics.
+    files: ['apps/**', 'packages/**'],
+    ignores: ['apps/api/src/log.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        { object: 'process', property: 'stdout', message: 'Log through apps/api/src/log.ts.' },
+        { object: 'process', property: 'stderr', message: 'Log through apps/api/src/log.ts.' },
+      ],
+    },
+  },
   ...nextVitals.map((config) => ({ ...config, files: webFiles })),
   {
     files: webFiles,

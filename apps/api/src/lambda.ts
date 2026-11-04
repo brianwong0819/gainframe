@@ -5,7 +5,8 @@ import { handle } from '@hono/aws-lambda'
 
 import { createApp } from './app.ts'
 import { createPool, pingDatabase } from './db/client.ts'
-import { loadLambdaEnv } from './env.ts'
+import { loadLambdaEnv, readRelease } from './env.ts'
+import { createLogger } from './log.ts'
 
 // Bounds the cold-start read so a slow SSM call fails instead of using up the function timeout.
 const SSM_TIMEOUT_MS = 3000
@@ -23,7 +24,8 @@ async function getParameter(name: string): Promise<string> {
   return Parameter.Value
 }
 
+const log = createLogger({ release: readRelease(process.env) })
 const env = await loadLambdaEnv(process.env, getParameter)
-const pool = createPool(env.DATABASE_URL)
+const pool = createPool(env.DATABASE_URL, log)
 
-export const handler = handle(createApp({ pingDatabase: () => pingDatabase(pool) }))
+export const handler = handle(createApp({ log, pingDatabase: () => pingDatabase(pool) }))

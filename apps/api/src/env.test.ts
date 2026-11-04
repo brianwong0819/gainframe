@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { loadLambdaEnv, parseEnv } from './env.ts'
+import { loadLambdaEnv, parseEnv, readRelease } from './env.ts'
 
 describe('parseEnv', () => {
   it('accepts a postgres connection string', () => {
@@ -53,5 +53,15 @@ describe('loadLambdaEnv', () => {
         Promise.resolve('placeholder'),
       ),
     ).rejects.toThrow(/DATABASE_URL/)
+  })
+})
+
+describe('readRelease', () => {
+  it('returns the git SHA from RELEASE', () => {
+    expect(readRelease({ RELEASE: '3f2c1ab' })).toBe('3f2c1ab')
+  })
+
+  it('reports local when RELEASE is not set', () => {
+    expect(readRelease({})).toBe('local')
   })
 })
