@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; paused after M0-08 at bw's request (next: M0-09 API logging and error handling)
-- **Last updated:** 2026-11-03
+- **Current task:** none; M0-09 done (next: M0-10 CD, waiting for bw to say continue)
+- **Last updated:** 2026-11-04
 
 ## Where I stopped
 
@@ -26,6 +26,8 @@ M0-08 (2026-11-03, PR `m0/08-dev-infrastructure`): `infra/modules/site` (private
 
 M0-08 verified (2026-11-03): bw created the Neon project (dev branch, pooled connection string in SSM) and applied dev by hand (16 resources). Through CloudFront the page returns 200 and `/api/health` returns `{"status":"ok","database":"connected"}`; the function URL itself returns 403; the iPhone opens the site. bw's network resets some IPv6 connections, so `terraform init` there may need the local provider folder in `infra/envs/dev/README.md` (L-011).
 
+M0-09 (2026-11-04, PR `m0/09-api-logging`): `apps/api/src/log.ts` writes JSON lines (`level`, `msg`, `release`, `requestId`, primitive fields only) to stdout; tests inject a `write` function and assert on the lines. One middleware sets the request ID (the Lambda `awsRequestId`, else a random UUID), returns it as `x-request-id` and logs one access line per request (method, route pattern, status, duration). `app.notFound` / `app.onError` return `apiErrorSchema` from `packages/shared`; unexpected errors are logged once with their stack and the response never carries the error message. `RELEASE` is read from the environment (default `local`); CD stamps it in M0-10. ESLint `no-restricted-properties` blocks `process.stdout` / `process.stderr` in `apps/` and `packages/` outside the logger. The CloudWatch Logs Insights check moved into M0-10's Verify, because nothing deploys this code before CD.
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
@@ -38,5 +40,4 @@ M0-08 verified (2026-11-03): bw created the Neon project (dev branch, pooled con
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.
-- The API test for an unreachable database prints its error line to the test output; M0-09's logger should let tests capture log lines instead.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`. The rolldown bundle can now include `@gainframe/shared`; move the shape there when the web app first consumes an API response.

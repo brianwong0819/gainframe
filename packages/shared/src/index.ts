@@ -1,3 +1,3 @@
 // Public entry of @gainframe/shared: Zod schemas, inferred types and pure domain
-// functions used by both apps. Contents arrive with M1-01.
-export {}
+// functions used by both apps.
+export { type ApiError, apiErrorSchema } from './api-error.ts'

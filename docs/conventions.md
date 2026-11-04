@@ -7,7 +7,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`. ESM only.
 - Types are inferred from Zod schemas in `packages/shared` (`z.infer`). Do not hand-write a type that a schema already describes.
 - Prefer plain functions and plain objects. Classes only where a library expects them (Dexie).
-- Errors: throw typed errors in services; routes map them to the shared error shape `{ error: { code, message } }`. Never swallow an error with an empty `catch`.
+- Errors: throw typed errors in services; `app.onError` maps them to the shared error shape `{ error: { code, message, requestId } }` (`apiErrorSchema` in `packages/shared`). Never swallow an error with an empty `catch`.
 - Naming: `camelCase` values, `PascalCase` types/components, `SCREAMING_SNAKE` for true constants, `kebab-case` file names. DB columns `snake_case`; Drizzle maps them.
 - No barrel files (`index.ts` re-exporting everything) except the public entry of `packages/shared`.
 

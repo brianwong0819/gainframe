@@ -3,14 +3,16 @@ import { serve } from '@hono/node-server'
 
 import { createApp } from './app.ts'
 import { createPool, pingDatabase } from './db/client.ts'
-import { parseEnv } from './env.ts'
+import { parseEnv, readRelease } from './env.ts'
+import { createLogger } from './log.ts'
 
 const port = 8787
 
+const log = createLogger({ release: readRelease(process.env) })
 const env = parseEnv(process.env)
-const pool = createPool(env.DATABASE_URL)
-const app = createApp({ pingDatabase: () => pingDatabase(pool) })
+const pool = createPool(env.DATABASE_URL, log)
+const app = createApp({ log, pingDatabase: () => pingDatabase(pool) })
 
 serve({ fetch: app.fetch, port }, (info) => {
-  process.stdout.write(`API listening on http://localhost:${String(info.port)}/api/health\n`)
+  log.info('api listening', { url: `http://localhost:${String(info.port)}/api/health` })
 })
