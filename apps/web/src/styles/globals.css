@@ -1,0 +1,117 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/*
+ * Tailwind's theme is replaced, not extended: only token-backed utilities
+ * exist (bg-surface, text-ink-2, p-16, gap-28, rounded-group, text-title,
+ * font-num, ease-pop), so a value outside the design system has no class.
+ * `inline` makes utilities reference the variables in tokens.css, so dark
+ * mode and data-theme switch them at runtime; `reference` stops Tailwind
+ * from emitting its own copies, so tokens.css stays the only definition.
+ */
+@theme inline reference {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-wash: var(--accent-wash);
+  --color-short: var(--short);
+  --color-short-wash: var(--short-wash);
+  --color-scrim: var(--scrim);
+  --color-chalk: var(--chalk);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-*: initial;
+  --font-ui: var(--font-ui);
+  --font-num: var(--font-num);
+  --default-font-family: var(--font-ui);
+
+  --spacing: initial;
+  --spacing-*: initial;
+  --spacing-0: 0px;
+  --spacing-4: var(--space-4);
+  --spacing-8: var(--space-8);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+  --spacing-20: var(--space-20);
+  --spacing-28: var(--space-28);
+  --spacing-40: var(--space-40);
+
+  --radius-*: initial;
+  --radius-ctl: var(--radius-ctl);
+  --radius-group: var(--radius-group);
+  --radius-media: var(--radius-media);
+  --radius-sheet: var(--radius-sheet);
+  --radius-full: calc(infinity * 1px);
+
+  --text-*: initial;
+  --text-title: 30px;
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 650;
+  --text-section: 24px;
+  --text-section--line-height: 1.2;
+  --text-section--letter-spacing: -0.02em;
+  --text-section--font-weight: 650;
+  --text-body: 15px;
+  --text-body--line-height: 1.45;
+  --text-body--font-weight: 400;
+  --text-label: 13px;
+  --text-label--line-height: 1.35;
+  --text-label--font-weight: 500;
+
+  --ease-*: initial;
+  --ease-std: var(--ease-std);
+  --ease-pop: var(--ease-pop);
+  --ease-soft: var(--ease-soft);
+  --ease-press: var(--ease-press);
+  --ease-fade: var(--ease-fade);
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@utility num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/*
+ * Reduced motion: CSS animations end at once and transitions may only fade.
+ * Motion components get the same rule from <MotionProvider>.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity !important;
+    transition-duration: var(--dur-reduced) !important;
+  }
+}

@@ -4,4 +4,4 @@ Sources of UI patterns, components or effects we adapted. Required for anything 
 
 | What we built | Source (URL) | Licence | Notes |
 |---|---|---|---|
-| _none yet_ | | | |
+| Number font (self-hosted latin subset, `apps/web/src/styles/fonts/`) | Martian Mono, https://github.com/evilmartians/mono | SIL OFL 1.1 (`OFL.txt` alongside) | woff2 from Google Fonts |

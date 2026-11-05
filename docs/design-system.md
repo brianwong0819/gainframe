@@ -12,7 +12,7 @@ Source of truth for how Gainframe looks and moves. The clickable reference is `d
 
 ## Tokens
 
-Defined once in `apps/web/src/styles/tokens.css` as CSS variables and exposed to Tailwind's theme. Components use tokens only.
+Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src/styles/globals.css` replaces Tailwind's default theme with these tokens, so only token utilities exist: colours `bg-surface` / `text-ink-2` / `border-line`, spacing `p-16` / `gap-28` (the number is the pixel value), radii `rounded-ctl` / `rounded-group` / `rounded-media` / `rounded-sheet` / `rounded-full`, type `text-title` / `text-section` / `text-body` / `text-label`, numbers `num` (Martian Mono, tabular). A value outside the system has no class. Components use tokens only. `/dev/kitchen-sink` shows every token and preset; it is built for `next dev` and the dev deploy only.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
@@ -42,9 +42,10 @@ Only these. Implemented once in `apps/web/src/ui/motion.ts` (Motion spring confi
 
 Rules:
 - Animate only `transform` and `opacity` (60 fps on iPhone). Ring/line drawing via `stroke-dashoffset` is the one allowed exception.
-- Every pressable thing uses `<Pressable>`: scale 0.96 on press, `pop` on release. Nothing else on plain buttons.
+- Every pressable thing uses `<Pressable>` (`src/ui/pressable.tsx`): scale 0.96 on press, `pop` on release. Nothing else on plain buttons.
+- The CSS `--ease-*` / `--dur-*` curves are sampled from the spring numbers in `motion.ts`; `src/ui/motion.test.ts` fails if the two drift apart.
 - Number changes roll digit by digit, 28 ms stagger.
-- `prefers-reduced-motion: reduce` → every motion becomes a 200 ms fade; celebrations are off.
+- `prefers-reduced-motion: reduce` → every motion becomes a 200 ms fade; celebrations are off. `<MotionProvider>` (in the root layout) makes Motion skip transform animations, `globals.css` limits CSS transitions to opacity, and `<Pressable>` dims to 0.6 instead of scaling.
 
 ## Celebrations (three tiers, only at meaningful moments)
 
