@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-10 done (next: M0-11 design tokens, waiting for bw to say continue)
-- **Last updated:** 2026-11-04
+- **Current task:** none; M0-11 done (next: M0-12 PWA shell, waiting for bw to say continue)
+- **Last updated:** 2026-11-05
 
 ## Where I stopped
 
@@ -30,12 +30,17 @@ M0-09 (2026-11-04, PR `m0/09-api-logging`): `apps/api/src/log.ts` writes JSON li
 
 M0-10 (2026-11-04, PR `m0/10-cd`): `plan.yml` posts the dev plan on pull requests that touch `infra/`, the API, `packages/shared` or the lockfile (role `gainframe-ci-plan`, account ID replaced in the comment). `deploy.yml` runs after CI succeeds on `main` (`workflow_run`): build, `terraform apply` dev, S3 upload (hashed assets immutable, the rest `no-cache`), CloudFront invalidation, then a smoke test that checks the page's `<meta name="release">` and finds the `/api/health` access line in CloudWatch with the same `release`. `RELEASE` is the commit SHA in the Lambda environment and `NEXT_PUBLIC_RELEASE` in the web bundle. CI runs `terraform fmt -check` and `validate`. The plan role gained `kms:Decrypt` through SSM for `/gainframe/*` (bootstrap change, applied by bw). Role ARNs come from the `AWS_ACCOUNT_ID` repository secret. Verified 2026-11-04: the first deploy (merge at 15:01 UTC) served the new release at 15:04, and the `/api/health` access line in CloudWatch carried `release` = the merged SHA; the smoke test then failed on CLI text output (L-013, fixed in `m0/10-smoke-test-output`).
 
+M0-11 (2026-11-05, PR `m0/11-design-tokens`): `apps/web/src/styles/tokens.css` holds every colour (light, dark by system setting, and forced by `data-theme`), spacing, radius, font and timing token; `globals.css` replaces Tailwind 4's theme with them (`@theme inline reference`, so Tailwind emits no copies). Martian Mono is self-hosted through `next/font/local`. `src/ui/motion.ts` holds the std / pop / soft springs and the press / fade tweens; the CSS `linear()` curves in `tokens.css` are checked against them by `motion.test.ts`. `<Pressable>` scales to 0.96 and springs back with `pop`, or dims under Reduce Motion; `<MotionProvider>` sets Motion's `reducedMotion="user"`. Pages named `page.dev.tsx` are built only in `next dev` or with `GAINFRAME_DEV_PAGES=1` (set by the dev deploy), so `/dev/kitchen-sink` never reaches prod. New packages: `motion`, `tailwindcss`, `@tailwindcss/postcss`, `postcss` (all listed in `docs/architecture.md`). Pending: bw's iPhone check of the kitchen sink (light/dark, press feel, Reduce Motion) at `<site>/dev/kitchen-sink.html` on dev.
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
 ## Follow-ups (noticed, not in scope yet)
+
+- Until M1-03 adds the CloudFront route rewrite, the kitchen sink on dev is at `/dev/kitchen-sink.html`, not `/dev/kitchen-sink`.
+- The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when M1-03 builds the tab bar.
 
 - CloudFront has no rewrite for static-export routes yet (`/workout` → `/workout/index.html` or `.html`) and no custom 404; a distribution-wide custom error response would also rewrite API 403s. Add a CloudFront Function when M1-03 adds the first route.
 - No security response headers (CSP, HSTS) on the site yet; add a response headers policy with the PWA shell (M0-12).
