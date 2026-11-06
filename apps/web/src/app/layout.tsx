@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
 import { pwaImageDir, startupImages } from '@/pwa/images'
+import { LaunchScreen } from '@/pwa/launch-screen'
 import { ServiceWorker } from '@/pwa/service-worker'
 import { loadThemeColors } from '@/pwa/theme-colors'
 import { release } from '@/release'
@@ -42,7 +43,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={martianMono.variable}>
       <body>
-        <MotionProvider>{children}</MotionProvider>
+        <div className="status-bar-fill" aria-hidden />
+        <MotionProvider>
+          {children}
+          <LaunchScreen />
+        </MotionProvider>
         <ServiceWorker />
       </body>
     </html>
