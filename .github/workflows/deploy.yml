@@ -91,8 +91,17 @@ jobs:
             echo "::error::the site does not serve release ${RELEASE}"
             exit 1
           fi
-          request_id=$(curl -sSf -o /dev/null -D - "${SITE_URL}/api/health" \
-            | tr -d '\r' | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
+          # Separate steps, not a pipeline: a failing curl inside a pipeline
+          # does not fail the step, and a 503 once passed unnoticed (L-014).
+          status=$(curl -sS -o "${RUNNER_TEMP}/health.json" -D "${RUNNER_TEMP}/health.headers" \
+            -w '%{http_code}' "${SITE_URL}/api/health")
+          cat "${RUNNER_TEMP}/health.json"; echo
+          if [ "${status}" != "200" ] || [ "$(jq -r '.database' "${RUNNER_TEMP}/health.json")" != "connected" ]; then
+            echo "::error::/api/health returned ${status}; the API cannot reach its database"
+            exit 1
+          fi
+          request_id=$(tr -d '\r' < "${RUNNER_TEMP}/health.headers" \
+            | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
           if [ -z "${request_id}" ]; then
             echo "::error::/api/health returned no x-request-id"
             exit 1

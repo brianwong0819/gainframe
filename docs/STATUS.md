@@ -32,6 +32,8 @@ M0-10 (2026-11-04, PR `m0/10-cd`): `plan.yml` posts the dev plan on pull request
 
 M0-11 (2026-11-05, PR `m0/11-design-tokens`): `apps/web/src/styles/tokens.css` holds every colour (light, dark by system setting, and forced by `data-theme`), spacing, radius, font and timing token; `globals.css` replaces Tailwind 4's theme with them (`@theme inline reference`, so Tailwind emits no copies). Martian Mono is self-hosted through `next/font/local`. `src/ui/motion.ts` holds the std / pop / soft springs and the press / fade tweens; the CSS `linear()` curves in `tokens.css` are checked against them by `motion.test.ts`. `<Pressable>` scales to 0.96 and springs back with `pop`, or dims under Reduce Motion; `<MotionProvider>` sets Motion's `reducedMotion="user"`. Pages named `page.dev.tsx` are built only in `next dev` or with `GAINFRAME_DEV_PAGES=1` (set by the dev deploy), so `/dev/kitchen-sink` never reaches prod. New packages: `motion`, `tailwindcss`, `@tailwindcss/postcss`, `postcss` (all listed in `docs/architecture.md`). Pending: bw's iPhone check of the kitchen sink (light/dark, press feel, Reduce Motion) at `<site>/dev/kitchen-sink.html` on dev.
 
+Dev database (2026-11-06): `/api/health` on dev had returned 503 since at least 2026-11-04 (`password authentication failed for user 'neondb_owner'`; the SSM connection string no longer matched Neon), and the smoke test passed anyway (L-014). bw wrote the current connection string to SSM; the smoke test now requires 200 and `database: connected` (PR `m0/smoke-test-health`).
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
