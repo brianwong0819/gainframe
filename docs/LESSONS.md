@@ -40,9 +40,9 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 _Newest first._
 
 ### L-014 · 2026-11-06 · ci · The smoke test passed while the API could not reach its database
-- **What happened:** bw opened `/api/health` on dev and got `{"status":"error","database":"unreachable"}`. The deploy logs of 2026-11-04 and 2026-11-05 both show `curl: (22) ... 503`, yet the smoke test passed. CloudWatch showed `password authentication failed for user 'neondb_owner'`: the connection string in SSM no longer matched the Neon password.
-- **Root cause:** the health request ran as `$(curl -f ... | tr | awk)`. Bash takes a pipeline's exit status from its last command, so curl's failure was discarded and the step only checked that a request ID came back. The smoke test asserted that the API answered, not that it was healthy.
-- **Fix:** PR `m0/smoke-test-health`: the smoke test requires status 200 and `database: connected`, with curl outside any pipeline. bw wrote the current Neon connection string to SSM.
+- **What happened:** bw opened `/api/health` on dev and got `{"status":"error","database":"unreachable"}`. The deploy logs of 2026-11-04 and 2026-11-05 both show `curl: (22) ... 503`, yet the smoke test passed. CloudWatch showed `password authentication failed for user 'neondb_owner'`: the Neon `dev` branch behind the SSM connection string no longer existed. The Neon console creates a branch with "Auto-delete: after 1 day" by default.
+- **Root cause:** the health request ran as `$(curl -f ... | tr | awk)`. Bash takes a pipeline's exit status from its last command, so curl's failure was discarded and the step only checked that a request ID came back. The smoke test asserted that the API answered, not that it was healthy. Separately, the dev setup steps never mentioned the Neon branch, so its auto-delete default went unnoticed.
+- **Fix:** PR `m0/smoke-test-health`: the smoke test requires status 200 and `database: connected`, with curl outside any pipeline. bw recreated the `dev` branch with auto-delete off and wrote its connection string to SSM; `infra/envs/dev/README.md` now names the branch and the setting.
 - **Prevention:** in workflow scripts, never put a command whose failure matters inside a pipeline or `$(...)` with other commands; capture its output to a file first. A smoke test asserts the healthy result, not just a response.
 - **Status:** guarded (the smoke test fails on an unhealthy API)
 
