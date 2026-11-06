@@ -38,6 +38,7 @@ apps/
     src/pwa/          manifest colours, the mark, icon and splash rendering, launch screen, service worker registration
     src/sw/           the service worker (Serwist); its own tsconfig with the WebWorker lib
     scripts/          build steps: render PWA images before `next build`, bundle the service worker after it
+    e2e/              Playwright tests over the static export (device layout matrix; critical flows from M1-12)
     messages/         i18n catalogs: zh.json, en.json
   api/                Hono on AWS Lambda
     src/routes/       one file per resource; thin: validate → call service → respond

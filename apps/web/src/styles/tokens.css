@@ -35,6 +35,16 @@
   --space-28: 28px;
   --space-40: 40px;
 
+  /*
+   * Safe-area insets (notch, Dynamic Island, home indicator). Read env() only
+   * here, so the device tests in e2e/ can set real per-device values: desktop
+   * Chromium and WebKit always report 0. Guarded by src/styles/safe-area.test.ts.
+   */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
   --radius-ctl: 12px;
   --radius-group: 20px;
   --radius-media: 24px;

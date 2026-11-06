@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node scripts/pwa-images.ts && next dev",
     "typecheck": "next typegen && tsc && tsc -p src/sw",
-    "build": "node scripts/pwa-images.ts && next build && node scripts/build-sw.ts"
+    "build": "node scripts/pwa-images.ts && next build && node scripts/build-sw.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "motion": "14.9.0",
@@ -16,6 +17,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@serwist/build": "9.5.13",
     "@tailwindcss/postcss": "4.3.4",
     "@types/react": "19.3.0",

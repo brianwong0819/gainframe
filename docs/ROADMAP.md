@@ -72,7 +72,7 @@ Done when: a full week of training is logged only in Gainframe, at ≤ 5 seconds
   Verify: editing a past set's weight updates "last time" in the next workout.
 - [ ] **M1-11 Diagnostics and data export**: bw has no Mac, so Safari Web Inspector cannot attach to the iPhone; the app must show its own errors. Settings → Diagnostics shows release, storage-persisted status, recent errors with a copy button, and "Export all data (JSON)" as a backup while data lives only on the device.
   Verify: a dev-only "throw" button produces an entry that survives a reload; the exported JSON re-imports in a test.
-- [ ] **M1-12 End-to-end test**: Playwright at iPhone viewport: offline start → log 3 sets → finish → visible in history. Runs in CI.
+- [ ] **M1-12 End-to-end test**: Playwright (already set up for the device layout tests in `apps/web/e2e`) at iPhone viewport: offline start → log 3 sets → finish → visible in history. Runs in CI.
   Verify: green in CI; deliberately breaking set logging turns it red.
 - [ ] **M1-13 👤 Field week**: the owner logs every session in Gainframe for a week; problems become issues (with the copied Diagnostics entry), severe ones fixed that week.
   Verify: the week's sessions are in history; the issue list is the bug list.

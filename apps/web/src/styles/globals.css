@@ -86,10 +86,8 @@
      * indicator. Content starts one gutter inside the safe area, as in the
      * prototype: iOS blurs the strip just below the status bar.
      */
-    padding: calc(env(safe-area-inset-top) + var(--space-20))
-      max(var(--space-20), env(safe-area-inset-right))
-      calc(env(safe-area-inset-bottom) + var(--space-20))
-      max(var(--space-20), env(safe-area-inset-left));
+    padding: calc(var(--safe-top) + var(--space-20)) max(var(--space-20), var(--safe-right))
+      calc(var(--safe-bottom) + var(--space-20)) max(var(--space-20), var(--safe-left));
     background: var(--bg);
     color: var(--ink);
     font-family: var(--font-ui);
@@ -108,7 +106,7 @@
     position: fixed;
     inset: 0 0 auto;
     z-index: 40;
-    height: max(env(safe-area-inset-top), var(--space-8));
+    height: max(var(--safe-top), var(--space-8));
     background: var(--bg);
   }
 
