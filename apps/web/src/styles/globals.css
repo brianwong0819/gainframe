@@ -81,6 +81,9 @@
   }
 
   body {
+    /* viewport-fit=cover lets the page run under the notch and home indicator. */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
     background: var(--bg);
     color: var(--ink);
     font-family: var(--font-ui);

@@ -44,3 +44,6 @@ CLAUDE.local.md
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# generated PWA icons and splash screens (apps/web/scripts/pwa-images.ts)
+apps/web/public/pwa/

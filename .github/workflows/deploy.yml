@@ -91,6 +91,12 @@ jobs:
             echo "::error::the site does not serve release ${RELEASE}"
             exit 1
           fi
+          # Browsers refuse to register a service worker served with a non-script type.
+          sw_type=$(curl -sSf -o /dev/null -w '%{content_type}' "${SITE_URL}/sw.js")
+          if [[ "${sw_type}" != *javascript* ]]; then
+            echo "::error::/sw.js is served as '${sw_type}', not JavaScript"
+            exit 1
+          fi
           # Separate steps, not a pipeline: a failing curl inside a pipeline
           # does not fail the step, and a 503 once passed unnoticed (L-014).
           status=$(curl -sS -o "${RUNNER_TEMP}/health.json" -D "${RUNNER_TEMP}/health.headers" \

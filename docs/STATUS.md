@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-11 done (next: M0-12 PWA shell, waiting for bw to say continue)
-- **Last updated:** 2026-11-05
+- **Current task:** none; M0-12 done (next: M0-13 rest-timer field test, waiting for bw to say continue)
+- **Last updated:** 2026-11-06
 
 ## Where I stopped
 
@@ -34,6 +34,8 @@ M0-11 (2026-11-05, PR `m0/11-design-tokens`): `apps/web/src/styles/tokens.css` h
 
 Dev database (2026-11-06): `/api/health` on dev had returned 503 since at least 2026-11-04 (`password authentication failed for user 'neondb_owner'`: Neon auto-deleted the `dev` branch one day after it was created, its console default), and the smoke test passed anyway (L-014). bw recreated `dev` with auto-delete off and wrote its connection string to SSM; the smoke test now requires 200 and `database: connected` (PR `m0/smoke-test-health`).
 
+M0-12 (2026-11-06, PR `m0/12-pwa-shell`): `src/app/manifest.ts` (standalone, portrait) and the layout's `viewport` (`viewport-fit=cover`, `theme-color` per colour scheme) and `appleWebApp` metadata (status bar `default`, 22 startup images: 11 iPhone sizes, light and dark). Manifest and theme colours are read from `tokens.css` at build time (`src/pwa/theme-colors.ts`). `scripts/pwa-images.ts` renders the icon (three rising bars, the tallest in the accent colour) and the splash screens with a dependency-free PNG encoder into `public/pwa/` (git-ignored) before `next dev` and `next build`. `body` pads by the safe-area insets. `scripts/build-sw.ts` bundles `src/sw/sw.ts` with rolldown after `next build` and injects the file list of `out/` with `@serwist/build` (see "Service worker build" in `docs/architecture.md`). The deploy smoke test checks that `/sw.js` is served as JavaScript. Checked in Chromium at 390×844: the second load is controlled by the worker, and a reload with the network off renders the page. Pending: bw's iPhone check (Add to Home Screen opens full screen with the splash screen and a status bar matching the background; it opens in airplane mode).
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build" and "Secret scan").
@@ -45,7 +47,9 @@ Dev database (2026-11-06): `/api/health` on dev had returned 503 since at least 
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when M1-03 builds the tab bar.
 
 - CloudFront has no rewrite for static-export routes yet (`/workout` → `/workout/index.html` or `.html`) and no custom 404; a distribution-wide custom error response would also rewrite API 403s. Add a CloudFront Function when M1-03 adds the first route.
-- No security response headers (CSP, HSTS) on the site yet; add a response headers policy with the PWA shell (M0-12).
+- No security response headers (CSP, HSTS) on the site yet; add a CloudFront response headers policy in its own PR (`m0/security-headers`), kept out of M0-12 to keep that diff small.
+- A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
+- `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.

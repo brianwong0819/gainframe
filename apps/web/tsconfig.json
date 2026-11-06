@@ -10,14 +10,17 @@
     "checkJs": true,
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./src/*"] },
+    // scripts/ runs on Node directly, which needs explicit .ts extensions.
+    "allowImportingTsExtensions": true
   },
   "include": [
     "next-env.d.ts",
     "next.config.ts",
     "postcss.config.mjs",
     "src",
+    "scripts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/sw"]
 }
