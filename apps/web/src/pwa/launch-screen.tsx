@@ -3,7 +3,7 @@
 import { useAnimate } from 'motion/react'
 import { useEffect, useState } from 'react'
 
-import { fade, soft, std } from '@/ui/motion'
+import { dissolve, soft } from '@/ui/motion'
 
 import { bar, letterG, markHeight, markSpan, plates, splashMarkShare } from './mark'
 
@@ -72,9 +72,11 @@ export function LaunchScreen() {
     const play = async () => {
       // Hold on the splash frame, lift the bar like a rep, then hand over to the page.
       await animate('svg', { y: -24 }, { ...soft, delay: 0.35 })
+      // A spring fades fastest at the start, which reads as a cut; the
+      // symmetric `dissolve` eases in and out while the mark grows slightly.
       await Promise.all([
-        animate('svg', { scale: 0.92, opacity: 0 }, std),
-        animate(scope.current, { opacity: 0 }, { ...fade, delay: 0.1 }),
+        animate('svg', { scale: 1.06 }, dissolve),
+        animate(scope.current, { opacity: 0 }, dissolve),
       ])
       setDone(true)
     }

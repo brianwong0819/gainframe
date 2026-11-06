@@ -22,6 +22,9 @@ export const press: Transition = { type: 'tween', duration: 0.11, ease: [0.3, 0,
 /** Colour and opacity changes. */
 export const fade: Transition = { type: 'tween', duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }
 
+/** The launch screen's hand-over to the page only: a slow, symmetric dissolve. */
+export const dissolve: Transition = { type: 'tween', duration: 0.6, ease: [0.45, 0, 0.55, 1] }
+
 /** What every motion becomes under prefers-reduced-motion. */
 export const reducedFade: Transition = { type: 'tween', duration: 0.2, ease: 'linear' }
 

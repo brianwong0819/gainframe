@@ -39,6 +39,7 @@ Only these. Implemented once in `apps/web/src/ui/motion.ts` (Motion spring confi
 | `soft` | 120 / 20 | progress rings, kcal bar, charts |
 | `press` | 110 ms, `cubic-bezier(.3,0,.5,1)` | press-down only (scale to 0.96) |
 | `fade` | 220 ms | colour / opacity changes |
+| `dissolve` | 600 ms, `cubic-bezier(.45,0,.55,1)` | the launch screen's hand-over to the page only |
 
 Rules:
 - Animate only `transform` and `opacity` (60 fps on iPhone). Ring/line drawing via `stroke-dashoffset` is the one allowed exception.
@@ -79,7 +80,7 @@ Not used: pixel-diff baselines (screens still change every task; revisit after M
 
 ## Launch
 
-The iOS splash screen shows the mark centred at 42% of the screen width (`src/pwa/mark.ts`). The installed app's static HTML opens on the same mark at the same place (`<LaunchScreen>`), which holds for a moment, lifts with `soft` and fades out (`std`, `fade`) once the page is interactive, about 1.3 s in all, so the splash continues into the app instead of cutting to it. Under Reduce Motion only the fade remains. Browser tabs never show it.
+The iOS splash screen shows the mark centred at 42% of the screen width (`src/pwa/mark.ts`). The installed app's static HTML opens on the same mark at the same place (`<LaunchScreen>`), which holds for a moment, lifts with `soft` and dissolves into the page with `dissolve` (the backdrop fades while the mark grows slightly; a spring fades fastest at the start and read as a cut) once the page is interactive, about 1.6 s in all, so the splash continues into the app instead of cutting to it. Under Reduce Motion only the fade remains. Browser tabs never show it.
 
 ## Learning from great UI (encouraged)
 
