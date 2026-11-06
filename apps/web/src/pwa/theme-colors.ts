@@ -7,7 +7,9 @@ import path from 'node:path'
 
 export interface SchemeColors {
   bg: string
+  surface: string
   ink: string
+  ink2: string
   accent: string
 }
 
@@ -25,7 +27,13 @@ function readBlock(css: string, selector: string): SchemeColors {
     if (value === undefined) throw new Error(`"${selector}" in tokens.css has no hex --${name}`)
     return value
   }
-  return { bg: read('bg'), ink: read('ink'), accent: read('accent') }
+  return {
+    bg: read('bg'),
+    surface: read('surface'),
+    ink: read('ink'),
+    ink2: read('ink-2'),
+    accent: read('accent'),
+  }
 }
 
 export function parseThemeColors(css: string): ThemeColors {

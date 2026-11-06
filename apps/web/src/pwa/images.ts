@@ -1,4 +1,4 @@
-import { type Rect, renderPng } from './png.ts'
+import { renderPng, ring, roundedRect, type Shape } from './png.ts'
 import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 // The app icon and the iOS splash screens. scripts/pwa-images.ts renders them
@@ -6,29 +6,44 @@ import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 export const pwaImageDir = 'pwa'
 
-// The mark: three bars rising left to right on a 13 x 11 grid, the tallest in
-// the accent colour.
-const bars = [
-  { x: 0, height: 5 },
-  { x: 5, height: 8 },
-  { x: 10, height: 11 },
+// The mark: a G with a barbell through it. Sizes are in units from the
+// centre; the mark spans 770 units, the length of the bar.
+const markSpan = 770
+
+// Plates on each side of the G, from the inside out: offset, width, height,
+// corner radius and whether the plate takes the accent colour.
+const plates = [
+  { at: 282, width: 44, height: 300, radius: 14, accent: true },
+  { at: 329, width: 34, height: 210, radius: 12, accent: true },
+  { at: 365, width: 22, height: 70, radius: 8, accent: false },
 ] as const
 
 function mark(canvasWidth: number, canvasHeight: number, markWidth: number, colors: SchemeColors) {
-  const unit = markWidth / 13
-  const left = (canvasWidth - markWidth) / 2
-  const bottom = (canvasHeight + 11 * unit) / 2
-  return bars.map((bar, index): Rect => ({
-    x: left + bar.x * unit,
-    y: bottom - bar.height * unit,
-    width: 3 * unit,
-    height: bar.height * unit,
-    color: index === bars.length - 1 ? colors.accent : colors.ink,
-  }))
+  const k = markWidth / markSpan
+  const [cx, cy] = [canvasWidth / 2, canvasHeight / 2]
+  const centred = (x: number, width: number, height: number, radius: number, color: string) =>
+    roundedRect(
+      cx + (x - width / 2) * k,
+      cy - (height / 2) * k,
+      width * k,
+      height * k,
+      radius * k,
+      color,
+    )
+  return [
+    centred(0, 770, 18, 9, colors.ink2),
+    ...plates.flatMap(({ at, width, height, radius, accent }) =>
+      [-at, at].map((x) => centred(x, width, height, radius, accent ? colors.accent : colors.ink2)),
+    ),
+    // The G: a ring open from 0° to 40°, and its crossbar from the centre out.
+    ring(cx, cy, 166 * k, 234 * k, colors.ink, { from: 40, to: 360 }),
+    centred(117, 234, 68, 0, colors.ink),
+  ] satisfies Shape[]
 }
 
-// Home-screen and manifest icons. The mark fills half the width, inside the
-// safe zone of a maskable icon, so one image serves both purposes.
+// Home-screen and manifest icons, on a soft gradient from the surface colour.
+// The mark stays inside the safe zone of a maskable icon (the central circle,
+// 80% of the width), so one image serves both purposes.
 const icons = [
   { file: 'apple-touch-icon.png', size: 180 },
   { file: 'icon-192.png', size: 192 },
@@ -70,12 +85,17 @@ export function* renderPwaImages(colors: ThemeColors): Generator<{ file: string;
   for (const { file, size } of icons) {
     yield {
       file,
-      png: renderPng(size, size, colors.dark.bg, mark(size, size, size / 2, colors.dark)),
+      png: renderPng(
+        size,
+        size,
+        { top: colors.dark.surface, bottom: colors.dark.bg },
+        mark(size, size, size * 0.68, colors.dark),
+      ),
     }
   }
   for (const { width, height, ratio, scheme, file } of splashScreens) {
     const [w, h] = [width * ratio, height * ratio]
     const palette = colors[scheme]
-    yield { file, png: renderPng(w, h, palette.bg, mark(w, h, w / 4, palette)) }
+    yield { file, png: renderPng(w, h, palette.bg, mark(w, h, w * 0.42, palette)) }
   }
 }
