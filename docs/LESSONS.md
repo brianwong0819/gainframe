@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Before fixing how a platform draws the app (iOS, Android, browser chrome), find its current documented behaviour and cite it in the PR. ([L-016](#l-016--2026-11-06--pwa--the-status-bar-blur-still-covered-the-title-after-l-015))
 - Pad screens by the safe-area inset plus a gutter ("Screen edges" in `docs/design-system.md`), and verify safe-area layout on the iPhone; desktop browsers report zero insets. ([L-015](#l-015--2026-11-06--pwa--the-page-title-sat-under-the-ios-status-bar-blur))
 - At the end of every task, check the later ROADMAP tasks it affects; halfway through each milestone, review the whole repository and plan. ([L-009](#l-009--2026-11-02--process--plan-and-code-problems-surfaced-in-a-batch))
 - Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
@@ -39,6 +40,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-016 · 2026-11-06 · pwa · The status bar blur still covered the title after L-015
+- **What happened:** after the L-015 fix bw re-installed the app; the title was below the status bar but still partly blurred.
+- **Root cause:** L-015 treated the blur as a strip of fixed height and added a gutter. iOS 26+ instead paints a progressive "scroll pocket" blur over the top of an installed web app, well below the status bar, and removes it only when an opaque `position: fixed` element touches the top edge across at least 80% of the width. Nobody looked up how the current iOS draws installed web apps before fixing; the first fix was a guess.
+- **Fix:** PR `m0/launch-polish`: a fixed `.status-bar-fill` strip in the root layout, the status bar's height, in `--bg`.
+- **Prevention:** before fixing platform rendering behaviour (iOS/Android/browser chrome), search for the current platform's documented behaviour and cite it in the PR; the cross-device QA work (`m0/device-qa`) adds automated device checks.
+- **Status:** documented
 
 ### L-015 · 2026-11-06 · pwa · The page title sat under the iOS status bar blur
 - **What happened:** after M0-12 bw installed the app on the iPhone; the "Gainframe" heading started at the very left edge and directly under the status bar, where iOS blurs the content, so it was hard to read.

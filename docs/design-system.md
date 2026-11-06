@@ -63,7 +63,11 @@ Today (surplus gauge, protein ring, today's workout, weight 7-day average with t
 
 ## Screen edges
 
-The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `env(safe-area-inset-top)` + `--space-20` at the top, the bottom inset + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS blurs the strip just below the status bar, so nothing sits directly at the inset. Check safe-area layout on the iPhone; desktop browsers report zero insets.
+The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `env(safe-area-inset-top)` + `--space-20` at the top, the bottom inset + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS 26 and later draw a home-screen web app full screen and blur a band below the status bar (the "scroll pocket") unless an opaque fixed element touches the top edge across most of the width; the root layout's `.status-bar-fill` strip (the status bar's height, `--bg`) is that element and must stay. Check safe-area layout on the iPhone; desktop browsers report zero insets.
+
+## Launch
+
+The iOS splash screen shows the mark centred at 42% of the screen width (`src/pwa/mark.ts`). The installed app's static HTML opens on the same mark at the same place (`<LaunchScreen>`), which lifts with `pop` and fades out with `fade` once the page is interactive, so the splash continues into the app instead of cutting to it. Under Reduce Motion only the fade remains. Browser tabs never show it.
 
 ## Learning from great UI (encouraged)
 

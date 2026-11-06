@@ -35,7 +35,7 @@ apps/
     src/diagnostics/  client error log and Diagnostics data (the only code that records client errors)
     src/ui/           design-system primitives (Pressable, Sheet, NumberRoll, Ring…)
     src/styles/       tokens.css, globals
-    src/pwa/          manifest colours, icon and splash rendering, service worker registration
+    src/pwa/          manifest colours, the mark, icon and splash rendering, launch screen, service worker registration
     src/sw/           the service worker (Serwist); its own tsconfig with the WebWorker lib
     scripts/          build steps: render PWA images before `next build`, bundle the service worker after it
     messages/         i18n catalogs: zh.json, en.json

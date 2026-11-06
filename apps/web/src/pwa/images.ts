@@ -1,22 +1,11 @@
 import { renderPng, ring, roundedRect, type Shape } from './png.ts'
+import { bar, letterG, markSpan, plates, splashMarkShare } from './mark.ts'
 import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 // The app icon and the iOS splash screens. scripts/pwa-images.ts renders them
 // into public/pwa/ before `next dev` and `next build`; they are not committed.
 
 export const pwaImageDir = 'pwa'
-
-// The mark: a G with a barbell through it. Sizes are in units from the
-// centre; the mark spans 770 units, the length of the bar.
-const markSpan = 770
-
-// Plates on each side of the G, from the inside out: offset, width, height,
-// corner radius and whether the plate takes the accent colour.
-const plates = [
-  { at: 282, width: 44, height: 300, radius: 14, accent: true },
-  { at: 329, width: 34, height: 210, radius: 12, accent: true },
-  { at: 365, width: 22, height: 70, radius: 8, accent: false },
-] as const
 
 function mark(canvasWidth: number, canvasHeight: number, markWidth: number, colors: SchemeColors) {
   const k = markWidth / markSpan
@@ -31,13 +20,13 @@ function mark(canvasWidth: number, canvasHeight: number, markWidth: number, colo
       color,
     )
   return [
-    centred(0, 770, 18, 9, colors.ink2),
+    centred(0, bar.length, bar.thickness, bar.thickness / 2, colors.ink2),
     ...plates.flatMap(({ at, width, height, radius, accent }) =>
       [-at, at].map((x) => centred(x, width, height, radius, accent ? colors.accent : colors.ink2)),
     ),
-    // The G: a ring open from 0° to 40°, and its crossbar from the centre out.
-    ring(cx, cy, 166 * k, 234 * k, colors.ink, { from: 40, to: 360 }),
-    centred(117, 234, 68, 0, colors.ink),
+    // The G: an open ring, and its crossbar from the centre out.
+    ring(cx, cy, letterG.inner * k, letterG.outer * k, colors.ink, { from: letterG.open, to: 360 }),
+    centred(letterG.outer / 2, letterG.outer, letterG.outer - letterG.inner, 0, colors.ink),
   ] satisfies Shape[]
 }
 
@@ -96,6 +85,6 @@ export function* renderPwaImages(colors: ThemeColors): Generator<{ file: string;
   for (const { width, height, ratio, scheme, file } of splashScreens) {
     const [w, h] = [width * ratio, height * ratio]
     const palette = colors[scheme]
-    yield { file, png: renderPng(w, h, palette.bg, mark(w, h, w * 0.42, palette)) }
+    yield { file, png: renderPng(w, h, palette.bg, mark(w, h, w * splashMarkShare, palette)) }
   }
 }
