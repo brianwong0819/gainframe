@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Pad screens by the safe-area inset plus a gutter ("Screen edges" in `docs/design-system.md`), and verify safe-area layout on the iPhone; desktop browsers report zero insets. ([L-015](#l-015--2026-11-06--pwa--the-page-title-sat-under-the-ios-status-bar-blur))
 - At the end of every task, check the later ROADMAP tasks it affects; halfway through each milestone, review the whole repository and plan. ([L-009](#l-009--2026-11-02--process--plan-and-code-problems-surfaced-in-a-batch))
 - Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
 - Refer to an ADR by number only once it exists; for a planned ADR, name its topic. ([L-007](#l-007--2026-11-02--process--two-documents-claimed-adr-0001))
@@ -38,6 +39,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-015 · 2026-11-06 · pwa · The page title sat under the iOS status bar blur
+- **What happened:** after M0-12 bw installed the app on the iPhone; the "Gainframe" heading started at the very left edge and directly under the status bar, where iOS blurs the content, so it was hard to read.
+- **Root cause:** `body` was padded by exactly the safe-area insets, with no gutter, although the prototype pads screens by the inset plus 20 px. The Chromium check could not catch it: desktop Chromium reports zero safe-area insets.
+- **Fix:** PR `m0/12-safe-area-spacing`: `body` padding is the inset plus `--space-20` at the top and bottom and `max(--space-20, inset)` at the sides.
+- **Prevention:** "Screen edges" in `docs/design-system.md` states the padding rule; anything that depends on safe areas is verified on the iPhone, not in a desktop browser.
+- **Status:** documented
 
 ### L-014 · 2026-11-06 · ci · The smoke test passed while the API could not reach its database
 - **What happened:** bw opened `/api/health` on dev and got `{"status":"error","database":"unreachable"}`. The deploy logs of 2026-11-04 and 2026-11-05 both show `curl: (22) ... 503`, yet the smoke test passed. CloudWatch showed `password authentication failed for user 'neondb_owner'`: the Neon `dev` branch behind the SSM connection string no longer existed. The Neon console creates a branch with "Auto-delete: after 1 day" by default.

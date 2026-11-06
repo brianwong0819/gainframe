@@ -81,9 +81,15 @@
   }
 
   body {
-    /* viewport-fit=cover lets the page run under the notch and home indicator. */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-      env(safe-area-inset-left);
+    /*
+     * viewport-fit=cover lets the page run under the status bar and home
+     * indicator. Content starts one gutter inside the safe area, as in the
+     * prototype: iOS blurs the strip just below the status bar.
+     */
+    padding: calc(env(safe-area-inset-top) + var(--space-20))
+      max(var(--space-20), env(safe-area-inset-right))
+      calc(env(safe-area-inset-bottom) + var(--space-20))
+      max(var(--space-20), env(safe-area-inset-left));
     background: var(--bg);
     color: var(--ink);
     font-family: var(--font-ui);
