@@ -8,7 +8,7 @@ CI applies this stack on every merge to `main` (`.github/workflows/deploy.yml`, 
 
 `terraform version` (1.16+), `aws --version` (2.32+), `pnpm -v`, and `curl.exe --version` (ships with Windows 10 and later). Signed in with `aws login --profile gainframe`.
 
-A Neon project for the API's database: in the [Neon console](https://console.neon.tech), create a project named `gainframe` with Postgres 18 in AWS Asia Pacific (Singapore). Under **Connect**, turn on connection pooling and copy the connection string (its host contains `-pooler`). Do not paste it anywhere else.
+A Neon project for the API's database: in the [Neon console](https://console.neon.tech), create a project named `gainframe` with Postgres 18 in AWS Asia Pacific (Singapore). Under **Branches**, create a branch named `dev` from `production` with **Auto-delete: Never** (the console defaults to deleting a new branch after one day). Under **Connect**, select the `dev` branch, turn on connection pooling and copy the connection string (its host contains `-pooler`). Do not paste it anywhere else.
 
 ## First apply (once)
 
