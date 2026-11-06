@@ -29,6 +29,13 @@ describe('renderPng', () => {
     expect(pixel(3, 2)).toEqual([0x10, 0x20, 0x30])
   })
 
+  it('shades a vertical gradient from the top row to the bottom row', () => {
+    const { pixel } = decode(renderPng(2, 3, { top: black, bottom: '#c86400' }, []))
+    expect(pixel(1, 0)).toEqual([0, 0, 0])
+    expect(pixel(0, 1)).toEqual([100, 50, 0])
+    expect(pixel(1, 2)).toEqual([200, 100, 0])
+  })
+
   it('fills covered pixels and blends edge pixels by coverage', () => {
     // Covers x 1..2.5: pixel 1 fully, pixel 2 half, pixel 3 not at all.
     const { pixel } = decode(renderPng(4, 1, black, [roundedRect(1, 0, 1.5, 1, 0, white)]))

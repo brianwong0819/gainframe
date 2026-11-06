@@ -23,22 +23,31 @@ function chunk(type: string, data: Buffer): Buffer {
   return out
 }
 
+/** A flat colour, or a vertical gradient from `top` to `bottom`. */
+export type Background = string | { top: string; bottom: string }
+
 /**
- * Encodes an 8-bit RGB PNG of a flat background with shapes painted in order.
+ * Encodes an 8-bit RGB PNG of a background with shapes painted in order.
  * Each pixel inside a shape's bounds is blended by the share of its 4 x 4
  * sub-samples the shape contains, which anti-aliases curves and diagonals.
  */
 export function renderPng(
   width: number,
   height: number,
-  background: string,
+  background: Background,
   shapes: readonly Shape[],
 ): Buffer {
   const stride = width * 3 + 1 // each row starts with filter type 0 (none)
   const pixels = Buffer.alloc(stride * height)
-  const bg = rgb(background)
-  for (let x = 0; x < width; x++) pixels.set(bg, 1 + x * 3)
-  for (let y = 1; y < height; y++) pixels.copy(pixels, y * stride, 0, stride)
+  const [top, bottom] =
+    typeof background === 'string'
+      ? [rgb(background), rgb(background)]
+      : [rgb(background.top), rgb(background.bottom)]
+  for (let y = 0; y < height; y++) {
+    const t = height === 1 ? 0 : y / (height - 1)
+    const row = top.map((from, c) => Math.round(from + ((bottom[c] ?? 0) - from) * t))
+    for (let x = 0; x < width; x++) pixels.set(row, y * stride + 1 + x * 3)
+  }
 
   for (const { bounds, contains, color } of shapes) {
     const fill = rgb(color)
