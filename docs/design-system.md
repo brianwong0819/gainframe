@@ -63,7 +63,19 @@ Today (surplus gauge, protein ring, today's workout, weight 7-day average with t
 
 ## Screen edges
 
-The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `env(safe-area-inset-top)` + `--space-20` at the top, the bottom inset + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS 26 and later draw a home-screen web app full screen and blur a band below the status bar (the "scroll pocket") unless an opaque fixed element touches the top edge across most of the width; the root layout's `.status-bar-fill` strip (the status bar's height, `--bg`) is that element and must stay. Check safe-area layout on the iPhone; desktop browsers report zero insets.
+The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `--safe-top` + `--space-20` at the top, `--safe-bottom` + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS 26 and later draw a home-screen web app full screen and blur a band below the status bar (the "scroll pocket") unless an opaque fixed element touches the top edge across most of the width; the root layout's `.status-bar-fill` strip (the status bar's height, `--bg`) is that element and must stay.
+
+The `--safe-*` tokens are the only place that reads `env(safe-area-inset-*)` (a unit test enforces it), so the device tests can replace them with real values.
+
+## Device QA
+
+Desktop browsers and emulators report zero safe-area insets, so they cannot show content hidden under a notch or the Dynamic Island. Three layers cover it:
+
+1. **Device layout tests (CI, every PR).** `apps/web/e2e/layout.spec.ts` opens every page on the matrix in `apps/web/e2e/devices.ts` (iPhone SE, 17e, 17, 17 Pro Max in WebKit; Pixel 7 and Galaxy S24 in Chromium), light and dark, with each device's real insets injected through the `--safe-*` tokens. A test fails when the page scrolls sideways or a text, image or control element sits inside an inset (decorative `aria-hidden` layers are allowed there). Screenshots, with the insets shaded, are in the `device-layout-report` artifact of the CI run. Locally: `pnpm --filter web build` with `GAINFRAME_DEV_PAGES=1`, then `pnpm test:e2e`. A new page is added to the list at the top of the spec.
+2. **Android in Chrome DevTools (manual, when a screen changes).** Device toolbar (Ctrl+Shift+M) at 360 and 412 px wide, light and dark. No install needed.
+3. **The iPhone (manual, before a UI task is done).** The installed app from the home screen, light and dark, Reduce Motion on and off. This is the only check of the real status bar, scroll blur and keyboard.
+
+Not used: pixel-diff baselines (screens still change every task; revisit after M1), paid device clouds, and the Android Studio emulator (about 10 GB; Chrome covers layout).
 
 ## Launch
 
@@ -88,7 +100,7 @@ _None yet. Format: pattern — where we use it — source — credits entry._
 ## Checklist before a UI PR
 
 - [ ] Only tokens; no raw hex/px/durations (`grep` the diff).
-- [ ] Light and dark screenshots at 390×844.
+- [ ] Light and dark screenshots at 390×844; the Device layout job passes.
 - [ ] Reduced-motion checked.
 - [ ] Every string from the i18n catalogue; zh and en both present.
 - [ ] Tap targets ≥ 44 px; focus visible; screen-reader labels.
