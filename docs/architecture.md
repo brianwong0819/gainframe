@@ -35,6 +35,9 @@ apps/
     src/diagnostics/  client error log and Diagnostics data (the only code that records client errors)
     src/ui/           design-system primitives (Pressable, Sheet, NumberRoll, Ring…)
     src/styles/       tokens.css, globals
+    src/pwa/          manifest colours, icon and splash rendering, service worker registration
+    src/sw/           the service worker (Serwist); its own tsconfig with the WebWorker lib
+    scripts/          build steps: render PWA images before `next build`, bundle the service worker after it
     messages/         i18n catalogs: zh.json, en.json
   api/                Hono on AWS Lambda
     src/routes/       one file per resource; thin: validate → call service → respond
@@ -102,6 +105,7 @@ Goal: any problem bw sees on the phone can be traced to a log line in minutes, w
 - **CloudFront → Lambda Function URL auth** (decided in [ADR-0002](adr/0002-cloudfront-to-api-auth.md)): origin access control. CloudFront overwrites `Authorization`, so the client sends its token in `x-gainframe-token`, and every `PUT`/`POST` carries `x-amz-content-sha256`.
 - **iOS PWA.** Background JS is suspended when locked; Web Push only works for home-screen apps after a user gesture; audio must be unlocked by a tap; OAuth redirects in standalone mode need testing.
 - **Next.js static export** limits — see CLAUDE.md.
+- **Service worker build.** Serwist's Next.js integrations need webpack (`@serwist/next`) or a route handler (`@serwist/turbopack`); neither fits a Turbopack static export. `scripts/build-sw.ts` instead bundles `src/sw/sw.ts` with rolldown after `next build` and injects the list of files in `out/` with `@serwist/build`. The worker precaches the whole export and caches nothing at runtime; `/api/*` always goes to the network. It does not call `skipWaiting`, so a release takes over only after every window of the previous one is closed.
 - **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda. `GET /api/health` queries the database, so an external uptime check would keep the compute awake and spend free-tier compute hours.
 - **Bedrock in ap-southeast-1** offers current Claude models only through `global.` cross-Region inference profiles, which may route requests to any commercial Region; `apac.` profiles exist only for older Claude 3.x models. Accepted for this project (no data-residency requirement). See "Bedrock model availability" in `docs/ai.md`. Model IDs live in config, never in code.
 

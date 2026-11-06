@@ -39,7 +39,7 @@ Done when: every push to `main` deploys to dev automatically, and the rest-timer
   Verify: a one-line text change is live on dev within 10 minutes of merging; the PR shows the plan comment; the `x-request-id` from `curl -i /api/health` on dev finds the access line in CloudWatch Logs Insights, and that line's `release` is the merged SHA.
 - [x] **M0-11 Design tokens and motion foundation**: port the prototype's colours, type, spacing, radii and three springs into `apps/web/src/styles/tokens.css` and the Tailwind theme; self-host Martian Mono; `motion` presets (std / pop / soft / press); `<Pressable>` (0.96 press with spring release); reduced-motion fallback; a dev-only `/dev/kitchen-sink` page showing every token and animation. Spec: [design-system.md](design-system.md).
   Verify: on an iPhone, the kitchen sink switches correctly between light and dark and the press feedback matches the prototype; with Reduce Motion on, only fades remain.
-- [ ] **M0-12 PWA shell**: manifest, icons, splash screen, safe areas; Serwist precaches the app shell; opening offline shows the app, not a browser error.
+- [x] **M0-12 PWA shell**: manifest, icons, splash screen, safe areas; Serwist precaches the app shell; opening offline shows the app, not a browser error.
   Verify: 👤 "Add to Home Screen" in iPhone Safari opens full-screen; it still opens in airplane mode.
 - [ ] **M0-13 👤 Rest-timer field test**: a standalone page with a rest countdown, Wake Lock, and an audio cue (unlocked by a tap, as iOS requires). The owner uses it at the gym 2–3 times.
   Verify: findings recorded in ADR-0005 (behaviour when locked, when switching apps, during a call).

@@ -3,22 +3,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "typecheck": "next typegen && tsc",
-    "build": "next build"
+    "dev": "node scripts/pwa-images.ts && next dev",
+    "typecheck": "next typegen && tsc && tsc -p src/sw",
+    "build": "node scripts/pwa-images.ts && next build && node scripts/build-sw.ts"
   },
   "dependencies": {
     "motion": "14.9.0",
     "next": "16.4.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "serwist": "9.5.13",
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@serwist/build": "9.5.13",
     "@tailwindcss/postcss": "4.3.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "postcss": "8.5.32",
+    "rolldown": "1.2.16",
     "tailwindcss": "4.3.4"
   }
 }
