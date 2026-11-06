@@ -67,7 +67,7 @@ The app runs full screen (`viewport-fit=cover`), under the status bar and the ho
 
 ## Launch
 
-The iOS splash screen shows the mark centred at 42% of the screen width (`src/pwa/mark.ts`). The installed app's static HTML opens on the same mark at the same place (`<LaunchScreen>`), which lifts with `pop` and fades out with `fade` once the page is interactive, so the splash continues into the app instead of cutting to it. Under Reduce Motion only the fade remains. Browser tabs never show it.
+The iOS splash screen shows the mark centred at 42% of the screen width (`src/pwa/mark.ts`). The installed app's static HTML opens on the same mark at the same place (`<LaunchScreen>`), which holds for a moment, lifts with `soft` and fades out (`std`, `fade`) once the page is interactive, about 1.3 s in all, so the splash continues into the app instead of cutting to it. Under Reduce Motion only the fade remains. Browser tabs never show it.
 
 ## Learning from great UI (encouraged)
 

@@ -3,7 +3,7 @@
 import { useAnimate } from 'motion/react'
 import { useEffect, useState } from 'react'
 
-import { fade, pop } from '@/ui/motion'
+import { fade, soft, std } from '@/ui/motion'
 
 import { bar, letterG, markHeight, markSpan, plates, splashMarkShare } from './mark'
 
@@ -58,7 +58,7 @@ function Mark() {
 
 /**
  * Continues the iOS splash screen into the app: the static HTML opens on the
- * same mark at the same size, which lifts (`pop`) and fades away once the
+ * same mark at the same size, holds, lifts (`soft`) and fades away once the
  * page is interactive. Shown only when launched from the home screen
  * (globals.css hides it in a browser tab).
  */
@@ -70,8 +70,12 @@ export function LaunchScreen() {
     // In a browser tab globals.css keeps it hidden, so there is nothing to play.
     if (!window.matchMedia('(display-mode: standalone)').matches) return
     const play = async () => {
-      await animate('svg', { y: -12, scale: 1.04 }, pop)
-      await animate(scope.current, { opacity: 0 }, fade)
+      // Hold on the splash frame, lift the bar like a rep, then hand over to the page.
+      await animate('svg', { y: -24 }, { ...soft, delay: 0.35 })
+      await Promise.all([
+        animate('svg', { scale: 0.92, opacity: 0 }, std),
+        animate(scope.current, { opacity: 0 }, { ...fade, delay: 0.1 }),
+      ])
       setDone(true)
     }
     void play()
