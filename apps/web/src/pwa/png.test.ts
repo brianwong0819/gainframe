@@ -2,7 +2,7 @@ import { inflateSync } from 'node:zlib'
 
 import { describe, expect, it } from 'vitest'
 
-import { renderPng, ringWithGap, roundedRect } from './png.ts'
+import { renderPng, ring, roundedRect } from './png.ts'
 
 // Reads back the IHDR size and the RGB value of one pixel.
 function decode(png: Buffer) {
@@ -53,11 +53,18 @@ describe('shapes', () => {
     expect(rect.contains(1.5, 1.5)).toBe(true)
   })
 
-  it('leaves the gap of a ring open, measured counter-clockwise from 3 o’clock', () => {
-    const ring = ringWithGap(0, 0, 8, 10, -30, 30, white)
-    expect(ring.contains(9, 0)).toBe(false) // 0°, inside the gap
-    expect(ring.contains(0, -9)).toBe(true) // 90° (y grows downwards)
-    expect(ring.contains(-9, 0)).toBe(true) // 180°
-    expect(ring.contains(0, 5)).toBe(false) // inside the hole
+  it('keeps a ring between its radii', () => {
+    const full = ring(0, 0, 8, 10, white)
+    expect(full.contains(9, 0)).toBe(true)
+    expect(full.contains(0, 5)).toBe(false) // inside the hole
+    expect(full.contains(0, 11)).toBe(false) // outside the rim
+  })
+
+  it('limits an arc to its angles, counter-clockwise from 3 o’clock and across 0°', () => {
+    const arc = ring(0, 0, 8, 10, white, { from: 330, to: 90 })
+    expect(arc.contains(9, 0)).toBe(true) // 0°
+    expect(arc.contains(0, -9)).toBe(true) // 90° (y grows downwards)
+    expect(arc.contains(-9, 0)).toBe(false) // 180°
+    expect(arc.contains(0, 9)).toBe(false) // 270°
   })
 })

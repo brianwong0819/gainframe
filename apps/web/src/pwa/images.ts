@@ -1,4 +1,4 @@
-import { renderPng, ringWithGap, roundedRect, type Shape } from './png.ts'
+import { renderPng, ring, type Shape } from './png.ts'
 import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 // The app icon and the iOS splash screens. scripts/pwa-images.ts renders them
@@ -6,25 +6,19 @@ import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 export const pwaImageDir = 'pwa'
 
-// The mark: a "G" drawn as an open ring whose crossbar is a dumbbell in the
-// accent colour. Coordinates are on a 1024 grid centred on (512, 512); the
-// mark spans 540 units across.
-const markSpan = 540
+// The mark: a weight plate seen face-on (rim, inner groove and hub) whose rim
+// carries a progress arc in the accent colour. Sizes are on a 1024 grid; the
+// mark spans 544 units across.
+const markSpan = 544
 
 function mark(canvasWidth: number, canvasHeight: number, markWidth: number, colors: SchemeColors) {
   const k = markWidth / markSpan
-  const at = (x: number, y: number) =>
-    [canvasWidth / 2 + (x - 512) * k, canvasHeight / 2 + (y - 512) * k] as const
-  const rect = (x: number, y: number, w: number, h: number, r: number, color: string) => {
-    const [left, top] = at(x, y)
-    return roundedRect(left, top, w * k, h * k, r * k, color)
-  }
-  const [cx, cy] = at(490, 512)
+  const [cx, cy] = [canvasWidth / 2, canvasHeight / 2]
   return [
-    ringWithGap(cx, cy, 192 * k, 248 * k, -38, 30, colors.ink),
-    rect(530, 496, 220, 32, 8, colors.accent),
-    rect(514, 427, 52, 170, 20, colors.accent),
-    rect(730, 427, 52, 170, 20, colors.accent),
+    ring(cx, cy, 228 * k, 272 * k, colors.ink),
+    ring(cx, cy, 228 * k, 272 * k, colors.accent, { from: 330, to: 90 }),
+    ring(cx, cy, 173 * k, 179 * k, colors.ink2),
+    ring(cx, cy, 43 * k, 73 * k, colors.ink),
   ] satisfies Shape[]
 }
 

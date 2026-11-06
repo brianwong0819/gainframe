@@ -101,25 +101,26 @@ export function roundedRect(
 }
 
 /**
- * A ring between two radii with an open gap. Angles are in degrees, measured
- * counter-clockwise from 3 o'clock; the gap runs from `gapFrom` up to `gapTo`.
+ * A ring between two radii, or the part of it from angle `from` counter-
+ * clockwise to angle `to`. Angles are in degrees from 3 o'clock, 0 to 360.
  */
-export function ringWithGap(
+export function ring(
   cx: number,
   cy: number,
   inner: number,
   outer: number,
-  gapFrom: number,
-  gapTo: number,
   color: string,
+  arc?: { from: number; to: number },
 ): Shape {
   return {
     bounds: { left: cx - outer, top: cy - outer, right: cx + outer, bottom: cy + outer },
     contains: (x, y) => {
       const distance = Math.hypot(x - cx, y - cy)
       if (distance < inner || distance > outer) return false
-      const angle = (Math.atan2(cy - y, x - cx) * 180) / Math.PI
-      return angle < gapFrom || angle > gapTo
+      if (arc === undefined) return true
+      const angle = ((Math.atan2(cy - y, x - cx) * 180) / Math.PI + 360) % 360
+      const span = (arc.to - arc.from + 360) % 360
+      return (angle - arc.from + 360) % 360 <= span
     },
     color,
   }
