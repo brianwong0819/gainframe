@@ -1,4 +1,4 @@
-import { type Rect, renderPng } from './png.ts'
+import { renderPng, ringWithGap, roundedRect, type Shape } from './png.ts'
 import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 // The app icon and the iOS splash screens. scripts/pwa-images.ts renders them
@@ -6,29 +6,30 @@ import type { SchemeColors, ThemeColors } from './theme-colors.ts'
 
 export const pwaImageDir = 'pwa'
 
-// The mark: three bars rising left to right on a 13 x 11 grid, the tallest in
-// the accent colour.
-const bars = [
-  { x: 0, height: 5 },
-  { x: 5, height: 8 },
-  { x: 10, height: 11 },
-] as const
+// The mark: a "G" drawn as an open ring whose crossbar is a dumbbell in the
+// accent colour. Coordinates are on a 1024 grid centred on (512, 512); the
+// mark spans 540 units across.
+const markSpan = 540
 
 function mark(canvasWidth: number, canvasHeight: number, markWidth: number, colors: SchemeColors) {
-  const unit = markWidth / 13
-  const left = (canvasWidth - markWidth) / 2
-  const bottom = (canvasHeight + 11 * unit) / 2
-  return bars.map((bar, index): Rect => ({
-    x: left + bar.x * unit,
-    y: bottom - bar.height * unit,
-    width: 3 * unit,
-    height: bar.height * unit,
-    color: index === bars.length - 1 ? colors.accent : colors.ink,
-  }))
+  const k = markWidth / markSpan
+  const at = (x: number, y: number) =>
+    [canvasWidth / 2 + (x - 512) * k, canvasHeight / 2 + (y - 512) * k] as const
+  const rect = (x: number, y: number, w: number, h: number, r: number, color: string) => {
+    const [left, top] = at(x, y)
+    return roundedRect(left, top, w * k, h * k, r * k, color)
+  }
+  const [cx, cy] = at(490, 512)
+  return [
+    ringWithGap(cx, cy, 192 * k, 248 * k, -38, 30, colors.ink),
+    rect(530, 496, 220, 32, 8, colors.accent),
+    rect(514, 427, 52, 170, 20, colors.accent),
+    rect(730, 427, 52, 170, 20, colors.accent),
+  ] satisfies Shape[]
 }
 
-// Home-screen and manifest icons. The mark fills half the width, inside the
-// safe zone of a maskable icon, so one image serves both purposes.
+// Home-screen and manifest icons. The mark fills just over half the width,
+// inside the safe zone of a maskable icon, so one image serves both purposes.
 const icons = [
   { file: 'apple-touch-icon.png', size: 180 },
   { file: 'icon-192.png', size: 192 },
@@ -70,7 +71,7 @@ export function* renderPwaImages(colors: ThemeColors): Generator<{ file: string;
   for (const { file, size } of icons) {
     yield {
       file,
-      png: renderPng(size, size, colors.dark.bg, mark(size, size, size / 2, colors.dark)),
+      png: renderPng(size, size, colors.dark.bg, mark(size, size, size * 0.53, colors.dark)),
     }
   }
   for (const { width, height, ratio, scheme, file } of splashScreens) {
