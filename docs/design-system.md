@@ -61,6 +61,10 @@ Colours come from tokens. Never add a fourth tier or use them on ordinary button
 
 Today (surplus gauge, protein ring, today's workout, weight 7-day average with target corridor, weekly AI summary) · Workout (set table, steppers, rest sheet that collapses to a pill) · Food + photo confirm (gram steppers, tap-to-correct names with AI alternatives, add oil/sauce, "remember this correction").
 
+## Screen edges
+
+The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `env(safe-area-inset-top)` + `--space-20` at the top, the bottom inset + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS blurs the strip just below the status bar, so nothing sits directly at the inset. Check safe-area layout on the iPhone; desktop browsers report zero insets.
+
 ## Learning from great UI (encouraged)
 
 Claude may — and should — study strong interfaces and effects before building a screen, and bring in what fits. Good places to look: Motion's examples, Radix primitives, Vaul/Sonner (Emil Kowalski), Rauno Freiberg's interaction notes, React Bits, Magic UI, Aceternity UI, Apple's Human Interface Guidelines, Mobbin and the best fitness/finance apps for patterns.
