@@ -40,14 +40,14 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 ## Log
 
+_Newest first._
+
 ### L-017 · 2026-11-07 · pwa · Test steps told bw to type a URL into the installed app
 - **What happened:** The M0-13 handover asked bw to open `/dev/rest-timer.html` by typing the address inside the home-screen app. bw asked whether to delete and re-add the app; an installed web app has no address bar and always opens at the manifest `start_url`, so the page was unreachable.
 - **Root cause:** The steps were written for a browser tab, not for the standalone app the test required. No rule said how bw reaches a page on the iPhone.
 - **Fix:** PR `m0/13-dev-page-links` (dev builds link the dev pages from the home page); corrected in chat.
-- **Prevention:** Active rule below; every new dev page gets a link from the dev home page (`src/app/page.tsx`).
+- **Prevention:** new Active rule; every new dev page gets a link from the dev home page (`src/app/page.tsx`).
 - **Status:** documented
-
-_Newest first._
 
 ### L-016 · 2026-11-06 · pwa · The status bar blur still covered the title after L-015
 - **What happened:** after the L-015 fix bw re-installed the app; the title was below the status bar but still partly blurred.
