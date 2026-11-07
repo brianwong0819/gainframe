@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-12 done (next: M0-13 rest-timer field test, waiting for bw to say continue)
-- **Last updated:** 2026-11-06
+- **Current task:** M0-13 rest-timer field test: the test page is on dev; waiting for bw's gym sessions, then the findings go into ADR-0005
+- **Last updated:** 2026-11-07
 
 ## Where I stopped
 
@@ -37,6 +37,8 @@ Dev database (2026-11-06): `/api/health` on dev had returned 503 since at least 
 M0-12 (2026-11-06, PR `m0/12-pwa-shell`): `src/app/manifest.ts` (standalone, portrait) and the layout's `viewport` (`viewport-fit=cover`, `theme-color` per colour scheme) and `appleWebApp` metadata (status bar `default`, 22 startup images: 11 iPhone sizes, light and dark). Manifest and theme colours are read from `tokens.css` at build time (`src/pwa/theme-colors.ts`). `scripts/pwa-images.ts` renders the icon (a G with a barbell through it, on a soft gradient; changed after M0-12 at bw's request) and the splash screens with a dependency-free PNG encoder into `public/pwa/` (git-ignored) before `next dev` and `next build`. `body` pads by the safe-area insets; a fixed `.status-bar-fill` strip stops the iOS 26+ top blur (L-016), and `<LaunchScreen>` continues the splash screen into the app with a short lift-and-fade. `scripts/build-sw.ts` bundles `src/sw/sw.ts` with rolldown after `next build` and injects the file list of `out/` with `@serwist/build` (see "Service worker build" in `docs/architecture.md`). The deploy smoke test checks that `/sw.js` is served as JavaScript. Checked in Chromium at 390×844: the second load is controlled by the worker, and a reload with the network off renders the page. Pending: bw's iPhone check (Add to Home Screen opens full screen with the splash screen and a status bar matching the background; it opens in airplane mode).
 
 Device QA (2026-11-06, PR `m0/device-qa`): `apps/web/e2e` runs Playwright (`@playwright/test` 1.63, which M1-12's end-to-end tests will reuse) over the static export on iPhone SE, 17e, 17 and 17 Pro Max (WebKit) and Pixel 7 and Galaxy S24 (Chromium), light and dark. Real safe-area insets are injected through new `--safe-*` tokens, the only place that reads `env(safe-area-inset-*)` (guarded by `src/styles/safe-area.test.ts`). It fails on sideways scroll or content inside an inset; CI job "Device layout" uploads the screenshots. Manual Android (Chrome DevTools) and iPhone steps: "Device QA" in `docs/design-system.md`.
+
+M0-13 (2026-11-07, PR `m0/13-rest-timer-field-test`): `src/app/dev/rest-timer/page.dev.tsx` (dev builds only, at `/dev/rest-timer.html` on dev) counts down from a stored end time, so a suspended page shows the right time when it returns. Start requests a screen wake lock (re-requested when the page becomes visible again) and, inside the same tap, unlocks an `AudioContext` and schedules the cue on the audio clock; the Audio Session API type (`auto` / `ambient` / `transient` / `playback`) is selectable. The page logs its lifecycle (visibility, `pagehide`, reload during a countdown, audio state changes such as `interrupted`, wake lock release, how late the page noticed the end, how far the audio clock fell behind) to `localStorage`, with a copy button, because no Web Inspector reaches bw's iPhone. Checked in Chromium at 390×844 (start, reload mid-countdown, end after 30 s, copy). Next: bw runs the protocol in the PR at the gym 2–3 times and pastes the logs; the findings go into ADR-0005 (M0-14) and decide M1-06's design.
 
 ## Blocked on bw
 
