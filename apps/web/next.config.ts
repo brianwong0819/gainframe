@@ -8,6 +8,8 @@ const devPages = process.env.NODE_ENV === 'development' || process.env.GAINFRAME
 const nextConfig: NextConfig = {
   output: 'export',
   pageExtensions: devPages ? ['dev.tsx', 'tsx', 'ts'] : ['tsx', 'ts'],
+  // Lets the home page link to the dev pages: an installed app has no address bar.
+  env: { NEXT_PUBLIC_DEV_PAGES: devPages ? '1' : '0' },
 }
 
 export default nextConfig
