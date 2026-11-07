@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Steps for bw on the iPhone describe the home-screen app as it is: no address bar, opens at `/`; reach a page through an in-app link. ([L-017](#l-017--2026-11-07--pwa--test-steps-told-bw-to-type-a-url-into-the-installed-app))
 - Before fixing how a platform draws the app (iOS, Android, browser chrome), find its current documented behaviour and cite it in the PR. ([L-016](#l-016--2026-11-06--pwa--the-status-bar-blur-still-covered-the-title-after-l-015))
 - Pad screens by the safe-area inset plus a gutter ("Screen edges" in `docs/design-system.md`), and verify safe-area layout on the iPhone; desktop browsers report zero insets. ([L-015](#l-015--2026-11-06--pwa--the-page-title-sat-under-the-ios-status-bar-blur))
 - At the end of every task, check the later ROADMAP tasks it affects; halfway through each milestone, review the whole repository and plan. ([L-009](#l-009--2026-11-02--process--plan-and-code-problems-surfaced-in-a-batch))
@@ -38,6 +39,13 @@ Copy this block to the top of the log. Keep it short; the point is the rule chan
 Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion`, `i18n`, `pwa`, `tooling`, `process`.
 
 ## Log
+
+### L-017 · 2026-11-07 · pwa · Test steps told bw to type a URL into the installed app
+- **What happened:** The M0-13 handover asked bw to open `/dev/rest-timer.html` by typing the address inside the home-screen app. bw asked whether to delete and re-add the app; an installed web app has no address bar and always opens at the manifest `start_url`, so the page was unreachable.
+- **Root cause:** The steps were written for a browser tab, not for the standalone app the test required. No rule said how bw reaches a page on the iPhone.
+- **Fix:** PR `m0/13-dev-page-links` (dev builds link the dev pages from the home page); corrected in chat.
+- **Prevention:** Active rule below; every new dev page gets a link from the dev home page (`src/app/page.tsx`).
+- **Status:** documented
 
 _Newest first._
 

@@ -41,9 +41,9 @@ Done when: every push to `main` deploys to dev automatically, and the rest-timer
   Verify: on an iPhone, the kitchen sink switches correctly between light and dark and the press feedback matches the prototype; with Reduce Motion on, only fades remain.
 - [x] **M0-12 PWA shell**: manifest, icons, splash screen, safe areas; Serwist precaches the app shell; opening offline shows the app, not a browser error.
   Verify: 👤 "Add to Home Screen" in iPhone Safari opens full-screen; it still opens in airplane mode.
-- [ ] **M0-13 👤 Rest-timer field test**: a standalone page with a rest countdown, Wake Lock, and an audio cue (unlocked by a tap, as iOS requires). The owner uses it at the gym 2–3 times.
-  Verify: findings recorded in ADR-0005 (behaviour when locked, when switching apps, during a call).
-- [ ] **M0-14 ADRs and board**: ADR-0003 data model and sync rules, ADR-0004 PWA over native, ADR-0005 iOS timer limits and the three-layer fallback (ADR-0001 is the AWS account model, ADR-0002 the CloudFront to API auth). Create M1 issues and a GitHub Projects board with `gh`.
+- [x] **M0-13 👤 Rest-timer field test**: a standalone page with a rest countdown, Wake Lock, and an audio cue (unlocked by a tap, as iOS requires). The owner uses it at the gym 2–3 times.
+  Verify: findings recorded in [ADR-0005](adr/0005-ios-rest-timer.md) (behaviour when locked, when switching apps, during a call). Done 2026-11-07; a call was not tested (locking produced the same audio interruption).
+- [ ] **M0-14 ADRs and board**: ADR-0003 data model and sync rules, ADR-0004 PWA over native, (ADR-0005, iOS timer limits and the three-layer fallback, was written in M0-13; ADR-0001 is the AWS account model, ADR-0002 the CloudFront to API auth). Create M1 issues and a GitHub Projects board with `gh`.
   Verify: ADR-0001 to ADR-0005 in `docs/adr/`; every M1 task is on the board.
 
 ## M1 Workout logging + rest timer (weeks 3–5, local data only)
@@ -60,8 +60,8 @@ Done when: a full week of training is logged only in Gainframe, at ≤ 5 seconds
   Verify: "卧推" and "bench" both find bench press; a custom exercise survives an app restart.
 - [ ] **M1-05 Active workout + set logging**: start an empty workout and add exercises; each set row shows and pre-fills last time's numbers; weight/rep steppers; set types (warm-up / working / drop / failure), RPE, notes; completion check animation and rolling digits.
   Verify: one-handed, a set is logged in ≤ 5 seconds; a page reload loses nothing.
-- [ ] **M1-06 Rest timer**: completing a set starts a countdown using the exercise's default; ±15 s; the sheet collapses to a pill; Wake Lock; audio cue.
-  Verify: complete a set → sheet rises → drag to pill → cue plays on time (error < 1 s).
+- [ ] **M1-06 Rest timer**: completing a set starts a countdown using the exercise's default; ±15 s; the sheet collapses to a pill; Wake Lock; audio cue that repeats until tapped to dismiss. Follows layers 1 and 2 of [ADR-0005](adr/0005-ios-rest-timer.md): remaining time is always computed from the end time; on return from the background, a stale scheduled cue is cancelled and an overdue rest shows how long ago it ended. Settle the audio session type against the silent switch and the user's music.
+  Verify: complete a set → sheet rises → drag to pill → cue plays on time (error < 1 s) and repeats until dismissed; lock the phone past the end, unlock → overdue state shows at once and no late cue plays.
 - [ ] **M1-07 Supersets**: group two or more exercises and alternate; rest starts only after a full round.
   Verify: three rounds of A1/A2 start the timer only at the end of each round.
 - [ ] **M1-08 Finish workout + summary**: duration, volume, PRs; the three celebration tiers (chalk / plates / ripple) with their timing rules.

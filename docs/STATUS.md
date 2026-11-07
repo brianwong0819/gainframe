@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** M0-13 rest-timer field test: the test page is on dev; waiting for bw's gym sessions, then the findings go into ADR-0005
+- **Current task:** none; M0-13 done (next: M0-14 ADRs and board, waiting for bw to say continue)
 - **Last updated:** 2026-11-07
 
 ## Where I stopped
@@ -38,7 +38,8 @@ M0-12 (2026-11-06, PR `m0/12-pwa-shell`): `src/app/manifest.ts` (standalone, por
 
 Device QA (2026-11-06, PR `m0/device-qa`): `apps/web/e2e` runs Playwright (`@playwright/test` 1.63, which M1-12's end-to-end tests will reuse) over the static export on iPhone SE, 17e, 17 and 17 Pro Max (WebKit) and Pixel 7 and Galaxy S24 (Chromium), light and dark. Real safe-area insets are injected through new `--safe-*` tokens, the only place that reads `env(safe-area-inset-*)` (guarded by `src/styles/safe-area.test.ts`). It fails on sideways scroll or content inside an inset; CI job "Device layout" uploads the screenshots. Manual Android (Chrome DevTools) and iPhone steps: "Device QA" in `docs/design-system.md`.
 
-M0-13 (2026-11-07, PR `m0/13-rest-timer-field-test`): `src/app/dev/rest-timer/page.dev.tsx` (dev builds only, at `/dev/rest-timer.html` on dev) counts down from a stored end time, so a suspended page shows the right time when it returns. Start requests a screen wake lock (re-requested when the page becomes visible again) and, inside the same tap, unlocks an `AudioContext` and schedules the cue on the audio clock; the Audio Session API type (`auto` / `ambient` / `transient` / `playback`) is selectable. The page logs its lifecycle (visibility, `pagehide`, reload during a countdown, audio state changes such as `interrupted`, wake lock release, how late the page noticed the end, how far the audio clock fell behind) to `localStorage`, with a copy button, because no Web Inspector reaches bw's iPhone. Checked in Chromium at 390×844 (start, reload mid-countdown, end after 30 s, copy). Next: bw runs the protocol in the PR at the gym 2–3 times and pastes the logs; the findings go into ADR-0005 (M0-14) and decide M1-06's design.
+M0-13 (2026-11-07, PR `m0/13-rest-timer-field-test`): `src/app/dev/rest-timer/page.dev.tsx` (dev builds only, at `/dev/rest-timer.html` on dev) counts down from a stored end time, so a suspended page shows the right time when it returns. Start requests a screen wake lock (re-requested when the page becomes visible again) and, inside the same tap, unlocks an `AudioContext` and schedules the cue on the audio clock; the Audio Session API type (`auto` / `ambient` / `transient` / `playback`) is selectable. The page logs its lifecycle (visibility, `pagehide`, reload during a countdown, audio state changes such as `interrupted`, wake lock release, how late the page noticed the end, how far the audio clock fell behind) to `localStorage`, with a copy button, because no Web Inspector reaches bw's iPhone. Checked in Chromium at 390×844 (start, reload mid-countdown, end after 30 s, copy).
+M0-13 findings (2026-11-07, PR `m0/13-timer-findings`): bw ran the test page from the home-screen app. With the screen on, the wake lock held and the cue played on time; locking or switching apps releases the wake lock and freezes both JavaScript and the audio clock, so nothing plays until the app returns. Recorded in [ADR-0005](adr/0005-ios-rest-timer.md) with the three-layer decision (visible page, correct state on return, Web Push from M5-02 while hidden); M1-06 now includes a repeating cue dismissed by a tap and the return-from-background behaviour. The dev home page links to the dev pages (an installed app has no address bar).
 
 ## Blocked on bw
 
