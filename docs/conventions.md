@@ -9,6 +9,8 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - Prefer plain functions and plain objects. Classes only where a library expects them (Dexie).
 - Errors: throw typed errors in services; `app.onError` maps them to the shared error shape `{ error: { code, message, requestId } }` (`apiErrorSchema` in `packages/shared`). Never swallow an error with an empty `catch`.
 - Naming: `camelCase` values, `PascalCase` types/components, `SCREAMING_SNAKE` for true constants, `kebab-case` file names. DB columns `snake_case`; Drizzle maps them.
+- Schema fields are `camelCase` (`weightKg`, `localDate`); the column names in `docs/architecture.md` are their `snake_case` database form. Optional fields are `.nullable()`, never `.optional()`, so a client always sends them ([ADR-0003](adr/0003-data-model-and-sync.md)).
+- A `local_date` has the branded type `LocalDate`; outside tests it comes only from `toLocalDate`.
 - No barrel files (`index.ts` re-exporting everything) except the public entry of `packages/shared`.
 
 ## React (apps/web)

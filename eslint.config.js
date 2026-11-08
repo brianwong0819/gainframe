@@ -31,6 +31,11 @@ export default defineConfig([
       'no-undef': 'off',
       'no-console': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
+      // A new value in a union (such as a set kind) must be handled in every switch over it.
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { allowDefaultCaseForExhaustiveSwitch: false, considerDefaultExhaustiveForUnions: false },
+      ],
       '@typescript-eslint/ban-ts-comment': [
         'error',
         { 'ts-expect-error': true, 'ts-ignore': true },
