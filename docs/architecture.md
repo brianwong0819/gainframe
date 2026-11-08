@@ -64,13 +64,13 @@ Dependency direction: `web` → `shared`, `api` → `shared`. `shared` depends o
 
 ## Data model
 
-All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`. Units: kg, g, kcal.
+All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`; on the server also `server_version`. Units: kg, g, kcal. `weekly_summaries` and `nudges` are written by the server and only pulled; `push_subscriptions` and `ai_usage` are not synced.
 
 | Table | Key fields |
 |---|---|
 | profiles | phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
 | body_metrics | local_date, weight_kg |
-| exercises | name_zh, name_en, muscle, equipment, is_builtin, default_rest_s |
+| exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are a constant in `packages/shared` with fixed IDs) |
 | templates / template_items | name; exercise_id, position, superset_group, target_sets, target_reps |
 | workouts | started_at, ended_at, template_id, local_date, note |
 | workout_sets | workout_id, exercise_id, superset_group, position, kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
@@ -80,11 +80,11 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | push_subscriptions | endpoint, keys |
 | ai_usage | user_id, local_date, feature, calls, tokens (server-only; enforces daily caps) |
 
-## Sync rules (details in ADR-0003, written in M0-14)
+## Sync rules (details in [ADR-0003](adr/0003-data-model-and-sync.md))
 
 - Local first: every write goes to Dexie and an outbox row in one transaction.
-- Push: batches of outbox rows; server upserts by `id`; **last writer wins on `updated_at`**; a `deleted_at` is just another update.
-- Pull: by server cursor (monotonic `server_updated_at`), not by client clocks.
+- Push: batches of outbox rows; server upserts by `id`; **last writer wins on `updated_at`** (row level; equal or older is ignored, too far in the future is rejected); a `deleted_at` is just another update. `user_id` comes from the JWT, never the payload.
+- Pull: by a per-user `server_version` counter assigned under a per-user lock, not by any clock.
 - Idempotent: re-sending the same batch is harmless.
 - One user, few devices — no CRDTs, no merge UI.
 

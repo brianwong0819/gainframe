@@ -38,4 +38,4 @@ Option 4.
 - M1-06 implements layers 1 and 2 with no server; the in-app timer is reliable as long as the app is in front, which is how it is used between sets.
 - Until M5-02 ships, a locked phone gets no alert at rest end. The UI should make this clear the first time the user locks with a rest running (a one-line hint, not a modal).
 - Silent mode: test the `playback` audio session type against the ringer switch in M1-06, and whether it pauses the user's music; prefer a type that mixes with music if both cannot be had.
-- A countdown in the Dynamic Island needs a native app; revisit only if Gainframe ever ships one (see the planned PWA-over-native ADR in M0-14).
+- A countdown in the Dynamic Island needs a native app; revisit only if Gainframe ever ships one (see [ADR-0004](0004-pwa-over-native.md)).

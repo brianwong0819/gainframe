@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-13 done (next: M0-14 ADRs and board, waiting for bw to say continue)
-- **Last updated:** 2026-11-07
+- **Current task:** none; M0-14 done (next: M1-01 Workout domain model, waiting for bw to say continue)
+- **Last updated:** 2026-11-08
 
 ## Where I stopped
 
@@ -40,8 +40,19 @@ Device QA (2026-11-06, PR `m0/device-qa`): `apps/web/e2e` runs Playwright (`@pla
 
 M0-13 (2026-11-07, PR `m0/13-rest-timer-field-test`): `src/app/dev/rest-timer/page.dev.tsx` (dev builds only, at `/dev/rest-timer.html` on dev) counts down from a stored end time, so a suspended page shows the right time when it returns. Start requests a screen wake lock (re-requested when the page becomes visible again) and, inside the same tap, unlocks an `AudioContext` and schedules the cue on the audio clock; the Audio Session API type (`auto` / `ambient` / `transient` / `playback`) is selectable. The page logs its lifecycle (visibility, `pagehide`, reload during a countdown, audio state changes such as `interrupted`, wake lock release, how late the page noticed the end, how far the audio clock fell behind) to `localStorage`, with a copy button, because no Web Inspector reaches bw's iPhone. Checked in Chromium at 390×844 (start, reload mid-countdown, end after 30 s, copy).
 M0-13 findings (2026-11-07, PR `m0/13-timer-findings`): bw ran the test page from the home-screen app. With the screen on, the wake lock held and the cue played on time; locking or switching apps releases the wake lock and freezes both JavaScript and the audio clock, so nothing plays until the app returns. Recorded in [ADR-0005](adr/0005-ios-rest-timer.md) with the three-layer decision (visible page, correct state on return, Web Push from M5-02 while hidden); M1-06 now includes a repeating cue dismissed by a tap and the return-from-background behaviour. The dev home page links to the dev pages (an installed app has no address bar).
+M0-14 (2026-11-08, PR `m0/14-adrs-and-board`): [ADR-0003](adr/0003-data-model-and-sync.md) fixes the sync rules M1 builds to: row-level last writer wins on `updated_at` (equal ignored, too far in the future rejected), outbox entry in the same Dexie transaction as each write, `user_id` only from the JWT (null in Dexie until M2-06), pull by a per-user `server_version` assigned under a per-user lock, omitted columns kept so an old client cannot wipe a new one, built-in exercises as a constant with fixed UUIDs instead of rows. [ADR-0004](adr/0004-pwa-over-native.md) records PWA over native (no Mac, Developer Program cost, portfolio target) and the storage guarantee for home-screen apps. M1 issues #26–#38 created with label `M1`.
 
 ## Blocked on bw
+
+- GitHub Projects board for M1 (M0-14). `gh` needs the `project` scope, which only bw's sign-in can grant. In PowerShell:
+  ```powershell
+  cd C:\dev\gainframe
+  gh auth refresh -s project
+  $n = gh project create --owner "@me" --title "Gainframe" --format json --jq ".number"
+  gh project link $n --owner "@me" --repo brianwong0819/gainframe
+  26..38 | ForEach-Object { gh project item-add $n --owner "@me" --url "https://github.com/brianwong0819/gainframe/issues/$_" }
+  ```
+  Then in the project on github.com, switch the view's layout to Board.
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
