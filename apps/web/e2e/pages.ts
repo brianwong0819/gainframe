@@ -4,4 +4,5 @@ export const pages = [
   { name: 'home', path: '/' },
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
   { name: 'rest-timer', path: '/dev/rest-timer' },
+  { name: 'database', path: '/dev/database' },
 ]

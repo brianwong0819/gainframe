@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
+import { PersistOnLaunch } from '@/db/persist-on-launch'
 import { pwaImageDir, startupImages } from '@/pwa/images'
 import { LaunchScreen } from '@/pwa/launch-screen'
 import { ServiceWorker } from '@/pwa/service-worker'
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <LaunchScreen />
         </MotionProvider>
         <ServiceWorker />
+        <PersistOnLaunch />
       </body>
     </html>
   )

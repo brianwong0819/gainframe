@@ -5,6 +5,7 @@ import Link from 'next/link'
 const devPages = [
   { href: '/dev/rest-timer', label: 'Rest timer test' },
   { href: '/dev/kitchen-sink', label: 'Kitchen sink' },
+  { href: '/dev/database', label: 'Local database' },
 ] as const
 
 export default function HomePage() {
