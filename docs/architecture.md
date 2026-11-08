@@ -37,7 +37,8 @@ apps/
     src/styles/       tokens.css, globals
     src/pwa/          manifest colours, the mark, icon and splash rendering, launch screen, service worker registration
     src/sw/           the service worker (Serwist); its own tsconfig with the WebWorker lib
-    scripts/          build steps: render PWA images before `next build`, bundle the service worker after it
+    src/csp/          the per-page inline-script hash policy added to the static export
+    scripts/          build steps: render PWA images before `next build`; after it, add the hash policy, then bundle the service worker
     e2e/              Playwright tests over the static export (device layout matrix; critical flows from M1-12)
     messages/         i18n catalogs: zh.json, en.json
   api/                Hono on AWS Lambda
@@ -87,6 +88,14 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 - Pull: by a per-user `server_version` counter assigned under a per-user lock, not by any clock.
 - Idempotent: re-sending the same batch is harmless.
 - One user, few devices — no CRDTs, no merge UI.
+
+## Security headers
+
+CloudFront adds the same response headers policy (`infra/modules/site`) to every response, the API's included: `Content-Security-Policy`, `Strict-Transport-Security` (two years, subdomains, no preload on the default `*.cloudfront.net` name), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: same-origin`.
+
+- **Content-Security-Policy.** The header is built from `infra/modules/site/content-security-policy.txt`, one directive per line; everything is `'self'`, plugins are off, `<base>` is forbidden and no site may frame the app. A static export renders the React Server Components payload and the Turbopack bootstrap as inline scripts, and no request exists to give them a nonce, so the header must allow `'unsafe-inline'` scripts. `scripts/csp-hashes.ts` closes that gap after `next build`: each page gets a `<meta>` policy `script-src 'self' 'sha256-…'` with the hashes of its own inline scripts. The browser enforces both policies, so only those scripts run. Inline styles stay allowed (React `style` attributes, the Next.js error page); they cannot run code.
+- **Adding an origin.** A feature that talks to another origin adds it to the policy file in the same PR: Cognito's managed login and token endpoint (M2-02) under `connect-src` and `form-action`, the photo bucket's presigned `PUT` (M3-03) under `connect-src`, and `blob:` under `img-src` for a local photo preview.
+- **Tests.** The e2e server (`apps/web/e2e/serve.ts`) sends the same header from the same file, and `e2e/csp.spec.ts` fails on any policy violation on every device in the matrix.
 
 ## Observability
 

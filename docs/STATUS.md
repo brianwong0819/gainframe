@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M0 Foundation
-- **Current task:** none; M0-14 done (next: M1-01 Workout domain model, waiting for bw to say continue)
+- **Current task:** none; M0-14 and the security headers done (next: M1-01 Workout domain model)
 - **Last updated:** 2026-11-08
 
 ## Where I stopped
@@ -42,17 +42,9 @@ M0-13 (2026-11-07, PR `m0/13-rest-timer-field-test`): `src/app/dev/rest-timer/pa
 M0-13 findings (2026-11-07, PR `m0/13-timer-findings`): bw ran the test page from the home-screen app. With the screen on, the wake lock held and the cue played on time; locking or switching apps releases the wake lock and freezes both JavaScript and the audio clock, so nothing plays until the app returns. Recorded in [ADR-0005](adr/0005-ios-rest-timer.md) with the three-layer decision (visible page, correct state on return, Web Push from M5-02 while hidden); M1-06 now includes a repeating cue dismissed by a tap and the return-from-background behaviour. The dev home page links to the dev pages (an installed app has no address bar).
 M0-14 (2026-11-08, PR `m0/14-adrs-and-board`): [ADR-0003](adr/0003-data-model-and-sync.md) fixes the sync rules M1 builds to: row-level last writer wins on `updated_at` (equal ignored, too far in the future rejected), outbox entry in the same Dexie transaction as each write, `user_id` only from the JWT (null in Dexie until M2-06), pull by a per-user `server_version` assigned under a per-user lock, omitted columns kept so an old client cannot wipe a new one, built-in exercises as a constant with fixed UUIDs instead of rows. [ADR-0004](adr/0004-pwa-over-native.md) records PWA over native (no Mac, Developer Program cost, portfolio target) and the storage guarantee for home-screen apps. M1 issues #26–#38 created with label `M1`.
 
-## Blocked on bw
+Security headers (2026-11-08, PR `m0/security-headers`): a CloudFront response headers policy adds Content-Security-Policy, HSTS, `nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: same-origin` to every response. The CSP header comes from `infra/modules/site/content-security-policy.txt`; because a static export has inline scripts and no nonces, `scripts/csp-hashes.ts` adds a `<meta>` `script-src` with each page's own inline-script hashes after `next build` (before the service worker build, which records file revisions). The e2e server sends the same header, and `e2e/csp.spec.ts` fails on any violation. Details: "Security headers" in `docs/architecture.md`.
 
-- GitHub Projects board for M1 (M0-14). `gh` needs the `project` scope, which only bw's sign-in can grant. In PowerShell:
-  ```powershell
-  cd C:\dev\gainframe
-  gh auth refresh -s project
-  $n = gh project create --owner "@me" --title "Gainframe" --format json --jq ".number"
-  gh project link $n --owner "@me" --repo brianwong0819/gainframe
-  26..38 | ForEach-Object { gh project item-add $n --owner "@me" --url "https://github.com/brianwong0819/gainframe/issues/$_" }
-  ```
-  Then in the project on github.com, switch the view's layout to Board.
+## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
@@ -63,7 +55,6 @@ M0-14 (2026-11-08, PR `m0/14-adrs-and-board`): [ADR-0003](adr/0003-data-model-an
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when M1-03 builds the tab bar.
 
 - CloudFront has no rewrite for static-export routes yet (`/workout` → `/workout/index.html` or `.html`) and no custom 404; a distribution-wide custom error response would also rewrite API 403s. Add a CloudFront Function when M1-03 adds the first route.
-- No security response headers (CSP, HSTS) on the site yet; add a CloudFront response headers policy in its own PR (`m0/security-headers`), kept out of M0-12 to keep that diff small.
 - A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
