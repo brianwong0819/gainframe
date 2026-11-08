@@ -2,8 +2,8 @@
 
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
-- **Milestone:** M0 Foundation
-- **Current task:** none; M0-14 and the security headers done (next: M1-01 Workout domain model)
+- **Milestone:** M1 Workout logging
+- **Current task:** none; M1-01 and the security headers done (next: M1-02 Local database layer, waiting for bw to say continue)
 - **Last updated:** 2026-11-08
 
 ## Where I stopped
@@ -43,6 +43,7 @@ M0-13 findings (2026-11-07, PR `m0/13-timer-findings`): bw ran the test page fro
 M0-14 (2026-11-08, PR `m0/14-adrs-and-board`): [ADR-0003](adr/0003-data-model-and-sync.md) fixes the sync rules M1 builds to: row-level last writer wins on `updated_at` (equal ignored, too far in the future rejected), outbox entry in the same Dexie transaction as each write, `user_id` only from the JWT (null in Dexie until M2-06), pull by a per-user `server_version` assigned under a per-user lock, omitted columns kept so an old client cannot wipe a new one, built-in exercises as a constant with fixed UUIDs instead of rows. [ADR-0004](adr/0004-pwa-over-native.md) records PWA over native (no Mac, Developer Program cost, portfolio target) and the storage guarantee for home-screen apps. M1 issues #26–#38 created with label `M1`.
 
 Security headers (2026-11-08, PR `m0/security-headers`): a CloudFront response headers policy adds Content-Security-Policy, HSTS, `nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: same-origin` to every response. The CSP header comes from `infra/modules/site/content-security-policy.txt`; because a static export has inline scripts and no nonces, `scripts/csp-hashes.ts` adds a `<meta>` `script-src` with each page's own inline-script hashes after `next build` (before the service worker build, which records file revisions). The e2e server sends the same header, and `e2e/csp.spec.ts` fails on any violation. Details: "Security headers" in `docs/architecture.md`.
+M1-01 (2026-11-08, PR `m1/01-workout-domain`): Zod schemas in `packages/shared/src/schemas` for the shared row fields (UUIDv7 `id`, nullable `userId`, UTC instants, branded `LocalDate`), custom exercises, templates and template items, workouts and sets (kind `warmup` / `working` / `drop` / `failure`). Pure functions in `src/domain`: `toLocalDate` (via `Intl.DateTimeFormat`), `estimateOneRepMax` (Epley; a single is its own 1RM; null for 0 reps or above `domainConfig.e1rmMaxReps` = 12), `totalVolumeKg` (warm-ups excluded), `previousPerformance` and `findPersonalRecords` (working and failure sets only; an exercise with no history has no records). ESLint `switch-exhaustiveness-check` is on, without a default-case escape.
 
 ## Blocked on bw
 
