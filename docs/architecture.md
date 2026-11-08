@@ -88,6 +88,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 - Pull: by a per-user `server_version` counter assigned under a per-user lock, not by any clock.
 - Idempotent: re-sending the same batch is harmless.
 - One user, few devices — no CRDTs, no merge UI.
+- On the device (`apps/web/src/db`): `GainframeDb` is the Dexie schema; `createRepositories` gives each synced table `get` / `create` / `update` / `remove`. A repository validates the row with its schema from `packages/shared`, sets `id` (UUIDv7 from `id.ts`), `createdAt`, `updatedAt` and `deletedAt`, and adds an `outbox` entry `{ seq, table, rowId }` in the same transaction. `updatedAt` always moves forward, by 1 ms past the stored value if the device clock went back, so the server never ignores a local edit as "equal or older". `remove` soft-deletes the row and its children (workout sets, template items). Features read through the repositories or their own queries inside `src/db`, never through IndexedDB directly.
 
 ## Security headers
 
@@ -95,6 +96,7 @@ CloudFront adds the same response headers policy (`infra/modules/site`) to every
 
 - **Content-Security-Policy.** The header is built from `infra/modules/site/content-security-policy.txt`, one directive per line; everything is `'self'`, plugins are off, `<base>` is forbidden and no site may frame the app. A static export renders the React Server Components payload and the Turbopack bootstrap as inline scripts, and no request exists to give them a nonce, so the header must allow `'unsafe-inline'` scripts. `scripts/csp-hashes.ts` closes that gap after `next build`: each page gets a `<meta>` policy `script-src 'self' 'sha256-…'` with the hashes of its own inline scripts. The browser enforces both policies, so only those scripts run. Inline styles stay allowed (React `style` attributes, the Next.js error page); they cannot run code.
 - **Adding an origin.** A feature that talks to another origin adds it to the policy file in the same PR: Cognito's managed login and token endpoint (M2-02) under `connect-src` and `form-action`, the photo bucket's presigned `PUT` (M3-03) under `connect-src`, and `blob:` under `img-src` for a local photo preview.
+- **Zod.** Zod tries `new Function` whenever a `z.object()` is created, which the policy blocks and the browser reports as a violation. `src/instrumentation-client.ts`, which Next.js runs before the rest of the client code, sets `z.config({ jitless: true })`; the server keeps the faster compiled parsers.
 - **Tests.** The e2e server (`apps/web/e2e/serve.ts`) sends the same header from the same file, and `e2e/csp.spec.ts` fails on any policy violation on every device in the matrix.
 
 ## Observability
