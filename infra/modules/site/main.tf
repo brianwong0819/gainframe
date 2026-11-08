@@ -137,6 +137,47 @@ locals {
   api_origin_id  = "api"
   # https://<id>.lambda-url.<region>.on.aws/ -> <id>.lambda-url.<region>.on.aws
   api_domain = split("/", var.api_function_url)[2]
+  # One directive per line; trimmed so a CRLF checkout yields the same header.
+  content_security_policy = [
+    for line in split("\n", file("${path.module}/content-security-policy.txt")) : trimspace(line) if trimspace(line) != ""
+  ]
+}
+
+# Security headers on every response, the API's included. The policy text is
+# shared with the e2e server (apps/web/e2e/serve.ts), so the device tests run
+# the app under the same policy. Each page also carries a stricter script-src
+# with the hashes of its own inline scripts (apps/web/src/csp).
+resource "aws_cloudfront_response_headers_policy" "security" {
+  name = "${var.name}-security"
+
+  security_headers_config {
+    content_security_policy {
+      content_security_policy = join("; ", local.content_security_policy)
+      override                = true
+    }
+
+    # The default *.cloudfront.net name cannot be preloaded; add preload with a
+    # custom domain.
+    strict_transport_security {
+      access_control_max_age_sec = 63072000
+      include_subdomains         = true
+      override                   = true
+    }
+
+    content_type_options {
+      override = true
+    }
+
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+
+    referrer_policy {
+      referrer_policy = "same-origin"
+      override        = true
+    }
+  }
 }
 
 resource "aws_cloudfront_distribution" "site" {
@@ -168,23 +209,25 @@ resource "aws_cloudfront_distribution" "site" {
   }
 
   default_cache_behavior {
-    target_origin_id       = local.site_origin_id
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
-    compress               = true
+    target_origin_id           = local.site_origin_id
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+    compress                   = true
   }
 
   ordered_cache_behavior {
-    path_pattern             = "/api/*"
-    target_origin_id         = local.api_origin_id
-    viewer_protocol_policy   = "https-only"
-    allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-    cached_methods           = ["GET", "HEAD"]
-    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
-    compress                 = true
+    path_pattern               = "/api/*"
+    target_origin_id           = local.api_origin_id
+    viewer_protocol_policy     = "https-only"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods             = ["GET", "HEAD"]
+    cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+    compress                   = true
   }
 
   restrictions {

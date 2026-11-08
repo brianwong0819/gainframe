@@ -84,7 +84,7 @@ Done when: signing in on a second device shows all data.
 
 - [ ] **M2-01 Neon + Drizzle**: 👤 owner adds the Neon `prod` branch (the project and `dev` exist since M0-08); connection strings in SSM. Drizzle schema mirrors Dexie; `drizzle-kit generate` migrations; deploys migrate dev automatically (a step in `deploy.yml` before `terraform apply`, reading the connection string from SSM with the apply role). The pool sets `statement_timeout` so a stuck query fails with a logged error instead of running until the Lambda timeout.
   Verify: `pnpm db:migrate` works locally and on dev; tables visible in the Neon console.
-- [ ] **M2-02 Cognito**: user pool (email + Google) in Terraform, managed login, PKCE; sign-in / sign-out / token refresh in the web app.
+- [ ] **M2-02 Cognito**: user pool (email + Google) in Terraform, managed login, PKCE; sign-in / sign-out / token refresh in the web app. Add the Cognito origins to the Content-Security-Policy ("Security headers" in [architecture.md](architecture.md)).
   Verify: 👤 Google sign-in completes inside the home-screen PWA on iPhone and returns to the app.
 - [ ] **M2-03 API auth**: verify the Cognito JWT on every request, read from `x-gainframe-token` (CloudFront overwrites `Authorization`; [ADR-0002](adr/0002-cloudfront-to-api-auth.md)); `user_id` from the token only; the access line from M0-09 gains `userId` (the Cognito `sub`, never the email).
   Verify: no token → 401; an integration test proves user A cannot read user B's data.
@@ -109,7 +109,7 @@ Done when: a meal is logged in under 30 seconds and the eval script reports mean
   Verify: tests pass; a manual meal syncs to a second device.
 - [ ] **M3-02 Manual entry + frequent foods**: add foods manually; one-tap add from frequent foods; swipe to delete.
   Verify: a frequent-food meal takes ≤ 10 seconds.
-- [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle.
+- [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle. Add the bucket origin (`connect-src`) and `blob:` (`img-src`) to the Content-Security-Policy.
   Verify: the photo lands in S3; the lifecycle rule is visible; oversized files are rejected.
 - [ ] **M3-04 AI service layer**: `apps/api/src/ai` with one interface and Bedrock, Anthropic and OpenAI providers; model IDs in config; Zod-validated structured output with one retry; timeouts; per-user daily caps in Postgres. One log line per call: feature, provider, model, prompt version, latency, tokens in/out and outcome (`ok`, `retried`, `invalid`, `timeout`, `capped`, `provider_error`); on invalid output only the Zod issue paths are logged.
   Verify: unit tests with a fake provider cover retry, timeout and cap, and assert each outcome's log line; one real Bedrock call succeeds on dev and its line is in CloudWatch.
