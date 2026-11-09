@@ -1,0 +1,29 @@
+{
+  "tabs": {
+    "label": "Main",
+    "today": "Today",
+    "workout": "Workout",
+    "food": "Food"
+  },
+  "today": {
+    "title": "Today",
+    "empty": "Nothing logged yet today."
+  },
+  "workout": {
+    "title": "Workout",
+    "empty": "No workouts yet."
+  },
+  "food": {
+    "title": "Food",
+    "empty": "No meals logged today."
+  },
+  "language": {
+    "label": "Language",
+    "zh": "中文",
+    "en": "English"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to Today"
+  }
+}

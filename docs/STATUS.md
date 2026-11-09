@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-03 App shell and navigation, in three PRs: route function (done), diagnostics, shell and i18n
+- **Current task:** M1-03 App shell and navigation, in three PRs: route function (done), shell and i18n (done), diagnostics
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -47,7 +47,9 @@ M1-01 (2026-11-08, PR `m1/01-workout-domain`): Zod schemas in `packages/shared/s
 
 M1-02 (2026-11-08, PR `m1/02-local-database`): `apps/web/src/db` holds the Dexie schema v1 (`exercises`, `templates`, `templateItems`, `workouts`, `workoutSets`, `outbox`), a UUIDv7 generator and `createRepositories` (validate with the shared schema, set the row fields, write row and outbox entry in one transaction, soft delete with children; details under "Sync rules" in `docs/architecture.md`). Tested with fake-indexeddb and an injected clock. The root layout asks for persistent storage on every launch until granted. `src/instrumentation-client.ts` puts Zod in jitless mode, because its `new Function` probe broke the CSP test as soon as a page built a schema. Dev page `/dev/database` (linked from the dev home page) writes a sample workout and shows row, tombstone and outbox counts and whether storage is persisted; checked in Chromium at 390×844 (IndexedDB holds the rows after a reload). New packages: `dexie` 4.4.7, `fake-indexeddb` 6.2.6 (dev). Verified 2026-11-09: on bw's iPhone the rows written from `/dev/database` in the home-screen app were still there after closing and reopening it.
 
-M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function maps clean URLs to the exported files and unknown paths to `404.html`, from the route list in `infra/modules/site/routes.json` (developer pages only on dev); a unit test keeps the list in step with `src/app`, and the e2e server runs the same function. The deploy smoke test requests `/dev/kitchen-sink`. Details: "Routing" in `docs/architecture.md`. Next: part 2, diagnostics (Dexie v2 error table, root error boundary, global handlers).
+M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function maps clean URLs to the exported files and unknown paths to `404.html`, from the route list in `infra/modules/site/routes.json` (developer pages only on dev); a unit test keeps the list in step with `src/app`, and the e2e server runs the same function. The deploy smoke test requests `/dev/kitchen-sink`. Details: "Routing" in `docs/architecture.md`. 
+
+M1-03, part 2 (2026-11-09, PR `m1/03-app-shell`): the three tabs (Today `/`, Workout `/workout`, Food `/food`) in the route group `src/app/(tabs)`, whose layout holds the fixed tab bar (sliding pill with `std`, icon fill with `pop`); a tab switch is a React `<ViewTransition>` of type `tab` (details: "Navigation" in `docs/design-system.md`). next-intl runs client-only (`src/i18n`, "Languages" in `docs/architecture.md`); the language switch sits on Today until Settings exists (M1-11). `not-found.tsx` gives the route function a translated `404.html`. New tokens `--glass`, `--tab-bar-height`, `--tab-knob-width` and type `caption`. New package `next-intl` 4.14.9 (listed in `docs/architecture.md`); its unused extractor's native build scripts are denied in `pnpm-workspace.yaml`. Pending: bw's iPhone check that tab switching is smooth, light and dark, Reduce Motion on and off, and that English mode shows no Chinese. Next: part 3, diagnostics (Dexie v2 error table, root error boundary, global handlers), with the error screen from the catalogues.
 
 ## Blocked on bw
 
@@ -56,7 +58,7 @@ M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function map
 
 ## Follow-ups (noticed, not in scope yet)
 
-- The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when M1-03 builds the tab bar.
+- The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
 - A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.

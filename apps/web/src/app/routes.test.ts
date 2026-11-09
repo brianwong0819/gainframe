@@ -10,7 +10,7 @@ import { loadRouteFunction, siteRoutes } from '../../e2e/route-function.ts'
 
 const appDir = import.meta.dirname
 
-/** Every route the static export writes, from the page files under src/app. */
+/** Every route the static export writes, from the page files under src/app; route groups such as `(tabs)` add no path segment. */
 function exportedRoutes(page: 'page.tsx' | 'page.dev.tsx'): string[] {
   return readdirSync(appDir, { recursive: true, encoding: 'utf8' })
     .filter((file) => basename(file) === page)
@@ -18,7 +18,7 @@ function exportedRoutes(page: 'page.tsx' | 'page.dev.tsx'): string[] {
       (file) =>
         `/${dirname(file)
           .split(sep)
-          .filter((segment) => segment !== '.')
+          .filter((segment) => segment !== '.' && !/^\(.+\)$/.test(segment))
           .join('/')}`,
     )
     .sort()

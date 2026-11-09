@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
 import { PersistOnLaunch } from '@/db/persist-on-launch'
+import { I18nProvider } from '@/i18n/i18n-provider'
 import { pwaImageDir, startupImages } from '@/pwa/images'
 import { LaunchScreen } from '@/pwa/launch-screen'
 import { ServiceWorker } from '@/pwa/service-worker'
@@ -42,13 +43,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={martianMono.variable}>
+    // The export renders the default locale; I18nProvider updates `lang` on the device.
+    <html lang="zh-Hans" className={martianMono.variable}>
       <body>
         <div className="status-bar-fill" aria-hidden />
-        <MotionProvider>
-          {children}
-          <LaunchScreen />
-        </MotionProvider>
+        <I18nProvider>
+          <MotionProvider>
+            {children}
+            <LaunchScreen />
+          </MotionProvider>
+        </I18nProvider>
         <ServiceWorker />
         <PersistOnLaunch />
       </body>

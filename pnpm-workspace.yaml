@@ -17,3 +17,7 @@ minimumReleaseAgeExclude:
   - '@next/swc-win32-x64-msvc@16.4.4'
   - eslint-config-next@16.4.4
   - next@16.4.4
+# next-intl's message extractor (unused) brings these; the runtime needs neither build step.
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false

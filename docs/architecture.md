@@ -103,6 +103,10 @@ CloudFront adds the same response headers policy (`infra/modules/site`) to every
 
 The static export writes each page as a file (`/workout` becomes `workout.html`), and S3 knows nothing about routes. A CloudFront Function on viewer requests to the site (`infra/modules/site/route-function.js`) maps a known route to its file, with or without a trailing slash, passes any path with a file extension through, and serves `404.html` for anything else (with status 200; the function cannot fetch a body to send a 404 itself). It knows the routes from `infra/modules/site/routes.json`, `pages` everywhere and `devPages` only where the module sets `dev_pages`; `apps/web/src/app/routes.test.ts` fails when the file and the pages under `src/app` disagree. A distribution-wide custom error response is not used: it would also replace API errors with the site's 404 page. The function is not attached to `/api/*`. The e2e server (`apps/web/e2e/serve.ts`) runs the same function, so tests route requests as CloudFront does.
 
+## Languages
+
+Chinese and English, with catalogues in `apps/web/messages/` (`zh.json`, `en.json`; the English one types every key). A static export has no request and no middleware to choose a language, so i18n runs on the client: `src/i18n/i18n-provider.tsx` wraps the app in next-intl's `NextIntlClientProvider` (no next-intl plugin or `i18n/request.ts`), the build prerenders Chinese, and after hydration the page switches to the device's choice (`localStorage`, else the first of `navigator.languages` the app speaks, else Chinese) and sets `<html lang>`. In the installed app the launch screen covers that first frame. Components that show text are client components using `useTranslations`. `src/i18n/catalog.test.ts` fails when the catalogues' keys differ or Chinese text appears in application code. The choice moves to the synced profile (`profiles.locale`) in M2.
+
 ## Observability
 
 Goal: any problem bw sees on the phone can be traced to a log line in minutes, without logging personal data. No paid tools; everything sits in the CloudWatch and SNS free tiers.
