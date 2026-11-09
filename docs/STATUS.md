@@ -76,6 +76,8 @@ M1-05 PR 3 (2026-11-09, `m1/05-workout-screen`): the Workout tab shows the worko
 M1-05 PR 4 (2026-11-09, `m1/05-set-details`): a sheet for a set's kind and RPE and deleting it (from the panel, or by tapping a done set), a per-exercise note and "remove from this workout" (`features/workout/set-details.tsx`, `slot-note.tsx`); `ChoiceGroup` moved to `src/ui`; stepper taps go through `workoutSession.stepSet`, which reads the stored value in its transaction so quick taps all count. 
 M1-05 PR 5 (2026-11-09, `m1/05-motion`): the stepper's number is also a text field (decimal keypad for weight, a comma reads as a point; `features/workout/entry.ts` rejects what the set schema would); `src/ui/rolling-number.tsx` rolls changed characters with `std`, 28 ms apart (`ROLL_STAGGER_S`); the set check pops its disc with `pop` and draws its tick. M1-05 is done. Pending: bw iPhone check (one-handed, a set in 5 s or less; Reduce Motion on and off).
 
+M1-05 follow-up (2026-11-09, `m1/05-workout-back`, L-025): bw found no way out of the workout in progress. It now lives at `/workout/session` with a back link; the Workout tab shows "Continue workout"; the finish sheet can discard the workout (asks twice). bw chose to build training plans (several plans, one active, a rotating split; starting a workout from the active plan's next day) before M1-06; M1-09 will be rewritten with that design once bw agrees to it.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
@@ -90,5 +92,3 @@ M1-05 PR 5 (2026-11-09, `m1/05-motion`): the stepper's number is also a text fie
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`. The rolldown bundle can now include `@gainframe/shared`; move the shape there when the web app first consumes an API response.
-
-M1-05 follow-up (2026-11-09, `m1/05-workout-back`, L-025): bw found no way out of the workout in progress. It now lives at `/workout/session` with a back link; the Workout tab shows "Continue workout"; the finish sheet can discard the workout (asks twice). bw chose to build training plans (several plans, one active, a rotating split; starting a workout from the active plan's next day) before M1-06; M1-09 will be rewritten with that design once bw agrees to it.
