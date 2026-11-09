@@ -163,6 +163,10 @@
     fill: var(--accent-soft);
   }
 
+  .muscle-map[data-pickable] path:not(.body-part) {
+    cursor: pointer;
+  }
+
   /* Bottom sheet (src/ui/sheet.tsx): a full-screen transparent dialog holding a
    * scrim and a panel, so both can animate; the native backdrop stays unused. */
   .sheet-dialog {

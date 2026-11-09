@@ -34,6 +34,22 @@ export const mechanicSchema = z.enum(['compound', 'isolation'])
 const exerciseNameSchema = z.string().trim().min(1).max(80)
 const restSecondsSchema = z.int().min(0).max(3600)
 
+// Muscles an exercise also works: each at most once, never the primary one.
+const secondaryMusclesSchema = z.array(muscleGroupSchema).max(muscleGroupSchema.options.length)
+function secondaryAreDistinct(exercise: {
+  muscle: MuscleGroup
+  secondaryMuscles: readonly MuscleGroup[]
+}): boolean {
+  const { muscle, secondaryMuscles } = exercise
+  return (
+    !secondaryMuscles.includes(muscle) && new Set(secondaryMuscles).size === secondaryMuscles.length
+  )
+}
+const secondaryIssue = {
+  message: 'Secondary muscles are distinct and exclude the primary muscle',
+  path: ['secondaryMuscles'],
+}
+
 // A custom exercise. Built-in exercises are a constant with fixed IDs, not rows
 // (ADR-0003). A custom exercise needs a name in at least one language.
 export const exerciseSchema = syncedRowSchema
@@ -41,6 +57,7 @@ export const exerciseSchema = syncedRowSchema
     nameZh: exerciseNameSchema.nullable(),
     nameEn: exerciseNameSchema.nullable(),
     muscle: muscleGroupSchema,
+    secondaryMuscles: secondaryMusclesSchema,
     equipment: equipmentSchema,
     defaultRestS: restSecondsSchema,
   })
@@ -48,6 +65,7 @@ export const exerciseSchema = syncedRowSchema
     message: 'An exercise needs a Chinese or an English name',
     path: ['nameEn'],
   })
+  .refine(secondaryAreDistinct, secondaryIssue)
 
 // A built-in exercise: shipped as a constant with a fixed ID, never stored or synced
 // (ADR-0003). `aliases` are extra search terms such as abbreviations ("RDL").
@@ -58,15 +76,12 @@ export const builtInExerciseSchema = z
     nameEn: exerciseNameSchema,
     aliases: z.array(exerciseNameSchema),
     muscle: muscleGroupSchema,
-    secondaryMuscles: z.array(muscleGroupSchema),
+    secondaryMuscles: secondaryMusclesSchema,
     equipment: equipmentSchema,
     mechanic: mechanicSchema,
     defaultRestS: restSecondsSchema,
   })
-  .refine((exercise) => !exercise.secondaryMuscles.includes(exercise.muscle), {
-    message: 'The primary muscle is not also a secondary muscle',
-    path: ['secondaryMuscles'],
-  })
+  .refine(secondaryAreDistinct, secondaryIssue)
 
 // Form cues for a built-in exercise: two or three short lines, the same ones in
 // each language.

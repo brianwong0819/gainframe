@@ -63,6 +63,8 @@ M1-04, part 3b (2026-11-09, PR `m1/04-exercise-cues`): `BUILT_IN_EXERCISE_CUES` 
 
 M1-04 fixes (2026-11-09, PR `m1/04-sheet-fixes`), from bw's iPhone check: the sheet no longer raises the keyboard on opening (it focuses its panel), the page behind it no longer scrolls, and it has a close button and drag-down to dismiss (L-019). Custom exercises open the same detail sheet as built-in ones (muscle map with their primary muscle) with an Edit button. M1-09 now plans several templates with one active and "Add to plan" from the detail sheet. Known: iOS may still offer "AutoFill Contact" above the keyboard on the name fields.
 
+M1-04 muscle picker (2026-11-09, PR `m1/04-muscle-picker`), asked for by bw: custom exercises now have secondary muscles (`exerciseSchema.secondaryMuscles`, distinct and never the primary one; Dexie version 3 gives existing rows none, covered by `db/upgrade.test.ts`). The form picks muscles on the muscle map or with the buttons under it (`pickMuscle`: first tap primary, later taps secondary, a second tap removes, full body stands alone), and a new exercise starts with none picked. The detail sheet shows secondary muscles for custom exercises too. Pending: bw's iPhone check.
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").

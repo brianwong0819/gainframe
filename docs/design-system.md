@@ -55,6 +55,8 @@ Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(ta
 
 **Sheets.** Forms and details that belong to the current screen open in a bottom sheet (`src/ui/sheet.tsx`): a native modal `<dialog>` (focus trap, Escape, inert page) whose panel rises with `std` over the `--scrim`, which fades with `fade`; with Reduce Motion both only fade. It closes with a close button in its header, a tap on the scrim, Escape, or a downward drag of the header (past 120 px or 600 px/s). On opening it focuses its own panel, never a text field, so the keyboard appears only when the user taps a field (L-019), and `html:has(.sheet-dialog[open])` stops the page behind it from scrolling.
 
+**Muscle map.** `src/features/exercises/muscle-map.tsx` draws one front-and-back body in SVG: the primary muscle in `--accent`, secondary muscles in `--accent-soft`, the rest in `--sunk`. In the exercise form it is also a picker (first tap primary, later taps secondary, a second tap removes). Some regions are about 10 px wide, under the 44 px tap target, so a row of muscle buttons in the same two colours sits below it as the control that always works.
+
 ## Celebrations (three tiers, only at meaningful moments)
 
 | Tier | When | Effect |

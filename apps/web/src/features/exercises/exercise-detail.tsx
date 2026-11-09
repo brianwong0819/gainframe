@@ -8,7 +8,7 @@ import { MuscleMap } from './muscle-map'
 import { Pressable } from '@/ui/pressable'
 
 // The detail of an exercise: where it works and how it is set up. A custom
-// exercise has only its primary muscle, no cues, and an Edit button.
+// exercise has no mechanic or cues, and has an Edit button.
 export function ExerciseDetail({
   exercise,
   onEdit,
@@ -22,14 +22,14 @@ export function ExerciseDetail({
   const locale = useLocale()
   const cues = builtInExerciseCues(exercise.id)?.[locale] ?? []
   const primary = tMuscle(exercise.muscle)
-  const secondaryMuscles = exercise.custom ? [] : exercise.secondaryMuscles
+  const { secondaryMuscles } = exercise
   const secondary =
     secondaryMuscles.length > 0
       ? secondaryMuscles.map((muscle) => tMuscle(muscle)).join(t('separator'))
       : t('none')
   const rows = [
     { label: t('primary'), value: primary },
-    ...(exercise.custom ? [] : [{ label: t('secondary'), value: secondary }]),
+    { label: t('secondary'), value: secondary },
     { label: t('equipment'), value: tEquipment(exercise.equipment) },
     ...(exercise.custom ? [] : [{ label: t('mechanic'), value: t(exercise.mechanic) }]),
   ]

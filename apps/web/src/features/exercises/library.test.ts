@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import type { Exercise } from '@gainframe/shared'
 
-import { draftToExercise, exerciseName, formatRest, libraryEntries } from './library'
+import {
+  draftToExercise,
+  exerciseName,
+  formatRest,
+  libraryEntries,
+  type MuscleSelection,
+  pickMuscle,
+} from './library'
 
 function custom(fields: Partial<Exercise> & Pick<Exercise, 'id' | 'createdAt'>): Exercise {
   return {
@@ -12,6 +19,7 @@ function custom(fields: Partial<Exercise> & Pick<Exercise, 'id' | 'createdAt'>):
     nameZh: null,
     nameEn: 'Landmine press',
     muscle: 'shoulders',
+    secondaryMuscles: [],
     equipment: 'barbell',
     defaultRestS: 90,
     ...fields,
@@ -72,10 +80,46 @@ describe('draftToExercise', () => {
       nameZh: '  ',
       nameEn: ' Landmine press ',
       muscle: 'shoulders',
+      secondaryMuscles: ['triceps'],
       equipment: 'barbell',
       defaultRestS: 90,
     })
     expect(values.nameZh).toBeNull()
     expect(values.nameEn).toBe('Landmine press')
+  })
+})
+
+describe('pickMuscle', () => {
+  const none: MuscleSelection = { muscle: null, secondaryMuscles: [] }
+  const taps = (...muscles: Parameters<typeof pickMuscle>[1][]) => muscles.reduce(pickMuscle, none)
+
+  it('makes the first tap primary and later taps secondary', () => {
+    expect(taps('chest', 'triceps', 'shoulders')).toEqual({
+      muscle: 'chest',
+      secondaryMuscles: ['triceps', 'shoulders'],
+    })
+  })
+
+  it('unpicks a secondary muscle', () => {
+    expect(taps('chest', 'triceps', 'shoulders', 'triceps')).toEqual({
+      muscle: 'chest',
+      secondaryMuscles: ['shoulders'],
+    })
+  })
+
+  it('promotes the first secondary muscle when the primary one is unpicked', () => {
+    expect(taps('chest', 'triceps', 'shoulders', 'chest')).toEqual({
+      muscle: 'triceps',
+      secondaryMuscles: ['shoulders'],
+    })
+    expect(taps('chest', 'chest')).toEqual(none)
+  })
+
+  it('keeps full body on its own', () => {
+    expect(taps('chest', 'triceps', 'full_body')).toEqual({
+      muscle: 'full_body',
+      secondaryMuscles: [],
+    })
+    expect(taps('full_body', 'quads')).toEqual({ muscle: 'quads', secondaryMuscles: [] })
   })
 })

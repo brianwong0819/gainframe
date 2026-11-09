@@ -57,12 +57,17 @@
     "nameZhPlaceholder": "e.g. 地雷管推举",
     "nameEnPlaceholder": "e.g. Landmine press",
     "nameRequired": "Enter a name in at least one language.",
-    "muscle": "Muscle group",
+    "muscle": "Muscles",
     "equipment": "Equipment",
     "rest": "Default rest",
     "restLess": "15 seconds less",
     "restMore": "15 seconds more",
-    "save": "Save"
+    "save": "Save",
+    "muscleHint": "Tap the main muscle first, then any secondary ones; tap again to remove.",
+    "muscleRequired": "Pick a main muscle.",
+    "mapLabel": "Muscle map; tap a muscle to pick it.",
+    "primary": "main",
+    "secondary": "secondary"
   },
   "muscle": {
     "chest": "Chest",

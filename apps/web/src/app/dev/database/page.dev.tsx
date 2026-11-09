@@ -23,6 +23,7 @@ async function logSampleWorkout() {
     nameZh: '杠铃卧推',
     nameEn: 'Barbell bench press',
     muscle: 'chest',
+    secondaryMuscles: ['shoulders', 'triceps'],
     equipment: 'barbell',
     defaultRestS: 120,
   })
