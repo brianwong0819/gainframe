@@ -36,7 +36,17 @@
     "weightDown": "第 {n} 组减重量",
     "weightUp": "第 {n} 组加重量",
     "repsDown": "第 {n} 组减次数",
-    "repsUp": "第 {n} 组加次数"
+    "repsUp": "第 {n} 组加次数",
+    "details": "类型 · RPE",
+    "kind": "类型",
+    "rpe": "RPE",
+    "rpeNone": "不填",
+    "rpeHint": "RPE 是主观用力程度：10 = 一次都做不了了，8 = 还能再做 2 次。",
+    "deleteSet": "删除这一组",
+    "note": "备注",
+    "notePlaceholder": "座椅高度、握距、感觉…",
+    "saveNote": "保存",
+    "removeExercise": "从这次训练移除这个动作"
   },
   "food": {
     "title": "饮食",
@@ -131,5 +141,17 @@
     "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。",
     "cues": "动作要点",
     "edit": "编辑"
+  },
+  "setKind": {
+    "warmup": "热身",
+    "working": "正式",
+    "drop": "递减",
+    "failure": "力竭"
+  },
+  "setKindShort": {
+    "warmup": "热",
+    "working": "正",
+    "drop": "递",
+    "failure": "竭"
   }
 }

@@ -12,13 +12,19 @@ import { Sheet } from '@/ui/sheet'
 
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
+import { SetDetails } from './set-details'
 import { SetPanel } from './set-panel'
 import { SetTable } from './set-table'
+import { SlotNote } from './slot-note'
 
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 
-type SheetKind = 'picker' | 'finish'
+type SheetContent =
+  | { kind: 'picker' }
+  | { kind: 'finish' }
+  | { kind: 'set'; setId: string; n: number }
+  | { kind: 'note'; slotId: string }
 
 // The set the panel edits: the one the user tapped while it is still there and
 // not done, else the first set not done yet.
@@ -32,9 +38,9 @@ function selectedSet(state: ActiveWorkoutState, chosenId: string | null) {
   )
 }
 
-function setDone(set: WorkoutSet, done: boolean) {
+function toggleDone(set: WorkoutSet) {
   void repositories.workoutSets.update(set.id, {
-    completedAt: done ? new Date().toISOString() : null,
+    completedAt: set.completedAt === null ? new Date().toISOString() : null,
   })
 }
 
@@ -42,7 +48,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const t = useTranslations('workout')
   const custom = useLiveQuery(allCustomExercises) ?? []
   const [chosenId, setChosenId] = useState<string | null>(null)
-  const [sheet, setSheet] = useState<SheetKind | null>(null)
+  const [sheet, setSheet] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const { workout } = state
   const selected = selectedSet(state, chosenId)
@@ -51,9 +57,28 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     0,
   )
 
-  function open(kind: SheetKind) {
-    setSheet(kind)
+  function open(content: SheetContent) {
+    setSheet(content)
     setSheetOpen(true)
+  }
+  const close = () => {
+    setSheetOpen(false)
+  }
+
+  // The sheet shows the live rows, so a picked chip shows at once.
+  const sheetSet =
+    sheet?.kind === 'set'
+      ? state.slots.flatMap(({ sets }) => sets).find((set) => set.id === sheet.setId)
+      : undefined
+  const sheetSlot =
+    sheet?.kind === 'note'
+      ? state.slots.find(({ slot }) => slot.id === sheet.slotId)?.slot
+      : undefined
+  const title = {
+    picker: t('pickerTitle'),
+    finish: t('finishTitle'),
+    set: sheet?.kind === 'set' ? `${t('colSet')} ${String(sheet.n)}` : '',
+    note: t('note'),
   }
 
   return (
@@ -65,12 +90,14 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           state={slotState}
           exercise={findExercise(slotState.slot.exerciseId, custom)}
           selectedId={selected?.set.id ?? null}
-          onSelect={(set) => {
-            setChosenId(set.id)
+          onSelect={(set, n) => {
+            if (set.completedAt === null) setChosenId(set.id)
+            else open({ kind: 'set', setId: set.id, n })
           }}
-          onToggle={(set) => {
-            setDone(set, set.completedAt === null)
+          onNote={() => {
+            open({ kind: 'note', slotId: slotState.slot.id })
           }}
+          onToggle={toggleDone}
           onAddSet={() => {
             void workoutSession.addSet(slotState.slot.id).then((set) => {
               setChosenId(set.id)
@@ -81,7 +108,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
       <div className="flex gap-8">
         <Pressable
           onClick={() => {
-            open('picker')
+            open({ kind: 'picker' })
           }}
           className="flex-1 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
         >
@@ -89,7 +116,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         </Pressable>
         <Pressable
           onClick={() => {
-            open('finish')
+            open({ kind: 'finish' })
           }}
           className="flex-1 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
         >
@@ -102,20 +129,20 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           set={selected.set}
           n={selected.n}
           exercise={findExercise(selected.exerciseId, custom)}
-          onComplete={() => {
-            setDone(selected.set, true)
+          onDetails={() => {
+            open({ kind: 'set', setId: selected.set.id, n: selected.n })
           }}
         />
       )}
       <Sheet
         open={sheetOpen}
-        onClose={() => {
-          setSheetOpen(false)
-        }}
+        onClose={close}
         closeLabel={t('close')}
-        title={sheet === 'finish' ? t('finishTitle') : t('pickerTitle')}
+        title={sheet ? title[sheet.kind] : ''}
       >
-        {sheet === 'picker' && (
+        {sheetSet && <SetDetails set={sheetSet} onDeleted={close} />}
+        {sheetSlot && <SlotNote key={sheetSlot.id} slot={sheetSlot} onDone={close} />}
+        {sheet?.kind === 'picker' && (
           <ExercisePicker
             onPick={(exerciseId) => {
               setSheetOpen(false)
@@ -123,15 +150,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             }}
           />
         )}
-        {sheet === 'finish' && (
-          <FinishConfirm
-            workout={workout}
-            done={done}
-            onDone={() => {
-              setSheetOpen(false)
-            }}
-          />
-        )}
+        {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>
   )

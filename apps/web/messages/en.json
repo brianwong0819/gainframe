@@ -36,7 +36,17 @@
     "weightDown": "Less weight, set {n}",
     "weightUp": "More weight, set {n}",
     "repsDown": "Fewer reps, set {n}",
-    "repsUp": "More reps, set {n}"
+    "repsUp": "More reps, set {n}",
+    "details": "Kind · RPE",
+    "kind": "Kind",
+    "rpe": "RPE",
+    "rpeNone": "None",
+    "rpeHint": "RPE is how hard the set felt: 10 = no rep left, 8 = two reps left.",
+    "deleteSet": "Delete set",
+    "note": "Note",
+    "notePlaceholder": "Seat height, grip, how it felt…",
+    "saveNote": "Save",
+    "removeExercise": "Remove from this workout"
   },
   "food": {
     "title": "Food",
@@ -131,5 +141,17 @@
     "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}.",
     "cues": "Form cues",
     "edit": "Edit"
+  },
+  "setKind": {
+    "warmup": "Warm-up",
+    "working": "Working",
+    "drop": "Drop",
+    "failure": "Failure"
+  },
+  "setKindShort": {
+    "warmup": "W",
+    "working": "N",
+    "drop": "D",
+    "failure": "F"
   }
 }

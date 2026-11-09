@@ -166,3 +166,16 @@ describe('addExercise and addSet', () => {
     await expect(session.addSet(slot.id)).rejects.toThrow('No exercise slot')
   })
 })
+
+describe('stepSet', () => {
+  it('applies quick taps to the stored value and stops at 0', async () => {
+    const workout = await session.start(ZONE)
+    const slot = await session.addExercise(workout.id, BENCH)
+    const [set] = await db.workoutSets.where('workoutExerciseId').equals(slot.id).toArray()
+    const id = set?.id ?? ''
+    await Promise.all([1, 2, 3].map(() => session.stepSet(id, 'weightKg', 2.5)))
+    expect((await repos.workoutSets.get(id))?.weightKg).toBe(7.5)
+    await session.stepSet(id, 'reps', -20)
+    expect((await repos.workoutSets.get(id))?.reps).toBe(0)
+  })
+})

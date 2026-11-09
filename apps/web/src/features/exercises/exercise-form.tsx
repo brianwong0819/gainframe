@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl'
 import { useId, useState } from 'react'
 
 import { repositories } from '@/db/client'
+import { ChoiceGroup } from '@/ui/choice-group'
 import { Pressable } from '@/ui/pressable'
 
 import {
@@ -25,50 +26,11 @@ import { MuscleMap } from './muscle-map'
 
 const fieldClass =
   'w-full rounded-ctl bg-sunk px-16 py-12 text-input text-ink placeholder:text-ink-3'
-const chipClass =
-  'rounded-full border border-line px-16 py-8 text-label text-ink-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg'
 const groupLabelClass = 'text-label text-ink-3'
 // Picked muscles take the map's colours: the accent for the primary one, the
 // soft accent for secondary ones.
 const muscleChipClass =
   'rounded-full border border-line px-16 py-8 text-label text-ink-2 data-[role=primary]:border-accent data-[role=primary]:bg-accent data-[role=primary]:text-accent-ink data-[role=secondary]:border-accent-soft data-[role=secondary]:bg-accent-soft data-[role=secondary]:text-ink'
-
-function ChoiceGroup<T extends string>({
-  label,
-  options,
-  value,
-  onChange,
-  optionLabel,
-}: {
-  label: string
-  options: readonly T[]
-  value: T
-  onChange: (value: T) => void
-  optionLabel: (option: T) => string
-}) {
-  const labelId = useId()
-  return (
-    <div role="group" aria-labelledby={labelId} className="flex flex-col gap-8">
-      <span id={labelId} className={groupLabelClass}>
-        {label}
-      </span>
-      <div className="flex flex-wrap gap-8">
-        {options.map((option) => (
-          <Pressable
-            key={option}
-            aria-pressed={option === value}
-            onClick={() => {
-              onChange(option)
-            }}
-            className={chipClass}
-          >
-            {optionLabel(option)}
-          </Pressable>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 // Muscles picked on the map or with the buttons below it (see pickMuscle).
 function MusclePicker({
