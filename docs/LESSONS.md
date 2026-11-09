@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Before fixing a visual glitch, measure it frame by frame (a screen recording or a rAF sample) and keep that measurement as a test; do not ship a fix for a guessed cause. ([L-023](#l-023--2026-11-09--ui--the-sheet-kept-flashing-because-its-dialog-scrolled))
 - Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
 - A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
 - Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
@@ -45,12 +46,12 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
-### L-023 · 2026-11-09 · ui · The sheet still flashed on the iPhone after L-020
-- **What happened:** bw's screen recording after L-020 showed the sheet's lower part drawn at the top of the screen for one frame, then gone, then sliding up.
-- **Root cause:** the sheet's children, and with them the entry animation, start while the `<dialog>` is still closed (`display: none`); `showModal()` runs in the parent's effect afterwards. WebKit placed the first frame of that animation wrongly. Chromium does not, and no WebKit is available in the cloud session, so it was only seen on the phone.
-- **Fix:** PR `m1/04-sheet-entry-after-open`: the scrim and panel start hidden and the entry runs from `useAnimationControls`, started right after `showModal()`.
-- **Prevention:** the rule is in the `Sheet` primitive and its comment; every sheet uses it. Recording the screen on the iPhone (as bw did) is the check for animation glitches.
-- **Status:** documented
+### L-023 · 2026-11-09 · ui · The sheet kept flashing because its dialog scrolled
+- **What happened:** after L-020 the sheet still flashed on the iPhone. A first follow-up (PR `m1/04-sheet-entry-after-open`, starting the animation after `showModal()`) changed nothing. bw's 60 fps screen recording showed the panel appear at its final place, slide up off the top, then snap back.
+- **Root cause:** a modal `<dialog>` is a scroll container (UA `overflow: auto`). The panel starts translated below the dialog, so the dialog became scrollable and the browser scrolled it to show the panel; as the panel rose, the scroll range shrank until it snapped to 0. Chromium did the same (the first measurement showed the panel's top fixed at 40 px during the "animation"), but the move was smooth there, and the reading was misinterpreted. Both earlier fixes were guesses that were not checked against a measurement of the failure.
+- **Fix:** PR `m1/04-sheet-dialog-clip`: `.sheet-dialog { overflow: clip }`, which cannot scroll; the `useAnimationControls` change is reverted. `focus({ preventScroll: true })` (L-020) stays as good practice.
+- **Prevention:** `e2e/sheet.spec.ts` samples every frame of the opening on all six devices (WebKit in CI) and fails if the dialog scrolls or the panel does not start in the lower half. It fails without the fix. New Active rule: measure the failure before fixing it, and keep the measurement as a test.
+- **Status:** guarded
 
 ### L-022 · 2026-11-09 · ci · An older commit's deploy overwrote a newer one on dev
 - **What happened:** bw reinstalled the app and still had no muscle picker. #56 merged before #55, but its CI finished later, so its deploy ran after #55's and put the older commit back on dev. Both deploys reported success.

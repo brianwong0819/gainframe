@@ -186,6 +186,11 @@
     margin: 0;
     padding: 0;
     border: 0;
+    /* A modal dialog is a scroll container (UA overflow: auto). While the panel
+     * rises from below, the browser scrolled the dialog to show it, so the
+     * panel appeared at once and then ran off the top (L-023). clip, unlike
+     * hidden, cannot be scrolled at all. */
+    overflow: clip;
     background: transparent;
     color: var(--ink);
   }
