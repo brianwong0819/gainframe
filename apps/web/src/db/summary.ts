@@ -21,6 +21,7 @@ export async function summarize(db: GainframeDb): Promise<DatabaseSummary> {
         ['templates', db.templates],
         ['templateItems', db.templateItems],
         ['workouts', db.workouts],
+        ['workoutExercises', db.workoutExercises],
         ['workoutSets', db.workoutSets],
       ] as const
     ).map(async ([table, rows]) => {

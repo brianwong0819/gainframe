@@ -20,12 +20,27 @@ export const workoutSchema = syncedRowSchema
 // set straight after another. failure: a working set taken to failure.
 export const setKindSchema = z.enum(['warmup', 'working', 'drop', 'failure'])
 
-// One set. `completedAt` is null while the set is planned but not yet done.
-// Bodyweight sets have `weightKg` 0.
-export const workoutSetSchema = syncedRowSchema.extend({
+// One exercise slot in a workout, mirroring a template item: its order in the
+// workout, its superset group (items sharing a group alternate; null means
+// standalone) and the user's note for that exercise in this workout. The same
+// exercise may appear twice in one workout as two slots.
+export const workoutExerciseSchema = syncedRowSchema.extend({
   workoutId: z.uuid(),
   exerciseId: z.uuid(),
+  position: z.int().min(0),
   supersetGroup: z.int().min(0).nullable(),
+  note: z.string().max(500).nullable(),
+})
+
+// One set. `completedAt` is null while the set is planned but not yet done.
+// `workoutId` and `exerciseId` copy the slot's values when the set is created and
+// never change, so history and "last time" can query sets by exercise directly.
+// `position` orders the sets within their slot. For a bodyweight exercise
+// `weightKg` is the added load (0 = bodyweight only).
+export const workoutSetSchema = syncedRowSchema.extend({
+  workoutExerciseId: z.uuid(),
+  workoutId: z.uuid(),
+  exerciseId: z.uuid(),
   position: z.int().min(0),
   kind: setKindSchema,
   weightKg: z.number().min(0).max(1000),
@@ -35,5 +50,6 @@ export const workoutSetSchema = syncedRowSchema.extend({
 })
 
 export type Workout = z.infer<typeof workoutSchema>
+export type WorkoutExercise = z.infer<typeof workoutExerciseSchema>
 export type SetKind = z.infer<typeof setKindSchema>
 export type WorkoutSet = z.infer<typeof workoutSetSchema>

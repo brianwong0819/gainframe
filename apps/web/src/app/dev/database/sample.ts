@@ -27,11 +27,18 @@ export async function logSampleWorkout(repos: Repositories, now: Date): Promise<
     localDate: toLocalDate(at, timeZone),
     note: null,
   })
+  const slot = await repos.workoutExercises.create({
+    workoutId: workout.id,
+    exerciseId: exercise.id,
+    position: 0,
+    supersetGroup: null,
+    note: null,
+  })
   for (const [position, weightKg] of [60, 62.5, 65].entries()) {
     await repos.workoutSets.create({
+      workoutExerciseId: slot.id,
       workoutId: workout.id,
       exerciseId: exercise.id,
-      supersetGroup: null,
       position,
       kind: 'working',
       weightKg,
