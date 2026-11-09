@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-023 · 2026-11-09 · ui · The sheet still flashed on the iPhone after L-020
+- **What happened:** bw's screen recording after L-020 showed the sheet's lower part drawn at the top of the screen for one frame, then gone, then sliding up.
+- **Root cause:** the sheet's children, and with them the entry animation, start while the `<dialog>` is still closed (`display: none`); `showModal()` runs in the parent's effect afterwards. WebKit placed the first frame of that animation wrongly. Chromium does not, and no WebKit is available in the cloud session, so it was only seen on the phone.
+- **Fix:** PR `m1/04-sheet-entry-after-open`: the scrim and panel start hidden and the entry runs from `useAnimationControls`, started right after `showModal()`.
+- **Prevention:** the rule is in the `Sheet` primitive and its comment; every sheet uses it. Recording the screen on the iPhone (as bw did) is the check for animation glitches.
+- **Status:** documented
+
 ### L-021 · 2026-11-09 · ui · A focus ring stayed on a row after closing its sheet
 - **What happened:** bw closed an exercise sheet on the iPhone and the row that opened it kept a blue focus ring.
 - **Root cause:** a closing modal `<dialog>` returns focus to the element that had it, and WebKit treats that programmatic focus as `:focus-visible` even after a tap. Chromium does not, so the desktop check missed it.
