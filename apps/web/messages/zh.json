@@ -11,7 +11,9 @@
   },
   "workout": {
     "title": "训练",
-    "empty": "还没有训练记录。"
+    "empty": "还没有训练记录。",
+    "library": "动作库",
+    "libraryCount": "{count} 个内置动作"
   },
   "food": {
     "title": "饮食",
@@ -30,5 +32,42 @@
     "title": "出了点问题",
     "body": "错误已记录在本机，可在诊断中查看。",
     "retry": "重试"
+  },
+  "exercises": {
+    "title": "动作库",
+    "back": "训练",
+    "count": "{count} 个动作",
+    "search": "搜索动作",
+    "searchLabel": "搜索",
+    "filterLabel": "肌群",
+    "listLabel": "动作",
+    "all": "全部",
+    "custom": "自定义",
+    "restLabel": "休息 {rest}",
+    "empty": "没有找到“{query}”。"
+  },
+  "muscle": {
+    "chest": "胸",
+    "back": "背",
+    "shoulders": "肩",
+    "biceps": "二头",
+    "triceps": "三头",
+    "forearms": "前臂",
+    "quads": "股四头",
+    "hamstrings": "腘绳肌",
+    "glutes": "臀",
+    "calves": "小腿",
+    "core": "核心",
+    "full_body": "全身"
+  },
+  "equipment": {
+    "barbell": "杠铃",
+    "dumbbell": "哑铃",
+    "machine": "器械",
+    "cable": "绳索",
+    "kettlebell": "壶铃",
+    "band": "弹力带",
+    "bodyweight": "自重",
+    "other": "其他"
   }
 }

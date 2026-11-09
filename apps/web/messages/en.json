@@ -11,7 +11,9 @@
   },
   "workout": {
     "title": "Workout",
-    "empty": "No workouts yet."
+    "empty": "No workouts yet.",
+    "library": "Exercise library",
+    "libraryCount": "{count} built-in exercises"
   },
   "food": {
     "title": "Food",
@@ -30,5 +32,42 @@
     "title": "Something went wrong",
     "body": "The error was saved on this device for Diagnostics.",
     "retry": "Try again"
+  },
+  "exercises": {
+    "title": "Exercises",
+    "back": "Workout",
+    "count": "{count, plural, one {# exercise} other {# exercises}}",
+    "search": "Search exercises",
+    "searchLabel": "Search",
+    "filterLabel": "Muscle group",
+    "listLabel": "Exercises",
+    "all": "All",
+    "custom": "Custom",
+    "restLabel": "Rest {rest}",
+    "empty": "No exercise matches “{query}”."
+  },
+  "muscle": {
+    "chest": "Chest",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "forearms": "Forearms",
+    "quads": "Quads",
+    "hamstrings": "Hamstrings",
+    "glutes": "Glutes",
+    "calves": "Calves",
+    "core": "Core",
+    "full_body": "Full body"
+  },
+  "equipment": {
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "machine": "Machine",
+    "cable": "Cable",
+    "kettlebell": "Kettlebell",
+    "band": "Band",
+    "bodyweight": "Bodyweight",
+    "other": "Other"
   }
 }
