@@ -99,6 +99,7 @@
     "separator": "、",
     "front": "正面",
     "back": "背面",
-    "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。"
+    "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。",
+    "cues": "动作要点"
   }
 }

@@ -99,6 +99,7 @@
     "separator": ", ",
     "front": "Front",
     "back": "Back",
-    "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}."
+    "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}.",
+    "cues": "Form cues"
   }
 }
