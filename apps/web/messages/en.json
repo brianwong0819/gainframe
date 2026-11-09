@@ -56,7 +56,9 @@
     "discardConfirm": "Confirm: delete it and its {done, plural, one {# done set} other {# done sets}}",
     "plans": "Plans",
     "plansActive": "Current: {name}",
-    "plansNone": "No plan yet"
+    "plansNone": "No plan yet",
+    "target": "target {reps} reps",
+    "best": "best {weight}"
   },
   "food": {
     "title": "Food",
@@ -201,6 +203,13 @@
     "suggest": "Suggest",
     "restIsDefault": "Using the exercise's default rest",
     "useDefault": "Back to default {time}",
-    "removeItem": "Remove from this day"
+    "removeItem": "Remove from this day",
+    "upNext": "Day {n} of {count} · {plan}",
+    "startDay": "Start “{day}”",
+    "otherDay": "Another day",
+    "emptyWorkout": "Empty workout",
+    "pickDay": "Pick a day to start",
+    "dayOf": "Day {n} of {count}",
+    "nextUp": "next in rotation"
   }
 }

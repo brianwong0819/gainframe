@@ -10,6 +10,7 @@ import { Pressable } from '@/ui/pressable'
 import { RollingNumber } from '@/ui/rolling-number'
 
 import { exerciseName } from '../exercises/library'
+import { formatRepRange } from '../plans/item-edit'
 import { type ExerciseInfo, formatKg, isBodyweight } from './exercise-info'
 
 interface SetTableProps {
@@ -72,12 +73,21 @@ export function SetTable({
   const bodyweight = isBodyweight(exercise.equipment)
   const weight = (kg: number) =>
     bodyweight ? (kg === 0 ? t('bodyweight') : `+${formatKg(kg)}`) : formatKg(kg)
+  // The plan's rep range and the heaviest weight so far, as targets to beat.
+  const { slot, bestKg } = state
+  const hints = [
+    slot.repsMin !== null && slot.repsMax !== null
+      ? t('target', { reps: formatRepRange({ repsMin: slot.repsMin, repsMax: slot.repsMax }) })
+      : null,
+    bestKg !== null && bestKg > 0 ? t('best', { weight: `${weight(bestKg)} kg` }) : null,
+  ].filter((hint) => hint !== null)
 
   return (
     <section className="flex flex-col gap-8 rounded-group bg-surface p-16">
       <div className="flex items-start justify-between gap-12">
         <div className="flex min-w-0 flex-col gap-4">
           <h2 className="text-body font-semibold text-ink">{exerciseName(exercise, locale)}</h2>
+          {hints.length > 0 && <p className="text-label text-ink-3">{hints.join(' · ')}</p>}
           {state.slot.note !== null && (
             <p className="text-label whitespace-pre-line text-ink-2">{state.slot.note}</p>
           )}

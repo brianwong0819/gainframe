@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import { planStore, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
+import { UpNextCard, useUpNext } from '@/features/plans/up-next-card'
 import { useActiveWorkout } from '@/features/workout/active-workout'
 import { Chevron } from '@/ui/chevron'
 import { Pressable, PressableLink } from '@/ui/pressable'
@@ -23,10 +24,12 @@ export default function WorkoutPage() {
   const sets = active?.slots.flatMap((slot) => slot.sets) ?? []
   const done = sets.filter((set) => set.completedAt !== null).length
   const activePlan = useLiveQuery(loadActivePlan)
+  const upNext = useUpNext()
 
-  // The cards wait for the workout in progress to load: the start button above
-  // them appears only then, and would push them down under a finger mid-tap.
-  if (active === undefined) return <TabScreen title={t('title')} />
+  // The cards wait for the workout in progress and the plan's next day to load:
+  // the start card above them appears only then, and would push them down under
+  // a finger mid-tap.
+  if (active === undefined || upNext === undefined) return <TabScreen title={t('title')} />
   return (
     <TabScreen title={t('title')}>
       {active && (
@@ -42,7 +45,8 @@ export default function WorkoutPage() {
           </span>
         </PressableLink>
       )}
-      {active === null && (
+      {active === null && upNext && <UpNextCard upNext={upNext} />}
+      {active === null && upNext === null && (
         <Pressable
           onClick={() => {
             void workoutSession.start(Intl.DateTimeFormat().resolvedOptions().timeZone).then(() => {

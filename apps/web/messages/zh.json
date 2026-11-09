@@ -56,7 +56,9 @@
     "discardConfirm": "确认放弃（删除已完成的 {done} 组）",
     "plans": "训练计划",
     "plansActive": "当前：{name}",
-    "plansNone": "还没有计划"
+    "plansNone": "还没有计划",
+    "target": "目标 {reps} 次",
+    "best": "最高 {weight}"
   },
   "food": {
     "title": "饮食",
@@ -201,6 +203,13 @@
     "suggest": "建议",
     "restIsDefault": "用的是动作默认休息",
     "useDefault": "改回默认 {time}",
-    "removeItem": "从这一天移除"
+    "removeItem": "从这一天移除",
+    "upNext": "第 {n}/{count} 天 · {plan}",
+    "startDay": "开始「{day}」",
+    "otherDay": "换一天",
+    "emptyWorkout": "空白训练",
+    "pickDay": "选一天开始",
+    "dayOf": "第 {n}/{count} 天",
+    "nextUp": "按顺序该练这天"
   }
 }

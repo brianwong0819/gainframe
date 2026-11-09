@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–4 of 6 done; next: the Workout tab card for the plan's next day
+- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–5 of 6 done; next: "Add to plan" from the exercise detail and saving a finished workout as a plan day
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -85,6 +85,8 @@ M1-09, part 2 (2026-11-09, PR `m1/09-plan-editor`): `/workout/plans` lists plans
 M1-09, part 3 (2026-11-09, PR `m1/09-plan-items`): tapping an exercise in the plan editor opens a sheet for its target sets, rep range (either end moves the other so the range never inverts, `features/plans/item-edit.ts`) and rest (±15 s, back to the exercise's default, or "Suggest"), and to remove it from the day. `suggestRestS` (`packages/shared/src/domain/plan.ts`) picks the rest from the exercise's mechanic and the low end of the range, with bands in `domainConfig.suggestedRestS` (a 5-rep compound 3:00, a 15-rep isolation 1:00). Custom exercises have no mechanic, so they get no "Suggest" button.
 
 M1-09, part 4 (2026-11-09, PR `m1/09-start-from-plan`): `workoutSession.startFromPlanDay` starts a workout that follows a plan day (`planDayId`), with one slot per item in order and the item's target number of sets, each prefilled with last time's weight and kind and the low end of the rep range. Slots copy the item's `repsMin`, `repsMax` and `restS` (Dexie v6; null for exercises added by hand), so editing the plan later does not change past workouts, and M1-06 can read the rest from the slot. A set added to such a slot also starts at the low end of the range. `loadActive` gives each slot `bestKg`, the heaviest working or failure set of the exercise in earlier workouts (`bestWeightKg` in `packages/shared`). No UI yet.
+
+M1-09, part 5 (2026-11-09, PR `m1/09-plan-card`): with no workout in progress, the Workout tab shows the current plan's next day (`planStore.upNext`): its place in the rotation ("第 2/3 天 · 推拉腿"), name and exercises, a start button, "Another day" (a sheet of the plan's days) and "Empty workout". Without a current plan, or for a plan with no days, the tab keeps the plain start button. Each exercise card in the workout shows the plan's rep range and the best weight of earlier workouts in grey. `e2e/plans.spec.ts` starts day 1 from the tab, finishes it and sees day 2 offered. Pending: bw iPhone check of the whole plan flow.
 
 ## Blocked on bw
 
