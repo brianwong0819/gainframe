@@ -71,8 +71,11 @@ test("an exercise's sets, rep range and suggested rest are kept", async ({ page 
   await repsMax.press('Enter')
   await dialog.getByRole('button', { name: '建议' }).click()
   await expect(dialog.getByRole('button', { name: '改回默认 3:00' })).toBeVisible()
-  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
+  // WebKit leaves the page behind a modal dialog out of the accessibility tree,
+  // so the row is checked once the sheet has closed.
   await dialog.getByRole('button', { name: '关闭' }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
 
   await page.reload()
   await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
