@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  AnimatePresence,
-  motion,
-  useAnimationControls,
-  useDragControls,
-  useReducedMotion,
-} from 'motion/react'
+import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'motion/react'
 import { type ReactNode, useEffect, useId, useRef } from 'react'
 
 import { fade, reducedFade, std } from './motion'
@@ -34,10 +28,6 @@ const DISMISS_VELOCITY = 600
  * keyboard until the user taps it. That focus must not scroll: the panel
  * still sits below the screen at that moment, and WebKit would scroll it into
  * view for one frame before the entry animation starts.
- *
- * The entry animation starts only after `showModal()`. Children mount while
- * the dialog is still closed (display: none), and WebKit drew the first frame
- * of an animation started there in the wrong place (L-023).
  */
 export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps) {
   const drag = useDragControls()
@@ -45,25 +35,17 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
   const panel = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const reduced = useReducedMotion() ?? false
-  const entry = useAnimationControls()
 
   useEffect(() => {
     const element = dialog.current
     if (open && element && !element.open) {
       element.showModal()
       panel.current?.focus({ preventScroll: true })
-      void entry.start('shown')
     }
-  }, [open, entry])
+  }, [open])
 
-  const scrim = {
-    hidden: { opacity: 0, transition: reduced ? reducedFade : fade },
-    shown: { opacity: 1, transition: reduced ? reducedFade : fade },
-  }
-  const sheet = {
-    hidden: reduced ? { opacity: 0, transition: reducedFade } : { y: '100%', transition: std },
-    shown: reduced ? { opacity: 1, transition: reducedFade } : { y: 0, transition: std },
-  }
+  const hidden = reduced ? { opacity: 0 } : { y: '100%' }
+  const shown = reduced ? { opacity: 1 } : { y: 0 }
 
   return (
     <dialog
@@ -80,10 +62,10 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
           <motion.div
             key="scrim"
             className="sheet-scrim"
-            variants={scrim}
-            initial="hidden"
-            animate={entry}
-            exit="hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={reduced ? reducedFade : fade}
             onClick={onClose}
           />
         )}
@@ -91,10 +73,10 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
           <motion.div
             key="panel"
             className="sheet-panel"
-            variants={sheet}
-            initial="hidden"
-            animate={entry}
-            exit="hidden"
+            initial={hidden}
+            animate={shown}
+            exit={hidden}
+            transition={reduced ? reducedFade : std}
             ref={panel}
             tabIndex={-1}
             drag="y"
