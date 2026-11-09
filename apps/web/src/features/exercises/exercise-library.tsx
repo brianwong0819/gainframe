@@ -2,7 +2,6 @@
 
 import {
   BUILT_IN_EXERCISES,
-  type BuiltInExercise,
   type Exercise,
   type MuscleGroup,
   muscleGroupSchema,
@@ -36,9 +35,9 @@ interface Editing {
   initial: ExerciseDraft
 }
 
-// What the sheet shows: the form for a new or custom exercise, or the detail of
-// a built-in one.
-type SheetContent = ({ kind: 'form' } & Editing) | { kind: 'detail'; exercise: BuiltInExercise }
+// What the sheet shows: the detail of an exercise, or the form for a new or
+// custom one.
+type SheetContent = ({ kind: 'form' } & Editing) | { kind: 'detail'; exercise: LibraryEntry }
 
 function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
   const trimmed = name.trim()
@@ -107,12 +106,7 @@ export function ExerciseLibrary() {
     setSheetOpen(true)
   }
 
-  function openEntry(entry: LibraryEntry) {
-    if (!entry.custom) {
-      open({ kind: 'detail', exercise: entry })
-      return
-    }
-    const exercise = entry
+  function edit(exercise: Exercise) {
     open({
       kind: 'form',
       exercise,
@@ -184,7 +178,13 @@ export function ExerciseLibrary() {
         (entries.length > 0 ? (
           <ul className="rounded-group bg-surface px-16" aria-label={t('listLabel')}>
             {entries.map((entry) => (
-              <EntryRow key={entry.id} entry={entry} onOpen={openEntry} />
+              <EntryRow
+                key={entry.id}
+                entry={entry}
+                onOpen={(entry) => {
+                  open({ kind: 'detail', exercise: entry })
+                }}
+              />
             ))}
           </ul>
         ) : (
@@ -208,6 +208,7 @@ export function ExerciseLibrary() {
         onClose={() => {
           setSheetOpen(false)
         }}
+        closeLabel={t('close')}
         title={
           content?.kind === 'detail'
             ? exerciseName(content.exercise, locale)
@@ -216,7 +217,15 @@ export function ExerciseLibrary() {
               : tForm('newTitle')
         }
       >
-        {content?.kind === 'detail' && <ExerciseDetail exercise={content.exercise} />}
+        {content?.kind === 'detail' && (
+          <ExerciseDetail
+            exercise={content.exercise}
+            onEdit={() => {
+              const { exercise } = content
+              if (exercise.custom) edit(exercise)
+            }}
+          />
+        )}
         {content?.kind === 'form' && (
           <ExerciseForm
             key={content.exercise?.id ?? 'new'}

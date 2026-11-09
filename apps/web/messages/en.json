@@ -46,7 +46,8 @@
     "custom": "Custom",
     "restLabel": "Rest {rest}",
     "empty": "No exercise matches “{query}”.",
-    "createNamed": "Create “{query}”"
+    "createNamed": "Create “{query}”",
+    "close": "Close"
   },
   "exerciseForm": {
     "newTitle": "New exercise",
@@ -100,6 +101,7 @@
     "front": "Front",
     "back": "Back",
     "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}.",
-    "cues": "Form cues"
+    "cues": "Form cues",
+    "edit": "Edit"
   }
 }
