@@ -282,18 +282,6 @@
   }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
 @utility num {
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
@@ -314,12 +302,14 @@
     transition-duration: var(--dur-reduced) !important;
   }
 
-  /* View transitions are pseudo-elements the rule above does not reach. */
-  ::view-transition-old(*) {
-    animation: fade-out var(--dur-reduced) var(--ease-fade) both !important;
-  }
-
-  ::view-transition-new(*) {
-    animation: fade-in var(--dur-reduced) var(--ease-fade) both !important;
+  /*
+   * Screen changes swap at once: a fade between two screens overlaps their
+   * text for its whole length (L-018). The rule above does not reach these
+   * pseudo-elements.
+   */
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation: none !important;
   }
 }
