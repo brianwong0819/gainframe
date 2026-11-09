@@ -14,6 +14,7 @@ export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
+export { nextPlanDay } from './domain/plan.ts'
 export {
   estimateOneRepMax,
   findPersonalRecords,
@@ -38,11 +39,13 @@ export {
 } from './schemas/exercise.ts'
 export { instantSchema, type LocalDate, localDateSchema, syncedRowSchema } from './schemas/row.ts'
 export {
-  type Template,
-  type TemplateItem,
-  templateItemSchema,
-  templateSchema,
-} from './schemas/template.ts'
+  type Plan,
+  type PlanDay,
+  planDaySchema,
+  type PlanItem,
+  planItemSchema,
+  planSchema,
+} from './schemas/plan.ts'
 export {
   type SetKind,
   setKindSchema,

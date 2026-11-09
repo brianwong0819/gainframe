@@ -6,7 +6,8 @@ export const workoutSchema = syncedRowSchema
   .extend({
     startedAt: instantSchema,
     endedAt: instantSchema.nullable(),
-    templateId: z.uuid().nullable(),
+    // The plan day this workout followed; null for a workout started empty.
+    planDayId: z.uuid().nullable(),
     localDate: localDateSchema,
     note: z.string().max(2000).nullable(),
   })
@@ -20,7 +21,7 @@ export const workoutSchema = syncedRowSchema
 // set straight after another. failure: a working set taken to failure.
 export const setKindSchema = z.enum(['warmup', 'working', 'drop', 'failure'])
 
-// One exercise slot in a workout, mirroring a template item: its order in the
+// One exercise slot in a workout, mirroring a plan item: its order in the
 // workout, its superset group (items sharing a group alternate; null means
 // standalone) and the user's note for that exercise in this workout. The same
 // exercise may appear twice in one workout as two slots.

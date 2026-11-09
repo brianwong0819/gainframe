@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-05 done (next: M1-09 Plans, moved ahead of M1-06 by bw on 2026-11-09; design to be agreed with bw first)
+- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), part 1 of 4 done; next: plan list and editor
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -77,6 +77,8 @@ M1-05 PR 4 (2026-11-09, `m1/05-set-details`): a sheet for a set's kind and RPE a
 M1-05 PR 5 (2026-11-09, `m1/05-motion`): the stepper's number is also a text field (decimal keypad for weight, a comma reads as a point; `features/workout/entry.ts` rejects what the set schema would); `src/ui/rolling-number.tsx` rolls changed characters with `std`, 28 ms apart (`ROLL_STAGGER_S`); the set check pops its disc with `pop` and draws its tick. M1-05 is done. Pending: bw iPhone check (one-handed, a set in 5 s or less; Reduce Motion on and off).
 
 M1-05 follow-up (2026-11-09, `m1/05-workout-back`, L-025): bw found no way out of the workout in progress. It now lives at `/workout/session` with a back link; the Workout tab shows "Continue workout"; the finish sheet can discard the workout (asks twice). bw chose to build training plans (several plans, one active, a rotating split; starting a workout from the active plan's next day) before M1-06; M1-09 will be rewritten with that design once bw agrees to it.
+
+M1-09, part 1 (2026-11-09, PR `m1/09-plan-data`): design agreed with bw (see the ROADMAP entry). `packages/shared/src/schemas/plan.ts` replaces the unused template schemas with `plans`, `planDays` and `planItems` (rep range `repsMin`–`repsMax`, nullable `restS`, no weight); `workouts.templateId` becomes `planDayId`. Dexie v5 drops the empty template tables, adds the plan tables, a `planDayId` index and an unsynced `settings` table, and renames the field on stored workouts (upgrade test). `nextPlanDay` (`src/domain/plan.ts`) picks the day after the plan's latest finished workout, wrapping round, skipping deleted days. `src/db/plans.ts` reads and sets the active plan and the next day. Deleting a plan removes its days and items; deleting a day removes its items.
 
 ## Blocked on bw
 

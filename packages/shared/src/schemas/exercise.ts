@@ -32,7 +32,7 @@ export const equipmentSchema = z.enum([
 export const mechanicSchema = z.enum(['compound', 'isolation'])
 
 const exerciseNameSchema = z.string().trim().min(1).max(80)
-const restSecondsSchema = z.int().min(0).max(3600)
+export const restSecondsSchema = z.int().min(0).max(3600)
 
 // Muscles an exercise also works: each at most once, never the primary one.
 const secondaryMusclesSchema = z.array(muscleGroupSchema).max(muscleGroupSchema.options.length)

@@ -40,7 +40,7 @@ function newWorkout() {
   return repos.workouts.create({
     startedAt: clock.toISOString(),
     endedAt: null,
-    templateId: null,
+    planDayId: null,
     localDate: toLocalDate(clock.toISOString(), 'Asia/Kuala_Lumpur'),
     note: null,
   })
@@ -203,18 +203,34 @@ describe('remove', () => {
     expect(await repos.workouts.get(workout.id)).toEqual(workout)
   })
 
-  it("soft-deletes a template's items", async () => {
-    const template = await repos.templates.create({ name: 'Push A' })
-    const item = await repos.templateItems.create({
-      templateId: template.id,
-      exerciseId: '01960000-0000-7000-8000-0000000000b1',
-      position: 0,
-      supersetGroup: null,
-      targetSets: 3,
-      targetReps: 8,
-    })
-    await repos.templates.remove(template.id)
-    expect(await repos.templateItems.get(item.id)).toBeUndefined()
+  it("soft-deletes a plan's days and items, and a day's items", async () => {
+    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const newDay = (name: string, position: number) =>
+      repos.planDays.create({ planId: plan.id, name, position })
+    const newItem = (planDayId: string) =>
+      repos.planItems.create({
+        planId: plan.id,
+        planDayId,
+        exerciseId: BENCH,
+        position: 0,
+        supersetGroup: null,
+        targetSets: 3,
+        repsMin: 8,
+        repsMax: 12,
+        restS: null,
+      })
+    const push = await newDay('Push', 0)
+    const pull = await newDay('Pull', 1)
+    const pushItem = await newItem(push.id)
+    const pullItem = await newItem(pull.id)
+
+    await repos.planDays.remove(push.id)
+    expect(await repos.planItems.get(pushItem.id)).toBeUndefined()
+    expect(await repos.planItems.get(pullItem.id)).toEqual(pullItem)
+
+    await repos.plans.remove(plan.id)
+    expect(await repos.planDays.get(pull.id)).toBeUndefined()
+    expect(await repos.planItems.get(pullItem.id)).toBeUndefined()
   })
 })
 

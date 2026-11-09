@@ -23,7 +23,7 @@ export async function logSampleWorkout(repos: Repositories, now: Date): Promise<
   const workout = await repos.workouts.create({
     startedAt: at,
     endedAt: null,
-    templateId: null,
+    planDayId: null,
     localDate: toLocalDate(at, timeZone),
     note: null,
   })

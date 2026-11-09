@@ -18,8 +18,9 @@ export async function summarize(db: GainframeDb): Promise<DatabaseSummary> {
     (
       [
         ['exercises', db.exercises],
-        ['templates', db.templates],
-        ['templateItems', db.templateItems],
+        ['plans', db.plans],
+        ['planDays', db.planDays],
+        ['planItems', db.planItems],
         ['workouts', db.workouts],
         ['workoutExercises', db.workoutExercises],
         ['workoutSets', db.workoutSets],
