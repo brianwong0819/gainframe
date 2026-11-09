@@ -53,6 +53,8 @@ Rules:
 
 Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch swaps the screen at once, with no page transition: bw tried the rise-in transition on the iPhone and preferred the direct switch (2026-11-09). Only the tab bar animates. Page transitions, if a later screen needs one (a pushed detail view), are proposed to bw first. A page below a tab (`/workout/exercises`) keeps that tab selected and is entered and left the same way, at once, with a back link at the top.
 
+**Sheets.** Forms and details that belong to the current screen open in a bottom sheet (`src/ui/sheet.tsx`): a native modal `<dialog>` (focus trap, Escape, inert page) whose panel rises with `std` over the `--scrim`, which fades with `fade`; with Reduce Motion both only fade. Tapping the scrim closes it.
+
 ## Celebrations (three tiers, only at meaningful moments)
 
 | Tier | When | Effect |
