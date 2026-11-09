@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-022 · 2026-11-09 · ci · An older commit's deploy overwrote a newer one on dev
+- **What happened:** bw reinstalled the app and still had no muscle picker. #56 merged before #55, but its CI finished later, so its deploy ran after #55's and put the older commit back on dev. Both deploys reported success.
+- **Root cause:** `deploy.yml` deploys whichever commit's CI just passed. The concurrency group only orders the deploys by when they start, not by commit order, and nothing checked that the commit was still current.
+- **Fix:** PR `m1/deploy-latest-only`: a first job compares the commit with the tip of `main` and skips the deploy when it is older; the rerun of #55's deploy restored dev.
+- **Prevention:** the check is part of the workflow, so every deploy goes through it.
+- **Status:** guarded
+
 ### L-021 · 2026-11-09 · ui · A focus ring stayed on a row after closing its sheet
 - **What happened:** bw closed an exercise sheet on the iPhone and the row that opened it kept a blue focus ring.
 - **Root cause:** a closing modal `<dialog>` returns focus to the element that had it, and WebKit treats that programmatic focus as `:focus-visible` even after a tap. Chromium does not, so the desktop check missed it.
