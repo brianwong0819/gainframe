@@ -246,6 +246,14 @@
     border-radius: var(--radius-ctl);
     background: var(--line);
   }
+  /* The active workout's set panel stays in reach above the tab bar while the
+     sets scroll under it. */
+  .set-panel {
+    position: sticky;
+    bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + var(--space-8));
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
   /* Room for the fixed tab bar below the last content of a tab screen. */
   .tab-content {
     padding-bottom: var(--tab-bar-height);

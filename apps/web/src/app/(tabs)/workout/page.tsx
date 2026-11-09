@@ -3,16 +3,37 @@
 import { BUILT_IN_EXERCISES } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 
+import { workoutSession } from '@/db/client'
+import { ActiveWorkout, useActiveWorkout } from '@/features/workout/active-workout'
 import { Chevron } from '@/ui/chevron'
-import { PressableLink } from '@/ui/pressable'
+import { Pressable, PressableLink } from '@/ui/pressable'
 
 import { TabScreen } from '../tab-screen'
 
+function startWorkout() {
+  void workoutSession.start(Intl.DateTimeFormat().resolvedOptions().timeZone)
+}
+
 export default function WorkoutPage() {
   const t = useTranslations('workout')
+  const active = useActiveWorkout()
+  if (active) {
+    return (
+      <TabScreen title={t('active')}>
+        <ActiveWorkout state={active} />
+      </TabScreen>
+    )
+  }
   return (
     <TabScreen title={t('title')}>
-      <p className="text-body text-ink-2">{t('empty')}</p>
+      {active === null && (
+        <Pressable
+          onClick={startWorkout}
+          className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
+        >
+          {t('start')}
+        </Pressable>
+      )}
       <PressableLink
         href="/workout/exercises"
         className="flex items-center justify-between gap-12 rounded-group bg-surface p-16"
