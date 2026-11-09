@@ -33,7 +33,7 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: '保存' }).click()
   // The card shows the note once it is read back from the database; leaving the
   // page before then could abandon the write.
-  await expect(page.getByRole('main').getByText('座椅第 4 格')).toBeVisible()
+  await expect(page.getByRole('paragraph').filter({ hasText: '座椅第 4 格' })).toBeVisible()
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
