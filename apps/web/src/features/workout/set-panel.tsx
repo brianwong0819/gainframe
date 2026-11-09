@@ -8,6 +8,7 @@ import { Pressable } from '@/ui/pressable'
 import { Stepper } from '@/ui/stepper'
 
 import { exerciseName } from '../exercises/library'
+import { parseReps, parseWeightKg } from './entry'
 import { type ExerciseInfo, formatKg, isBodyweight } from './exercise-info'
 
 interface SetPanelProps {
@@ -44,6 +45,13 @@ export function SetPanel({ set, n, exercise, onDetails }: SetPanelProps) {
         <span className="text-label text-ink-3">{bodyweight ? t('colLoad') : t('colWeight')}</span>
         <Stepper
           value={bodyweight && set.weightKg === 0 ? t('bodyweight') : formatKg(set.weightKg)}
+          editValue={bodyweight && set.weightKg === 0 ? '' : formatKg(set.weightKg)}
+          inputMode="decimal"
+          label={t('weightLabel', { n })}
+          onEnter={(text) => {
+            const weightKg = parseWeightKg(text === '' && bodyweight ? '0' : text)
+            if (weightKg !== null) void repositories.workoutSets.update(set.id, { weightKg })
+          }}
           canDecrease={set.weightKg > 0}
           decreaseLabel={t('weightDown', { n })}
           increaseLabel={t('weightUp', { n })}
@@ -54,6 +62,13 @@ export function SetPanel({ set, n, exercise, onDetails }: SetPanelProps) {
         <span className="text-label text-ink-3">{t('colReps')}</span>
         <Stepper
           value={String(set.reps)}
+          editValue={String(set.reps)}
+          inputMode="numeric"
+          label={t('repsLabel', { n })}
+          onEnter={(text) => {
+            const reps = parseReps(text)
+            if (reps !== null) void repositories.workoutSets.update(set.id, { reps })
+          }}
           canDecrease={set.reps > 0}
           decreaseLabel={t('repsDown', { n })}
           increaseLabel={t('repsUp', { n })}

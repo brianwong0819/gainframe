@@ -1,10 +1,20 @@
 'use client'
 
+import { useState } from 'react'
+
 import { Pressable } from './pressable'
+import { RollingNumber } from './rolling-number'
 
 interface StepperProps {
+  /** What the stepper shows, e.g. "62.5" or the bodyweight label. */
   value: string
+  /** The value as typed text when the field is focused, e.g. "" for bodyweight. */
+  editValue: string
+  inputMode: 'decimal' | 'numeric'
+  label: string
   onStep: (direction: -1 | 1) => void
+  /** Typed text, sent when the field loses focus or Enter is pressed. */
+  onEnter: (text: string) => void
   decreaseLabel: string
   increaseLabel: string
   canDecrease: boolean
@@ -27,18 +37,16 @@ function Sign({ plus }: { plus: boolean }) {
 /**
  * A number with minus and plus buttons on a `--sunk` track, as in the
  * prototype. Each button's tap target is 48 px: a 40 px circle with 4 px of
- * padding.
+ * padding. The number is also a text field: tapping it brings up the keypad
+ * (16 px or larger, so iOS does not zoom). Unfocused, the field's text is
+ * transparent and the rolling number shows through it.
  */
-export function Stepper({
-  value,
-  onStep,
-  decreaseLabel,
-  increaseLabel,
-  canDecrease,
-}: StepperProps) {
-  const button = (direction: -1 | 1, label: string, disabled: boolean) => (
+export function Stepper(props: StepperProps) {
+  const { value, editValue, inputMode, label, onStep, onEnter } = props
+  const [draft, setDraft] = useState<string | null>(null)
+  const button = (direction: -1 | 1, buttonLabel: string, disabled: boolean) => (
     <Pressable
-      aria-label={label}
+      aria-label={buttonLabel}
       disabled={disabled}
       onClick={() => {
         onStep(direction)
@@ -52,11 +60,38 @@ export function Stepper({
   )
   return (
     <div className="flex items-center rounded-full bg-sunk">
-      {button(-1, decreaseLabel, !canDecrease)}
-      <span className="num min-w-0 flex-1 text-center text-section" aria-live="polite">
-        {value}
+      {button(-1, props.decreaseLabel, !props.canDecrease)}
+      <span className="relative min-w-0 flex-1">
+        <input
+          aria-label={label}
+          inputMode={inputMode}
+          enterKeyHint="done"
+          autoComplete="off"
+          value={draft ?? value}
+          onFocus={(event) => {
+            setDraft(editValue)
+            event.currentTarget.select()
+          }}
+          onChange={(event) => {
+            setDraft(event.target.value)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur()
+          }}
+          onBlur={() => {
+            if (draft !== null && draft !== editValue) onEnter(draft)
+            setDraft(null)
+          }}
+          className="peer num absolute inset-0 w-full bg-transparent text-center text-section text-transparent caret-transparent focus:text-ink focus:caret-ink"
+        />
+        <span
+          aria-hidden
+          className="num pointer-events-none flex justify-center text-section peer-focus:opacity-0"
+        >
+          <RollingNumber value={value} />
+        </span>
       </span>
-      {button(1, increaseLabel, false)}
+      {button(1, props.increaseLabel, false)}
     </div>
   )
 }

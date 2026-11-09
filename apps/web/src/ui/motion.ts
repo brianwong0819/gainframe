@@ -29,3 +29,6 @@ export const dissolve: Transition = { type: 'tween', duration: 0.6, ease: [0.45,
 export const reducedFade: Transition = { type: 'tween', duration: 0.2, ease: 'linear' }
 
 export const PRESS_SCALE = 0.96
+
+/** Delay between the digits of a rolling number, in seconds. */
+export const ROLL_STAGGER_S = 0.028

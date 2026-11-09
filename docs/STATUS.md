@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-05 Active workout + set logging (PR 4 of 5: set details and notes)
+- **Current task:** none; M1-05 done (next: M1-06 Rest timer, waiting for bw to say continue)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -73,7 +73,8 @@ M1-05 PR 1 (2026-11-09, `m1/05-workout-exercises`): bw chose a slot table for ex
 M1-05 PR 2 (2026-11-09, `m1/05-workout-session`): `src/db/workout-session.ts` starts a workout or resumes the unfinished one (only one in progress), appends slots and sets, prefills each set from the same set last time (`nextSetValues` in `packages/shared`), loads the active workout for the screen, and finishes it. Weight steps per equipment and the first-set default are in `domainConfig`. `src/db/use-live-query.ts` is the shared Dexie live-query hook. 
 M1-05 PR 3 (2026-11-09, `m1/05-workout-screen`): the Workout tab shows the workout in progress (`src/features/workout`): a card per exercise with its sets and last time's numbers, a sticky panel above the tab bar with weight and rep steppers (`src/ui/stepper.tsx`) and the complete button, an exercise picker sheet and a finish confirmation. Opening the app on Today with a workout in progress goes to it once per launch. `e2e/workout.spec.ts` logs a set and checks it after a reload. Pending: bw iPhone check.
 
-M1-05 PR 4 (2026-11-09, `m1/05-set-details`): a sheet for a set's kind and RPE and deleting it (from the panel, or by tapping a done set), a per-exercise note and "remove from this workout" (`features/workout/set-details.tsx`, `slot-note.tsx`); `ChoiceGroup` moved to `src/ui`; stepper taps go through `workoutSession.stepSet`, which reads the stored value in its transaction so quick taps all count. Next: PR 5, typing a weight, the check animation and rolling digits.
+M1-05 PR 4 (2026-11-09, `m1/05-set-details`): a sheet for a set's kind and RPE and deleting it (from the panel, or by tapping a done set), a per-exercise note and "remove from this workout" (`features/workout/set-details.tsx`, `slot-note.tsx`); `ChoiceGroup` moved to `src/ui`; stepper taps go through `workoutSession.stepSet`, which reads the stored value in its transaction so quick taps all count. 
+M1-05 PR 5 (2026-11-09, `m1/05-motion`): the stepper's number is also a text field (decimal keypad for weight, a comma reads as a point; `features/workout/entry.ts` rejects what the set schema would); `src/ui/rolling-number.tsx` rolls changed characters with `std`, 28 ms apart (`ROLL_STAGGER_S`); the set check pops its disc with `pop` and draws its tick. M1-05 is done. Pending: bw iPhone check (one-handed, a set in 5 s or less; Reduce Motion on and off).
 
 ## Blocked on bw
 

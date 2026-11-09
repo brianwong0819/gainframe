@@ -1,10 +1,13 @@
 'use client'
 
 import type { WorkoutSet } from '@gainframe/shared'
+import { motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 
 import type { SlotState } from '@/db/workout-session'
+import { fade, pop } from '@/ui/motion'
 import { Pressable } from '@/ui/pressable'
+import { RollingNumber } from '@/ui/rolling-number'
 
 import { exerciseName } from '../exercises/library'
 import { type ExerciseInfo, formatKg, isBodyweight } from './exercise-info'
@@ -21,20 +24,31 @@ interface SetTableProps {
 
 const columns = 'grid grid-cols-[2fr_3fr_3fr_3fr_auto] items-center gap-8'
 
+// The prototype's check: the accent disc pops in with `pop` and the tick draws
+// itself. Rows that load already done appear done, without the animation.
 function Check({ done }: { done: boolean }) {
   return (
-    <span
-      className={`flex size-40 items-center justify-center rounded-full border ${done ? 'border-accent bg-accent text-accent-ink' : 'border-line text-ink-3'}`}
-    >
+    <span className="relative flex size-40 items-center justify-center rounded-full border border-line">
+      <motion.span
+        className="absolute -inset-px rounded-full bg-accent"
+        initial={false}
+        animate={{ opacity: done ? 1 : 0, scale: done ? 1 : 0.6 }}
+        transition={{ scale: pop, opacity: fade }}
+      />
       <svg
         viewBox="0 0 24 24"
         aria-hidden
-        className="size-20 fill-none stroke-current"
+        className="relative size-20 fill-none stroke-current text-accent-ink"
         strokeWidth={2.4}
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M6 12.5l4 4L18 8" />
+        <motion.path
+          d="M6 12.5l4 4L18 8"
+          initial={false}
+          animate={{ pathLength: done ? 1 : 0 }}
+          transition={pop}
+        />
       </svg>
     </span>
   )
@@ -107,10 +121,10 @@ export function SetTable({
                   {last ? `${weight(last.weightKg)}×${String(last.reps)}` : t('lastNone')}
                 </span>
                 <span className={`num text-body ${done ? 'text-ink' : 'text-ink-2'}`}>
-                  {weight(set.weightKg)}
+                  <RollingNumber value={weight(set.weightKg)} />
                 </span>
                 <span className={`num text-body ${done ? 'text-ink' : 'text-ink-2'}`}>
-                  {set.reps}
+                  <RollingNumber value={String(set.reps)} />
                 </span>
               </Pressable>
               <Pressable
