@@ -38,8 +38,29 @@ function elementsInInsets(page: Page, safeArea: SafeArea): Promise<string[]> {
     )
     return content
       .filter((element) => {
-        const box = element.getBoundingClientRect()
-        if (box.width === 0 || box.height === 0) return false
+        // A horizontal scroller (a row of filter chips) clips what is scrolled
+        // out of view; only the visible part counts. The scroller itself is
+        // checked like any other element.
+        const visible = (box: DOMRect) => {
+          let left = box.left
+          let right = box.right
+          for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+            if (getComputedStyle(parent).overflowX === 'visible') continue
+            const clip = parent.getBoundingClientRect()
+            left = Math.max(left, clip.left)
+            right = Math.min(right, clip.right)
+          }
+          return {
+            top: box.top,
+            bottom: box.bottom,
+            left,
+            right,
+            width: right - left,
+            height: box.height,
+          }
+        }
+        const box = visible(element.getBoundingClientRect())
+        if (box.width <= 0 || box.height === 0) return false
         const fixed = ['fixed', 'sticky'].includes(getComputedStyle(element).position)
         return (
           box.top < inset.top ||

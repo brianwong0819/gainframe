@@ -3,6 +3,7 @@
 export const pages = [
   { name: 'today', path: '/' },
   { name: 'workout', path: '/workout' },
+  { name: 'exercises', path: '/workout/exercises' },
   { name: 'food', path: '/food' },
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
   { name: 'rest-timer', path: '/dev/rest-timer' },

@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-04 Exercise library (part 1 of 3 done; next: library screen and custom exercises)
+- **Current task:** M1-04 Exercise library (parts 1 and 2 of 3 done; next: muscle map and exercise detail)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -54,6 +54,8 @@ M1-03, part 2 (2026-11-09, PR `m1/03-app-shell`): the three tabs (Today `/`, Wor
 M1-03, part 3 (2026-11-09, PR `m1/03-diagnostics`): Dexie schema version 2 adds the `errors` table; `src/diagnostics` records entries shaped by `clientErrorSchema` (new in `packages/shared`) and keeps the latest 200. `app/error.tsx` and `app/global-error.tsx` show a translated error screen with "Try again" and record the error once; `instrumentation-client.ts` registers `error` / `unhandledrejection` handlers after importing `src/zod-config.ts` first. `db/upgrade.test.ts` is the first upgrade test (v1 rows and outbox survive v2). Checked in Chromium: a timer error, a rejected promise and a render error each produced one entry with path, release and stack, and the error screen showed in Chinese. Details: "Observability" in `docs/architecture.md`. Verified 2026-11-09 on bw's iPhone: tab switching, English mode and dark mode were fine; with Reduce Motion the tab fade overlapped both screens' text, so a screen change now swaps at once under Reduce Motion (L-018, PR `m1/03-reduced-motion-tabs`). bw then asked for no page transition at all: tabs switch at once and only the tab bar animates (PR `m1/03-instant-tabs`).
 
 M1-04, part 1 (2026-11-09, PR `m1/04-exercise-catalog`): `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` holds 64 exercises shaped by `builtInExerciseSchema` (zh/en names, aliases, primary and secondary muscles, equipment, mechanic, default rest). IDs are UUIDv7 with a zero timestamp (`00000000-0000-7000-8000-000000000001` …), so they cannot collide with generated IDs; a test keeps them numbered 1 to n. `searchExercises` (`src/domain/exercise-search.ts`) matches names and aliases regardless of case, width, spaces and punctuation, ranking prefix over substring over all-words matches, and works on custom exercises too. Plan changes agreed with bw: no photos; the detail sheet gets an SVG muscle map and form cues (part 3); M1-09 adds per-item rest with a rule-based "Suggest" button; M6-02 adds a templates tool.
+
+M1-04, part 2 (2026-11-09, PR `m1/04-exercise-library-ui`): `/workout/exercises` (linked from Workout, which stays the selected tab) lists the user's exercises newest first and then the built-in ones, with a search field (`searchExercises`) and a scrolling row of muscle-group filters. Custom exercises open a new / edit form in the first bottom sheet (`src/ui/sheet.tsx`, a native `<dialog>`): names in either language, muscle group, equipment and default rest in 15 s steps; saved through `repositories.exercises`. A search with no result offers to create an exercise with that name. New text-field type `input` (16 px, below which iOS zooms). The device layout test now ignores the part of an element scrolled out of a horizontal scroller. Checked in Chromium at 390×844: "卧推" and "bench" both list barbell bench press first; a new exercise is still listed after a reload; Escape and the scrim close the sheet; Reduce Motion and English mode work. Pending: bw's iPhone check (keyboard over the sheet, chip scrolling).
 
 ## Blocked on bw
 

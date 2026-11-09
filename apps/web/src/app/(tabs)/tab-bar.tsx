@@ -46,9 +46,14 @@ const tabs = [
 
 export function TabBar() {
   const t = useTranslations('tabs')
-  // CloudFront also serves `/workout/`; the tab is the same.
+  // CloudFront also serves `/workout/`; the tab is the same. A page below a
+  // tab (`/workout/exercises`) keeps that tab selected.
   const pathname = usePathname().replace(/(.)\/$/, '$1')
-  const active = tabs.findIndex((tab) => tab.href === pathname)
+  const active = tabs.findIndex((tab) =>
+    tab.href === '/'
+      ? pathname === '/'
+      : pathname === tab.href || pathname.startsWith(`${tab.href}/`),
+  )
 
   return (
     <nav className="tab-bar" aria-label={t('label')}>
