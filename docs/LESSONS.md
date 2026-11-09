@@ -6,7 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
-- In e2e tests, assert on the page behind a sheet only after the sheet has closed; WebKit hides it from the accessibility tree while a modal dialog is open, and WebKit runs only in CI. ([L-027](#l-027--2026-11-09--test--a-plan-test-passed-in-chromium-and-failed-on-every-iphone))
+- In e2e tests, assert each value right after entering it (`toHaveValue`), enter text with `fill`, and check the page behind a sheet only after the sheet has closed; WebKit runs only in CI. ([L-027](#l-027--2026-11-09--test--a-plan-test-passed-in-chromium-and-failed-on-every-iphone))
 - A query read through `useLiveQuery` calls Dexie directly; it never awaits one of our own async helpers (a repository's `get`, another loader) before its last read, and an e2e test checks the screen updates after a write. ([L-026](#l-026--2026-11-09--ui--the-plan-editor-did-not-show-new-days))
 - Every page below a tab has a back link and every sheet a close button; list a new page in `e2e/pages.ts` with its `parent`. A screen with only a forward action ("Finish") is a trap. ([L-025](#l-025--2026-11-09--ui--the-workout-in-progress-had-no-way-back))
 - In an e2e test, after a write, wait for the UI to show the stored value (read back from Dexie) before navigating or reloading; run a new e2e test with `--repeat-each` locally before pushing. ([L-024](#l-024--2026-11-09--test--the-workout-e2e-test-failed-once-in-ci))
@@ -51,9 +51,9 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 _Newest first._
 
 ### L-027 · 2026-11-09 · test · A plan test passed in Chromium and failed on every iPhone
-- **What happened:** on #72 the Device layout job failed on the four WebKit projects: the plan row's text was not found while the item sheet was open. It passed on Pixel 7 and Galaxy S24, the only projects the cloud container can run.
-- **Root cause:** the test looked for text in `main` while a modal `<dialog>` was open. WebKit drops the inert page from the accessibility tree, so role and text queries scoped to `main` find nothing; Chromium still finds them.
-- **Fix:** PR `m1/09-plan-items` closes the sheet and waits for it to hide before checking the row.
+- **What happened:** on #72 the Device layout job failed on the four WebKit projects: the plan row's text was not found after editing the item in its sheet. It passed on Pixel 7 and Galaxy S24, the only projects the cloud container can run.
+- **Root cause:** the test asserted only the final row text, so a wrong intermediate value went unnoticed, and it ran only in Chromium before pushing. Two WebKit differences were possible: the inert page behind a modal `<dialog>` is hidden from role queries, and the select-on-focus of a tapped field may not survive the tap.
+- **Fix:** PR `m1/09-plan-items` closes the sheet and waits for it to hide before checking the row. That alone did not pass: the typed rep counts were most likely appended to the old value in WebKit (see the stepper follow-up in STATUS), so the test now fills the fields and asserts each stored value before moving on.
 - **Prevention:** rule added under "Active rules".
 - **Status:** documented
 

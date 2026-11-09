@@ -91,6 +91,7 @@ M1-09, part 3 (2026-11-09, PR `m1/09-plan-items`): tapping an exercise in the pl
 
 ## Follow-ups (noticed, not in scope yet)
 
+- Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
 - Plans: days and exercises keep the order they were added in; there is no way to reorder them yet (M1-09 adds them at the end). Add reordering if bw needs it after using plans.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 

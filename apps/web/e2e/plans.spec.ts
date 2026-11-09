@@ -60,15 +60,17 @@ test("an exercise's sets, rep range and suggested rest are kept", async ({ page 
 
   const dialog = page.getByRole('dialog')
   await dialog.getByRole('button', { name: '组数加一' }).click()
+  // `fill` replaces the value: in WebKit the select-on-focus of a tapped field
+  // can be undone by the tap itself, so typed digits would be appended.
   const repsMin = dialog.getByRole('textbox', { name: '最少次数' })
-  await repsMin.click()
-  await page.keyboard.type('5')
+  await repsMin.fill('5')
   await repsMin.press('Enter')
+  await expect(repsMin).toHaveValue('5')
   // The high end follows when the low end passes it.
   const repsMax = dialog.getByRole('textbox', { name: '最多次数' })
-  await repsMax.click()
-  await page.keyboard.type('4')
+  await repsMax.fill('4')
   await repsMax.press('Enter')
+  await expect(repsMax).toHaveValue('4')
   await dialog.getByRole('button', { name: '建议' }).click()
   await expect(dialog.getByRole('button', { name: '改回默认 3:00' })).toBeVisible()
   // WebKit leaves the page behind a modal dialog out of the accessibility tree,
