@@ -4,6 +4,7 @@ import {
   type Plan,
   type PlanDay,
   type PlanItem,
+  planItemsFromWorkout,
 } from '@gainframe/shared'
 
 import type { Repositories } from './repositories'
@@ -140,6 +141,36 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
           ...domainConfig.newPlanItem,
           restS: null,
         })
+      })
+    },
+
+    // Saves a finished workout as a new last day of the active plan, or of a
+    // new plan (which becomes active) when there is none (`planItemsFromWorkout`).
+    // `dayName` gets the day's number in the rotation.
+    async saveWorkoutAsDay(
+      workoutId: string,
+      names: { plan: string; day: (n: number) => string },
+    ): Promise<PlanDay> {
+      const tables = [db.plans, db.planDays, db.planItems, db.outbox, db.settings]
+      const reads = [db.workoutExercises, db.workoutSets]
+      return db.transaction('rw', [...tables, ...reads], async () => {
+        const slots = await db.workoutExercises.where('workoutId').equals(workoutId).toArray()
+        const sets = await db.workoutSets.where('workoutId').equals(workoutId).toArray()
+        let plan = await activePlan()
+        if (plan === undefined) {
+          plan = await repos.plans.create({ name: names.plan })
+          await db.settings.put({ key: 'activePlanId', value: plan.id })
+        }
+        const days = await db.planDays.where('planId').equals(plan.id).toArray()
+        const day = await repos.planDays.create({
+          planId: plan.id,
+          name: names.day(days.filter(live).length + 1),
+          position: nextPosition(days),
+        })
+        for (const item of planItemsFromWorkout(slots, sets)) {
+          await repos.planItems.create({ ...item, planId: plan.id, planDayId: day.id })
+        }
+        return day
       })
     },
 

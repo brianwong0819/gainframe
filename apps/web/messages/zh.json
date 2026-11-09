@@ -58,7 +58,8 @@
     "plansActive": "当前：{name}",
     "plansNone": "还没有计划",
     "target": "目标 {reps} 次",
-    "best": "最高 {weight}"
+    "best": "最高 {weight}",
+    "finishAndSave": "结束，并存成计划的新一天"
   },
   "food": {
     "title": "饮食",
@@ -210,6 +211,10 @@
     "emptyWorkout": "空白训练",
     "pickDay": "选一天开始",
     "dayOf": "第 {n}/{count} 天",
-    "nextUp": "按顺序该练这天"
+    "nextUp": "按顺序该练这天",
+    "addToPlan": "加入计划",
+    "noPlansToAdd": "还没有训练计划。先在「训练 → 训练计划」建一个。",
+    "add": "加入",
+    "added": "已加入"
   }
 }

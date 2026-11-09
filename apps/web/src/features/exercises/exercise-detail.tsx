@@ -3,9 +3,11 @@
 import { builtInExerciseCues } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 
+import { Pressable } from '@/ui/pressable'
+
+import { AddToPlan } from '../plans/add-to-plan'
 import { formatRest, type LibraryEntry } from './library'
 import { MuscleMap } from './muscle-map'
-import { Pressable } from '@/ui/pressable'
 
 // The detail of an exercise: where it works and how it is set up. A custom
 // exercise has no mechanic or cues, and has an Edit button.
@@ -79,6 +81,7 @@ export function ExerciseDetail({
           <dd className="num text-body text-ink">{formatRest(exercise.defaultRestS)}</dd>
         </div>
       </dl>
+      <AddToPlan key={exercise.id} exerciseId={exercise.id} />
       {exercise.custom && (
         <Pressable
           onClick={onEdit}

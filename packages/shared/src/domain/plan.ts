@@ -1,7 +1,7 @@
 import { domainConfig } from '../config.ts'
 import type { Mechanic } from '../schemas/exercise.ts'
-import type { PlanDay } from '../schemas/plan.ts'
-import type { Workout } from '../schemas/workout.ts'
+import type { PlanDay, PlanItem } from '../schemas/plan.ts'
+import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
 
 // The day of a plan to train next: the day after the one followed by the plan's
 // latest finished workout, wrapping round to the first day. The rotation follows
@@ -38,4 +38,45 @@ export function suggestRestS(mechanic: Mechanic, repsMin: number): number {
   // The last band of each mechanic has no upper limit, so one always matches.
   const band = domainConfig.suggestedRestS[mechanic].find(({ maxReps }) => repsMin <= maxReps)
   return band?.restS ?? 0
+}
+
+export type PlanItemValues = Pick<
+  PlanItem,
+  'exerciseId' | 'position' | 'supersetGroup' | 'targetSets' | 'repsMin' | 'repsMax' | 'restS'
+>
+
+// A finished workout as the items of a new plan day: each exercise in order,
+// with as many target sets as completed working or failure sets, and the range
+// of their reps as the rep range. Warm-ups, drop sets and sets not done are
+// left out, and so is an exercise with none of those sets.
+export function planItemsFromWorkout(
+  slots: readonly WorkoutExercise[],
+  sets: readonly WorkoutSet[],
+): PlanItemValues[] {
+  return slots
+    .filter((slot) => slot.deletedAt === null)
+    .toSorted((a, b) => a.position - b.position)
+    .flatMap((slot) => {
+      const reps = sets
+        .filter(
+          (set) =>
+            set.workoutExerciseId === slot.id &&
+            set.deletedAt === null &&
+            set.completedAt !== null &&
+            (set.kind === 'working' || set.kind === 'failure'),
+        )
+        .map((set) => Math.min(100, Math.max(1, set.reps)))
+      if (reps.length === 0) return []
+      return [
+        {
+          exerciseId: slot.exerciseId,
+          supersetGroup: slot.supersetGroup,
+          targetSets: Math.min(20, reps.length),
+          repsMin: Math.min(...reps),
+          repsMax: Math.max(...reps),
+          restS: slot.restS,
+        },
+      ]
+    })
+    .map((item, position) => ({ ...item, position }))
 }

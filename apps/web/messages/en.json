@@ -58,7 +58,8 @@
     "plansActive": "Current: {name}",
     "plansNone": "No plan yet",
     "target": "target {reps} reps",
-    "best": "best {weight}"
+    "best": "best {weight}",
+    "finishAndSave": "Finish and save as a new plan day"
   },
   "food": {
     "title": "Food",
@@ -210,6 +211,10 @@
     "emptyWorkout": "Empty workout",
     "pickDay": "Pick a day to start",
     "dayOf": "Day {n} of {count}",
-    "nextUp": "next in rotation"
+    "nextUp": "next in rotation",
+    "addToPlan": "Add to plan",
+    "noPlansToAdd": "No plans yet. Make one under Workout → Plans.",
+    "add": "Add",
+    "added": "Added"
   }
 }
