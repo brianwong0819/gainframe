@@ -67,16 +67,17 @@ Review fix (2026-11-09, PR `m1/review-dev-sample-db`): `/dev/database` wrote its
 
 M1-04 muscle picker (2026-11-09, PR `m1/04-muscle-picker`), asked for by bw: custom exercises now have secondary muscles (`exerciseSchema.secondaryMuscles`, distinct and never the primary one; Dexie version 3 gives existing rows none, covered by `db/upgrade.test.ts`). The form picks muscles on the muscle map or with the buttons under it (`pickMuscle`: first tap primary, later taps secondary, a second tap removes, full body stands alone), and a new exercise starts with none picked. The detail sheet shows secondary muscles for custom exercises too. Pending: bw's iPhone check.
 
+M1 mid-milestone review (2026-11-09, PR `m1/review-plan`): code from M0-09 to M1-04 reviewed; no data-loss or security defect found (`pnpm check` green). Plan updates: M1-05 writes each set on completion and resumes an unfinished workout; M1-06 persists the rest end time; M1-08 adds rep records; M1-10 shows names of deleted exercises; M1-11 takes the "update available" prompt (moved from Follow-ups); M2-01 requires backward-compatible migrations, a Drizzle/Zod field test and an `exercise_id` ownership check; M2-09 limits `/api/health` before the repository is public. Bodyweight exercises (bw's choice): `weightKg` is the added load, records are rep records at the same or higher added load, and volume adds body weight once M4-02 exists (M1-05, M1-08).
+
 ## Blocked on bw
 
-- Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").
+- Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
 ## Follow-ups (noticed, not in scope yet)
 
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
-- A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
