@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- A query read through `useLiveQuery` calls Dexie directly; it never awaits one of our own async helpers (a repository's `get`, another loader) before its last read, and an e2e test checks the screen updates after a write. ([L-026](#l-026--2026-11-09--ui--the-plan-editor-did-not-show-new-days))
 - Every page below a tab has a back link and every sheet a close button; list a new page in `e2e/pages.ts` with its `parent`. A screen with only a forward action ("Finish") is a trap. ([L-025](#l-025--2026-11-09--ui--the-workout-in-progress-had-no-way-back))
 - In an e2e test, after a write, wait for the UI to show the stored value (read back from Dexie) before navigating or reloading; run a new e2e test with `--repeat-each` locally before pushing. ([L-024](#l-024--2026-11-09--test--the-workout-e2e-test-failed-once-in-ci))
 - Before fixing a visual glitch, measure it frame by frame (a screen recording or a rAF sample) and keep that measurement as a test; do not ship a fix for a guessed cause. ([L-023](#l-023--2026-11-09--ui--the-sheet-kept-flashing-because-its-dialog-scrolled))
@@ -47,6 +48,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-026 · 2026-11-09 · ui · The plan editor did not show new days
+- **What happened:** writing the plan editor's e2e test, renaming a day and adding a day were stored in IndexedDB but the screen kept the old rows; renaming the plan did update it.
+- **Root cause:** the editor's loader first awaited our own async helpers (`repos.plans.get`, an `activePlan` helper), then read the days. `liveQuery` records which tables a query reads through Dexie's async context, and that context did not survive awaiting the helpers' native promises, so the later reads of `planDays` and `planItems` were not observed. Only the `plans` read, made first, was.
+- **Fix:** PR `m1/09-plan-editor`: the plan loaders in `src/db/plans.ts` read every table with direct Dexie calls.
+- **Prevention:** rule added under "Active rules" and in "Data on the device" in `docs/conventions.md`; `e2e/plans.spec.ts` renames and adds a day and fails without the fix.
+- **Status:** guarded
 
 ### L-025 · 2026-11-09 · ui · The workout in progress had no way back
 - **What happened:** after starting a workout and adding an exercise, the Workout tab showed only the workout, whose one exit was "Finish workout". bw could not get back to the tab's home or the library without ending the workout. Found by bw on the iPhone.

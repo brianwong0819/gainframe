@@ -4,12 +4,15 @@ import { BUILT_IN_EXERCISES } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 
-import { workoutSession } from '@/db/client'
+import { planStore, workoutSession } from '@/db/client'
+import { useLiveQuery } from '@/db/use-live-query'
 import { useActiveWorkout } from '@/features/workout/active-workout'
 import { Chevron } from '@/ui/chevron'
 import { Pressable, PressableLink } from '@/ui/pressable'
 
 import { TabScreen } from '../tab-screen'
+
+const loadActivePlan = () => planStore.activePlan()
 
 const linkCardClass = 'flex items-center justify-between gap-12 rounded-group bg-surface p-16'
 
@@ -19,6 +22,7 @@ export default function WorkoutPage() {
   const active = useActiveWorkout()
   const sets = active?.slots.flatMap((slot) => slot.sets) ?? []
   const done = sets.filter((set) => set.completedAt !== null).length
+  const activePlan = useLiveQuery(loadActivePlan)
 
   return (
     <TabScreen title={t('title')}>
@@ -47,6 +51,17 @@ export default function WorkoutPage() {
           {t('start')}
         </Pressable>
       )}
+      <PressableLink href="/workout/plans" className={linkCardClass}>
+        <span className="flex min-w-0 flex-col">
+          <span className="text-body text-ink">{t('plans')}</span>
+          <span className="truncate text-label text-ink-3">
+            {activePlan ? t('plansActive', { name: activePlan.name }) : t('plansNone')}
+          </span>
+        </span>
+        <span className="text-ink-3">
+          <Chevron direction="right" />
+        </span>
+      </PressableLink>
       <PressableLink href="/workout/exercises" className={linkCardClass}>
         <span className="flex flex-col">
           <span className="text-body text-ink">{t('library')}</span>

@@ -1,4 +1,12 @@
 {
-  "pages": ["/", "/food", "/workout", "/workout/exercises", "/workout/session"],
+  "pages": [
+    "/",
+    "/food",
+    "/workout",
+    "/workout/exercises",
+    "/workout/plan",
+    "/workout/plans",
+    "/workout/session"
+  ],
   "devPages": ["/dev/database", "/dev/kitchen-sink", "/dev/rest-timer"]
 }
