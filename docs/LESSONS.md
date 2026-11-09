@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- In an e2e test, after a write, wait for the UI to show the stored value (read back from Dexie) before navigating or reloading; run a new e2e test with `--repeat-each` locally before pushing. ([L-024](#l-024--2026-11-09--test--the-workout-e2e-test-failed-once-in-ci))
 - Before fixing a visual glitch, measure it frame by frame (a screen recording or a rAF sample) and keep that measurement as a test; do not ship a fix for a guessed cause. ([L-023](#l-023--2026-11-09--ui--the-sheet-kept-flashing-because-its-dialog-scrolled))
 - Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
 - A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
@@ -45,6 +46,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-024 · 2026-11-09 · test · The workout e2e test failed once in CI
+- **What happened:** on #67 the Device layout job failed on Pixel 7 only: the note saved in the sheet was missing after the reload. The first fix then failed locally on repeat, because the locator also matched the note's text field in the closing sheet.
+- **Root cause:** the test clicked "Save" and navigated at once, while the Dexie write was still in flight; leaving the page abandoned it. The test had been run once per device before pushing, which hid the timing.
+- **Fix:** #67 waits for the note's paragraph on the card and for the picked kind chip's `aria-pressed` before leaving the page.
+- **Prevention:** rule added under "Active rules": wait for the stored value to show before navigating, and run new e2e tests with `--repeat-each` before pushing.
+- **Status:** documented
 
 ### L-023 · 2026-11-09 · ui · The sheet kept flashing because its dialog scrolled
 - **What happened:** after L-020 the sheet still flashed on the iPhone. A first follow-up (PR `m1/04-sheet-entry-after-open`, starting the animation after `showModal()`) changed nothing. bw's 60 fps screen recording showed the panel appear at its final place, slide up off the top, then snap back.

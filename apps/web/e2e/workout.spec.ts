@@ -15,6 +15,12 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
     .getByRole('button', { name: /^杠铃卧推/ })
     .click()
 
+  // Typing a weight (a comma is a decimal point), then two steps of 2.5 kg.
+  const weight = page.getByRole('textbox', { name: '第 1 组重量' })
+  await weight.click()
+  await page.keyboard.type('57,5')
+  await weight.press('Enter')
+  await expect(weight).toHaveValue('57.5')
   const heavier = page.getByRole('button', { name: '第 1 组加重量' })
   await heavier.click()
   await heavier.click()
@@ -45,7 +51,7 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByRole('heading', { name: '训练中' })).toBeVisible()
   const row = page.getByRole('button', { name: '组 1', exact: true })
-  await expect(row).toContainText('5')
+  await expect(row).toContainText('62.5')
   await expect(row).toContainText('9')
   await expect(row).toContainText('热')
   await expect(page.getByText('座椅第 4 格')).toBeVisible()

@@ -46,7 +46,9 @@
     "note": "Note",
     "notePlaceholder": "Seat height, grip, how it felt…",
     "saveNote": "Save",
-    "removeExercise": "Remove from this workout"
+    "removeExercise": "Remove from this workout",
+    "weightLabel": "Weight, set {n}",
+    "repsLabel": "Reps, set {n}"
   },
   "food": {
     "title": "Food",
