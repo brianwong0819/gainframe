@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Offline checks cover a tap on an in-app link as well as a page load; the service worker must answer Next.js payload requests from the precache. ([L-022](#l-022--2026-11-09--pwa--navigation-waited-on-the-network-although-every-page-was-precached))
 - Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
 - A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
 - Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
@@ -44,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-022 · 2026-11-09 · pwa · Navigation waited on the network although every page was precached
+- **What happened:** bw reported that some buttons on the iPhone needed several taps before the next screen opened. In Chromium with a slow network, a tap on a link took as long as the network did (3 s with a 3 s delay), with nothing on screen but the press animation.
+- **Root cause:** Next.js fetches the next page's payload with a cache-busting `_rsc` query parameter. The service worker precached the payload files but matched URLs including the query, so every navigation went to the network; only a failed fetch fell back to a full page load from the cache. The M0-12 offline check covered a reload, not a tap on a link.
+- **Fix:** PR `m1/offline-navigation-payloads`: the worker ignores `_rsc` when matching the precache.
+- **Prevention:** `e2e/offline-navigation.spec.ts` aborts every payload request on the network and fails unless a link still navigates within the page (it failed before the fix). Offline checks cover client-side navigation as well as loading a page.
+- **Status:** guarded
 
 ### L-021 · 2026-11-09 · ui · A focus ring stayed on a row after closing its sheet
 - **What happened:** bw closed an exercise sheet on the iPhone and the row that opened it kept a blue focus ring.
