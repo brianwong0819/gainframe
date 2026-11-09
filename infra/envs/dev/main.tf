@@ -46,4 +46,6 @@ module "site" {
   name              = local.name
   api_function_name = module.api.function_name
   api_function_url  = module.api.function_url
+  # The dev deploy builds with GAINFRAME_DEV_PAGES=1.
+  dev_pages = true
 }

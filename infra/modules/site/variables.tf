@@ -12,3 +12,9 @@ variable "api_function_url" {
   description = "Function URL of the API Lambda (https://<id>.lambda-url.<region>.on.aws/)."
   type        = string
 }
+
+variable "dev_pages" {
+  description = "Route the developer pages (routes.json devPages); true only where the build includes them."
+  type        = bool
+  default     = false
+}

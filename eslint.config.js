@@ -15,6 +15,8 @@ export default defineConfig([
     '**/coverage/',
     '**/next-env.d.ts',
     'docs/design/',
+    // CloudFront Functions scripts: a different runtime, tested by apps/web/src/app/routes.test.ts.
+    'infra/**/*.js',
   ]),
   {
     linterOptions: { reportUnusedDisableDirectives: 'error' },

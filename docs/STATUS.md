@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-02 done (next: M1-03 App shell and navigation, waiting for bw to say continue)
-- **Last updated:** 2026-11-08
+- **Current task:** M1-03 App shell and navigation, in three PRs: route function (done), diagnostics, shell and i18n
+- **Last updated:** 2026-11-09
 
 ## Where I stopped
 
@@ -45,7 +45,9 @@ M0-14 (2026-11-08, PR `m0/14-adrs-and-board`): [ADR-0003](adr/0003-data-model-an
 Security headers (2026-11-08, PR `m0/security-headers`): a CloudFront response headers policy adds Content-Security-Policy, HSTS, `nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: same-origin` to every response. The CSP header comes from `infra/modules/site/content-security-policy.txt`; because a static export has inline scripts and no nonces, `scripts/csp-hashes.ts` adds a `<meta>` `script-src` with each page's own inline-script hashes after `next build` (before the service worker build, which records file revisions). The e2e server sends the same header, and `e2e/csp.spec.ts` fails on any violation. Details: "Security headers" in `docs/architecture.md`.
 M1-01 (2026-11-08, PR `m1/01-workout-domain`): Zod schemas in `packages/shared/src/schemas` for the shared row fields (UUIDv7 `id`, nullable `userId`, UTC instants, branded `LocalDate`), custom exercises, templates and template items, workouts and sets (kind `warmup` / `working` / `drop` / `failure`). Pure functions in `src/domain`: `toLocalDate` (via `Intl.DateTimeFormat`), `estimateOneRepMax` (Epley; a single is its own 1RM; null for 0 reps or above `domainConfig.e1rmMaxReps` = 12), `totalVolumeKg` (warm-ups excluded), `previousPerformance` and `findPersonalRecords` (working and failure sets only; an exercise with no history has no records). ESLint `switch-exhaustiveness-check` is on, without a default-case escape.
 
-M1-02 (2026-11-08, PR `m1/02-local-database`): `apps/web/src/db` holds the Dexie schema v1 (`exercises`, `templates`, `templateItems`, `workouts`, `workoutSets`, `outbox`), a UUIDv7 generator and `createRepositories` (validate with the shared schema, set the row fields, write row and outbox entry in one transaction, soft delete with children; details under "Sync rules" in `docs/architecture.md`). Tested with fake-indexeddb and an injected clock. The root layout asks for persistent storage on every launch until granted. `src/instrumentation-client.ts` puts Zod in jitless mode, because its `new Function` probe broke the CSP test as soon as a page built a schema. Dev page `/dev/database` (linked from the dev home page) writes a sample workout and shows row, tombstone and outbox counts and whether storage is persisted; checked in Chromium at 390×844 (IndexedDB holds the rows after a reload). New packages: `dexie` 4.4.7, `fake-indexeddb` 6.2.6 (dev). Pending: bw's iPhone check of `/dev/database` from the home-screen app (rows survive closing the app; "Storage persisted" shows yes).
+M1-02 (2026-11-08, PR `m1/02-local-database`): `apps/web/src/db` holds the Dexie schema v1 (`exercises`, `templates`, `templateItems`, `workouts`, `workoutSets`, `outbox`), a UUIDv7 generator and `createRepositories` (validate with the shared schema, set the row fields, write row and outbox entry in one transaction, soft delete with children; details under "Sync rules" in `docs/architecture.md`). Tested with fake-indexeddb and an injected clock. The root layout asks for persistent storage on every launch until granted. `src/instrumentation-client.ts` puts Zod in jitless mode, because its `new Function` probe broke the CSP test as soon as a page built a schema. Dev page `/dev/database` (linked from the dev home page) writes a sample workout and shows row, tombstone and outbox counts and whether storage is persisted; checked in Chromium at 390×844 (IndexedDB holds the rows after a reload). New packages: `dexie` 4.4.7, `fake-indexeddb` 6.2.6 (dev). Verified 2026-11-09: on bw's iPhone the rows written from `/dev/database` in the home-screen app were still there after closing and reopening it.
+
+M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function maps clean URLs to the exported files and unknown paths to `404.html`, from the route list in `infra/modules/site/routes.json` (developer pages only on dev); a unit test keeps the list in step with `src/app`, and the e2e server runs the same function. The deploy smoke test requests `/dev/kitchen-sink`. Details: "Routing" in `docs/architecture.md`. Next: part 2, diagnostics (Dexie v2 error table, root error boundary, global handlers).
 
 ## Blocked on bw
 
@@ -54,10 +56,8 @@ M1-02 (2026-11-08, PR `m1/02-local-database`): `apps/web/src/db` holds the Dexie
 
 ## Follow-ups (noticed, not in scope yet)
 
-- Until M1-03 adds the CloudFront route rewrite, the kitchen sink on dev is at `/dev/kitchen-sink.html`, not `/dev/kitchen-sink`.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when M1-03 builds the tab bar.
 
-- CloudFront has no rewrite for static-export routes yet (`/workout` → `/workout/index.html` or `.html`) and no custom 404; a distribution-wide custom error response would also rewrite API 403s. Add a CloudFront Function when M1-03 adds the first route.
 - A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
