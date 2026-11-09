@@ -159,6 +159,17 @@ export function createWorkoutSession(
       })
     },
 
+    // Moves a set's weight or reps by `delta`, never below 0, reading the stored
+    // value in the same transaction so quick taps all count.
+    async stepSet(setId: string, field: 'weightKg' | 'reps', delta: number): Promise<WorkoutSet> {
+      return db.transaction('rw', db.workoutSets, db.outbox, async () => {
+        const set = await repos.workoutSets.get(setId)
+        if (set === undefined) throw new Error(`No set ${setId}`)
+        const value = Math.max(0, Math.round((set[field] + delta) * 100) / 100)
+        return repos.workoutSets.update(setId, { [field]: value })
+      })
+    },
+
     async finish(workoutId: string): Promise<Workout> {
       return repos.workouts.update(workoutId, { endedAt: now().toISOString() })
     },

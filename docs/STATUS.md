@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-05 Active workout + set logging (PR 3 of 4: workout screen)
+- **Current task:** M1-05 Active workout + set logging (PR 4 of 5: set details and notes)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -71,7 +71,9 @@ M1 mid-milestone review (2026-11-09, PR `m1/review-plan`): code from M0-09 to M1
 
 M1-05 PR 1 (2026-11-09, `m1/05-workout-exercises`): bw chose a slot table for exercise order and notes. `workoutExercises` (Dexie v4) holds each exercise slot of a workout (position, superset group, note); a set gains `workoutExerciseId`, keeps `workoutId` and `exerciseId` as unchanging copies for queries, and loses `supersetGroup`. The v4 upgrade moves existing sets into one slot per workout and exercise, with outbox entries. 
 M1-05 PR 2 (2026-11-09, `m1/05-workout-session`): `src/db/workout-session.ts` starts a workout or resumes the unfinished one (only one in progress), appends slots and sets, prefills each set from the same set last time (`nextSetValues` in `packages/shared`), loads the active workout for the screen, and finishes it. Weight steps per equipment and the first-set default are in `domainConfig`. `src/db/use-live-query.ts` is the shared Dexie live-query hook. 
-M1-05 PR 3 (2026-11-09, `m1/05-workout-screen`): the Workout tab shows the workout in progress (`src/features/workout`): a card per exercise with its sets and last time's numbers, a sticky panel above the tab bar with weight and rep steppers (`src/ui/stepper.tsx`) and the complete button, an exercise picker sheet and a finish confirmation. Opening the app on Today with a workout in progress goes to it once per launch. `e2e/workout.spec.ts` logs a set and checks it after a reload. Next: PR 4, set kind, RPE, notes, delete, typing a weight, the check animation and rolling digits. Pending: bw iPhone check.
+M1-05 PR 3 (2026-11-09, `m1/05-workout-screen`): the Workout tab shows the workout in progress (`src/features/workout`): a card per exercise with its sets and last time's numbers, a sticky panel above the tab bar with weight and rep steppers (`src/ui/stepper.tsx`) and the complete button, an exercise picker sheet and a finish confirmation. Opening the app on Today with a workout in progress goes to it once per launch. `e2e/workout.spec.ts` logs a set and checks it after a reload. Pending: bw iPhone check.
+
+M1-05 PR 4 (2026-11-09, `m1/05-set-details`): a sheet for a set's kind and RPE and deleting it (from the panel, or by tapping a done set), a per-exercise note and "remove from this workout" (`features/workout/set-details.tsx`, `slot-note.tsx`); `ChoiceGroup` moved to `src/ui`; stepper taps go through `workoutSession.stepSet`, which reads the stored value in its transaction so quick taps all count. Next: PR 5, typing a weight, the check animation and rolling digits.
 
 ## Blocked on bw
 

@@ -22,6 +22,14 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
 
+  // A done set opens its details; its kind and the exercise note are kept too.
+  await page.getByRole('button', { name: '组 1', exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '热身' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
+  await page.getByRole('main').getByRole('button', { name: '备注' }).click()
+  await page.getByRole('dialog').getByRole('textbox').fill('座椅第 4 格')
+  await page.getByRole('dialog').getByRole('button', { name: '保存' }).click()
+
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   )
@@ -34,5 +42,7 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   const row = page.getByRole('button', { name: '组 1', exact: true })
   await expect(row).toContainText('5')
   await expect(row).toContainText('9')
+  await expect(row).toContainText('热')
+  await expect(page.getByText('座椅第 4 格')).toBeVisible()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
 })
