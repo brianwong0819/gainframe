@@ -53,7 +53,7 @@ Rules:
 
 Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch swaps the screen at once, with no page transition: bw tried the rise-in transition on the iPhone and preferred the direct switch (2026-11-09). Only the tab bar animates. Page transitions, if a later screen needs one (a pushed detail view), are proposed to bw first. A page below a tab (`/workout/exercises`) keeps that tab selected and is entered and left the same way, at once, with a back link at the top.
 
-**Sheets.** Forms and details that belong to the current screen open in a bottom sheet (`src/ui/sheet.tsx`): a native modal `<dialog>` (focus trap, Escape, inert page) whose panel rises with `std` over the `--scrim`, which fades with `fade`; with Reduce Motion both only fade. It closes with a close button in its header, a tap on the scrim, Escape, or a downward drag of the header (past 120 px or 600 px/s). On opening it focuses its own panel, never a text field, so the keyboard appears only when the user taps a field (L-019), and `html:has(.sheet-dialog[open])` stops the page behind it from scrolling.
+**Sheets.** Forms and details that belong to the current screen open in a bottom sheet (`src/ui/sheet.tsx`): a native modal `<dialog>` (focus trap, Escape, inert page) whose panel rises with `std` over the `--scrim`, which fades with `fade`; with Reduce Motion both only fade. It closes with a close button in its header, a tap on the scrim, Escape, or a downward drag of the header (past 120 px or 600 px/s). On opening it focuses its own panel, never a text field, so the keyboard appears only when the user taps a field (L-019), and with `preventScroll`, so WebKit does not flash the panel into view (L-020); and `html:has(.sheet-dialog[open])` stops the page behind it from scrolling.
 
 ## Celebrations (three tiers, only at meaningful moments)
 
@@ -111,5 +111,5 @@ _None yet. Format: pattern — where we use it — source — credits entry._
 - [ ] Light and dark screenshots at 390×844; the Device layout job passes.
 - [ ] Reduced-motion checked.
 - [ ] Every string from the i18n catalogue; zh and en both present.
-- [ ] Tap targets ≥ 44 px; focus visible; screen-reader labels.
+- [ ] Tap targets ≥ 44 px; focus visible for keyboard users (the `--accent` ring shows only while `<html data-input="keyboard">`, L-021); screen-reader labels.
 - [ ] Compared side by side with the prototype.

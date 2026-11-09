@@ -25,7 +25,9 @@ const DISMISS_VELOCITY = 600
  * exit animation, so the panel is seen leaving. It closes with the close
  * button, a tap on the scrim, Escape, or a downward drag of its header. The
  * panel itself takes focus on opening, so a form field does not raise the
- * keyboard until the user taps it.
+ * keyboard until the user taps it. That focus must not scroll: the panel
+ * still sits below the screen at that moment, and WebKit would scroll it into
+ * view for one frame before the entry animation starts.
  */
 export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps) {
   const drag = useDragControls()
@@ -38,7 +40,7 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
     const element = dialog.current
     if (open && element && !element.open) {
       element.showModal()
-      panel.current?.focus()
+      panel.current?.focus({ preventScroll: true })
     }
   }, [open])
 

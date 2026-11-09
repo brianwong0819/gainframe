@@ -8,45 +8,23 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useState } from 'react'
 
-import { toLocalDate } from '@gainframe/shared'
-
-import { db, repositories } from '@/db/client'
+import { db as appDb, repositories as appRepositories } from '@/db/client'
+import { createRepositories } from '@/db/repositories'
+import { GainframeDb } from '@/db/schema'
 import { type DatabaseSummary, summarize } from '@/db/summary'
 import { Pressable } from '@/ui/pressable'
 
+import {
+  logSampleWorkout,
+  type RemovedSamples,
+  removeSamplesFromAppDb,
+  SAMPLE_DB_NAME,
+} from './sample'
+
 const button = 'rounded-full bg-sunk px-20 py-12 font-semibold text-ink'
 
-async function logSampleWorkout() {
-  const now = new Date().toISOString()
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const exercise = await repositories.exercises.create({
-    nameZh: '杠铃卧推',
-    nameEn: 'Barbell bench press',
-    muscle: 'chest',
-    equipment: 'barbell',
-    defaultRestS: 120,
-  })
-  const workout = await repositories.workouts.create({
-    startedAt: now,
-    endedAt: null,
-    templateId: null,
-    localDate: toLocalDate(now, timeZone),
-    note: null,
-  })
-  for (const [position, weightKg] of [60, 62.5, 65].entries()) {
-    await repositories.workoutSets.create({
-      workoutId: workout.id,
-      exerciseId: exercise.id,
-      supersetGroup: null,
-      position,
-      kind: 'working',
-      weightKg,
-      reps: 8,
-      rpe: null,
-      completedAt: now,
-    })
-  }
-}
+const db = new GainframeDb(SAMPLE_DB_NAME)
+const repositories = createRepositories(db)
 
 export default function DatabasePage() {
   const [summary, setSummary] = useState<DatabaseSummary | null>(null)
@@ -61,6 +39,7 @@ export default function DatabasePage() {
     }
   }, [])
 
+  const [removed, setRemoved] = useState<RemovedSamples | null>(null)
   const latestWorkoutId = summary?.latestWorkoutId ?? null
 
   return (
@@ -68,8 +47,8 @@ export default function DatabasePage() {
       <header className="flex flex-col gap-8">
         <h1 className="text-title">Local database</h1>
         <p className="text-label text-ink-2">
-          Rows written here stay on this device. Storage persisted:{' '}
-          {persisted === null ? '…' : persisted ? 'yes' : 'no'}
+          Rows written here go to a separate sample database on this device, never to the app&apos;s
+          own. Storage persisted: {persisted === null ? '…' : persisted ? 'yes' : 'no'}
         </p>
       </header>
 
@@ -92,7 +71,7 @@ export default function DatabasePage() {
         <Pressable
           className={button}
           onClick={() => {
-            void logSampleWorkout()
+            void logSampleWorkout(repositories, new Date())
           }}
         >
           Log a sample workout
@@ -106,7 +85,21 @@ export default function DatabasePage() {
         >
           Delete the latest workout
         </Pressable>
+        <Pressable
+          className={button}
+          onClick={() => {
+            void removeSamplesFromAppDb(appDb, appRepositories).then(setRemoved)
+          }}
+        >
+          Remove old samples from the app database
+        </Pressable>
       </div>
+      {removed !== null && (
+        <p className="text-label text-ink-2" role="status">
+          Removed {removed.workouts} workouts and {removed.exercises} exercises from the app
+          database.
+        </p>
+      )}
     </main>
   )
 }
