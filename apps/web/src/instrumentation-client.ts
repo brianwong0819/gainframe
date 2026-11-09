@@ -1,9 +1,14 @@
-import { z } from 'zod'
-
 // Next.js runs this file before the app's own client code.
-//
-// Every z.object() probes for `new Function` when it is created, to decide whether
-// to compile a fast parser. The Content-Security-Policy blocks eval, so the probe
-// fails and the browser reports a violation (e2e/csp.spec.ts). Jitless mode skips
-// the probe; it has to be set before any module that builds a schema is evaluated.
-z.config({ jitless: true })
+// zod-config must stay the first import: later imports build schemas.
+import './zod-config'
+
+import { reportError } from './diagnostics/report'
+
+// Errors no error boundary catches: event handlers, timers, failed promises.
+// Registered here so errors during the app's own start-up are recorded too.
+window.addEventListener('error', (event) => {
+  reportError('error', event.error ?? event.message)
+})
+window.addEventListener('unhandledrejection', (event) => {
+  reportError('unhandledrejection', event.reason)
+})
