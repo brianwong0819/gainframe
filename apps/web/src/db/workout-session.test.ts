@@ -69,6 +69,33 @@ describe('start', () => {
   })
 })
 
+describe('loadActive', () => {
+  it('is null when no workout is open', async () => {
+    expect(await session.loadActive()).toBeNull()
+  })
+
+  it("lists live slots and sets in order, with last time's sets", async () => {
+    const monday = await session.start(ZONE)
+    const old = await session.addExercise(monday.id, BENCH)
+    const [oldSet] = await db.workoutSets.where('workoutExerciseId').equals(old.id).toArray()
+    await complete(oldSet?.id ?? '', 60, 8)
+    await session.finish(monday.id)
+
+    advance(86_400_000)
+    const workout = await session.start(ZONE)
+    const bench = await session.addExercise(workout.id, BENCH)
+    const removed = await session.addExercise(workout.id, SQUAT)
+    await repos.workoutExercises.remove(removed.id)
+    const second = await session.addSet(bench.id)
+
+    const state = await session.loadActive()
+    expect(state?.workout.id).toBe(workout.id)
+    expect(state?.slots.map(({ slot }) => slot.id)).toEqual([bench.id])
+    expect(state?.slots[0]?.sets.map((set) => set.position)).toEqual([0, second.position])
+    expect(state?.slots[0]?.previous.map((set) => set.id)).toEqual([oldSet?.id])
+  })
+})
+
 describe('addExercise and addSet', () => {
   it('appends slots in order, each with one planned set', async () => {
     const workout = await session.start(ZONE)

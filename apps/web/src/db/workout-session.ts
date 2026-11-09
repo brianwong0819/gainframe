@@ -10,6 +10,19 @@ import {
 import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
+// One exercise slot of the active workout, as the screen shows it: its live sets
+// in order and last time's completed sets of the same exercise.
+export interface SlotState {
+  slot: WorkoutExercise
+  sets: WorkoutSet[]
+  previous: WorkoutSet[]
+}
+
+export interface ActiveWorkoutState {
+  workout: Workout
+  slots: SlotState[]
+}
+
 const live = (row: { deletedAt: string | null }) => row.deletedAt === null
 
 function nextPosition(rows: readonly { position: number }[]): number {
@@ -73,7 +86,36 @@ export function createWorkoutSession(
 
   return {
     findActive,
-    previousSets,
+
+    // Everything the active workout screen shows; null when no workout is open.
+    async loadActive(): Promise<ActiveWorkoutState | null> {
+      const workout = await findActive()
+      if (workout === undefined) return null
+      const slots = await db.workoutExercises
+        .where('workoutId')
+        .equals(workout.id)
+        .filter(live)
+        .toArray()
+      const sets = await db.workoutSets.where('workoutId').equals(workout.id).filter(live).toArray()
+      const previous = new Map<string, WorkoutSet[]>()
+      for (const { exerciseId } of slots) {
+        if (!previous.has(exerciseId)) {
+          previous.set(exerciseId, await previousSets(exerciseId, workout.startedAt))
+        }
+      }
+      return {
+        workout,
+        slots: slots
+          .toSorted((a, b) => a.position - b.position)
+          .map((slot) => ({
+            slot,
+            sets: sets
+              .filter((set) => set.workoutExerciseId === slot.id)
+              .toSorted((a, b) => a.position - b.position),
+            previous: previous.get(slot.exerciseId) ?? [],
+          })),
+      }
+    },
 
     // Resumes the workout in progress, or starts an empty one.
     async start(timeZone: string): Promise<Workout> {
