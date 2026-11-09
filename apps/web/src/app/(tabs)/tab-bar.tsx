@@ -58,7 +58,6 @@ export function TabBar() {
           <PressableLink
             key={href}
             href={href}
-            transitionTypes={['tab']}
             aria-current={index === active ? 'page' : undefined}
             className="tab"
           >
