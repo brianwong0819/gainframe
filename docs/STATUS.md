@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-03 done (next: M1-04 Exercise library, waiting for bw to say continue)
+- **Current task:** M1-04 Exercise library (part 1 of 3 done; next: library screen and custom exercises)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -52,6 +52,8 @@ M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function map
 M1-03, part 2 (2026-11-09, PR `m1/03-app-shell`): the three tabs (Today `/`, Workout `/workout`, Food `/food`) in the route group `src/app/(tabs)`, whose layout holds the fixed tab bar (sliding pill with `std`, icon fill with `pop`); a tab switch is a React `<ViewTransition>` of type `tab` (details: "Navigation" in `docs/design-system.md`). next-intl runs client-only (`src/i18n`, "Languages" in `docs/architecture.md`); the language switch sits on Today until Settings exists (M1-11). `not-found.tsx` gives the route function a translated `404.html`. New tokens `--glass`, `--tab-bar-height`, `--tab-knob-width` and type `caption`. New package `next-intl` 4.14.9 (listed in `docs/architecture.md`); its unused extractor's native build scripts are denied in `pnpm-workspace.yaml`. Pending: bw's iPhone check that tab switching is smooth, light and dark, Reduce Motion on and off, and that English mode shows no Chinese. 
 
 M1-03, part 3 (2026-11-09, PR `m1/03-diagnostics`): Dexie schema version 2 adds the `errors` table; `src/diagnostics` records entries shaped by `clientErrorSchema` (new in `packages/shared`) and keeps the latest 200. `app/error.tsx` and `app/global-error.tsx` show a translated error screen with "Try again" and record the error once; `instrumentation-client.ts` registers `error` / `unhandledrejection` handlers after importing `src/zod-config.ts` first. `db/upgrade.test.ts` is the first upgrade test (v1 rows and outbox survive v2). Checked in Chromium: a timer error, a rejected promise and a render error each produced one entry with path, release and stack, and the error screen showed in Chinese. Details: "Observability" in `docs/architecture.md`. Verified 2026-11-09 on bw's iPhone: tab switching, English mode and dark mode were fine; with Reduce Motion the tab fade overlapped both screens' text, so a screen change now swaps at once under Reduce Motion (L-018, PR `m1/03-reduced-motion-tabs`). bw then asked for no page transition at all: tabs switch at once and only the tab bar animates (PR `m1/03-instant-tabs`).
+
+M1-04, part 1 (2026-11-09, PR `m1/04-exercise-catalog`): `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` holds 64 exercises shaped by `builtInExerciseSchema` (zh/en names, aliases, primary and secondary muscles, equipment, mechanic, default rest). IDs are UUIDv7 with a zero timestamp (`00000000-0000-7000-8000-000000000001` …), so they cannot collide with generated IDs; a test keeps them numbered 1 to n. `searchExercises` (`src/domain/exercise-search.ts`) matches names and aliases regardless of case, width, spaces and punctuation, ranking prefix over substring over all-words matches, and works on custom exercises too. Plan changes agreed with bw: no photos; the detail sheet gets an SVG muscle map and form cues (part 3); M1-09 adds per-item rest with a rule-based "Suggest" button; M6-02 adds a templates tool.
 
 ## Blocked on bw
 

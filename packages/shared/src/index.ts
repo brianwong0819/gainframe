@@ -9,7 +9,9 @@ export {
   type ClientErrorSource,
   clientErrorSourceSchema,
 } from './schemas/client-error.ts'
+export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig } from './config.ts'
+export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export {
   estimateOneRepMax,
@@ -18,10 +20,14 @@ export {
   totalVolumeKg,
 } from './domain/workout.ts'
 export {
+  type BuiltInExercise,
+  builtInExerciseSchema,
   type Equipment,
   equipmentSchema,
   type Exercise,
   exerciseSchema,
+  type Mechanic,
+  mechanicSchema,
   type MuscleGroup,
   muscleGroupSchema,
 } from './schemas/exercise.ts'
