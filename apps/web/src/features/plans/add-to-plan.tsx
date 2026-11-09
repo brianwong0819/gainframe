@@ -8,33 +8,41 @@ import { Pressable } from '@/ui/pressable'
 
 import { usePlans } from './use-plans'
 
-// "Add to plan" in the exercise detail: the days of every plan, the current
-// plan first; a tap appends the exercise to that day.
+// "Add to plan" in the exercise detail: a button that opens the days of every
+// plan, the current plan first; a tap appends the exercise to that day. The
+// plans are read only once the list is opened, so the sheet's entry animation
+// does not wait on that query.
 export function AddToPlan({ exerciseId }: { exerciseId: string }) {
   const t = useTranslations('plans')
-  const plans = usePlans()
   const [showing, setShowing] = useState(false)
+
+  if (showing) return <PlanDayList exerciseId={exerciseId} />
+  return (
+    <Pressable
+      onClick={() => {
+        setShowing(true)
+      }}
+      className="rounded-full bg-sunk px-20 py-16 font-semibold text-ink"
+    >
+      {t('addToPlan')}
+    </Pressable>
+  )
+}
+
+function PlanDayList({ exerciseId }: { exerciseId: string }) {
+  const t = useTranslations('plans')
+  const plans = usePlans()
   const [added, setAdded] = useState<ReadonlySet<string>>(new Set())
   const days = (plans ?? [])
     .toSorted((a, b) => Number(b.active) - Number(a.active))
     .flatMap(({ plan, days }) => days.map((day) => ({ plan, day })))
 
-  if (!showing) {
-    return (
-      <Pressable
-        onClick={() => {
-          setShowing(true)
-        }}
-        className="rounded-full bg-sunk px-20 py-16 font-semibold text-ink"
-      >
-        {t('addToPlan')}
-      </Pressable>
-    )
-  }
   return (
     <section className="flex flex-col gap-8" aria-label={t('addToPlan')}>
       <h3 className="text-label text-ink-3">{t('addToPlan')}</h3>
-      {days.length === 0 && <p className="text-body text-ink-2">{t('noPlansToAdd')}</p>}
+      {plans !== undefined && days.length === 0 && (
+        <p className="text-body text-ink-2">{t('noPlansToAdd')}</p>
+      )}
       <ul>
         {days.map(({ plan, day }) => {
           const done = added.has(day.id)
