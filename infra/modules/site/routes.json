@@ -1,4 +1,4 @@
 {
-  "pages": ["/"],
+  "pages": ["/", "/food", "/workout"],
   "devPages": ["/dev/database", "/dev/kitchen-sink", "/dev/rest-timer"]
 }

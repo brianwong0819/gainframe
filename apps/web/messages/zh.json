@@ -1,0 +1,29 @@
+{
+  "tabs": {
+    "label": "主导航",
+    "today": "今天",
+    "workout": "训练",
+    "food": "饮食"
+  },
+  "today": {
+    "title": "今天",
+    "empty": "今天还没有记录。"
+  },
+  "workout": {
+    "title": "训练",
+    "empty": "还没有训练记录。"
+  },
+  "food": {
+    "title": "饮食",
+    "empty": "今天还没有记录饮食。"
+  },
+  "language": {
+    "label": "语言",
+    "zh": "中文",
+    "en": "English"
+  },
+  "notFound": {
+    "title": "找不到这个页面",
+    "back": "回到今天"
+  }
+}

@@ -23,8 +23,9 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | `--line` | `#DADDD7` | `#25282D` | hairlines |
 | `--accent` | `#2340E0` | `#7389FF` | toward-goal only |
 | `--short` | `#A85A14` | `#E39A54` | below target only |
+| `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
 
-Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Title 30/650, section 24/650, body 15/400, label 13/500.
+Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only).
 
 Spacing scale: 4 · 8 · 12 · 16 · 20 · 28 · 40 — nothing else. Radii: control 12, group 20, media/sheet 24–28, pills fully round.
 
@@ -47,6 +48,10 @@ Rules:
 - The CSS `--ease-*` / `--dur-*` curves are sampled from the spring numbers in `motion.ts`; `src/ui/motion.test.ts` fails if the two drift apart.
 - Number changes roll digit by digit, 28 ms stagger.
 - `prefers-reduced-motion: reduce` → every motion becomes a 200 ms fade; celebrations are off. `<MotionProvider>` (in the root layout) makes Motion skip transform animations, `globals.css` limits CSS transitions to opacity, and `<Pressable>` dims to 0.6 instead of scaling.
+
+## Navigation
+
+Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch is a view transition (React `<ViewTransition>`, transition type `tab` set by the tab links): the old screen fades out with `fade`, the new one rises 8 px and scales from 0.985 with `std`, and the rest of the page, the tab bar included, changes without a cross-fade so its own animations stay live. Under Reduce Motion both screens only fade. Browser back/forward carries no type and does not animate.
 
 ## Celebrations (three tiers, only at meaningful moments)
 
