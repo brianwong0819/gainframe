@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-03 App shell and navigation, in three PRs: route function (done), shell and i18n (done), diagnostics
+- **Current task:** none; M1-03 done (next: M1-04 Exercise library, waiting for bw to say continue)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -49,7 +49,9 @@ M1-02 (2026-11-08, PR `m1/02-local-database`): `apps/web/src/db` holds the Dexie
 
 M1-03, part 1 (2026-11-09, PR `m1/03-route-function`): a CloudFront Function maps clean URLs to the exported files and unknown paths to `404.html`, from the route list in `infra/modules/site/routes.json` (developer pages only on dev); a unit test keeps the list in step with `src/app`, and the e2e server runs the same function. The deploy smoke test requests `/dev/kitchen-sink`. Details: "Routing" in `docs/architecture.md`. 
 
-M1-03, part 2 (2026-11-09, PR `m1/03-app-shell`): the three tabs (Today `/`, Workout `/workout`, Food `/food`) in the route group `src/app/(tabs)`, whose layout holds the fixed tab bar (sliding pill with `std`, icon fill with `pop`); a tab switch is a React `<ViewTransition>` of type `tab` (details: "Navigation" in `docs/design-system.md`). next-intl runs client-only (`src/i18n`, "Languages" in `docs/architecture.md`); the language switch sits on Today until Settings exists (M1-11). `not-found.tsx` gives the route function a translated `404.html`. New tokens `--glass`, `--tab-bar-height`, `--tab-knob-width` and type `caption`. New package `next-intl` 4.14.9 (listed in `docs/architecture.md`); its unused extractor's native build scripts are denied in `pnpm-workspace.yaml`. Pending: bw's iPhone check that tab switching is smooth, light and dark, Reduce Motion on and off, and that English mode shows no Chinese. Next: part 3, diagnostics (Dexie v2 error table, root error boundary, global handlers), with the error screen from the catalogues.
+M1-03, part 2 (2026-11-09, PR `m1/03-app-shell`): the three tabs (Today `/`, Workout `/workout`, Food `/food`) in the route group `src/app/(tabs)`, whose layout holds the fixed tab bar (sliding pill with `std`, icon fill with `pop`); a tab switch is a React `<ViewTransition>` of type `tab` (details: "Navigation" in `docs/design-system.md`). next-intl runs client-only (`src/i18n`, "Languages" in `docs/architecture.md`); the language switch sits on Today until Settings exists (M1-11). `not-found.tsx` gives the route function a translated `404.html`. New tokens `--glass`, `--tab-bar-height`, `--tab-knob-width` and type `caption`. New package `next-intl` 4.14.9 (listed in `docs/architecture.md`); its unused extractor's native build scripts are denied in `pnpm-workspace.yaml`. Pending: bw's iPhone check that tab switching is smooth, light and dark, Reduce Motion on and off, and that English mode shows no Chinese. 
+
+M1-03, part 3 (2026-11-09, PR `m1/03-diagnostics`): Dexie schema version 2 adds the `errors` table; `src/diagnostics` records entries shaped by `clientErrorSchema` (new in `packages/shared`) and keeps the latest 200. `app/error.tsx` and `app/global-error.tsx` show a translated error screen with "Try again" and record the error once; `instrumentation-client.ts` registers `error` / `unhandledrejection` handlers after importing `src/zod-config.ts` first. `db/upgrade.test.ts` is the first upgrade test (v1 rows and outbox survive v2). Checked in Chromium: a timer error, a rejected promise and a render error each produced one entry with path, release and stack, and the error screen showed in Chinese. Details: "Observability" in `docs/architecture.md`. Pending (all of M1-03): bw's iPhone check of tab switching (smooth, light and dark, Reduce Motion on and off; English mode shows no Chinese), and that `/workout` opens directly on dev.
 
 ## Blocked on bw
 

@@ -25,5 +25,10 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to Today"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "The error was saved on this device for Diagnostics.",
+    "retry": "Try again"
   }
 }

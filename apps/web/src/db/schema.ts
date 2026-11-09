@@ -1,6 +1,13 @@
 import { Dexie, type DexieOptions, type EntityTable, type Table } from 'dexie'
 
-import type { Exercise, Template, TemplateItem, Workout, WorkoutSet } from '@gainframe/shared'
+import type {
+  ClientError,
+  Exercise,
+  Template,
+  TemplateItem,
+  Workout,
+  WorkoutSet,
+} from '@gainframe/shared'
 
 // Tables whose rows sync to the server (ADR-0003). Built-in exercises are a
 // constant in @gainframe/shared, not rows.
@@ -15,6 +22,22 @@ export interface OutboxEntry {
   rowId: string
 }
 
+// A recorded client error (src/diagnostics). Not synced; capped on the device.
+export interface ErrorLogEntry extends ClientError {
+  seq: number
+}
+
+// Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
+// it, and db/upgrade.test.ts opens it to build the old database.
+export const STORES_V1 = {
+  exercises: 'id',
+  templates: 'id',
+  templateItems: 'id, templateId',
+  workouts: 'id, startedAt',
+  workoutSets: 'id, workoutId, exerciseId',
+  outbox: '++seq',
+}
+
 // The device database. Only src/db touches it; the UI goes through the
 // repositories. Every version after 1 needs an upgrade test (docs/conventions.md).
 export class GainframeDb extends Dexie {
@@ -24,17 +47,13 @@ export class GainframeDb extends Dexie {
   workouts!: Table<Workout, string>
   workoutSets!: Table<WorkoutSet, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
+  errors!: EntityTable<ErrorLogEntry, 'seq'>
 
   constructor(name = 'gainframe', options?: DexieOptions) {
     super(name, options)
     // Only fields that queries filter or sort on are indexed; Dexie stores the rest.
-    this.version(1).stores({
-      exercises: 'id',
-      templates: 'id',
-      templateItems: 'id, templateId',
-      workouts: 'id, startedAt',
-      workoutSets: 'id, workoutId, exerciseId',
-      outbox: '++seq',
-    })
+    this.version(1).stores(STORES_V1)
+    // M1-03: the client error log.
+    this.version(2).stores({ errors: '++seq' })
   }
 }
