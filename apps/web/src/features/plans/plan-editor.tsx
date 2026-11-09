@@ -1,6 +1,6 @@
 'use client'
 
-import type { Exercise, PlanItem } from '@gainframe/shared'
+import type { Exercise, PlanDay, PlanItem } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -8,13 +8,16 @@ import { useState } from 'react'
 import { db, planStore, repositories } from '@/db/client'
 import type { PlanDayState, PlanState } from '@/db/plans'
 import { useLiveQuery } from '@/db/use-live-query'
+import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
 import { exerciseName, formatRest } from '../exercises/library'
 import { findExercise } from '../workout/exercise-info'
 import { ExercisePicker } from '../workout/exercise-picker'
+import { formatRepRange } from './item-edit'
 import { NameField } from './name-field'
+import { PlanItemSheet } from './plan-item-sheet'
 
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
@@ -22,10 +25,7 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const quietButtonClass =
   'self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2'
 
-// "8–12", or "8" when the range is one number.
-function formatRepRange({ repsMin, repsMax }: Pick<PlanItem, 'repsMin' | 'repsMax'>) {
-  return repsMin === repsMax ? String(repsMin) : `${String(repsMin)}–${String(repsMax)}`
-}
+type SheetContent = { kind: 'picker'; day: PlanDay } | { kind: 'item'; itemId: string }
 
 // A button that asks once more before it acts.
 function ConfirmButton({
@@ -56,11 +56,13 @@ function Day({
   n,
   custom,
   onAddExercise,
+  onOpenItem,
 }: {
   state: PlanDayState
   n: number
   custom: readonly Exercise[]
   onAddExercise: () => void
+  onOpenItem: (item: PlanItem) => void
 }) {
   const t = useTranslations('plans')
   const locale = useLocale()
@@ -79,17 +81,29 @@ function Day({
       {items.length > 0 && (
         <ul>
           {items.map((item) => (
-            <li key={item.id} className="flex flex-col border-t border-line py-12 first:border-t-0">
-              <span className="text-body text-ink">
-                {exerciseName(findExercise(item.exerciseId, custom), locale)}
-              </span>
-              <span className="text-label text-ink-3">
-                {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
-                {' · '}
-                {item.restS === null
-                  ? t('restDefault')
-                  : t('rest', { time: formatRest(item.restS) })}
-              </span>
+            <li key={item.id} className="border-t border-line first:border-t-0">
+              <Pressable
+                onClick={() => {
+                  onOpenItem(item)
+                }}
+                className="flex w-full items-center justify-between gap-12 py-12 text-left"
+              >
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-body text-ink">
+                    {exerciseName(findExercise(item.exerciseId, custom), locale)}
+                  </span>
+                  <span className="text-label text-ink-3">
+                    {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
+                    {' · '}
+                    {item.restS === null
+                      ? t('restDefault')
+                      : t('rest', { time: formatRest(item.restS) })}
+                  </span>
+                </span>
+                <span className="text-ink-3">
+                  <Chevron direction="right" />
+                </span>
+              </Pressable>
             </li>
           ))}
         </ul>
@@ -117,11 +131,27 @@ function Day({
 // order, each with its exercises.
 export function PlanEditor({ state }: { state: PlanState }) {
   const t = useTranslations('plans')
+  const locale = useLocale()
   const router = useRouter()
   const custom = useLiveQuery(allCustomExercises) ?? []
-  const [pickingFor, setPickingFor] = useState<PlanDayState | null>(null)
+  const [sheet, setSheet] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const { plan, active, days } = state
+  const open = (content: SheetContent) => {
+    setSheet(content)
+    setSheetOpen(true)
+  }
+  // The sheet shows the live item, so a change shows at once.
+  const sheetItem =
+    sheet?.kind === 'item'
+      ? days.flatMap(({ items }) => items).find((item) => item.id === sheet.itemId)
+      : undefined
+  const sheetTitle =
+    sheet?.kind === 'picker'
+      ? t('pickerTitle', { day: sheet.day.name })
+      : sheetItem
+        ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
+        : ''
 
   return (
     <>
@@ -152,8 +182,10 @@ export function PlanEditor({ state }: { state: PlanState }) {
           n={index + 1}
           custom={custom}
           onAddExercise={() => {
-            setPickingFor(dayState)
-            setSheetOpen(true)
+            open({ kind: 'picker', day: dayState.day })
+          }}
+          onOpenItem={(item) => {
+            open({ kind: 'item', itemId: item.id })
           }}
         />
       ))}
@@ -180,13 +212,23 @@ export function PlanEditor({ state }: { state: PlanState }) {
           setSheetOpen(false)
         }}
         closeLabel={t('close')}
-        title={t('pickerTitle', { day: pickingFor?.day.name ?? '' })}
+        title={sheetTitle}
       >
-        {pickingFor && (
+        {sheet?.kind === 'picker' && (
           <ExercisePicker
             onPick={(exerciseId) => {
               setSheetOpen(false)
-              void planStore.addItem(pickingFor.day.id, exerciseId)
+              void planStore.addItem(sheet.day.id, exerciseId)
+            }}
+          />
+        )}
+        {sheetItem && (
+          <PlanItemSheet
+            key={sheetItem.id}
+            item={sheetItem}
+            custom={custom}
+            onRemoved={() => {
+              setSheetOpen(false)
             }}
           />
         )}

@@ -43,3 +43,37 @@ test('a new plan with two days and an exercise survives a reload', async ({ page
     page.getByRole('link', { name: /推拉腿\s*当前\s*2 天循环 · 推 \/ 第 2 天/ }),
   ).toBeVisible()
 })
+
+test("an exercise's sets, rep range and suggested rest are kept", async ({ page }) => {
+  await page.goto('/workout/plans')
+  await page.getByRole('button', { name: '新建计划' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃深蹲')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃深蹲/ })
+    .click()
+  // The picker sheet sits inside the page; wait for it to close before tapping
+  // the new row.
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await page.getByRole('button', { name: /^杠铃深蹲 3 组/ }).click()
+
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('button', { name: '组数加一' }).click()
+  const repsMin = dialog.getByRole('textbox', { name: '最少次数' })
+  await repsMin.click()
+  await page.keyboard.type('5')
+  await repsMin.press('Enter')
+  // The high end follows when the low end passes it.
+  const repsMax = dialog.getByRole('textbox', { name: '最多次数' })
+  await repsMax.click()
+  await page.keyboard.type('4')
+  await repsMax.press('Enter')
+  await dialog.getByRole('button', { name: '建议' }).click()
+  await expect(dialog.getByRole('button', { name: '改回默认 3:00' })).toBeVisible()
+  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
+  await dialog.getByRole('button', { name: '关闭' }).click()
+
+  await page.reload()
+  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
+})
