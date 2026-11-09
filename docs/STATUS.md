@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-04 Exercise library (parts 1, 2a and 2b done; next: part 3, muscle map and exercise detail)
+- **Current task:** none; M1-04 done (next: M1-05 Active workout + set logging, waiting for bw to say continue)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -58,6 +58,8 @@ M1-04, part 1 (2026-11-09, PR `m1/04-exercise-catalog`): `BUILT_IN_EXERCISES` in
 M1-04, part 2a (2026-11-09, PR `m1/04-exercise-library`): `/workout/exercises` (linked from Workout, which stays the selected tab) lists the user's exercises newest first and then the built-in ones, with a search field (`searchExercises`) and a scrolling row of muscle-group filters (`src/features/exercises`). New text-field type `input` (16 px, below which iOS zooms). The device layout test now ignores the part of an element scrolled out of a horizontal scroller. Checked in Chromium at 390×844: "卧推" and "bench" both list barbell bench press first. Part 2 was split in two to stay under the size limit; part 2b adds the new / edit sheet for custom exercises.
 
 M1-04, part 2b (2026-11-09, PR `m1/04-custom-exercise-sheet`): "New" on the library, and a tap on a custom exercise, open the first bottom sheet (`src/ui/sheet.tsx`, a native modal `<dialog>`; see "Sheets" in `docs/design-system.md`) with the exercise form: names in either language (at least one), muscle group, equipment and default rest in 15 s steps up to 10 min, saved through `repositories.exercises`. A search with no result offers to create an exercise with that name (in the Chinese or English field by script). Checked in Chromium at 390×844: a new exercise is still listed after a reload; saving with no name shows the error; Escape and the scrim close the sheet; Reduce Motion and English mode work. Pending: bw's iPhone check of the library and the sheet (keyboard over the sheet, chip scrolling).
+
+M1-04, part 3b (2026-11-09, PR `m1/04-exercise-cues`): `BUILT_IN_EXERCISE_CUES` (`packages/shared/src/built-in-exercise-cues.ts`) holds two or three form cues per built-in exercise in Chinese and English, in catalog order (`exerciseCuesSchema`; a test keeps one entry per exercise and the same count in both languages); `builtInExerciseCues(id)` looks them up. The detail sheet lists them under the muscle map in the app language. Pending: bw's iPhone check of the whole library (search, filters, new / edit sheet with the keyboard, detail sheet, light and dark, Reduce Motion).
 
 ## Blocked on bw
 

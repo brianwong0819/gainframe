@@ -68,8 +68,19 @@ export const builtInExerciseSchema = z
     path: ['secondaryMuscles'],
   })
 
+// Form cues for a built-in exercise: two or three short lines, the same ones in
+// each language.
+const cueListSchema = z.array(z.string().trim().min(1).max(80)).min(2).max(3)
+export const exerciseCuesSchema = z
+  .object({ zh: cueListSchema, en: cueListSchema })
+  .refine((cues) => cues.zh.length === cues.en.length, {
+    message: 'Both languages have the same number of cues',
+    path: ['en'],
+  })
+
 export type MuscleGroup = z.infer<typeof muscleGroupSchema>
 export type Equipment = z.infer<typeof equipmentSchema>
 export type Exercise = z.infer<typeof exerciseSchema>
 export type Mechanic = z.infer<typeof mechanicSchema>
 export type BuiltInExercise = z.infer<typeof builtInExerciseSchema>
+export type ExerciseCues = z.infer<typeof exerciseCuesSchema>

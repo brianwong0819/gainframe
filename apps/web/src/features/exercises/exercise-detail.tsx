@@ -1,7 +1,7 @@
 'use client'
 
-import type { BuiltInExercise } from '@gainframe/shared'
-import { useTranslations } from 'next-intl'
+import { type BuiltInExercise, builtInExerciseCues } from '@gainframe/shared'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { formatRest } from './library'
 import { MuscleMap } from './muscle-map'
@@ -11,6 +11,8 @@ export function ExerciseDetail({ exercise }: { exercise: BuiltInExercise }) {
   const t = useTranslations('exerciseDetail')
   const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
+  const locale = useLocale()
+  const cues = builtInExerciseCues(exercise.id)?.[locale] ?? []
   const primary = tMuscle(exercise.muscle)
   const secondary =
     exercise.secondaryMuscles.length > 0
@@ -38,6 +40,21 @@ export function ExerciseDetail({ exercise }: { exercise: BuiltInExercise }) {
           </p>
         </div>
       </div>
+      {cues.length > 0 && (
+        <section className="flex flex-col gap-8" aria-label={t('cues')}>
+          <h3 className="text-label text-ink-3">{t('cues')}</h3>
+          <ol className="flex flex-col gap-8">
+            {cues.map((cue, index) => (
+              <li key={cue} className="flex gap-12 text-body text-ink">
+                <span className="num pt-4 text-label text-ink-3" aria-hidden>
+                  {(index + 1).toString()}
+                </span>
+                {cue}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
       <dl className="flex flex-col">
         {rows.map(({ label, value }) => (
           <div
