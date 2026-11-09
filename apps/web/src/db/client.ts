@@ -1,3 +1,4 @@
+import { createPlanStore } from './plans'
 import { createRepositories } from './repositories'
 import { GainframeDb } from './schema'
 import { createWorkoutSession } from './workout-session'
@@ -7,3 +8,4 @@ import { createWorkoutSession } from './workout-session'
 export const db = new GainframeDb()
 export const repositories = createRepositories(db)
 export const workoutSession = createWorkoutSession(db, repositories)
+export const planStore = createPlanStore(db, repositories)

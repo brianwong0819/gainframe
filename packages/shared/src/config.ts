@@ -17,4 +17,6 @@ export const domainConfig = {
   },
   // The first set of an exercise never done before.
   firstSet: { weightKg: 0, reps: 8 },
+  // An exercise added to a plan day: the common hypertrophy range.
+  newPlanItem: { targetSets: 3, repsMin: 8, repsMax: 12 },
 } as const

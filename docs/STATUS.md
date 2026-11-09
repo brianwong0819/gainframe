@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), part 1 of 4 done; next: plan list and editor
+- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–2 of 5 done; next: editing an item's sets, rep range and rest
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -80,6 +80,8 @@ M1-05 follow-up (2026-11-09, `m1/05-workout-back`, L-025): bw found no way out o
 
 M1-09, part 1 (2026-11-09, PR `m1/09-plan-data`): design agreed with bw (see the ROADMAP entry). `packages/shared/src/schemas/plan.ts` replaces the unused template schemas with `plans`, `planDays` and `planItems` (rep range `repsMin`–`repsMax`, nullable `restS`, no weight); `workouts.templateId` becomes `planDayId`. Dexie v5 drops the empty template tables, adds the plan tables, a `planDayId` index and an unsynced `settings` table, and renames the field on stored workouts (upgrade test). `nextPlanDay` (`src/domain/plan.ts`) picks the day after the plan's latest finished workout, wrapping round, skipping deleted days. `src/db/plans.ts` reads and sets the active plan and the next day. Deleting a plan removes its days and items; deleting a day removes its items.
 
+M1-09, part 2 (2026-11-09, PR `m1/09-plan-editor`): `/workout/plans` lists plans (the current one tagged, its days in order) and creates one, which opens in the editor; the first plan becomes current. `/workout/plan#<id>` edits a plan: name and day names in place, make current, add a day, add exercises from the library picker (3 sets of 8–12, default rest, from `domainConfig.newPlanItem`), delete a day or the plan (asks twice). The ID is in the URL fragment, not a query string, so the one exported page also opens from the service worker's precache offline. The Workout tab links to plans and names the current one. Fixed while testing: the editor did not update after a day changed (L-026). Rows are not tappable yet; part 3 adds the item sheet.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
@@ -87,6 +89,7 @@ M1-09, part 1 (2026-11-09, PR `m1/09-plan-data`): design agreed with bw (see the
 
 ## Follow-ups (noticed, not in scope yet)
 
+- Plans: days and exercises keep the order they were added in; there is no way to reorder them yet (M1-09 adds them at the end). Add reordering if bw needs it after using plans.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.

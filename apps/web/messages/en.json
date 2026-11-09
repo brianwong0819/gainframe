@@ -53,7 +53,10 @@
     "progress": "{exercises, plural, one {# exercise} other {# exercises}} · {done} done",
     "noneActive": "No workout in progress.",
     "discard": "Discard workout",
-    "discardConfirm": "Confirm: delete it and its {done, plural, one {# done set} other {# done sets}}"
+    "discardConfirm": "Confirm: delete it and its {done, plural, one {# done set} other {# done sets}}",
+    "plans": "Plans",
+    "plansActive": "Current: {name}",
+    "plansNone": "No plan yet"
   },
   "food": {
     "title": "Food",
@@ -160,5 +163,31 @@
     "working": "N",
     "drop": "D",
     "failure": "F"
+  },
+  "plans": {
+    "title": "Plans",
+    "none": "No plans yet. Make one, and each workout starts from its next day.",
+    "create": "New plan",
+    "newName": "New plan",
+    "dayName": "Day {n}",
+    "rotation": "{count, plural, one {# day} other {# days}} in rotation",
+    "active": "Current",
+    "planName": "Plan name",
+    "dayNameLabel": "Name of day {n}",
+    "isActive": "This is your current plan; workouts start from its next day.",
+    "makeActive": "Make current plan",
+    "addDay": "Add a day",
+    "addExercise": "Add exercise",
+    "noItems": "No exercises on this day yet.",
+    "itemSummary": "{sets} × {reps} reps",
+    "rest": "rest {time}",
+    "restDefault": "exercise's default rest",
+    "deleteDay": "Delete this day",
+    "deleteDayConfirm": "Confirm: delete “{name}”",
+    "deletePlan": "Delete this plan",
+    "deletePlanConfirm": "Confirm delete (past workouts stay)",
+    "missing": "This plan does not exist or was deleted.",
+    "close": "Close",
+    "pickerTitle": "Add to “{day}”"
   }
 }
