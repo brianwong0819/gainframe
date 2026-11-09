@@ -84,6 +84,9 @@ describe('workoutExerciseSchema', () => {
     position: 0,
     supersetGroup: null,
     note: 'Seat at notch 4',
+    repsMin: null,
+    repsMax: null,
+    restS: null,
   }
 
   it('accepts a valid slot', () => {
@@ -94,6 +97,13 @@ describe('workoutExerciseSchema', () => {
     expect(workoutExerciseSchema.safeParse({ ...validSlot, position: -1 }).success).toBe(false)
     const note = 'x'.repeat(501)
     expect(workoutExerciseSchema.safeParse({ ...validSlot, note }).success).toBe(false)
+  })
+
+  it("accepts a plan item's rep range and rest, but not an inverted range", () => {
+    const fromPlan = { ...validSlot, repsMin: 8, repsMax: 12, restS: 120 }
+    expect(workoutExerciseSchema.safeParse(fromPlan).success).toBe(true)
+    const inverted = { ...fromPlan, repsMin: 12, repsMax: 8 }
+    expect(workoutExerciseSchema.safeParse(inverted).error?.issues[0]?.path).toEqual(['repsMax'])
   })
 })
 

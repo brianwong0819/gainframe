@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { restSecondsSchema } from './exercise.ts'
 import { instantSchema, localDateSchema, syncedRowSchema } from './row.ts'
 
 export const workoutSchema = syncedRowSchema
@@ -24,14 +25,25 @@ export const setKindSchema = z.enum(['warmup', 'working', 'drop', 'failure'])
 // One exercise slot in a workout, mirroring a plan item: its order in the
 // workout, its superset group (items sharing a group alternate; null means
 // standalone) and the user's note for that exercise in this workout. The same
-// exercise may appear twice in one workout as two slots.
-export const workoutExerciseSchema = syncedRowSchema.extend({
-  workoutId: z.uuid(),
-  exerciseId: z.uuid(),
-  position: z.int().min(0),
-  supersetGroup: z.int().min(0).nullable(),
-  note: z.string().max(500).nullable(),
-})
+// exercise may appear twice in one workout as two slots. A slot started from a
+// plan copies the item's rep range and rest, so later edits to the plan do not
+// change past workouts; all three are null for an exercise added by hand, and
+// `restS` is also null when the item uses the exercise's default rest.
+export const workoutExerciseSchema = syncedRowSchema
+  .extend({
+    workoutId: z.uuid(),
+    exerciseId: z.uuid(),
+    position: z.int().min(0),
+    supersetGroup: z.int().min(0).nullable(),
+    note: z.string().max(500).nullable(),
+    repsMin: z.int().min(1).max(100).nullable(),
+    repsMax: z.int().min(1).max(100).nullable(),
+    restS: restSecondsSchema.nullable(),
+  })
+  .refine(
+    (slot) => slot.repsMin === null || slot.repsMax === null || slot.repsMin <= slot.repsMax,
+    { message: 'The rep range cannot end below its start', path: ['repsMax'] },
+  )
 
 // One set. `completedAt` is null while the set is planned but not yet done.
 // `workoutId` and `exerciseId` copy the slot's values when the set is created and

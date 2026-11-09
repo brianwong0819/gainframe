@@ -55,6 +55,9 @@ function newSlot(workoutId: string, position: number) {
     position,
     supersetGroup: null,
     note: null,
+    repsMin: null,
+    repsMax: null,
+    restS: null,
   })
 }
 

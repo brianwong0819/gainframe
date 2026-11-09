@@ -81,6 +81,15 @@ export function previousPerformance(input: {
 
 export type SetValues = Pick<WorkoutSet, 'kind' | 'weightKg' | 'reps'>
 
+// The heaviest weight of an exercise's completed working or failure sets, in kg
+// (for a bodyweight exercise, the added load); null if there is none. The
+// workout shows it beside the exercise as a target to beat.
+export function bestWeightKg(sets: readonly WorkoutSet[]): number | null {
+  return sets
+    .filter((set) => isDone(set) && countsTowardRecords(set.kind))
+    .reduce<number | null>((best, set) => Math.max(best ?? 0, set.weightKg), null)
+}
+
 // Values for the next set of an exercise slot. The Nth set takes the Nth set of
 // last time (`previous`, from `previousPerformance`); past last time's count it
 // repeats the slot's own last set, then last time's last set; an exercise never

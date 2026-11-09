@@ -16,6 +16,7 @@ export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, suggestRestS } from './domain/plan.ts'
 export {
+  bestWeightKg,
   estimateOneRepMax,
   findPersonalRecords,
   nextSetValues,

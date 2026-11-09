@@ -114,6 +114,21 @@ export class GainframeDb extends Dexie {
             delete workout.templateId
           }),
       )
+    // M1-09: a slot started from a plan copies the item's rep range and rest;
+    // existing slots were added by hand and have none. No outbox entry, as in
+    // version 3.
+    this.version(6)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table<Record<string, unknown>, string>('workoutExercises')
+          .toCollection()
+          .modify((slot) => {
+            slot.repsMin ??= null
+            slot.repsMax ??= null
+            slot.restS ??= null
+          }),
+      )
   }
 }
 
@@ -149,7 +164,7 @@ export async function moveSetsIntoSlots(tx: Transaction): Promise<void> {
     const position = nextPosition.get(workoutId) ?? 0
     nextPosition.set(workoutId, position + 1)
     const live = group.some((set) => set.deletedAt === null)
-    const slot: WorkoutExercise = {
+    const slot: Omit<WorkoutExercise, 'repsMin' | 'repsMax' | 'restS'> = {
       id: newId(nowMs),
       userId: null,
       createdAt: at,
