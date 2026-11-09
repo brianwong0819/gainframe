@@ -5,6 +5,7 @@ import type { Workout, WorkoutSet } from '../schemas/workout.ts'
 import {
   estimateOneRepMax,
   findPersonalRecords,
+  nextSetValues,
   previousPerformance,
   totalVolumeKg,
 } from './workout.ts'
@@ -155,6 +156,40 @@ describe('previousPerformance', () => {
       sets: [set({ weightKg: 60, reps: 8 })],
     })
     expect(result).toEqual([])
+  })
+})
+
+describe('nextSetValues', () => {
+  const lastTime = [
+    set({ kind: 'warmup', weightKg: 40, reps: 10 }),
+    set({ weightKg: 60, reps: 8 }),
+    set({ weightKg: 60, reps: 7 }),
+  ]
+
+  it('takes the set with the same index from last time', () => {
+    expect(nextSetValues(lastTime, [])).toEqual({ kind: 'warmup', weightKg: 40, reps: 10 })
+    expect(nextSetValues(lastTime, lastTime.slice(0, 2))).toEqual({
+      kind: 'working',
+      weightKg: 60,
+      reps: 7,
+    })
+  })
+
+  it("repeats the slot's own last set once past last time's count", () => {
+    const today = [...lastTime, set({ weightKg: 62.5, reps: 6 })]
+    expect(nextSetValues(lastTime, today)).toEqual({ kind: 'working', weightKg: 62.5, reps: 6 })
+  })
+
+  it("repeats the slot's last set when there is no last time", () => {
+    expect(nextSetValues([], [set({ kind: 'drop', weightKg: 50, reps: 12 })])).toEqual({
+      kind: 'drop',
+      weightKg: 50,
+      reps: 12,
+    })
+  })
+
+  it('starts an exercise never done before from the configured first set', () => {
+    expect(nextSetValues([], [])).toEqual({ kind: 'working', weightKg: 0, reps: 8 })
   })
 })
 
