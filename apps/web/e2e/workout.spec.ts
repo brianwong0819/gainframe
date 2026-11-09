@@ -24,11 +24,16 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
 
   // A done set opens its details; its kind and the exercise note are kept too.
   await page.getByRole('button', { name: '组 1', exact: true }).click()
-  await page.getByRole('dialog').getByRole('button', { name: '热身' }).click()
+  const warmup = page.getByRole('dialog').getByRole('button', { name: '热身' })
+  await warmup.click()
+  await expect(warmup).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
   await page.getByRole('main').getByRole('button', { name: '备注' }).click()
   await page.getByRole('dialog').getByRole('textbox').fill('座椅第 4 格')
   await page.getByRole('dialog').getByRole('button', { name: '保存' }).click()
+  // The card shows the note once it is read back from the database; leaving the
+  // page before then could abandon the write.
+  await expect(page.getByRole('main').getByText('座椅第 4 格')).toBeVisible()
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
