@@ -126,7 +126,7 @@ export function createWorkoutSession(
         return repos.workouts.create({
           startedAt,
           endedAt: null,
-          templateId: null,
+          planDayId: null,
           localDate: toLocalDate(startedAt, timeZone),
           note: null,
         })

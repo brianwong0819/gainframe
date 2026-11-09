@@ -3,8 +3,9 @@ import type { z } from 'zod'
 
 import {
   exerciseSchema,
-  templateItemSchema,
-  templateSchema,
+  planDaySchema,
+  planItemSchema,
+  planSchema,
   workoutExerciseSchema,
   workoutSchema,
   workoutSetSchema,
@@ -134,10 +135,15 @@ export function createRepositories(db: GainframeDb, now: () => Date = () => new 
   const context = { db, now }
   return {
     exercises: repository(context, 'exercises', db.exercises, exerciseSchema),
-    templates: repository(context, 'templates', db.templates, templateSchema, [
-      cascade(context, 'templateItems', db.templateItems, 'templateId'),
+    // Items carry `planId` too, so deleting a plan reaches them directly.
+    plans: repository(context, 'plans', db.plans, planSchema, [
+      cascade(context, 'planDays', db.planDays, 'planId'),
+      cascade(context, 'planItems', db.planItems, 'planId'),
     ]),
-    templateItems: repository(context, 'templateItems', db.templateItems, templateItemSchema),
+    planDays: repository(context, 'planDays', db.planDays, planDaySchema, [
+      cascade(context, 'planItems', db.planItems, 'planDayId'),
+    ]),
+    planItems: repository(context, 'planItems', db.planItems, planItemSchema),
     // Sets carry `workoutId` too, so deleting a workout reaches them directly.
     workouts: repository(context, 'workouts', db.workouts, workoutSchema, [
       cascade(context, 'workoutExercises', db.workoutExercises, 'workoutId'),

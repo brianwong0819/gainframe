@@ -30,12 +30,13 @@ describe('Dexie schema upgrades', () => {
     v1.close()
 
     const current = new GainframeDb('upgrade', options)
-    expect(await current.workouts.get(workout.id)).toEqual(workout)
+    const { templateId, ...rest } = workout
+    expect(await current.workouts.get(workout.id)).toEqual({ ...rest, planDayId: templateId })
     expect(await current.outbox.toArray()).toEqual([
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(4)
+    expect(current.verno).toBe(5)
     current.close()
   })
 
@@ -64,7 +65,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(4)
+    expect(v3.verno).toBe(5)
     v3.close()
   })
 
@@ -129,5 +130,41 @@ describe('Dexie schema upgrades', () => {
     }
     expect(await v4.outbox.count()).toBe(slots.length + sets.length)
     v4.close()
+  })
+  it("renames a version 4 workout's template to its plan day in version 5", async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v4 = new Dexie('upgrade', options)
+    v4.version(1).stores(STORES_V1)
+    v4.version(2).stores({ errors: '++seq' })
+    v4.version(3).stores({})
+    v4.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    const workout = {
+      id: '01960000-0000-7000-8000-000000000001',
+      userId: null,
+      createdAt: '2026-11-09T10:00:00.000Z',
+      updatedAt: '2026-11-09T10:00:00.000Z',
+      deletedAt: null,
+      startedAt: '2026-11-09T10:00:00.000Z',
+      endedAt: '2026-11-09T11:00:00.000Z',
+      templateId: null,
+      localDate: '2026-11-09',
+      note: null,
+    }
+    await v4.table('workouts').add(workout)
+    v4.close()
+
+    const v5 = new GainframeDb('upgrade', options)
+    const { templateId, ...rest } = workout
+    expect(await v5.workouts.get(workout.id)).toEqual({ ...rest, planDayId: templateId })
+    expect(v5.tables.map((table) => table.name)).not.toContain('templates')
+    expect(await v5.settings.count()).toBe(0)
+    expect(await v5.outbox.count()).toBe(0)
+    expect(v5.verno).toBe(5)
+    v5.close()
   })
 })

@@ -72,9 +72,9 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | profiles | phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
 | body_metrics | local_date, weight_kg |
 | exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are the constant `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` with fixed IDs) |
-| templates / template_items | name; exercise_id, position, superset_group, target_sets, target_reps |
-| workouts | started_at, ended_at, template_id, local_date, note |
-| workout_exercises | workout_id, exercise_id, position, superset_group, note (one exercise slot in a workout, mirroring template_items; the same exercise may take two slots) |
+| plans / plan_days / plan_items | name; plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s (no weight; which plan is active is a device setting, not a column) |
+| workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note |
+| workout_exercises | workout_id, exercise_id, position, superset_group, note (one exercise slot in a workout, mirroring plan_items; the same exercise may take two slots) |
 | workout_sets | workout_exercise_id, workout_id, exercise_id (both copied from the slot at creation, never changed), position (within the slot), kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
 | meals / meal_items | eaten_at, local_date, meal_type, photo_key; name, grams, protein_g, kcal, source (ai/manual/frequent), ai_raw jsonb |
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |
@@ -89,7 +89,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 - Pull: by a per-user `server_version` counter assigned under a per-user lock, not by any clock.
 - Idempotent: re-sending the same batch is harmless.
 - One user, few devices — no CRDTs, no merge UI.
-- On the device (`apps/web/src/db`): `GainframeDb` is the Dexie schema; `createRepositories` gives each synced table `get` / `create` / `update` / `remove`. A repository validates the row with its schema from `packages/shared`, sets `id` (UUIDv7 from `id.ts`), `createdAt`, `updatedAt` and `deletedAt`, and adds an `outbox` entry `{ seq, table, rowId }` in the same transaction. `updatedAt` always moves forward, by 1 ms past the stored value if the device clock went back, so the server never ignores a local edit as "equal or older". `remove` soft-deletes the row and its children (a workout's slots and sets, a slot's sets, template items). Features read through the repositories or their own queries inside `src/db`, never through IndexedDB directly.
+- On the device (`apps/web/src/db`): `GainframeDb` is the Dexie schema; `createRepositories` gives each synced table `get` / `create` / `update` / `remove`. A repository validates the row with its schema from `packages/shared`, sets `id` (UUIDv7 from `id.ts`), `createdAt`, `updatedAt` and `deletedAt`, and adds an `outbox` entry `{ seq, table, rowId }` in the same transaction. `updatedAt` always moves forward, by 1 ms past the stored value if the device clock went back, so the server never ignores a local edit as "equal or older". `remove` soft-deletes the row and its children (a workout's slots and sets, a slot's sets, a plan's days and items, a day's items). Features read through the repositories or their own queries inside `src/db`, never through IndexedDB directly.
 
 ## Security headers
 

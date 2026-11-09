@@ -42,7 +42,7 @@ describe('start', () => {
   it("starts an empty workout on the user's local date", async () => {
     clock = new Date('2026-11-08T17:30:00.000Z')
     const workout = await session.start(ZONE)
-    expect(workout).toMatchObject({ endedAt: null, templateId: null, localDate: '2026-11-09' })
+    expect(workout).toMatchObject({ endedAt: null, planDayId: null, localDate: '2026-11-09' })
     expect(await session.findActive()).toEqual(workout)
   })
 

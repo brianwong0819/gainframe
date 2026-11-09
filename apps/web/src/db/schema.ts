@@ -3,8 +3,9 @@ import { Dexie, type DexieOptions, type EntityTable, type Table, type Transactio
 import type {
   ClientError,
   Exercise,
-  Template,
-  TemplateItem,
+  Plan,
+  PlanDay,
+  PlanItem,
   Workout,
   WorkoutExercise,
   WorkoutSet,
@@ -16,7 +17,7 @@ import { nextUpdatedAt } from './repositories'
 // Tables whose rows sync to the server (ADR-0003). Built-in exercises are a
 // constant in @gainframe/shared, not rows.
 export type SyncedTableName =
-  'exercises' | 'templates' | 'templateItems' | 'workouts' | 'workoutExercises' | 'workoutSets'
+  'exercises' | 'plans' | 'planDays' | 'planItems' | 'workouts' | 'workoutExercises' | 'workoutSets'
 
 // One pending change. The sync engine (M2-05) reads entries in `seq` order and
 // pushes each row's current values, so an entry names the row, not the change.
@@ -29,6 +30,14 @@ export interface OutboxEntry {
 // A recorded client error (src/diagnostics). Not synced; capped on the device.
 export interface ErrorLogEntry extends ClientError {
   seq: number
+}
+
+// A setting that belongs to this device and never syncs. `activePlanId` names
+// the plan the Workout tab offers; keeping it here rather than as a flag on plan
+// rows means two devices can never both mark a plan active.
+export interface DeviceSetting {
+  key: 'activePlanId'
+  value: string
 }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
@@ -46,13 +55,15 @@ export const STORES_V1 = {
 // repositories. Every version after 1 needs an upgrade test (docs/conventions.md).
 export class GainframeDb extends Dexie {
   exercises!: Table<Exercise, string>
-  templates!: Table<Template, string>
-  templateItems!: Table<TemplateItem, string>
+  plans!: Table<Plan, string>
+  planDays!: Table<PlanDay, string>
+  planItems!: Table<PlanItem, string>
   workouts!: Table<Workout, string>
   workoutExercises!: Table<WorkoutExercise, string>
   workoutSets!: Table<WorkoutSet, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
+  settings!: EntityTable<DeviceSetting, 'key'>
 
   constructor(name = 'gainframe', options?: DexieOptions) {
     super(name, options)
@@ -81,6 +92,28 @@ export class GainframeDb extends Dexie {
         workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
       })
       .upgrade(moveSetsIntoSlots)
+    // M1-09: plans replace templates. The app never wrote templates, so their
+    // tables go; a workout's `templateId` becomes `planDayId`. No outbox entry,
+    // as in version 3.
+    this.version(5)
+      .stores({
+        templates: null,
+        templateItems: null,
+        plans: 'id',
+        planDays: 'id, planId',
+        planItems: 'id, planId, planDayId',
+        workouts: 'id, startedAt, planDayId',
+        settings: 'key',
+      })
+      .upgrade((tx) =>
+        tx
+          .table<Record<string, unknown>, string>('workouts')
+          .toCollection()
+          .modify((workout) => {
+            workout.planDayId = workout.templateId ?? null
+            delete workout.templateId
+          }),
+      )
   }
 }
 

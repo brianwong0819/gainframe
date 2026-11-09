@@ -57,7 +57,7 @@ describe('workoutSchema', () => {
     ...row,
     startedAt: '2026-11-08T10:00:00.000Z',
     endedAt: '2026-11-08T11:00:00.000Z',
-    templateId: null,
+    planDayId: null,
     localDate: '2026-11-08',
     note: null,
   }
