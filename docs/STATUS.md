@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-05 Active workout + set logging (PR 1 of 3: exercise slots data model)
+- **Current task:** M1-05 Active workout + set logging (PR 2 of 4: workout session logic)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -69,7 +69,8 @@ M1-04 muscle picker (2026-11-09, PR `m1/04-muscle-picker`), asked for by bw: cus
 
 M1 mid-milestone review (2026-11-09, PR `m1/review-plan`): code from M0-09 to M1-04 reviewed; no data-loss or security defect found (`pnpm check` green). Plan updates: M1-05 writes each set on completion and resumes an unfinished workout; M1-06 persists the rest end time; M1-08 adds rep records; M1-10 shows names of deleted exercises; M1-11 takes the "update available" prompt (moved from Follow-ups); M2-01 requires backward-compatible migrations, a Drizzle/Zod field test and an `exercise_id` ownership check; M2-09 limits `/api/health` before the repository is public. Bodyweight exercises (bw's choice): `weightKg` is the added load, records are rep records at the same or higher added load, and volume adds body weight once M4-02 exists (M1-05, M1-08).
 
-M1-05 PR 1 (2026-11-09, `m1/05-workout-exercises`): bw chose a slot table for exercise order and notes. `workoutExercises` (Dexie v4) holds each exercise slot of a workout (position, superset group, note); a set gains `workoutExerciseId`, keeps `workoutId` and `exerciseId` as unchanging copies for queries, and loses `supersetGroup`. The v4 upgrade moves existing sets into one slot per workout and exercise, with outbox entries. Next: PR 2, the workout screen (start or resume, add exercises, set rows with steppers and last time's numbers).
+M1-05 PR 1 (2026-11-09, `m1/05-workout-exercises`): bw chose a slot table for exercise order and notes. `workoutExercises` (Dexie v4) holds each exercise slot of a workout (position, superset group, note); a set gains `workoutExerciseId`, keeps `workoutId` and `exerciseId` as unchanging copies for queries, and loses `supersetGroup`. The v4 upgrade moves existing sets into one slot per workout and exercise, with outbox entries. 
+M1-05 PR 2 (2026-11-09, `m1/05-workout-session`): `src/db/workout-session.ts` starts a workout or resumes the unfinished one (only one in progress), appends slots and sets, prefills each set from the same set last time (`nextSetValues` in `packages/shared`), loads the active workout for the screen, and finishes it. Weight steps per equipment and the first-set default are in `domainConfig`. `src/db/use-live-query.ts` is the shared Dexie live-query hook. Next: PR 3, the workout screen; PR 4, set kind, RPE, notes, delete and motion.
 
 ## Blocked on bw
 
