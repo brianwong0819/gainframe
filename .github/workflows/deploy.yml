@@ -130,6 +130,13 @@ jobs:
             echo "::error::/sw.js is served as '${sw_type}', not JavaScript"
             exit 1
           fi
+          # iOS reads the touch icon once, at Add to Home Screen, and draws a
+          # letter monogram if it cannot load it.
+          icon_type=$(curl -sSf -o /dev/null -w '%{content_type}' "${SITE_URL}/pwa/apple-touch-icon.png")
+          if [ "${icon_type}" != "image/png" ]; then
+            echo "::error::/pwa/apple-touch-icon.png is served as '${icon_type}', not a PNG"
+            exit 1
+          fi
           # Separate steps, not a pipeline: a failing curl inside a pipeline
           # does not fail the step, and a 503 once passed unnoticed (L-014).
           status=$(curl -sS -o "${RUNNER_TEMP}/health.json" -D "${RUNNER_TEMP}/health.headers" \
