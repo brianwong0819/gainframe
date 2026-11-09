@@ -35,7 +35,7 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(3)
+    expect(current.verno).toBe(4)
     current.close()
   })
 
@@ -64,7 +64,70 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(3)
+    expect(v3.verno).toBe(4)
     v3.close()
+  })
+
+  it('moves version 3 sets into one slot per workout and exercise in version 4', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v3 = new Dexie('upgrade', options)
+    v3.version(1).stores(STORES_V1)
+    v3.version(2).stores({ errors: '++seq' })
+    v3.version(3).stores({})
+    const workoutId = '01960000-0000-7000-8000-0000000000a1'
+    const bench = '01960000-0000-7000-8000-0000000000b1'
+    const row = (n: number, deletedAt: string | null = null) => ({
+      id: `01960000-0000-7000-8000-00000000000${String(n)}`,
+      userId: null,
+      createdAt: '2026-11-08T10:00:00.000Z',
+      updatedAt: '2026-11-08T10:00:00.000Z',
+      deletedAt,
+    })
+    const set = (n: number, exerciseId: string, position: number, deletedAt: string | null) => ({
+      ...row(n, deletedAt),
+      workoutId,
+      exerciseId,
+      supersetGroup: n === 1 ? 2 : null,
+      position,
+      kind: 'working',
+      weightKg: 60,
+      reps: 8,
+      rpe: null,
+      completedAt: '2026-11-08T10:05:00.000Z',
+    })
+    // Bench (positions 0, 2) comes before squat (position 1, deleted).
+    const sets = [
+      set(1, bench, 0, null),
+      set(2, '01960000-0000-7000-8000-0000000000b2', 1, '2026-11-08T10:06:00.000Z'),
+      set(3, bench, 2, null),
+    ]
+    await v3.table('workoutSets').bulkAdd(sets)
+    v3.close()
+
+    const v4 = new GainframeDb('upgrade', options)
+    const slots = await v4.workoutExercises.orderBy('id').toArray()
+    const [benchSlot, squatSlot] = slots.toSorted((a, b) => a.position - b.position)
+    expect(slots).toHaveLength(2)
+    expect(benchSlot).toMatchObject({
+      exerciseId: bench,
+      position: 0,
+      supersetGroup: 2,
+      note: null,
+    })
+    expect(benchSlot?.deletedAt).toBeNull()
+    expect(squatSlot?.position).toBe(1)
+    expect(squatSlot?.deletedAt).not.toBeNull()
+
+    for (const old of sets) {
+      const moved = await v4.workoutSets.get(old.id)
+      const slot = old.exerciseId === bench ? benchSlot : squatSlot
+      expect(moved?.workoutExerciseId).toBe(slot?.id)
+      expect(moved).not.toHaveProperty('supersetGroup')
+      expect(moved?.updatedAt).not.toBe(old.updatedAt)
+    }
+    expect(await v4.outbox.count()).toBe(slots.length + sets.length)
+    v4.close()
   })
 })

@@ -5,6 +5,7 @@ import {
   exerciseSchema,
   templateItemSchema,
   templateSchema,
+  workoutExerciseSchema,
   workoutSchema,
   workoutSetSchema,
 } from '@gainframe/shared'
@@ -137,9 +138,18 @@ export function createRepositories(db: GainframeDb, now: () => Date = () => new 
       cascade(context, 'templateItems', db.templateItems, 'templateId'),
     ]),
     templateItems: repository(context, 'templateItems', db.templateItems, templateItemSchema),
+    // Sets carry `workoutId` too, so deleting a workout reaches them directly.
     workouts: repository(context, 'workouts', db.workouts, workoutSchema, [
+      cascade(context, 'workoutExercises', db.workoutExercises, 'workoutId'),
       cascade(context, 'workoutSets', db.workoutSets, 'workoutId'),
     ]),
+    workoutExercises: repository(
+      context,
+      'workoutExercises',
+      db.workoutExercises,
+      workoutExerciseSchema,
+      [cascade(context, 'workoutSets', db.workoutSets, 'workoutExerciseId')],
+    ),
     workoutSets: repository(context, 'workoutSets', db.workoutSets, workoutSetSchema),
   }
 }

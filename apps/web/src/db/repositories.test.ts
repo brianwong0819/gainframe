@@ -46,11 +46,23 @@ function newWorkout() {
   })
 }
 
-function newSet(workoutId: string, position: number) {
-  return repos.workoutSets.create({
+const BENCH = '01960000-0000-7000-8000-0000000000b1'
+
+function newSlot(workoutId: string, position: number) {
+  return repos.workoutExercises.create({
     workoutId,
-    exerciseId: '01960000-0000-7000-8000-0000000000b1',
+    exerciseId: BENCH,
+    position,
     supersetGroup: null,
+    note: null,
+  })
+}
+
+function newSet(workoutId: string, position: number, workoutExerciseId = BENCH) {
+  return repos.workoutSets.create({
+    workoutExerciseId,
+    workoutId,
+    exerciseId: BENCH,
     position,
     kind: 'working',
     weightKg: 60,
@@ -168,6 +180,27 @@ describe('remove', () => {
     expect(childEntries).toEqual(
       expect.arrayContaining(sets.map((set) => ({ table: 'workoutSets', rowId: set.id }))),
     )
+  })
+
+  it("soft-deletes a workout's exercise slots with it", async () => {
+    const workout = await newWorkout()
+    const slot = await newSlot(workout.id, 0)
+    await repos.workouts.remove(workout.id)
+    expect(await repos.workoutExercises.get(slot.id)).toBeUndefined()
+  })
+
+  it("soft-deletes a slot's sets, and no other slot's", async () => {
+    const workout = await newWorkout()
+    const slot = await newSlot(workout.id, 0)
+    const other = await newSlot(workout.id, 1)
+    const set = await newSet(workout.id, 0, slot.id)
+    const otherSet = await newSet(workout.id, 0, other.id)
+
+    await repos.workoutExercises.remove(slot.id)
+
+    expect(await repos.workoutSets.get(set.id)).toBeUndefined()
+    expect(await repos.workoutSets.get(otherSet.id)).toEqual(otherSet)
+    expect(await repos.workouts.get(workout.id)).toEqual(workout)
   })
 
   it("soft-deletes a template's items", async () => {

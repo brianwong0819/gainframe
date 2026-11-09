@@ -29,9 +29,9 @@ function set(fields: Partial<WorkoutSet> & Pick<WorkoutSet, 'weightKg' | 'reps'>
   return {
     ...row,
     id: `01960000-0000-7000-8000-${String(nextId).padStart(12, '0')}`,
+    workoutExerciseId: '01960000-0000-7000-8000-0000000000c1',
     workoutId: MONDAY,
     exerciseId: BENCH,
-    supersetGroup: null,
     position: nextId,
     kind: 'working',
     rpe: null,

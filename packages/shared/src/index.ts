@@ -45,6 +45,8 @@ export {
   type SetKind,
   setKindSchema,
   type Workout,
+  type WorkoutExercise,
+  workoutExerciseSchema,
   workoutSchema,
   type WorkoutSet,
   workoutSetSchema,

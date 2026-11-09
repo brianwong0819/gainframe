@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-04 done (next: M1-05 Active workout + set logging, waiting for bw to say continue)
+- **Current task:** M1-05 Active workout + set logging (PR 1 of 3: exercise slots data model)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -68,6 +68,8 @@ Review fix (2026-11-09, PR `m1/review-dev-sample-db`): `/dev/database` wrote its
 M1-04 muscle picker (2026-11-09, PR `m1/04-muscle-picker`), asked for by bw: custom exercises now have secondary muscles (`exerciseSchema.secondaryMuscles`, distinct and never the primary one; Dexie version 3 gives existing rows none, covered by `db/upgrade.test.ts`). The form picks muscles on the muscle map or with the buttons under it (`pickMuscle`: first tap primary, later taps secondary, a second tap removes, full body stands alone), and a new exercise starts with none picked. The detail sheet shows secondary muscles for custom exercises too. Pending: bw's iPhone check.
 
 M1 mid-milestone review (2026-11-09, PR `m1/review-plan`): code from M0-09 to M1-04 reviewed; no data-loss or security defect found (`pnpm check` green). Plan updates: M1-05 writes each set on completion and resumes an unfinished workout; M1-06 persists the rest end time; M1-08 adds rep records; M1-10 shows names of deleted exercises; M1-11 takes the "update available" prompt (moved from Follow-ups); M2-01 requires backward-compatible migrations, a Drizzle/Zod field test and an `exercise_id` ownership check; M2-09 limits `/api/health` before the repository is public. Bodyweight exercises (bw's choice): `weightKg` is the added load, records are rep records at the same or higher added load, and volume adds body weight once M4-02 exists (M1-05, M1-08).
+
+M1-05 PR 1 (2026-11-09, `m1/05-workout-exercises`): bw chose a slot table for exercise order and notes. `workoutExercises` (Dexie v4) holds each exercise slot of a workout (position, superset group, note); a set gains `workoutExerciseId`, keeps `workoutId` and `exerciseId` as unchanging copies for queries, and loses `supersetGroup`. The v4 upgrade moves existing sets into one slot per workout and exercise, with outbox entries. Next: PR 2, the workout screen (start or resume, add exercises, set rows with steppers and last time's numbers).
 
 ## Blocked on bw
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { exerciseSchema } from './exercise.ts'
-import { workoutSchema, workoutSetSchema } from './workout.ts'
+import { workoutExerciseSchema, workoutSchema, workoutSetSchema } from './workout.ts'
 
 const row = {
   id: '01960000-0000-7000-8000-000000000001',
@@ -13,9 +13,9 @@ const row = {
 
 const validSet = {
   ...row,
+  workoutExerciseId: '01960000-0000-7000-8000-0000000000c1',
   workoutId: '01960000-0000-7000-8000-0000000000a1',
   exerciseId: '01960000-0000-7000-8000-0000000000b1',
-  supersetGroup: null,
   position: 0,
   kind: 'working',
   weightKg: 62.5,
@@ -73,6 +73,27 @@ describe('workoutSchema', () => {
 
   it('rejects a local date that is not YYYY-MM-DD', () => {
     expect(workoutSchema.safeParse({ ...validWorkout, localDate: '8/11/2026' }).success).toBe(false)
+  })
+})
+
+describe('workoutExerciseSchema', () => {
+  const validSlot = {
+    ...row,
+    workoutId: '01960000-0000-7000-8000-0000000000a1',
+    exerciseId: '01960000-0000-7000-8000-0000000000b1',
+    position: 0,
+    supersetGroup: null,
+    note: 'Seat at notch 4',
+  }
+
+  it('accepts a valid slot', () => {
+    expect(workoutExerciseSchema.safeParse(validSlot).success).toBe(true)
+  })
+
+  it('rejects a negative position and a note over 500 characters', () => {
+    expect(workoutExerciseSchema.safeParse({ ...validSlot, position: -1 }).success).toBe(false)
+    const note = 'x'.repeat(501)
+    expect(workoutExerciseSchema.safeParse({ ...validSlot, note }).success).toBe(false)
   })
 })
 
