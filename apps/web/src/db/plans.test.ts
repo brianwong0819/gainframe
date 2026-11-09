@@ -143,4 +143,45 @@ describe('plan store', () => {
     expect(await plans.load(plan.id)).toBeNull()
     expect(await plans.list()).toEqual([])
   })
+
+  it('saves a finished workout as the last day of the active plan', async () => {
+    const workout = await finishedWorkout('01960000-0000-7000-8000-0000000000d9')
+    const slot = await repos.workoutExercises.create({
+      workoutId: workout.id,
+      exerciseId: BENCH,
+      position: 0,
+      supersetGroup: null,
+      note: null,
+      repsMin: null,
+      repsMax: null,
+      restS: null,
+    })
+    for (const reps of [10, 8]) {
+      await repos.workoutSets.create({
+        workoutExerciseId: slot.id,
+        workoutId: workout.id,
+        exerciseId: BENCH,
+        position: reps,
+        kind: 'working',
+        weightKg: 60,
+        reps,
+        rpe: null,
+        completedAt: workout.startedAt,
+      })
+    }
+    const names = { plan: 'My plan', day: (n: number) => `Day ${String(n)}` }
+
+    // Without an active plan, a new one is made and becomes active.
+    const first = await plans.saveWorkoutAsDay(workout.id, names)
+    const plan = await plans.activePlan()
+    expect(plan?.name).toBe('My plan')
+    expect(first).toMatchObject({ planId: plan?.id, name: 'Day 1', position: 0 })
+
+    const second = await plans.saveWorkoutAsDay(workout.id, names)
+    expect(second).toMatchObject({ planId: plan?.id, name: 'Day 2', position: 1 })
+    const state = await plans.load(plan?.id ?? '')
+    expect(state?.days[1]?.items).toMatchObject([
+      { exerciseId: BENCH, targetSets: 2, repsMin: 8, repsMax: 10, restS: null },
+    ])
+  })
 })

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { db, repositories, workoutSession } from '@/db/client'
+import { db, planStore, repositories, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import type { ActiveWorkoutState } from '@/db/workout-session'
 import { Pressable } from '@/ui/pressable'
@@ -169,6 +169,7 @@ function FinishConfirm({
   onDone: () => void
 }) {
   const t = useTranslations('workout')
+  const tPlans = useTranslations('plans')
   const router = useRouter()
   const [discarding, setDiscarding] = useState(false)
   const leave = (write: Promise<unknown>) => {
@@ -188,6 +189,23 @@ function FinishConfirm({
       >
         {t('finishConfirm')}
       </Pressable>
+      {workout.planDayId === null && done > 0 && (
+        <Pressable
+          onClick={() => {
+            leave(
+              workoutSession.finish(workout.id).then(() =>
+                planStore.saveWorkoutAsDay(workout.id, {
+                  plan: tPlans('newName'),
+                  day: (n) => tPlans('dayName', { n }),
+                }),
+              ),
+            )
+          }}
+          className="rounded-ctl bg-sunk py-12 text-body font-semibold text-ink"
+        >
+          {t('finishAndSave')}
+        </Pressable>
+      )}
       <Pressable
         onClick={() => {
           if (discarding) leave(repositories.workouts.remove(workout.id))

@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–5 of 6 done; next: "Add to plan" from the exercise detail and saving a finished workout as a plan day
+- **Current task:** none; M1-09 Plans done (pending bw's iPhone check). Next: M1-06 Rest timer, once bw says to continue
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -87,6 +87,8 @@ M1-09, part 3 (2026-11-09, PR `m1/09-plan-items`): tapping an exercise in the pl
 M1-09, part 4 (2026-11-09, PR `m1/09-start-from-plan`): `workoutSession.startFromPlanDay` starts a workout that follows a plan day (`planDayId`), with one slot per item in order and the item's target number of sets, each prefilled with last time's weight and kind and the low end of the rep range. Slots copy the item's `repsMin`, `repsMax` and `restS` (Dexie v6; null for exercises added by hand), so editing the plan later does not change past workouts, and M1-06 can read the rest from the slot. A set added to such a slot also starts at the low end of the range. `loadActive` gives each slot `bestKg`, the heaviest working or failure set of the exercise in earlier workouts (`bestWeightKg` in `packages/shared`). No UI yet.
 
 M1-09, part 5 (2026-11-09, PR `m1/09-plan-card`): with no workout in progress, the Workout tab shows the current plan's next day (`planStore.upNext`): its place in the rotation ("第 2/3 天 · 推拉腿"), name and exercises, a start button, "Another day" (a sheet of the plan's days) and "Empty workout". Without a current plan, or for a plan with no days, the tab keeps the plain start button. Each exercise card in the workout shows the plan's rep range and the best weight of earlier workouts in grey. `e2e/plans.spec.ts` starts day 1 from the tab, finishes it and sees day 2 offered. Pending: bw iPhone check of the whole plan flow.
+
+M1-09, part 6 (2026-11-09, PR `m1/09-add-to-plan`): the exercise detail sheet has "Add to plan", listing the days of every plan (current plan first); a tap appends the exercise with the default sets and range. Finishing a workout that did not follow a plan offers "Finish and save as a new plan day": `planItemsFromWorkout` (`packages/shared/src/domain/plan.ts`) turns each exercise's completed working and failure sets into target sets and a rep range, appended as the last day of the current plan (or of a new plan, which becomes current). M1-09 is done. Pending: bw iPhone check of the whole flow (make a plan, start its next day from the Workout tab, finish, see the next day offered).
 
 ## Blocked on bw
 

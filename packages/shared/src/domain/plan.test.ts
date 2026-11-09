@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import type { PlanDay } from '../schemas/plan.ts'
 import { localDateSchema } from '../schemas/row.ts'
-import type { Workout } from '../schemas/workout.ts'
-import { nextPlanDay, suggestRestS } from './plan.ts'
+import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
+import { nextPlanDay, planItemsFromWorkout, suggestRestS } from './plan.ts'
 
 const PLAN = '01960000-0000-7000-8000-0000000000f1'
 const DELETED = '2026-11-03T09:00:00.000Z'
@@ -106,5 +106,92 @@ describe('suggestRestS', () => {
     expect(suggestRestS('compound', 20)).toBe(90)
     expect(suggestRestS('isolation', 8)).toBe(90)
     expect(suggestRestS('isolation', 12)).toBe(75)
+  })
+})
+
+describe('planItemsFromWorkout', () => {
+  const WORKOUT = '01960000-0000-7000-8000-0000000000a1'
+  const slot = (n: number, position: number, fields: Partial<WorkoutExercise> = {}) => ({
+    ...row,
+    id: `01960000-0000-7000-8000-0000000000c${String(n)}`,
+    workoutId: WORKOUT,
+    exerciseId: `00000000-0000-7000-8000-00000000000${String(n)}`,
+    position,
+    supersetGroup: null,
+    note: null,
+    repsMin: null,
+    repsMax: null,
+    restS: null,
+    ...fields,
+  })
+  let setId = 0
+  const set = (slotId: string, reps: number, fields: Partial<WorkoutSet> = {}): WorkoutSet => {
+    setId += 1
+    return {
+      ...row,
+      id: `01960000-0000-7000-8000-${String(setId).padStart(12, '0')}`,
+      workoutExerciseId: slotId,
+      workoutId: WORKOUT,
+      exerciseId: '00000000-0000-7000-8000-000000000001',
+      position: setId,
+      kind: 'working',
+      weightKg: 60,
+      reps,
+      rpe: null,
+      completedAt: '2026-11-02T10:30:00.000Z',
+      ...fields,
+    }
+  }
+
+  it('turns completed working sets into target sets and a rep range, in slot order', () => {
+    const bench = slot(1, 1, { restS: 150 })
+    const squat = slot(2, 0)
+    const sets = [
+      set(bench.id, 10),
+      set(bench.id, 8),
+      set(bench.id, 7, { kind: 'failure' }),
+      set(bench.id, 15, { kind: 'warmup' }),
+      set(bench.id, 12, { kind: 'drop' }),
+      set(bench.id, 3, { completedAt: null }),
+      set(squat.id, 5),
+    ]
+    expect(planItemsFromWorkout([bench, squat], sets)).toEqual([
+      {
+        exerciseId: squat.exerciseId,
+        position: 0,
+        supersetGroup: null,
+        targetSets: 1,
+        repsMin: 5,
+        repsMax: 5,
+        restS: null,
+      },
+      {
+        exerciseId: bench.exerciseId,
+        position: 1,
+        supersetGroup: null,
+        targetSets: 3,
+        repsMin: 7,
+        repsMax: 10,
+        restS: 150,
+      },
+    ])
+  })
+
+  it('leaves out deleted slots and exercises without a counted set', () => {
+    const bench = slot(1, 0, { deletedAt: DELETED })
+    const squat = slot(2, 1)
+    const curl = slot(3, 2)
+    const sets = [set(bench.id, 8), set(squat.id, 0, { kind: 'warmup' }), set(curl.id, 0)]
+    expect(planItemsFromWorkout([bench, squat, curl], sets)).toEqual([
+      {
+        exerciseId: curl.exerciseId,
+        position: 0,
+        supersetGroup: null,
+        targetSets: 1,
+        repsMin: 1,
+        repsMax: 1,
+        restS: null,
+      },
+    ])
   })
 })

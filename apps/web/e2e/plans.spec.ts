@@ -114,3 +114,47 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByText('第 2/2 天 · 新计划')).toBeVisible()
 })
+
+test('an exercise is added to a plan day from its detail, and a workout saved as a day', async ({
+  page,
+}) => {
+  await page.goto('/workout/plans')
+  await page.getByRole('button', { name: '新建计划' }).click()
+  await expect(page.getByRole('textbox', { name: '第 1 天的名称' })).toHaveValue('第 1 天')
+
+  await page.goto('/workout/exercises')
+  await page.getByRole('searchbox').fill('杠铃卧推')
+  await page
+    .getByRole('main')
+    .getByRole('button', { name: /^杠铃卧推/ })
+    .click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('button', { name: '加入计划' }).click()
+  await dialog.getByRole('button', { name: /^第 1 天\s*新计划/ }).click()
+  await expect(dialog.getByRole('button', { name: /已加入/ })).toBeDisabled()
+  await dialog.getByRole('button', { name: '关闭' }).click()
+  await expect(dialog).toBeHidden()
+
+  // An empty workout with one done set, finished and saved as the plan's day 2.
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '空白训练' }).click()
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃深蹲')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃深蹲/ })
+    .click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
+  await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  await page.getByRole('button', { name: '结束训练' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '结束，并存成计划的新一天' }).click()
+  await expect(page).toHaveURL(/\/workout\/?$/)
+
+  await page.getByRole('link', { name: /训练计划/ }).click()
+  await page.getByRole('link', { name: /新计划/ }).click()
+  await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveValue('第 2 天')
+  await expect(page.getByRole('button', { name: /^杠铃卧推 3 组/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^杠铃深蹲 1 组 · 8 次/ })).toBeVisible()
+})
