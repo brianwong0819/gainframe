@@ -179,3 +179,74 @@ describe('stepSet', () => {
     expect((await repos.workoutSets.get(id))?.reps).toBe(0)
   })
 })
+
+describe('startFromPlanDay', () => {
+  async function pushDay() {
+    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const day = await repos.planDays.create({ planId: plan.id, name: 'Push', position: 0 })
+    const item = (exerciseId: string, position: number, targetSets: number, restS: number | null) =>
+      repos.planItems.create({
+        planId: plan.id,
+        planDayId: day.id,
+        exerciseId,
+        position,
+        supersetGroup: null,
+        targetSets,
+        repsMin: 8,
+        repsMax: 12,
+        restS,
+      })
+    await item(SQUAT, 1, 2, null)
+    await item(BENCH, 0, 3, 150)
+    return day
+  }
+
+  it("lays out the day's exercises in order with their target sets, range and rest", async () => {
+    const day = await pushDay()
+    const workout = await session.startFromPlanDay(day.id, ZONE)
+    expect(workout.planDayId).toBe(day.id)
+
+    const state = await session.loadActive()
+    expect(state?.slots.map(({ slot }) => [slot.exerciseId, slot.restS])).toEqual([
+      [BENCH, 150],
+      [SQUAT, null],
+    ])
+    expect(state?.slots[0]?.slot).toMatchObject({ repsMin: 8, repsMax: 12 })
+    expect(state?.slots.map(({ sets }) => sets.length)).toEqual([3, 2])
+    // Never done before: the default weight, and the low end of the rep range.
+    expect(state?.slots[0]?.sets.map((set) => [set.weightKg, set.reps])).toEqual([
+      [0, 8],
+      [0, 8],
+      [0, 8],
+    ])
+  })
+
+  it("prefills last time's weights and shows the best weight of earlier workouts", async () => {
+    const day = await pushDay()
+    const first = await session.startFromPlanDay(day.id, ZONE)
+    const firstState = await session.loadActive()
+    const [heavy, light] = firstState?.slots[0]?.sets ?? []
+    if (heavy === undefined || light === undefined) throw new Error('No sets')
+    await complete(heavy.id, 70, 9)
+    await complete(light.id, 65, 11)
+    await session.finish(first.id)
+
+    advance(86_400_000)
+    await session.startFromPlanDay(day.id, ZONE)
+    const state = await session.loadActive()
+    expect(state?.slots[0]?.sets.map((set) => [set.weightKg, set.reps])).toEqual([
+      [70, 8],
+      [65, 8],
+      [65, 8],
+    ])
+    expect(state?.slots[0]?.bestKg).toBe(70)
+    expect(state?.slots[1]?.bestKg).toBeNull()
+  })
+
+  it('resumes the workout in progress instead', async () => {
+    const day = await pushDay()
+    const active = await session.start(ZONE)
+    expect(await session.startFromPlanDay(day.id, ZONE)).toEqual(active)
+    expect(await db.workoutExercises.count()).toBe(0)
+  })
+})

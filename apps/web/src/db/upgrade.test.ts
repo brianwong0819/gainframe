@@ -36,7 +36,7 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(5)
+    expect(current.verno).toBe(6)
     current.close()
   })
 
@@ -65,7 +65,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(5)
+    expect(v3.verno).toBe(6)
     v3.close()
   })
 
@@ -164,7 +164,55 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(5)
+    expect(v5.verno).toBe(6)
     v5.close()
+  })
+
+  it('gives version 5 exercise slots no rep range or rest in version 6', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v5 = new Dexie('upgrade', options)
+    v5.version(1).stores(STORES_V1)
+    v5.version(2).stores({ errors: '++seq' })
+    v5.version(3).stores({})
+    v5.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v5.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    const slot = {
+      id: '01960000-0000-7000-8000-000000000001',
+      userId: null,
+      createdAt: '2026-11-09T10:00:00.000Z',
+      updatedAt: '2026-11-09T10:00:00.000Z',
+      deletedAt: null,
+      workoutId: '01960000-0000-7000-8000-0000000000a1',
+      exerciseId: '00000000-0000-7000-8000-000000000001',
+      position: 0,
+      supersetGroup: null,
+      note: null,
+    }
+    await v5.table('workoutExercises').add(slot)
+    v5.close()
+
+    const v6 = new GainframeDb('upgrade', options)
+    expect(await v6.workoutExercises.get(slot.id)).toEqual({
+      ...slot,
+      repsMin: null,
+      repsMax: null,
+      restS: null,
+    })
+    expect(await v6.outbox.count()).toBe(0)
+    expect(v6.verno).toBe(6)
+    v6.close()
   })
 })

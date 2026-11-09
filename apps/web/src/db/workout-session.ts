@@ -1,4 +1,5 @@
 import {
+  bestWeightKg,
   nextSetValues,
   previousPerformance,
   toLocalDate,
@@ -11,11 +12,18 @@ import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
 // One exercise slot of the active workout, as the screen shows it: its live sets
-// in order and last time's completed sets of the same exercise.
+// in order, last time's completed sets of the same exercise, and the heaviest
+// weight of the exercise in earlier workouts (null if none).
 export interface SlotState {
   slot: WorkoutExercise
   sets: WorkoutSet[]
   previous: WorkoutSet[]
+  bestKg: number | null
+}
+
+interface ExerciseHistory {
+  previous: WorkoutSet[]
+  bestKg: number | null
 }
 
 export interface ActiveWorkoutState {
@@ -47,14 +55,19 @@ export function createWorkoutSession(
       .first()
   }
 
-  // Last time's completed sets of an exercise, before the given instant.
-  async function previousSets(exerciseId: string, before: string): Promise<WorkoutSet[]> {
+  // Last time's completed sets of an exercise and its best weight, from the
+  // workouts other than `workout` that started before it.
+  async function exerciseHistory(exerciseId: string, workout: Workout): Promise<ExerciseHistory> {
     const sets = await db.workoutSets.where('exerciseId').equals(exerciseId).filter(live).toArray()
     const workoutIds = [...new Set(sets.map((set) => set.workoutId))]
-    const workouts = (await db.workouts.bulkGet(workoutIds)).filter(
-      (workout) => workout !== undefined,
-    )
-    return previousPerformance({ exerciseId, before, workouts, sets })
+    const workouts = (await db.workouts.bulkGet(workoutIds))
+      .filter((other) => other !== undefined)
+      .filter((other) => other.id !== workout.id && other.startedAt < workout.startedAt)
+    const earlier = new Set(workouts.map((other) => other.id))
+    return {
+      previous: previousPerformance({ exerciseId, before: workout.startedAt, workouts, sets }),
+      bestKg: bestWeightKg(sets.filter((set) => earlier.has(set.workoutId))),
+    }
   }
 
   async function slotSets(slotId: string): Promise<WorkoutSet[]> {
@@ -62,15 +75,19 @@ export function createWorkoutSession(
     return sets.toSorted((a, b) => a.position - b.position)
   }
 
+  // A slot from a plan prefills the low end of its rep range; the weight and
+  // kind still come from last time.
   async function createSet(slot: WorkoutExercise, workout: Workout): Promise<WorkoutSet> {
     const all = await slotSets(slot.id)
-    const previous = await previousSets(slot.exerciseId, workout.startedAt)
+    const { previous } = await exerciseHistory(slot.exerciseId, workout)
+    const values = nextSetValues(previous, all.filter(live))
     return repos.workoutSets.create({
       workoutExerciseId: slot.id,
       workoutId: slot.workoutId,
       exerciseId: slot.exerciseId,
       position: nextPosition(all),
-      ...nextSetValues(previous, all.filter(live)),
+      ...values,
+      reps: slot.repsMin ?? values.reps,
       rpe: null,
       completedAt: null,
     })
@@ -97,10 +114,10 @@ export function createWorkoutSession(
         .filter(live)
         .toArray()
       const sets = await db.workoutSets.where('workoutId').equals(workout.id).filter(live).toArray()
-      const previous = new Map<string, WorkoutSet[]>()
+      const history = new Map<string, ExerciseHistory>()
       for (const { exerciseId } of slots) {
-        if (!previous.has(exerciseId)) {
-          previous.set(exerciseId, await previousSets(exerciseId, workout.startedAt))
+        if (!history.has(exerciseId)) {
+          history.set(exerciseId, await exerciseHistory(exerciseId, workout))
         }
       }
       return {
@@ -112,7 +129,8 @@ export function createWorkoutSession(
             sets: sets
               .filter((set) => set.workoutExerciseId === slot.id)
               .toSorted((a, b) => a.position - b.position),
-            previous: previous.get(slot.exerciseId) ?? [],
+            previous: history.get(slot.exerciseId)?.previous ?? [],
+            bestKg: history.get(slot.exerciseId)?.bestKg ?? null,
           })),
       }
     },
@@ -133,6 +151,42 @@ export function createWorkoutSession(
       })
     },
 
+    // Resumes the workout in progress, or starts one from a plan day: its
+    // exercises in order, each with its target number of sets, prefilled.
+    async startFromPlanDay(dayId: string, timeZone: string): Promise<Workout> {
+      const tables = [...writeTables, db.planDays, db.planItems]
+      return db.transaction('rw', tables, async () => {
+        const active = await findActive()
+        if (active !== undefined) return active
+        const day = await repos.planDays.get(dayId)
+        if (day === undefined) throw new Error(`No plan day ${dayId}`)
+        const items = await db.planItems.where('planDayId').equals(dayId).filter(live).toArray()
+        const startedAt = now().toISOString()
+        const workout = await repos.workouts.create({
+          startedAt,
+          endedAt: null,
+          planDayId: dayId,
+          localDate: toLocalDate(startedAt, timeZone),
+          note: null,
+        })
+        const ordered = items.toSorted((a, b) => a.position - b.position)
+        for (const [position, item] of ordered.entries()) {
+          const slot = await repos.workoutExercises.create({
+            workoutId: workout.id,
+            exerciseId: item.exerciseId,
+            position,
+            supersetGroup: item.supersetGroup,
+            note: null,
+            repsMin: item.repsMin,
+            repsMax: item.repsMax,
+            restS: item.restS,
+          })
+          for (let n = 0; n < item.targetSets; n += 1) await createSet(slot, workout)
+        }
+        return workout
+      })
+    },
+
     // Appends an exercise to the workout with its first set, prefilled.
     async addExercise(workoutId: string, exerciseId: string): Promise<WorkoutExercise> {
       return db.transaction('rw', writeTables, async () => {
@@ -144,6 +198,9 @@ export function createWorkoutSession(
           position: nextPosition(slots),
           supersetGroup: null,
           note: null,
+          repsMin: null,
+          repsMax: null,
+          restS: null,
         })
         await createSet(slot, workout)
         return slot

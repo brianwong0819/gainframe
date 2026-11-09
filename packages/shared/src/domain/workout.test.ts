@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutSet } from '../schemas/workout.ts'
 import {
+  bestWeightKg,
   estimateOneRepMax,
   findPersonalRecords,
   nextSetValues,
@@ -277,5 +278,23 @@ describe('findPersonalRecords', () => {
     expect(findPersonalRecords([record, deletedRecord], [...history, deletedBest])).toEqual(
       new Set([record.id]),
     )
+  })
+})
+
+describe('bestWeightKg', () => {
+  it('takes the heaviest completed working or failure set', () => {
+    const sets = [
+      set({ weightKg: 60, reps: 10 }),
+      set({ weightKg: 70, reps: 3, kind: 'failure' }),
+      set({ weightKg: 80, reps: 5, kind: 'warmup' }),
+      set({ weightKg: 90, reps: 2, completedAt: null }),
+      set({ weightKg: 95, reps: 1, deletedAt: '2026-11-03T10:00:00.000Z' }),
+    ]
+    expect(bestWeightKg(sets)).toBe(70)
+  })
+
+  it('has no best weight without a counted set', () => {
+    expect(bestWeightKg([])).toBeNull()
+    expect(bestWeightKg([set({ weightKg: 40, reps: 10, kind: 'warmup' })])).toBeNull()
   })
 })
