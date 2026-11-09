@@ -65,6 +65,8 @@ M1-04 fixes (2026-11-09, PR `m1/04-sheet-fixes`), from bw's iPhone check: the sh
 
 Review fix (2026-11-09, PR `m1/review-dev-sample-db`): `/dev/database` wrote its sample exercise and unfinished sample workout into the app's own database, where M1-05 would read them as last time's numbers or as a workout in progress. The page now writes to a separate database (`gainframe-dev-sample`) and has "Remove old samples from the app database", which soft-deletes the earlier samples there (`src/app/dev/database/sample.ts`, tested). Pending: bw taps it once in the home-screen app.
 
+M1-04 muscle picker (2026-11-09, PR `m1/04-muscle-picker`), asked for by bw: custom exercises now have secondary muscles (`exerciseSchema.secondaryMuscles`, distinct and never the primary one; Dexie version 3 gives existing rows none, covered by `db/upgrade.test.ts`). The form picks muscles on the muscle map or with the buttons under it (`pickMuscle`: first tap primary, later taps secondary, a second tap removes, full body stands alone), and a new exercise starts with none picked. The detail sheet shows secondary muscles for custom exercises too. Pending: bw's iPhone check.
+
 ## Blocked on bw
 
 - Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").

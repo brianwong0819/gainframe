@@ -42,7 +42,11 @@ const back: (readonly [Region, string[]])[] = [
 
 type Role = 'primary' | 'secondary' | undefined
 
-function roleOf(region: Region, primary: MuscleGroup, secondary: readonly MuscleGroup[]): Role {
+function roleOf(
+  region: Region,
+  primary: MuscleGroup | null,
+  secondary: readonly MuscleGroup[],
+): Role {
   if (region === 'body') return undefined
   if (primary === 'full_body' || region === primary) return 'primary'
   return secondary.includes(region) ? 'secondary' : undefined
@@ -53,11 +57,13 @@ function Figure({
   x,
   primary,
   secondary,
+  onPick,
 }: {
   regions: readonly (readonly [Region, string[]])[]
   x: number
-  primary: MuscleGroup
+  primary: MuscleGroup | null
   secondary: readonly MuscleGroup[]
+  onPick: ((muscle: MuscleGroup) => void) | undefined
 }) {
   return (
     <g transform={`translate(${x.toString()} 0)`}>
@@ -66,18 +72,26 @@ function Figure({
       {regions.flatMap(([region, paths]) => {
         const role = roleOf(region, primary, secondary)
         const className = region === 'body' ? 'body-part' : undefined
+        const onClick =
+          onPick && region !== 'body'
+            ? () => {
+                onPick(region)
+              }
+            : undefined
         return paths.flatMap((d, index) => [
           <path
             key={`${region}-${index.toString()}`}
             className={className}
             data-role={role}
             d={d}
+            onClick={onClick}
           />,
           <path
             key={`${region}-${index.toString()}-mirror`}
             className={className}
             data-role={role}
             d={d}
+            onClick={onClick}
             transform="matrix(-1 0 0 1 120 0)"
           />,
         ])
@@ -86,20 +100,33 @@ function Figure({
   )
 }
 
-/** Front and back figures with the primary muscle in the accent and the secondary ones lighter. */
+/**
+ * Front and back figures with the primary muscle in the accent and the
+ * secondary ones lighter. With `onPick`, tapping a muscle reports it; the
+ * regions are too small to be the only control, so the form also lists every
+ * muscle as a button.
+ */
 export function MuscleMap({
   primary,
   secondary,
   label,
+  onPick,
 }: {
-  primary: MuscleGroup
+  primary: MuscleGroup | null
   secondary: readonly MuscleGroup[]
   label: string
+  onPick?: (muscle: MuscleGroup) => void
 }) {
   return (
-    <svg viewBox="0 0 248 240" role="img" aria-label={label} className="muscle-map h-auto w-full">
-      <Figure regions={front} x={0} primary={primary} secondary={secondary} />
-      <Figure regions={back} x={128} primary={primary} secondary={secondary} />
+    <svg
+      viewBox="0 0 248 240"
+      role="img"
+      aria-label={label}
+      data-pickable={onPick ? true : undefined}
+      className="muscle-map h-auto w-full"
+    >
+      <Figure regions={front} x={0} primary={primary} secondary={secondary} onPick={onPick} />
+      <Figure regions={back} x={128} primary={primary} secondary={secondary} onPick={onPick} />
     </svg>
   )
 }

@@ -1,19 +1,20 @@
-import { toLocalDate } from '@gainframe/shared'
+import { type Exercise, toLocalDate } from '@gainframe/shared'
 
-import type { Repositories } from '@/db/repositories'
+import type { NewRow, Repositories } from '@/db/repositories'
 import type { GainframeDb } from '@/db/schema'
 
 // The dev page writes its samples to this database, never to the app's own, so a
 // sample workout cannot show up as history, last time's numbers or a record.
 export const SAMPLE_DB_NAME = 'gainframe-dev-sample'
 
-const sampleExercise = {
+const sampleExercise: NewRow<Exercise> = {
   nameZh: '杠铃卧推',
   nameEn: 'Barbell bench press',
   muscle: 'chest',
+  secondaryMuscles: ['shoulders', 'triceps'],
   equipment: 'barbell',
   defaultRestS: 120,
-} as const
+}
 
 export async function logSampleWorkout(repos: Repositories, now: Date): Promise<void> {
   const at = now.toISOString()

@@ -44,7 +44,8 @@ function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
   return {
     nameZh: han.test(trimmed) ? trimmed : '',
     nameEn: han.test(trimmed) ? '' : trimmed,
-    muscle: muscle ?? 'chest',
+    muscle,
+    secondaryMuscles: [],
     equipment: 'barbell',
     defaultRestS: 90,
   }
@@ -114,6 +115,7 @@ export function ExerciseLibrary() {
         nameZh: exercise.nameZh ?? '',
         nameEn: exercise.nameEn ?? '',
         muscle: exercise.muscle,
+        secondaryMuscles: exercise.secondaryMuscles,
         equipment: exercise.equipment,
         defaultRestS: exercise.defaultRestS,
       },
