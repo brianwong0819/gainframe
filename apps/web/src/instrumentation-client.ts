@@ -12,3 +12,19 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
   reportError('unhandledrejection', event.reason)
 })
+
+// Marks keyboard use, so focus rings show only for keyboard users (globals.css).
+document.addEventListener(
+  'keydown',
+  () => {
+    document.documentElement.dataset.input = 'keyboard'
+  },
+  true,
+)
+document.addEventListener(
+  'pointerdown',
+  () => {
+    delete document.documentElement.dataset.input
+  },
+  true,
+)

@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
 - A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
 - Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
 - Steps for bw on the iPhone describe the home-screen app as it is: no address bar, opens at `/`; reach a page through an in-app link. ([L-017](#l-017--2026-11-07--pwa--test-steps-told-bw-to-type-a-url-into-the-installed-app))
@@ -43,6 +44,20 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-021 · 2026-11-09 · ui · A focus ring stayed on a row after closing its sheet
+- **What happened:** bw closed an exercise sheet on the iPhone and the row that opened it kept a blue focus ring.
+- **Root cause:** a closing modal `<dialog>` returns focus to the element that had it, and WebKit treats that programmatic focus as `:focus-visible` even after a tap. Chromium does not, so the desktop check missed it.
+- **Fix:** PR `m1/04-sheet-open-flash`: `src/instrumentation-client.ts` marks `<html data-input="keyboard">` on key presses and clears it on pointer input; the focus ring in `globals.css` applies only then.
+- **Prevention:** the ring rule itself depends on the input mode, so every element gets the same behaviour.
+- **Status:** guarded
+
+### L-020 · 2026-11-09 · ui · The sheet flashed open, vanished and then slid in
+- **What happened:** after L-019, bw saw every sheet on the iPhone appear for a moment, disappear, and then rise correctly.
+- **Root cause:** the L-019 fix focuses the panel right after `showModal()`, while the panel is still translated below the screen for its entry animation. WebKit scrolls a focused element into view, so the panel showed for a frame before the animation moved it back down. Desktop Chromium does not scroll there, so the check in Chromium did not show it.
+- **Fix:** PR `m1/04-sheet-open-flash`: `focus({ preventScroll: true })`.
+- **Prevention:** an ESLint rule in `eslint.config.js` rejects any `focus()` call in the web app without `preventScroll`.
+- **Status:** guarded
 
 ### L-019 · 2026-11-09 · ui · The first bottom sheet raised the keyboard and let the page scroll behind it
 - **What happened:** bw opened the exercise sheet on the iPhone: the keyboard came up at once and pushed the sheet off screen, swiping scrolled the library behind the sheet, and there was no visible way to close it.
