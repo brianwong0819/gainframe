@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
 - Steps for bw on the iPhone describe the home-screen app as it is: no address bar, opens at `/`; reach a page through an in-app link. ([L-017](#l-017--2026-11-07--pwa--test-steps-told-bw-to-type-a-url-into-the-installed-app))
 - Before fixing how a platform draws the app (iOS, Android, browser chrome), find its current documented behaviour and cite it in the PR. ([L-016](#l-016--2026-11-06--pwa--the-status-bar-blur-still-covered-the-title-after-l-015))
 - Pad screens by the safe-area inset plus a gutter ("Screen edges" in `docs/design-system.md`), and verify safe-area layout on the iPhone; desktop browsers report zero insets. ([L-015](#l-015--2026-11-06--pwa--the-page-title-sat-under-the-ios-status-bar-blur))
@@ -41,6 +42,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-018 · 2026-11-09 · motion · Reduce Motion tab switches overlapped the text of two screens
+- **What happened:** bw turned on Reduce Motion on the iPhone after M1-03; switching tabs, the text changed slowly and felt uncomfortable.
+- **Root cause:** the reduced-motion rule turned the tab transition into a 200 ms fade out of the old screen and fade in of the new one at the same time, so both screens' text was visible on top of each other. "Every motion becomes a fade" was applied to a whole-screen change without asking whether a fade suits it; the check in Chromium measured the animation names and durations, not how it reads.
+- **Fix:** PR `m1/03-reduced-motion-tabs`: under Reduce Motion the view transition pseudo-elements do not animate, so the screen swaps at once (as the Next.js view transitions guide recommends).
+- **Prevention:** new Active rule; the exception is written into "Motion" in `docs/design-system.md`.
+- **Status:** documented
 
 ### L-017 · 2026-11-07 · pwa · Test steps told bw to type a URL into the installed app
 - **What happened:** The M0-13 handover asked bw to open `/dev/rest-timer.html` by typing the address inside the home-screen app. bw asked whether to delete and re-add the app; an installed web app has no address bar and always opens at the manifest `start_url`, so the page was unreachable.

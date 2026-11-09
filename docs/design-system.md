@@ -47,11 +47,11 @@ Rules:
 - Every pressable thing uses `<Pressable>` (`src/ui/pressable.tsx`): scale 0.96 on press, `pop` on release. Nothing else on plain buttons.
 - The CSS `--ease-*` / `--dur-*` curves are sampled from the spring numbers in `motion.ts`; `src/ui/motion.test.ts` fails if the two drift apart.
 - Number changes roll digit by digit, 28 ms stagger.
-- `prefers-reduced-motion: reduce` → every motion becomes a 200 ms fade; celebrations are off. `<MotionProvider>` (in the root layout) makes Motion skip transform animations, `globals.css` limits CSS transitions to opacity, and `<Pressable>` dims to 0.6 instead of scaling.
+- `prefers-reduced-motion: reduce` → every motion becomes a 200 ms fade, except a change of screen, which swaps at once (fading two screens overlaps their text, L-018); celebrations are off. `<MotionProvider>` (in the root layout) makes Motion skip transform animations, `globals.css` limits CSS transitions to opacity, and `<Pressable>` dims to 0.6 instead of scaling.
 
 ## Navigation
 
-Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch is a view transition (React `<ViewTransition>`, transition type `tab` set by the tab links): the old screen fades out with `fade`, the new one rises 8 px and scales from 0.985 with `std`, and the rest of the page, the tab bar included, changes without a cross-fade so its own animations stay live. Under Reduce Motion both screens only fade. Browser back/forward carries no type and does not animate.
+Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch is a view transition (React `<ViewTransition>`, transition type `tab` set by the tab links): the old screen fades out with `fade`, the new one rises 8 px and scales from 0.985 with `std`, and the rest of the page, the tab bar included, changes without a cross-fade so its own animations stay live. Under Reduce Motion the screen swaps at once. Browser back/forward carries no type and does not animate.
 
 ## Celebrations (three tiers, only at meaningful moments)
 
