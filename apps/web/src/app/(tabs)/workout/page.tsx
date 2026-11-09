@@ -24,6 +24,9 @@ export default function WorkoutPage() {
   const done = sets.filter((set) => set.completedAt !== null).length
   const activePlan = useLiveQuery(loadActivePlan)
 
+  // The cards wait for the workout in progress to load: the start button above
+  // them appears only then, and would push them down under a finger mid-tap.
+  if (active === undefined) return <TabScreen title={t('title')} />
   return (
     <TabScreen title={t('title')}>
       {active && (

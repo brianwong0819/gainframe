@@ -1,3 +1,5 @@
+import { domainConfig } from '../config.ts'
+import type { Mechanic } from '../schemas/exercise.ts'
 import type { PlanDay } from '../schemas/plan.ts'
 import type { Workout } from '../schemas/workout.ts'
 
@@ -27,4 +29,13 @@ export function nextPlanDay(
   }
   if (latest === undefined) return rotation[0]
   return rotation[(latest.index + 1) % rotation.length]
+}
+
+// The rest between sets the "Suggest" button fills in for a plan item: longer
+// for compound exercises and for heavier sets (fewer reps at the low end of the
+// range). Bands are in `domainConfig.suggestedRestS`.
+export function suggestRestS(mechanic: Mechanic, repsMin: number): number {
+  // The last band of each mechanic has no upper limit, so one always matches.
+  const band = domainConfig.suggestedRestS[mechanic].find(({ maxReps }) => repsMin <= maxReps)
+  return band?.restS ?? 0
 }

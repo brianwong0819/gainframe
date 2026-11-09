@@ -188,6 +188,19 @@
     "deletePlanConfirm": "Confirm delete (past workouts stay)",
     "missing": "This plan does not exist or was deleted.",
     "close": "Close",
-    "pickerTitle": "Add to “{day}”"
+    "pickerTitle": "Add to “{day}”",
+    "sets": "Sets",
+    "repsMin": "Min reps",
+    "repsMax": "Max reps",
+    "repsHint": "A workout fills in the minimum; log the reps you actually do. Equal numbers mean a fixed count.",
+    "less": "{what}: one less",
+    "more": "{what}: one more",
+    "restLabel": "Rest between sets",
+    "restLess": "15 s less rest",
+    "restMore": "15 s more rest",
+    "suggest": "Suggest",
+    "restIsDefault": "Using the exercise's default rest",
+    "useDefault": "Back to default {time}",
+    "removeItem": "Remove from this day"
   }
 }

@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–2 of 5 done; next: editing an item's sets, rep range and rest
+- **Current task:** M1-09 Plans (moved ahead of M1-06 by bw on 2026-11-09), parts 1–3 of 5 done; next: starting a workout from the current plan
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -82,6 +82,8 @@ M1-09, part 1 (2026-11-09, PR `m1/09-plan-data`): design agreed with bw (see the
 
 M1-09, part 2 (2026-11-09, PR `m1/09-plan-editor`): `/workout/plans` lists plans (the current one tagged, its days in order) and creates one, which opens in the editor; the first plan becomes current. `/workout/plan#<id>` edits a plan: name and day names in place, make current, add a day, add exercises from the library picker (3 sets of 8–12, default rest, from `domainConfig.newPlanItem`), delete a day or the plan (asks twice). The ID is in the URL fragment, not a query string, so the one exported page also opens from the service worker's precache offline. The Workout tab links to plans and names the current one. Fixed while testing: the editor did not update after a day changed (L-026). Rows are not tappable yet; part 3 adds the item sheet.
 
+M1-09, part 3 (2026-11-09, PR `m1/09-plan-items`): tapping an exercise in the plan editor opens a sheet for its target sets, rep range (either end moves the other so the range never inverts, `features/plans/item-edit.ts`) and rest (±15 s, back to the exercise's default, or "Suggest"), and to remove it from the day. `suggestRestS` (`packages/shared/src/domain/plan.ts`) picks the rest from the exercise's mechanic and the low end of the range, with bands in `domainConfig.suggestedRestS` (a 5-rep compound 3:00, a 15-rep isolation 1:00). Custom exercises have no mechanic, so they get no "Suggest" button.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
@@ -89,6 +91,7 @@ M1-09, part 2 (2026-11-09, PR `m1/09-plan-editor`): `/workout/plans` lists plans
 
 ## Follow-ups (noticed, not in scope yet)
 
+- Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
 - Plans: days and exercises keep the order they were added in; there is no way to reorder them yet (M1-09 adds them at the end). Add reordering if bw needs it after using plans.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
