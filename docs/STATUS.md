@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-05 done (next: M1-06 Rest timer, waiting for bw to say continue)
+- **Current task:** none; M1-05 done (next: M1-09 Plans, moved ahead of M1-06 by bw on 2026-11-09; design to be agreed with bw first)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -90,3 +90,5 @@ M1-05 PR 5 (2026-11-09, `m1/05-motion`): the stepper's number is also a text fie
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
 - `next dev` writes `apps/web/AGENTS.md`, pointing agents at the docs bundled in `node_modules/next/dist/docs/`. Consider referencing it from `CLAUDE.md`.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`. The rolldown bundle can now include `@gainframe/shared`; move the shape there when the web app first consumes an API response.
+
+M1-05 follow-up (2026-11-09, `m1/05-workout-back`, L-025): bw found no way out of the workout in progress. It now lives at `/workout/session` with a back link; the Workout tab shows "Continue workout"; the finish sheet can discard the workout (asks twice). bw chose to build training plans (several plans, one active, a rotating split; starting a workout from the active plan's next day) before M1-06; M1-09 will be rewritten with that design once bw agrees to it.

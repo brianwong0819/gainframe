@@ -7,10 +7,9 @@ import {
   muscleGroupSchema,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useState } from 'react'
 
-import { Chevron } from '@/ui/chevron'
+import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
@@ -125,13 +124,7 @@ export function ExerciseLibrary() {
   return (
     <main className="flex flex-col gap-20">
       <header className="flex flex-col gap-8">
-        <Link
-          href="/workout"
-          className="flex items-center gap-4 self-start py-8 text-label text-ink-2"
-        >
-          <Chevron direction="left" />
-          {t('back')}
-        </Link>
+        <BackLink href="/workout" label={t('back')} />
         <div className="flex items-end justify-between gap-12">
           <div className="flex flex-col gap-4">
             <h1 className="text-title">{t('title')}</h1>

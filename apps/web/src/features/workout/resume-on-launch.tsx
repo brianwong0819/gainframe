@@ -18,7 +18,7 @@ export function ResumeOnLaunch() {
     checked = true
     if (pathname !== '/') return
     void workoutSession.findActive().then((workout) => {
-      if (workout !== undefined) router.replace('/workout')
+      if (workout !== undefined) router.replace('/workout/session')
     })
   }, [pathname, router])
   return null

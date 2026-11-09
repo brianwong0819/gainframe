@@ -77,7 +77,7 @@ function elementsInInsets(page: Page, safeArea: SafeArea): Promise<string[]> {
   }, safeArea)
 }
 
-for (const { name, path } of pages) {
+for (const { name, path, parent } of pages) {
   for (const scheme of schemes) {
     test(`${name} (${scheme}) fits the screen`, async ({ page }, testInfo) => {
       const device = deviceMatrix.find((entry) => entry.name === testInfo.project.name)
@@ -93,6 +93,10 @@ for (const { name, path } of pages) {
       )
       expect(overflow, 'horizontal scroll').toBe(0)
       expect(await elementsInInsets(page, safeArea), 'content under a safe-area inset').toEqual([])
+      // Every page below a tab has a visible way back (L-025).
+      if (parent !== undefined) {
+        await expect(page.locator(`a[data-back-link][href="${parent}"]`)).toBeVisible()
+      }
 
       // Review aid: the screenshot shades the insets the device would cover.
       await page.addStyleTag({

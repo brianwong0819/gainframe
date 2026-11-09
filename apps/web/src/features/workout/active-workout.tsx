@@ -2,6 +2,7 @@
 
 import type { Exercise, Workout, WorkoutSet } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { db, repositories, workoutSession } from '@/db/client'
@@ -156,6 +157,8 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   )
 }
 
+// Finishing keeps the workout; discarding deletes it with its sets, so it asks
+// twice. Either way the screen returns to the Workout tab.
 function FinishConfirm({
   workout,
   done,
@@ -166,17 +169,33 @@ function FinishConfirm({
   onDone: () => void
 }) {
   const t = useTranslations('workout')
+  const router = useRouter()
+  const [discarding, setDiscarding] = useState(false)
+  const leave = (write: Promise<unknown>) => {
+    onDone()
+    void write.then(() => {
+      router.replace('/workout')
+    })
+  }
   return (
     <div className="flex flex-col gap-20">
       <p className="text-body text-ink-2">{t('finishBody', { done })}</p>
       <Pressable
         onClick={() => {
-          onDone()
-          void workoutSession.finish(workout.id)
+          leave(workoutSession.finish(workout.id))
         }}
         className="rounded-ctl bg-ink py-12 text-body font-semibold text-bg"
       >
         {t('finishConfirm')}
+      </Pressable>
+      <Pressable
+        onClick={() => {
+          if (discarding) leave(repositories.workouts.remove(workout.id))
+          else setDiscarding(true)
+        }}
+        className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
+      >
+        {discarding ? t('discardConfirm', { done }) : t('discard')}
       </Pressable>
     </div>
   )
