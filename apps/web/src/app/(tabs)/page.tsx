@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
+import { release } from '@/release'
+
 import { LanguageSwitch } from './language-switch'
 import { TabScreen } from './tab-screen'
 
@@ -27,6 +29,9 @@ export default function TodayPage() {
               {page.label}
             </Link>
           ))}
+          {/* Which build is running, for checking a deploy on the phone. Moves
+              to the diagnostics page in M1-11. */}
+          <p className="num py-12 text-label text-ink-3">Release {release.slice(0, 7)}</p>
         </nav>
       )}
     </TabScreen>
