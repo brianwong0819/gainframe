@@ -16,6 +16,7 @@
   --accent: #2340e0;
   --accent-ink: #ffffff;
   --accent-wash: rgb(35 64 224 / 0.1);
+  --accent-soft: rgb(35 64 224 / 0.32);
   --short: #a85a14;
   --short-wash: rgb(168 90 20 / 0.1);
   --scrim: rgb(13 15 17 / 0.28);
@@ -108,6 +109,7 @@
     --accent: #7389ff;
     --accent-ink: #0a0b0d;
     --accent-wash: rgb(115 137 255 / 0.15);
+    --accent-soft: rgb(115 137 255 / 0.36);
     --short: #e39a54;
     --short-wash: rgb(227 154 84 / 0.13);
     --scrim: rgb(0 0 0 / 0.5);
@@ -129,6 +131,7 @@
   --accent: #7389ff;
   --accent-ink: #0a0b0d;
   --accent-wash: rgb(115 137 255 / 0.15);
+  --accent-soft: rgb(115 137 255 / 0.36);
   --short: #e39a54;
   --short-wash: rgb(227 154 84 / 0.13);
   --scrim: rgb(0 0 0 / 0.5);
