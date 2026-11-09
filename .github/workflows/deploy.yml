@@ -91,6 +91,13 @@ jobs:
             echo "::error::the site does not serve release ${RELEASE}"
             exit 1
           fi
+          # The route function serves an exported page at its clean URL (dev
+          # builds include the developer pages).
+          route_status=$(curl -sS -o /dev/null -w '%{http_code}' "${SITE_URL}/dev/kitchen-sink")
+          if [ "${route_status}" != "200" ]; then
+            echo "::error::/dev/kitchen-sink returned ${route_status}; the route function is not mapping routes"
+            exit 1
+          fi
           # Browsers refuse to register a service worker served with a non-script type.
           sw_type=$(curl -sSf -o /dev/null -w '%{content_type}' "${SITE_URL}/sw.js")
           if [[ "${sw_type}" != *javascript* ]]; then

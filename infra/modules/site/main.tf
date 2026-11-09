@@ -141,6 +141,24 @@ locals {
   content_security_policy = [
     for line in split("\n", file("${path.module}/content-security-policy.txt")) : trimspace(line) if trimspace(line) != ""
   ]
+  # The exported pages; apps/web/src/app/routes.test.ts keeps the file in step with src/app.
+  routes      = jsondecode(file("${path.module}/routes.json"))
+  route_paths = concat(local.routes.pages, var.dev_pages ? local.routes.devPages : [])
+}
+
+# Maps clean URLs to the exported files (route-function.js). A CloudFront
+# Function rather than a custom error response, which would apply to the whole
+# distribution and also replace API errors with the site's 404 page.
+resource "aws_cloudfront_function" "routes" {
+  name    = "${var.name}-routes"
+  runtime = "cloudfront-js-2.0"
+  comment = "Maps site routes to the exported HTML files"
+  publish = true
+  code = replace(
+    file("${path.module}/route-function.js"),
+    "ROUTE_TABLE",
+    jsonencode({ for route in local.route_paths : route => true }),
+  )
 }
 
 # Security headers on every response, the API's included. The policy text is
@@ -216,6 +234,11 @@ resource "aws_cloudfront_distribution" "site" {
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
     compress                   = true
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.routes.arn
+    }
   }
 
   ordered_cache_behavior {

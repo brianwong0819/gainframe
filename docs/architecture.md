@@ -99,6 +99,10 @@ CloudFront adds the same response headers policy (`infra/modules/site`) to every
 - **Zod.** Zod tries `new Function` whenever a `z.object()` is created, which the policy blocks and the browser reports as a violation. `src/instrumentation-client.ts`, which Next.js runs before the rest of the client code, sets `z.config({ jitless: true })`; the server keeps the faster compiled parsers.
 - **Tests.** The e2e server (`apps/web/e2e/serve.ts`) sends the same header from the same file, and `e2e/csp.spec.ts` fails on any policy violation on every device in the matrix.
 
+## Routing
+
+The static export writes each page as a file (`/workout` becomes `workout.html`), and S3 knows nothing about routes. A CloudFront Function on viewer requests to the site (`infra/modules/site/route-function.js`) maps a known route to its file, with or without a trailing slash, passes any path with a file extension through, and serves `404.html` for anything else (with status 200; the function cannot fetch a body to send a 404 itself). It knows the routes from `infra/modules/site/routes.json`, `pages` everywhere and `devPages` only where the module sets `dev_pages`; `apps/web/src/app/routes.test.ts` fails when the file and the pages under `src/app` disagree. A distribution-wide custom error response is not used: it would also replace API errors with the site's 404 page. The function is not attached to `/api/*`. The e2e server (`apps/web/e2e/serve.ts`) runs the same function, so tests route requests as CloudFront does.
+
 ## Observability
 
 Goal: any problem bw sees on the phone can be traced to a log line in minutes, without logging personal data. No paid tools; everything sits in the CloudWatch and SNS free tiers.

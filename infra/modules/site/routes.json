@@ -1,0 +1,4 @@
+{
+  "pages": ["/"],
+  "devPages": ["/dev/database", "/dev/kitchen-sink", "/dev/rest-timer"]
+}

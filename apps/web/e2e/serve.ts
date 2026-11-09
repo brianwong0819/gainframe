@@ -1,12 +1,14 @@
 /**
- * Serves the static export in `out/` for the Playwright tests, the way
- * CloudFront serves it from S3: `/x` falls back to `/x.html`, then `/x/index.html`,
- * with CloudFront's Content-Security-Policy header.
+ * Serves the static export in `out/` for the Playwright tests the way
+ * CloudFront serves it from S3: paths go through the same route function, and
+ * responses carry CloudFront's Content-Security-Policy header.
  */
 import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { extname, join, normalize } from 'node:path'
+
+import { loadRouteFunction, siteRoutes } from './route-function.ts'
 
 const root = join(import.meta.dirname, '..', 'out')
 const port = Number(process.env.PORT ?? '4173')
@@ -33,17 +35,18 @@ const types: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 }
 
+// The e2e build includes the developer pages (GAINFRAME_DEV_PAGES=1).
+const route = loadRouteFunction([...siteRoutes.pages, ...siteRoutes.devPages])
+
 async function load(pathname: string): Promise<{ body: Buffer; file: string } | undefined> {
-  const base = normalize(join(root, decodeURIComponent(pathname)))
-  if (!base.startsWith(root)) return undefined
-  for (const file of [base, `${base}.html`, join(base, 'index.html')]) {
-    try {
-      return { body: await readFile(file), file }
-    } catch {
-      // Not this candidate; try the next one.
-    }
+  const file = normalize(join(root, decodeURIComponent(route(pathname))))
+  if (!file.startsWith(root)) return undefined
+  try {
+    return { body: await readFile(file), file }
+  } catch {
+    // S3 answers a missing object with an error, not a page.
+    return undefined
   }
-  return undefined
 }
 
 createServer((request, response) => {
