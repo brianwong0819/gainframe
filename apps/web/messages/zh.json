@@ -86,5 +86,19 @@
     "band": "弹力带",
     "bodyweight": "自重",
     "other": "其他"
+  },
+  "exerciseDetail": {
+    "primary": "主要肌群",
+    "secondary": "辅助肌群",
+    "equipment": "器械",
+    "mechanic": "类型",
+    "rest": "默认休息",
+    "compound": "复合动作",
+    "isolation": "孤立动作",
+    "none": "无",
+    "separator": "、",
+    "front": "正面",
+    "back": "背面",
+    "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。"
   }
 }

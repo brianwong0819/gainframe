@@ -86,5 +86,19 @@
     "band": "Band",
     "bodyweight": "Bodyweight",
     "other": "Other"
+  },
+  "exerciseDetail": {
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "equipment": "Equipment",
+    "mechanic": "Type",
+    "rest": "Default rest",
+    "compound": "Compound",
+    "isolation": "Isolation",
+    "none": "None",
+    "separator": ", ",
+    "front": "Front",
+    "back": "Back",
+    "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}."
   }
 }

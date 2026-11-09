@@ -2,6 +2,7 @@
 
 import {
   BUILT_IN_EXERCISES,
+  type BuiltInExercise,
   type Exercise,
   type MuscleGroup,
   muscleGroupSchema,
@@ -14,6 +15,7 @@ import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
+import { ExerciseDetail } from './exercise-detail'
 import { ExerciseForm } from './exercise-form'
 import {
   type ExerciseDraft,
@@ -34,6 +36,10 @@ interface Editing {
   initial: ExerciseDraft
 }
 
+// What the sheet shows: the form for a new or custom exercise, or the detail of
+// a built-in one.
+type SheetContent = ({ kind: 'form' } & Editing) | { kind: 'detail'; exercise: BuiltInExercise }
+
 function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
   const trimmed = name.trim()
   return {
@@ -47,47 +53,37 @@ function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
 
 function EntryRow({
   entry,
-  onEdit,
+  onOpen,
 }: {
   entry: LibraryEntry
-  onEdit: (exercise: Exercise) => void
+  onOpen: (entry: LibraryEntry) => void
 }) {
   const t = useTranslations('exercises')
   const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
   const locale = useLocale()
-  const content = (
-    <>
-      <span className="flex min-w-0 flex-col">
-        <span className="text-body text-ink">{exerciseName(entry, locale)}</span>
-        <span className="text-label text-ink-3">
-          {tMuscle(entry.muscle)} · {tEquipment(entry.equipment)}
-          {entry.custom && ` · ${t('custom')}`}
-        </span>
-      </span>
-      <span
-        className="num shrink-0 text-label text-ink-2"
-        aria-label={t('restLabel', { rest: formatRest(entry.defaultRestS) })}
-      >
-        {formatRest(entry.defaultRestS)}
-      </span>
-    </>
-  )
-  const rowClass = 'flex w-full items-center justify-between gap-12 py-12 text-left'
   return (
     <li className="border-t border-line first:border-t-0">
-      {entry.custom ? (
-        <Pressable
-          className={rowClass}
-          onClick={() => {
-            onEdit(entry)
-          }}
+      <Pressable
+        className="flex w-full items-center justify-between gap-12 py-12 text-left"
+        onClick={() => {
+          onOpen(entry)
+        }}
+      >
+        <span className="flex min-w-0 flex-col">
+          <span className="text-body text-ink">{exerciseName(entry, locale)}</span>
+          <span className="text-label text-ink-3">
+            {tMuscle(entry.muscle)} · {tEquipment(entry.equipment)}
+            {entry.custom && ` · ${t('custom')}`}
+          </span>
+        </span>
+        <span
+          className="num shrink-0 text-label text-ink-2"
+          aria-label={t('restLabel', { rest: formatRest(entry.defaultRestS) })}
         >
-          {content}
-        </Pressable>
-      ) : (
-        <div className={rowClass}>{content}</div>
-      )}
+          {formatRest(entry.defaultRestS)}
+        </span>
+      </Pressable>
     </li>
   )
 }
@@ -99,19 +95,26 @@ export function ExerciseLibrary() {
   const custom = useCustomExercises()
   const [query, setQuery] = useState('')
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
-  const [editing, setEditing] = useState<Editing | null>(null)
+  const locale = useLocale()
+  const [content, setContent] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const entries = libraryEntries(custom ?? [], muscle, query)
   const total = BUILT_IN_EXERCISES.length + (custom?.length ?? 0)
 
-  function open(next: Editing) {
-    setEditing(next)
+  function open(next: SheetContent) {
+    setContent(next)
     setSheetOpen(true)
   }
 
-  function edit(exercise: Exercise) {
+  function openEntry(entry: LibraryEntry) {
+    if (!entry.custom) {
+      open({ kind: 'detail', exercise: entry })
+      return
+    }
+    const exercise = entry
     open({
+      kind: 'form',
       exercise,
       initial: {
         nameZh: exercise.nameZh ?? '',
@@ -140,7 +143,7 @@ export function ExerciseLibrary() {
           </div>
           <Pressable
             onClick={() => {
-              open({ exercise: null, initial: newDraft('', muscle) })
+              open({ kind: 'form', exercise: null, initial: newDraft('', muscle) })
             }}
             className="rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
           >
@@ -181,7 +184,7 @@ export function ExerciseLibrary() {
         (entries.length > 0 ? (
           <ul className="rounded-group bg-surface px-16" aria-label={t('listLabel')}>
             {entries.map((entry) => (
-              <EntryRow key={entry.id} entry={entry} onEdit={edit} />
+              <EntryRow key={entry.id} entry={entry} onOpen={openEntry} />
             ))}
           </ul>
         ) : (
@@ -190,7 +193,7 @@ export function ExerciseLibrary() {
             {query.trim() !== '' && (
               <Pressable
                 onClick={() => {
-                  open({ exercise: null, initial: newDraft(query, muscle) })
+                  open({ kind: 'form', exercise: null, initial: newDraft(query, muscle) })
                 }}
                 className="rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
               >
@@ -205,13 +208,20 @@ export function ExerciseLibrary() {
         onClose={() => {
           setSheetOpen(false)
         }}
-        title={editing?.exercise ? tForm('editTitle') : tForm('newTitle')}
+        title={
+          content?.kind === 'detail'
+            ? exerciseName(content.exercise, locale)
+            : content?.exercise
+              ? tForm('editTitle')
+              : tForm('newTitle')
+        }
       >
-        {editing && (
+        {content?.kind === 'detail' && <ExerciseDetail exercise={content.exercise} />}
+        {content?.kind === 'form' && (
           <ExerciseForm
-            key={editing.exercise?.id ?? 'new'}
-            editing={editing.exercise}
-            initial={editing.initial}
+            key={content.exercise?.id ?? 'new'}
+            editing={content.exercise}
+            initial={content.initial}
             onDone={() => {
               setSheetOpen(false)
             }}
