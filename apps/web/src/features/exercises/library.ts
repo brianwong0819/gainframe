@@ -45,21 +45,47 @@ export function formatRest(seconds: number): string {
 export const REST_STEP_S = 15
 export const REST_MAX_S = 600
 
-export interface ExerciseDraft {
+// The muscles picked in the form; a new exercise starts with no primary muscle.
+export interface MuscleSelection {
+  muscle: MuscleGroup | null
+  secondaryMuscles: MuscleGroup[]
+}
+
+export interface ExerciseDraft extends MuscleSelection {
   nameZh: string
   nameEn: string
-  muscle: MuscleGroup
   equipment: Exercise['equipment']
   defaultRestS: number
 }
 
+// One tap on a muscle in the form. The first muscle tapped becomes the primary
+// one and later ones are secondary; tapping a picked muscle unpicks it, and the
+// first secondary muscle takes over when the primary one is unpicked. Full body
+// stands alone: picking it, or anything while it is picked, starts over.
+export function pickMuscle(selection: MuscleSelection, tapped: MuscleGroup): MuscleSelection {
+  const { muscle, secondaryMuscles } = selection
+  if (tapped === muscle) {
+    const [next = null, ...rest] = secondaryMuscles
+    return { muscle: next, secondaryMuscles: rest }
+  }
+  if (secondaryMuscles.includes(tapped)) {
+    return { muscle, secondaryMuscles: secondaryMuscles.filter((m) => m !== tapped) }
+  }
+  if (muscle === null) return { muscle: tapped, secondaryMuscles }
+  if (muscle === 'full_body' || tapped === 'full_body') {
+    return { muscle: tapped, secondaryMuscles: [] }
+  }
+  return { muscle, secondaryMuscles: [...secondaryMuscles, tapped] }
+}
+
 // Form values to repository input: names are trimmed, and a blank name is null.
-export function draftToExercise(draft: ExerciseDraft): NewRow<Exercise> {
+export function draftToExercise(draft: ExerciseDraft & { muscle: MuscleGroup }): NewRow<Exercise> {
   const name = (value: string) => (value.trim() === '' ? null : value.trim())
   return {
     nameZh: name(draft.nameZh),
     nameEn: name(draft.nameEn),
     muscle: draft.muscle,
+    secondaryMuscles: draft.secondaryMuscles,
     equipment: draft.equipment,
     defaultRestS: draft.defaultRestS,
   }

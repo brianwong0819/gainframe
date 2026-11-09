@@ -1,9 +1,9 @@
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { toLocalDate } from '@gainframe/shared'
+import { type Exercise, toLocalDate } from '@gainframe/shared'
 
-import { createRepositories, nextUpdatedAt } from './repositories'
+import { createRepositories, type NewRow, nextUpdatedAt } from './repositories'
 import { GainframeDb } from './schema'
 
 const start = new Date('2026-11-08T10:00:00.000Z')
@@ -27,13 +27,14 @@ function advance(ms: number) {
   clock = new Date(clock.getTime() + ms)
 }
 
-const exercise = {
+const exercise: NewRow<Exercise> = {
   nameZh: '上斜哑铃卧推',
   nameEn: null,
   muscle: 'chest',
+  secondaryMuscles: [],
   equipment: 'dumbbell',
   defaultRestS: 120,
-} as const
+}
 
 function newWorkout() {
   return repos.workouts.create({

@@ -57,12 +57,17 @@
     "nameZhPlaceholder": "例如：地雷管推举",
     "nameEnPlaceholder": "例如：Landmine press",
     "nameRequired": "至少填写一个名称。",
-    "muscle": "肌群",
+    "muscle": "部位",
     "equipment": "器械",
     "rest": "默认休息",
     "restLess": "减少 15 秒",
     "restMore": "增加 15 秒",
-    "save": "保存"
+    "save": "保存",
+    "muscleHint": "先点主要部位，再点辅助部位；再点一次可取消。",
+    "muscleRequired": "选一个主要部位。",
+    "mapLabel": "肌肉示意图，点部位来选择。",
+    "primary": "主要",
+    "secondary": "辅助"
   },
   "muscle": {
     "chest": "胸",

@@ -82,6 +82,7 @@ describe('exerciseSchema', () => {
     nameZh: '上斜哑铃卧推',
     nameEn: null,
     muscle: 'chest',
+    secondaryMuscles: ['shoulders', 'triceps'],
     equipment: 'dumbbell',
     defaultRestS: 120,
   }
@@ -93,5 +94,12 @@ describe('exerciseSchema', () => {
   it('rejects an exercise with no name', () => {
     expect(exerciseSchema.safeParse({ ...validExercise, nameZh: null }).success).toBe(false)
     expect(exerciseSchema.safeParse({ ...validExercise, nameZh: '   ' }).success).toBe(false)
+  })
+
+  it('rejects the primary muscle or a repeat among the secondary muscles', () => {
+    for (const secondaryMuscles of [['chest'], ['triceps', 'triceps']]) {
+      const result = exerciseSchema.safeParse({ ...validExercise, secondaryMuscles })
+      expect(result.error?.issues[0]?.path).toEqual(['secondaryMuscles'])
+    }
   })
 })

@@ -13,13 +13,25 @@ import { useId, useState } from 'react'
 import { repositories } from '@/db/client'
 import { Pressable } from '@/ui/pressable'
 
-import { draftToExercise, type ExerciseDraft, formatRest, REST_MAX_S, REST_STEP_S } from './library'
+import {
+  draftToExercise,
+  type ExerciseDraft,
+  formatRest,
+  pickMuscle,
+  REST_MAX_S,
+  REST_STEP_S,
+} from './library'
+import { MuscleMap } from './muscle-map'
 
 const fieldClass =
   'w-full rounded-ctl bg-sunk px-16 py-12 text-input text-ink placeholder:text-ink-3'
 const chipClass =
   'rounded-full border border-line px-16 py-8 text-label text-ink-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg'
 const groupLabelClass = 'text-label text-ink-3'
+// Picked muscles take the map's colours: the accent for the primary one, the
+// soft accent for secondary ones.
+const muscleChipClass =
+  'rounded-full border border-line px-16 py-8 text-label text-ink-2 data-[role=primary]:border-accent data-[role=primary]:bg-accent data-[role=primary]:text-accent-ink data-[role=secondary]:border-accent-soft data-[role=secondary]:bg-accent-soft data-[role=secondary]:text-ink'
 
 function ChoiceGroup<T extends string>({
   label,
@@ -58,6 +70,79 @@ function ChoiceGroup<T extends string>({
   )
 }
 
+// Muscles picked on the map or with the buttons below it (see pickMuscle).
+function MusclePicker({
+  draft,
+  onPick,
+  missing,
+  errorId,
+}: {
+  draft: ExerciseDraft
+  onPick: (muscle: MuscleGroup) => void
+  missing: boolean
+  errorId: string
+}) {
+  const t = useTranslations('exerciseForm')
+  const tMuscle = useTranslations('muscle')
+  const labelId = useId()
+  const hintId = useId()
+  const roleOf = (muscle: MuscleGroup) =>
+    muscle === draft.muscle
+      ? 'primary'
+      : draft.secondaryMuscles.includes(muscle)
+        ? 'secondary'
+        : undefined
+  return (
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={missing ? `${hintId} ${errorId}` : hintId}
+      className="flex flex-col gap-12"
+    >
+      <div className="flex flex-col gap-4">
+        <span id={labelId} className={groupLabelClass}>
+          {t('muscle')}
+        </span>
+        <span id={hintId} className="text-label text-ink-2">
+          {t('muscleHint')}
+        </span>
+      </div>
+      <div className="rounded-group bg-bg px-40 py-20">
+        <MuscleMap
+          primary={draft.muscle}
+          secondary={draft.secondaryMuscles}
+          label={t('mapLabel')}
+          onPick={onPick}
+        />
+      </div>
+      <div className="flex flex-wrap gap-8">
+        {muscleGroupSchema.options.map((muscle) => {
+          const role = roleOf(muscle)
+          return (
+            <Pressable
+              key={muscle}
+              aria-pressed={role !== undefined}
+              data-role={role}
+              onClick={() => {
+                onPick(muscle)
+              }}
+              className={muscleChipClass}
+            >
+              {tMuscle(muscle)}
+              {role && <span className="sr-only">{` (${t(role)})`}</span>}
+            </Pressable>
+          )
+        })}
+      </div>
+      {missing && (
+        <p id={errorId} role="alert" className="text-label text-short">
+          {t('muscleRequired')}
+        </p>
+      )}
+    </div>
+  )
+}
+
 // The new / edit form for a custom exercise. `initial` is the exercise being
 // edited, or the starting values of a new one.
 export function ExerciseForm({
@@ -70,25 +155,27 @@ export function ExerciseForm({
   onDone: () => void
 }) {
   const t = useTranslations('exerciseForm')
-  const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
   const [draft, setDraft] = useState(initial)
   const [missingName, setMissingName] = useState(false)
+  const [missingMuscle, setMissingMuscle] = useState(false)
   const [saving, setSaving] = useState(false)
   const nameZhId = useId()
   const nameEnId = useId()
   const errorId = useId()
+  const muscleErrorId = useId()
 
   const set = <K extends keyof ExerciseDraft>(key: K, value: ExerciseDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }))
   }
 
   async function save() {
-    const values = draftToExercise(draft)
-    if (values.nameZh === null && values.nameEn === null) {
-      setMissingName(true)
-      return
-    }
+    const { muscle } = draft
+    const values = muscle === null ? null : draftToExercise({ ...draft, muscle })
+    const noName = draft.nameZh.trim() === '' && draft.nameEn.trim() === ''
+    setMissingName(noName)
+    setMissingMuscle(values === null)
+    if (noName || values === null) return
     setSaving(true)
     try {
       if (editing) await repositories.exercises.update(editing.id, values)
@@ -138,14 +225,14 @@ export function ExerciseForm({
         </p>
       )}
 
-      <ChoiceGroup<MuscleGroup>
-        label={t('muscle')}
-        options={muscleGroupSchema.options}
-        value={draft.muscle}
-        onChange={(value) => {
-          set('muscle', value)
+      <MusclePicker
+        draft={draft}
+        missing={missingMuscle}
+        errorId={muscleErrorId}
+        onPick={(muscle) => {
+          setDraft((current) => ({ ...current, ...pickMuscle(current, muscle) }))
+          setMissingMuscle(false)
         }}
-        optionLabel={(option) => tMuscle(option)}
       />
       <ChoiceGroup<Equipment>
         label={t('equipment')}

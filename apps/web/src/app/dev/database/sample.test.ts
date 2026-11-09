@@ -41,6 +41,7 @@ describe('removeSamplesFromAppDb', () => {
       nameZh: '杠铃卧推',
       nameEn: 'Barbell bench press',
       muscle: 'chest',
+      secondaryMuscles: [],
       equipment: 'barbell',
       defaultRestS: 90,
     })

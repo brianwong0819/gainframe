@@ -55,5 +55,18 @@ export class GainframeDb extends Dexie {
     this.version(1).stores(STORES_V1)
     // M1-03: the client error log.
     this.version(2).stores({ errors: '++seq' })
+    // M1-04: custom exercises gain secondary muscles; older ones have none. No
+    // outbox entry: rows have not synced yet, and the sync engine (M2-05) pushes
+    // each row whole.
+    this.version(3)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table<Record<string, unknown>, string>('exercises')
+          .toCollection()
+          .modify((exercise) => {
+            exercise.secondaryMuscles ??= []
+          }),
+      )
   }
 }
