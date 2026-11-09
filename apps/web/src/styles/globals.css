@@ -239,49 +239,6 @@
   }
 }
 
-/*
- * Tab switches (the `tab` transition type set by the tab bar's links, see
- * src/app/(tabs)/tab-screen.tsx): the old screen fades out, the new one rises
- * in with std, as in the prototype. Taps reach the live page meanwhile.
- */
-::view-transition {
-  pointer-events: none;
-}
-
-/*
- * The rest of the page (the tab bar) switches at once instead of the default
- * cross-fade, so its knob and icons animate live without a ghost of the old state.
- */
-::view-transition-old(root) {
-  display: none;
-}
-
-::view-transition-new(root) {
-  animation: none;
-}
-
-::view-transition-old(.tab-exit) {
-  animation: tab-leave var(--dur-fade) var(--ease-fade) both;
-}
-
-::view-transition-new(.tab-enter) {
-  animation: tab-enter var(--dur-std) var(--ease-std) both;
-}
-
-@keyframes tab-enter {
-  from {
-    opacity: 0;
-    transform: translateY(var(--space-8)) scale(0.985);
-  }
-}
-
-@keyframes tab-leave {
-  to {
-    opacity: 0;
-    transform: scale(0.985);
-  }
-}
-
 @utility num {
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
@@ -300,16 +257,5 @@
     animation-iteration-count: 1 !important;
     transition-property: opacity !important;
     transition-duration: var(--dur-reduced) !important;
-  }
-
-  /*
-   * Screen changes swap at once: a fade between two screens overlaps their
-   * text for its whole length (L-018). The rule above does not reach these
-   * pseudo-elements.
-   */
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation: none !important;
   }
 }
