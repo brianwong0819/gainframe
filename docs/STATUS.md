@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-04 Exercise library (parts 1 and 2a done; next: 2b, the new / edit sheet for custom exercises)
+- **Current task:** M1-04 Exercise library (parts 1, 2a and 2b done; next: part 3, muscle map and exercise detail)
 - **Last updated:** 2026-11-09
 
 ## Where I stopped
@@ -56,6 +56,8 @@ M1-03, part 3 (2026-11-09, PR `m1/03-diagnostics`): Dexie schema version 2 adds 
 M1-04, part 1 (2026-11-09, PR `m1/04-exercise-catalog`): `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` holds 64 exercises shaped by `builtInExerciseSchema` (zh/en names, aliases, primary and secondary muscles, equipment, mechanic, default rest). IDs are UUIDv7 with a zero timestamp (`00000000-0000-7000-8000-000000000001` …), so they cannot collide with generated IDs; a test keeps them numbered 1 to n. `searchExercises` (`src/domain/exercise-search.ts`) matches names and aliases regardless of case, width, spaces and punctuation, ranking prefix over substring over all-words matches, and works on custom exercises too. Plan changes agreed with bw: no photos; the detail sheet gets an SVG muscle map and form cues (part 3); M1-09 adds per-item rest with a rule-based "Suggest" button; M6-02 adds a templates tool.
 
 M1-04, part 2a (2026-11-09, PR `m1/04-exercise-library`): `/workout/exercises` (linked from Workout, which stays the selected tab) lists the user's exercises newest first and then the built-in ones, with a search field (`searchExercises`) and a scrolling row of muscle-group filters (`src/features/exercises`). New text-field type `input` (16 px, below which iOS zooms). The device layout test now ignores the part of an element scrolled out of a horizontal scroller. Checked in Chromium at 390×844: "卧推" and "bench" both list barbell bench press first. Part 2 was split in two to stay under the size limit; part 2b adds the new / edit sheet for custom exercises.
+
+M1-04, part 2b (2026-11-09, PR `m1/04-custom-exercise-sheet`): "New" on the library, and a tap on a custom exercise, open the first bottom sheet (`src/ui/sheet.tsx`, a native modal `<dialog>`; see "Sheets" in `docs/design-system.md`) with the exercise form: names in either language (at least one), muscle group, equipment and default rest in 15 s steps up to 10 min, saved through `repositories.exercises`. A search with no result offers to create an exercise with that name (in the Chinese or English field by script). Checked in Chromium at 390×844: a new exercise is still listed after a reload; saving with no name shows the error; Escape and the scrim close the sheet; Reduce Motion and English mode work. Pending: bw's iPhone check of the library and the sheet (keyboard over the sheet, chip scrolling).
 
 ## Blocked on bw
 

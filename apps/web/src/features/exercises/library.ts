@@ -1,6 +1,7 @@
 import type { BuiltInExercise, Exercise, MuscleGroup } from '@gainframe/shared'
 import { BUILT_IN_EXERCISES, searchExercises } from '@gainframe/shared'
 
+import type { NewRow } from '@/db/repositories'
 import type { Locale } from '@/i18n/locale'
 
 // One row of the library: a built-in exercise or one of the user's own.
@@ -39,4 +40,27 @@ export function exerciseName(
 // Rest as m:ss, e.g. 90 → "1:30".
 export function formatRest(seconds: number): string {
   return `${Math.floor(seconds / 60).toString()}:${(seconds % 60).toString().padStart(2, '0')}`
+}
+
+export const REST_STEP_S = 15
+export const REST_MAX_S = 600
+
+export interface ExerciseDraft {
+  nameZh: string
+  nameEn: string
+  muscle: MuscleGroup
+  equipment: Exercise['equipment']
+  defaultRestS: number
+}
+
+// Form values to repository input: names are trimmed, and a blank name is null.
+export function draftToExercise(draft: ExerciseDraft): NewRow<Exercise> {
+  const name = (value: string) => (value.trim() === '' ? null : value.trim())
+  return {
+    nameZh: name(draft.nameZh),
+    nameEn: name(draft.nameEn),
+    muscle: draft.muscle,
+    equipment: draft.equipment,
+    defaultRestS: draft.defaultRestS,
+  }
 }
