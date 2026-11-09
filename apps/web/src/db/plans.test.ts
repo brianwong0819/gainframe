@@ -67,21 +67,29 @@ describe('plan store', () => {
     expect(await db.outbox.count()).toBe(outbox)
   })
 
-  it("offers the day after the plan's latest finished workout", async () => {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
-    const [push, pull, legs] = await Promise.all(
-      ['Push', 'Pull', 'Legs'].map((name, position) =>
-        repos.planDays.create({ planId: plan.id, name, position }),
-      ),
-    )
-    if (push === undefined || pull === undefined || legs === undefined) throw new Error('No days')
-    expect(await plans.nextDay(plan.id)).toEqual(push)
+  it("offers the active plan's day after its latest finished workout", async () => {
+    expect(await plans.upNext()).toBeNull()
+    const plan = await plans.create('Push Pull Legs', 'Push')
+    const pull = await plans.addDay(plan.id, 'Pull')
+    const legs = await plans.addDay(plan.id, 'Legs')
+    const row = await plans.addItem(pull.id, BENCH)
+    const push = (await plans.upNext())?.day
+    if (push === undefined) throw new Error('No first day')
+    expect(await plans.upNext()).toMatchObject({ plan, day: push, n: 1, items: [] })
 
     await finishedWorkout(push.id)
-    expect(await plans.nextDay(plan.id)).toEqual(pull)
+    expect(await plans.upNext()).toMatchObject({ day: pull, n: 2, items: [row] })
+    expect((await plans.upNext())?.days.map((day) => day.name)).toEqual(['Push', 'Pull', 'Legs'])
     await finishedWorkout(pull.id)
     await finishedWorkout(legs.id)
-    expect(await plans.nextDay(plan.id)).toEqual(push)
+    expect((await plans.upNext())?.day).toEqual(push)
+  })
+
+  it('offers nothing for a plan without days', async () => {
+    const plan = await plans.create('Push Pull Legs', 'Push')
+    const day = (await plans.load(plan.id))?.days[0]?.day
+    await repos.planDays.remove(day?.id ?? '')
+    expect(await plans.upNext()).toBeNull()
   })
 
   it('makes the first plan active with its first day, and not later ones', async () => {

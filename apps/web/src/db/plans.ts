@@ -22,6 +22,16 @@ export interface PlanState {
   days: PlanDayState[]
 }
 
+// The active plan's next day, as the Workout tab offers it: `n` counts from 1
+// in `days`, the plan's days in rotation order.
+export interface UpNext {
+  plan: Plan
+  day: PlanDay
+  n: number
+  days: PlanDay[]
+  items: PlanItem[]
+}
+
 // A plan as the plan list shows it.
 export interface PlanSummary {
   plan: Plan
@@ -133,15 +143,29 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
       })
     },
 
-    // The day after the one the plan's latest finished workout followed
-    // (`nextPlanDay`); undefined when the plan has no days.
-    async nextDay(planId: string): Promise<PlanDay | undefined> {
-      const days = await db.planDays.where('planId').equals(planId).toArray()
+    // What the Workout tab offers: the active plan's next day (`nextPlanDay`),
+    // its place in the rotation and its exercises. Null without an active plan
+    // or when the plan has no days.
+    async upNext(): Promise<UpNext | null> {
+      const setting = await db.settings.get('activePlanId')
+      const plan = setting && (await db.plans.get(setting.value))
+      if (plan?.deletedAt !== null) return null
+      const days = await db.planDays.where('planId').equals(plan.id).toArray()
       const workouts = await db.workouts
         .where('planDayId')
         .anyOf(days.map((day) => day.id))
         .toArray()
-      return nextPlanDay(days, workouts)
+      const items = await db.planItems.where('planId').equals(plan.id).filter(live).toArray()
+      const day = nextPlanDay(days, workouts)
+      if (day === undefined) return null
+      const rotation = days.filter(live).toSorted(byPosition)
+      return {
+        plan,
+        day,
+        n: rotation.indexOf(day) + 1,
+        days: rotation,
+        items: items.filter((item) => item.planDayId === day.id).toSorted(byPosition),
+      }
     },
   }
 }
