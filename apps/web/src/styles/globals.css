@@ -183,8 +183,27 @@
     background: transparent;
   }
 
+  /* The page behind an open sheet does not scroll (iOS otherwise scrolls it
+   * when a drag starts on the scrim or runs past the panel's own scroll). */
+  html:has(.sheet-dialog[open]) {
+    overflow: hidden;
+  }
+
+  /* The header is the drag handle; the panel below it still scrolls. */
+  .sheet-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    touch-action: none;
+  }
+
+  .sheet-panel:focus {
+    outline: none;
+  }
+
   .sheet-scrim {
     position: absolute;
+    touch-action: none;
     inset: 0;
     background: var(--scrim);
   }

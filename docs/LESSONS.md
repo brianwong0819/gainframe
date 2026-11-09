@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
 - Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
 - Steps for bw on the iPhone describe the home-screen app as it is: no address bar, opens at `/`; reach a page through an in-app link. ([L-017](#l-017--2026-11-07--pwa--test-steps-told-bw-to-type-a-url-into-the-installed-app))
 - Before fixing how a platform draws the app (iOS, Android, browser chrome), find its current documented behaviour and cite it in the PR. ([L-016](#l-016--2026-11-06--pwa--the-status-bar-blur-still-covered-the-title-after-l-015))
@@ -42,6 +43,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-019 · 2026-11-09 · ui · The first bottom sheet raised the keyboard and let the page scroll behind it
+- **What happened:** bw opened the exercise sheet on the iPhone: the keyboard came up at once and pushed the sheet off screen, swiping scrolled the library behind the sheet, and there was no visible way to close it.
+- **Root cause:** `showModal()` focuses the first focusable element, which was a text field, and iOS opens the keyboard for any focused field. A modal `<dialog>` makes the page inert but does not stop it scrolling on iOS. The sheet was checked in desktop Chromium only, where neither shows, and the scrim was the only close control besides Escape, which a phone does not have.
+- **Fix:** PR `m1/04-sheet-fixes`: the sheet focuses its own panel after opening, `html:has(.sheet-dialog[open])` stops page scroll, and it closes with a close button or a downward drag of its header.
+- **Prevention:** "Sheets" in `docs/design-system.md` now lists these three requirements, and they live in the one `Sheet` primitive every sheet uses. New Active rule.
+- **Status:** documented
 
 ### L-018 · 2026-11-09 · motion · Reduce Motion tab switches overlapped the text of two screens
 - **What happened:** bw turned on Reduce Motion on the iPhone after M1-03; switching tabs, the text changed slowly and felt uncomfortable.

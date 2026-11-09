@@ -1,28 +1,37 @@
 'use client'
 
-import { type BuiltInExercise, builtInExerciseCues } from '@gainframe/shared'
+import { builtInExerciseCues } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 
-import { formatRest } from './library'
+import { formatRest, type LibraryEntry } from './library'
 import { MuscleMap } from './muscle-map'
+import { Pressable } from '@/ui/pressable'
 
-// The detail of a built-in exercise: where it works and how it is set up.
-export function ExerciseDetail({ exercise }: { exercise: BuiltInExercise }) {
+// The detail of an exercise: where it works and how it is set up. A custom
+// exercise has only its primary muscle, no cues, and an Edit button.
+export function ExerciseDetail({
+  exercise,
+  onEdit,
+}: {
+  exercise: LibraryEntry
+  onEdit: () => void
+}) {
   const t = useTranslations('exerciseDetail')
   const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
   const locale = useLocale()
   const cues = builtInExerciseCues(exercise.id)?.[locale] ?? []
   const primary = tMuscle(exercise.muscle)
+  const secondaryMuscles = exercise.custom ? [] : exercise.secondaryMuscles
   const secondary =
-    exercise.secondaryMuscles.length > 0
-      ? exercise.secondaryMuscles.map((muscle) => tMuscle(muscle)).join(t('separator'))
+    secondaryMuscles.length > 0
+      ? secondaryMuscles.map((muscle) => tMuscle(muscle)).join(t('separator'))
       : t('none')
   const rows = [
     { label: t('primary'), value: primary },
-    { label: t('secondary'), value: secondary },
+    ...(exercise.custom ? [] : [{ label: t('secondary'), value: secondary }]),
     { label: t('equipment'), value: tEquipment(exercise.equipment) },
-    { label: t('mechanic'), value: t(exercise.mechanic) },
+    ...(exercise.custom ? [] : [{ label: t('mechanic'), value: t(exercise.mechanic) }]),
   ]
 
   return (
@@ -31,7 +40,7 @@ export function ExerciseDetail({ exercise }: { exercise: BuiltInExercise }) {
         <div className="flex w-full flex-col gap-12">
           <MuscleMap
             primary={exercise.muscle}
-            secondary={exercise.secondaryMuscles}
+            secondary={secondaryMuscles}
             label={t('mapLabel', { primary, secondary })}
           />
           <p className="flex justify-around text-label text-ink-3" aria-hidden>
@@ -70,6 +79,14 @@ export function ExerciseDetail({ exercise }: { exercise: BuiltInExercise }) {
           <dd className="num text-body text-ink">{formatRest(exercise.defaultRestS)}</dd>
         </div>
       </dl>
+      {exercise.custom && (
+        <Pressable
+          onClick={onEdit}
+          className="rounded-full bg-sunk px-20 py-16 font-semibold text-ink"
+        >
+          {t('edit')}
+        </Pressable>
+      )}
     </div>
   )
 }

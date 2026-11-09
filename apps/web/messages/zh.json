@@ -46,7 +46,8 @@
     "custom": "自定义",
     "restLabel": "休息 {rest}",
     "empty": "没有找到“{query}”。",
-    "createNamed": "新建“{query}”"
+    "createNamed": "新建“{query}”",
+    "close": "关闭"
   },
   "exerciseForm": {
     "newTitle": "新建动作",
@@ -100,6 +101,7 @@
     "front": "正面",
     "back": "背面",
     "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。",
-    "cues": "动作要点"
+    "cues": "动作要点",
+    "edit": "编辑"
   }
 }
