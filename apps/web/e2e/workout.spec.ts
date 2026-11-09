@@ -8,6 +8,7 @@ test.use({ locale: 'zh-CN' })
 test('a logged set and an open workout survive a reload', async ({ page }) => {
   await page.goto('/workout')
   await page.getByRole('button', { name: '开始训练' }).click()
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await page.getByRole('button', { name: '添加动作' }).click()
   await page.getByRole('searchbox').fill('杠铃卧推')
   await page
@@ -48,7 +49,7 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
 
   // Launching on Today goes straight back to the workout in progress.
   await page.goto('/')
-  await expect(page).toHaveURL(/\/workout\/?$/)
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await expect(page.getByRole('heading', { name: '训练中' })).toBeVisible()
   const row = page.getByRole('button', { name: '组 1', exact: true })
   await expect(row).toContainText('62.5')
@@ -56,4 +57,29 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await expect(row).toContainText('热')
   await expect(page.getByText('座椅第 4 格')).toBeVisible()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+})
+
+test('leaving keeps the workout, and discarding deletes it', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('深蹲')
+  await page.getByRole('dialog').getByRole('button').filter({ hasText: '深蹲' }).first().click()
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(1)
+
+  // Back to the tab: the workout stays in progress and can be continued.
+  await page.getByRole('link', { name: '训练', exact: true }).first().click()
+  await expect(page).toHaveURL(/\/workout\/?$/)
+  await page.getByRole('link', { name: /继续训练/ }).click()
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(1)
+
+  // Discarding asks twice, then returns to the tab with nothing in progress.
+  await page.getByRole('button', { name: '结束训练' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '放弃这次训练' }).click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /确认放弃/ })
+    .click()
+  await expect(page).toHaveURL(/\/workout\/?$/)
+  await expect(page.getByRole('button', { name: '开始训练' })).toBeVisible()
 })

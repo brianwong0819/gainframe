@@ -48,7 +48,12 @@
     "saveNote": "保存",
     "removeExercise": "从这次训练移除这个动作",
     "weightLabel": "第 {n} 组重量",
-    "repsLabel": "第 {n} 组次数"
+    "repsLabel": "第 {n} 组次数",
+    "continue": "继续训练",
+    "progress": "{exercises} 个动作 · 已完成 {done} 组",
+    "noneActive": "没有进行中的训练。",
+    "discard": "放弃这次训练",
+    "discardConfirm": "确认放弃（删除已完成的 {done} 组）"
   },
   "food": {
     "title": "饮食",

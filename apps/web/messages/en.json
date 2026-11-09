@@ -48,7 +48,12 @@
     "saveNote": "Save",
     "removeExercise": "Remove from this workout",
     "weightLabel": "Weight, set {n}",
-    "repsLabel": "Reps, set {n}"
+    "repsLabel": "Reps, set {n}",
+    "continue": "Continue workout",
+    "progress": "{exercises, plural, one {# exercise} other {# exercises}} · {done} done",
+    "noneActive": "No workout in progress.",
+    "discard": "Discard workout",
+    "discardConfirm": "Confirm: delete it and its {done, plural, one {# done set} other {# done sets}}"
   },
   "food": {
     "title": "Food",

@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Every page below a tab has a back link and every sheet a close button; list a new page in `e2e/pages.ts` with its `parent`. A screen with only a forward action ("Finish") is a trap. ([L-025](#l-025--2026-11-09--ui--the-workout-in-progress-had-no-way-back))
 - In an e2e test, after a write, wait for the UI to show the stored value (read back from Dexie) before navigating or reloading; run a new e2e test with `--repeat-each` locally before pushing. ([L-024](#l-024--2026-11-09--test--the-workout-e2e-test-failed-once-in-ci))
 - Before fixing a visual glitch, measure it frame by frame (a screen recording or a rAF sample) and keep that measurement as a test; do not ship a fix for a guessed cause. ([L-023](#l-023--2026-11-09--ui--the-sheet-kept-flashing-because-its-dialog-scrolled))
 - Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
@@ -46,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-025 · 2026-11-09 · ui · The workout in progress had no way back
+- **What happened:** after starting a workout and adding an exercise, the Workout tab showed only the workout, whose one exit was "Finish workout". bw could not get back to the tab's home or the library without ending the workout. Found by bw on the iPhone.
+- **Root cause:** M1-05 replaced the tab's content with the active workout instead of giving it its own page, and nothing checked that every screen can be left.
+- **Fix:** PR `m1/05-workout-back` moves the workout to `/workout/session` with a back link; the tab shows "Continue workout"; the finish sheet can also discard the workout.
+- **Prevention:** rule added under "Active rules"; `BackLink` component; `e2e/layout.spec.ts` checks the back link of every page listed with a parent.
+- **Status:** guarded
 
 ### L-024 · 2026-11-09 · test · The workout e2e test failed once in CI
 - **What happened:** on #67 the Device layout job failed on Pixel 7 only: the note saved in the sheet was missing after the reload. The first fix then failed locally on repeat, because the locator also matched the note's text field in the closing sheet.
