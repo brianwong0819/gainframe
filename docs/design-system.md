@@ -25,7 +25,7 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | `--short` | `#A85A14` | `#E39A54` | below target only |
 | `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
 
-Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only).
+Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
 
 Spacing scale: 4 · 8 · 12 · 16 · 20 · 28 · 40 — nothing else. Radii: control 12, group 20, media/sheet 24–28, pills fully round.
 
@@ -51,7 +51,7 @@ Rules:
 
 ## Navigation
 
-Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch swaps the screen at once, with no page transition: bw tried the rise-in transition on the iPhone and preferred the direct switch (2026-11-09). Only the tab bar animates. Page transitions, if a later screen needs one (a pushed detail view), are proposed to bw first.
+Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(tabs)`). The tab bar is fixed at the bottom (`--tab-bar-height` above the home indicator) on `--glass`; tab screens pad their content by the same height. The selected tab's pill (`--tab-knob-width`, `--sunk`) slides with `std`; the filled part of its icon pops in with `pop`, and the label colour fades. A tab switch swaps the screen at once, with no page transition: bw tried the rise-in transition on the iPhone and preferred the direct switch (2026-11-09). Only the tab bar animates. Page transitions, if a later screen needs one (a pushed detail view), are proposed to bw first. A page below a tab (`/workout/exercises`) keeps that tab selected and is entered and left the same way, at once, with a back link at the top.
 
 ## Celebrations (three tiers, only at meaningful moments)
 
