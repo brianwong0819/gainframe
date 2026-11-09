@@ -63,16 +63,17 @@ M1-04, part 3b (2026-11-09, PR `m1/04-exercise-cues`): `BUILT_IN_EXERCISE_CUES` 
 
 M1-04 fixes (2026-11-09, PR `m1/04-sheet-fixes`), from bw's iPhone check: the sheet no longer raises the keyboard on opening (it focuses its panel), the page behind it no longer scrolls, and it has a close button and drag-down to dismiss (L-019). Custom exercises open the same detail sheet as built-in ones (muscle map with their primary muscle) with an Edit button. M1-09 now plans several templates with one active and "Add to plan" from the detail sheet. Known: iOS may still offer "AutoFill Contact" above the keyboard on the name fields.
 
+M1 mid-milestone review (2026-11-09, PR `m1/review-plan`): code from M0-09 to M1-04 reviewed; no data-loss or security defect found (`pnpm check` green). Plan updates: M1-05 writes each set on completion and resumes an unfinished workout; M1-06 persists the rest end time; M1-08 adds rep records; M1-10 shows names of deleted exercises; M1-11 takes the "update available" prompt (moved from Follow-ups); M2-01 requires backward-compatible migrations, a Drizzle/Zod field test and an `exercise_id` ownership check; M2-09 limits `/api/health` before the repository is public. Open: how bodyweight exercises count toward volume and records (bw to decide before M1-05).
+
 ## Blocked on bw
 
-- Settings → Branches: protect `main` (require a pull request; require the status checks "Check and build", "Secret scan" and "Device layout").
+- Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
 ## Follow-ups (noticed, not in scope yet)
 
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
-- A new release reaches an installed app only after every window of the old one is closed (no `skipWaiting`). Add an "update available" prompt once there is data worth protecting from a mid-session reload (M1).
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins (`react`, `jsx-a11y`, `import`) whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning. Next.js documents ESLint 10 as supported; lint runs clean. Re-check on each Next upgrade.
