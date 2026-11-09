@@ -79,6 +79,22 @@ export function previousPerformance(input: {
   return (setsByWorkout.get(latest.id) ?? []).toSorted((a, b) => a.position - b.position)
 }
 
+export type SetValues = Pick<WorkoutSet, 'kind' | 'weightKg' | 'reps'>
+
+// Values for the next set of an exercise slot. The Nth set takes the Nth set of
+// last time (`previous`, from `previousPerformance`); past last time's count it
+// repeats the slot's own last set, then last time's last set; an exercise never
+// done before starts from `domainConfig.firstSet`. `current` is the slot's sets
+// in position order, deleted ones excluded.
+export function nextSetValues(
+  previous: readonly WorkoutSet[],
+  current: readonly WorkoutSet[],
+): SetValues {
+  const source = previous[current.length] ?? current.at(-1) ?? previous.at(-1)
+  if (source === undefined) return { kind: 'working', ...domainConfig.firstSet }
+  return { kind: source.kind, weightKg: source.weightKg, reps: source.reps }
+}
+
 // IDs of the sets in `current` that set a new estimated-1RM record for their
 // exercise. A set is a record when its e1RM beats every earlier counted set: all of
 // `history` plus the sets before it in `current` (by completion time). Warm-up and

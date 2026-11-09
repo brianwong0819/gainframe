@@ -17,7 +17,9 @@ export { toLocalDate } from './domain/local-date.ts'
 export {
   estimateOneRepMax,
   findPersonalRecords,
+  nextSetValues,
   previousPerformance,
+  type SetValues,
   totalVolumeKg,
 } from './domain/workout.ts'
 export {
