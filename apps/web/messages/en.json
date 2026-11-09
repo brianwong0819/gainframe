@@ -37,6 +37,7 @@
     "title": "Exercises",
     "back": "Workout",
     "count": "{count, plural, one {# exercise} other {# exercises}}",
+    "new": "New",
     "search": "Search exercises",
     "searchLabel": "Search",
     "filterLabel": "Muscle group",
@@ -44,7 +45,23 @@
     "all": "All",
     "custom": "Custom",
     "restLabel": "Rest {rest}",
-    "empty": "No exercise matches “{query}”."
+    "empty": "No exercise matches “{query}”.",
+    "createNamed": "Create “{query}”"
+  },
+  "exerciseForm": {
+    "newTitle": "New exercise",
+    "editTitle": "Edit exercise",
+    "nameZh": "Chinese name",
+    "nameEn": "English name",
+    "nameZhPlaceholder": "e.g. 地雷管推举",
+    "nameEnPlaceholder": "e.g. Landmine press",
+    "nameRequired": "Enter a name in at least one language.",
+    "muscle": "Muscle group",
+    "equipment": "Equipment",
+    "rest": "Default rest",
+    "restLess": "15 seconds less",
+    "restMore": "15 seconds more",
+    "save": "Save"
   },
   "muscle": {
     "chest": "Chest",

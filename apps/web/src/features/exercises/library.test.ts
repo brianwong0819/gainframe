@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { Exercise } from '@gainframe/shared'
 
-import { exerciseName, formatRest, libraryEntries } from './library'
+import { draftToExercise, exerciseName, formatRest, libraryEntries } from './library'
 
 function custom(fields: Partial<Exercise> & Pick<Exercise, 'id' | 'createdAt'>): Exercise {
   return {
@@ -63,5 +63,19 @@ describe('formatRest', () => {
     expect(formatRest(0)).toBe('0:00')
     expect(formatRest(90)).toBe('1:30')
     expect(formatRest(600)).toBe('10:00')
+  })
+})
+
+describe('draftToExercise', () => {
+  it('trims names and turns a blank name into null', () => {
+    const values = draftToExercise({
+      nameZh: '  ',
+      nameEn: ' Landmine press ',
+      muscle: 'shoulders',
+      equipment: 'barbell',
+      defaultRestS: 90,
+    })
+    expect(values.nameZh).toBeNull()
+    expect(values.nameEn).toBe('Landmine press')
   })
 })
