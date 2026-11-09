@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-023 · 2026-11-09 · ui · The sheet still flashed on the iPhone after L-020
+- **What happened:** bw's screen recording after L-020 showed the sheet's lower part drawn at the top of the screen for one frame, then gone, then sliding up.
+- **Root cause:** the sheet's children, and with them the entry animation, start while the `<dialog>` is still closed (`display: none`); `showModal()` runs in the parent's effect afterwards. WebKit placed the first frame of that animation wrongly. Chromium does not, and no WebKit is available in the cloud session, so it was only seen on the phone.
+- **Fix:** PR `m1/04-sheet-entry-after-open`: the scrim and panel start hidden and the entry runs from `useAnimationControls`, started right after `showModal()`.
+- **Prevention:** the rule is in the `Sheet` primitive and its comment; every sheet uses it. Recording the screen on the iPhone (as bw did) is the check for animation glitches.
+- **Status:** documented
+
 ### L-022 · 2026-11-09 · ci · An older commit's deploy overwrote a newer one on dev
 - **What happened:** bw reinstalled the app and still had no muscle picker. #56 merged before #55, but its CI finished later, so its deploy ran after #55's and put the older commit back on dev. Both deploys reported success.
 - **Root cause:** `deploy.yml` deploys whichever commit's CI just passed. The concurrency group only orders the deploys by when they start, not by commit order, and nothing checked that the commit was still current.
