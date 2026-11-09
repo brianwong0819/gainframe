@@ -60,6 +60,18 @@ export default defineConfig([
   {
     files: webFiles,
     settings: { next: { rootDir: 'apps/web/' } },
+    rules: {
+      // WebKit scrolls a focused element into view, which jumps a sheet that is
+      // still animating in (L-020).
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.property.name='focus']:not(:has(Property[key.name='preventScroll']))",
+          message: 'Call focus({ preventScroll: true }); see L-020 in docs/LESSONS.md.',
+        },
+      ],
+    },
   },
   prettier,
 ])
