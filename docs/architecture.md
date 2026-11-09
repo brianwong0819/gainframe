@@ -71,7 +71,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 |---|---|
 | profiles | phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
 | body_metrics | local_date, weight_kg |
-| exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are a constant in `packages/shared` with fixed IDs) |
+| exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are the constant `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` with fixed IDs) |
 | templates / template_items | name; exercise_id, position, superset_group, target_sets, target_reps |
 | workouts | started_at, ended_at, template_id, local_date, note |
 | workout_sets | workout_id, exercise_id, superset_group, position, kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
