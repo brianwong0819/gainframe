@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { db, planStore, repositories, workoutSession } from '@/db/client'
+import { db, planStore, repositories, weightUnits, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import type { ActiveWorkoutState } from '@/db/workout-session'
 import { Pressable } from '@/ui/pressable'
@@ -20,6 +20,7 @@ import { SlotNote } from './slot-note'
 
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
+const loadWeightUnits = () => weightUnits.all()
 
 type SheetContent =
   | { kind: 'picker' }
@@ -48,6 +49,8 @@ function toggleDone(set: WorkoutSet) {
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const t = useTranslations('workout')
   const custom = useLiveQuery(allCustomExercises) ?? []
+  const units = useLiveQuery(loadWeightUnits)
+  const unitOf = (exerciseId: string) => units?.get(exerciseId) ?? 'kg'
   const [chosenId, setChosenId] = useState<string | null>(null)
   const [sheet, setSheet] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -90,6 +93,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           key={slotState.slot.id}
           state={slotState}
           exercise={findExercise(slotState.slot.exerciseId, custom)}
+          unit={unitOf(slotState.slot.exerciseId)}
           selectedId={selected?.set.id ?? null}
           onSelect={(set, n) => {
             if (set.completedAt === null) setChosenId(set.id)
@@ -129,7 +133,9 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           key={selected.set.id}
           set={selected.set}
           n={selected.n}
+          exerciseId={selected.exerciseId}
           exercise={findExercise(selected.exerciseId, custom)}
+          unit={unitOf(selected.exerciseId)}
           onDetails={() => {
             open({ kind: 'set', setId: selected.set.id, n: selected.n })
           }}

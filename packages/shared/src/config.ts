@@ -15,6 +15,18 @@ export const domainConfig = {
     bodyweight: 2.5,
     other: 1,
   },
+  // The same steps for a weight shown in pounds: a pair of 2.5 lb plates, the
+  // next dumbbell or a typical 5 lb stack increment.
+  weightStepLb: {
+    barbell: 5,
+    dumbbell: 5,
+    machine: 5,
+    cable: 5,
+    kettlebell: 5,
+    band: 2.5,
+    bodyweight: 5,
+    other: 2.5,
+  },
   // The first set of an exercise never done before.
   firstSet: { weightKg: 0, reps: 8 },
   // An exercise added to a plan day: the common hypertrophy range.
