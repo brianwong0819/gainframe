@@ -1,6 +1,8 @@
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
+import { fromKg, toKg } from '@gainframe/shared'
+
 import { createRepositories, type Repositories } from './repositories'
 import { GainframeDb } from './schema'
 import { createWorkoutSession, type WorkoutSession } from './workout-session'
@@ -167,16 +169,31 @@ describe('addExercise and addSet', () => {
   })
 })
 
-describe('stepSet', () => {
-  it('applies quick taps to the stored value and stops at 0', async () => {
+describe('stepWeight and stepReps', () => {
+  async function firstSetId() {
     const workout = await session.start(ZONE)
     const slot = await session.addExercise(workout.id, BENCH)
     const [set] = await db.workoutSets.where('workoutExerciseId').equals(slot.id).toArray()
-    const id = set?.id ?? ''
-    await Promise.all([1, 2, 3].map(() => session.stepSet(id, 'weightKg', 2.5)))
+    return set?.id ?? ''
+  }
+
+  it('applies quick taps to the stored value and stops at 0', async () => {
+    const id = await firstSetId()
+    await Promise.all([1, 2, 3].map(() => session.stepWeight(id, 2.5, 'kg')))
     expect((await repos.workoutSets.get(id))?.weightKg).toBe(7.5)
-    await session.stepSet(id, 'reps', -20)
+    await session.stepReps(id, -20)
     expect((await repos.workoutSets.get(id))?.reps).toBe(0)
+    await session.stepWeight(id, -10, 'kg')
+    expect((await repos.workoutSets.get(id))?.weightKg).toBe(0)
+  })
+
+  it('steps in whole pounds when the weight is shown in pounds', async () => {
+    const id = await firstSetId()
+    await repos.workoutSets.update(id, { weightKg: toKg(45, 'lb') })
+    for (let tap = 0; tap < 20; tap += 1) await session.stepWeight(id, 5, 'lb')
+    const weightKg = (await repos.workoutSets.get(id))?.weightKg ?? 0
+    expect(fromKg(weightKg, 'lb')).toBe(145)
+    expect(weightKg).toBe(65.77)
   })
 })
 

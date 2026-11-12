@@ -1,6 +1,6 @@
 'use client'
 
-import type { WorkoutSet } from '@gainframe/shared'
+import type { WeightUnit, WorkoutSet } from '@gainframe/shared'
 import { motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -11,11 +11,12 @@ import { RollingNumber } from '@/ui/rolling-number'
 
 import { exerciseName } from '../exercises/library'
 import { formatRepRange } from '../plans/item-edit'
-import { type ExerciseInfo, formatKg, isBodyweight } from './exercise-info'
+import { type ExerciseInfo, formatWeight, isBodyweight } from './exercise-info'
 
 interface SetTableProps {
   state: SlotState
   exercise: ExerciseInfo
+  unit: WeightUnit
   selectedId: string | null
   onSelect: (set: WorkoutSet, n: number) => void
   onToggle: (set: WorkoutSet) => void
@@ -61,6 +62,7 @@ function Check({ done }: { done: boolean }) {
 export function SetTable({
   state,
   exercise,
+  unit,
   selectedId,
   onSelect,
   onToggle,
@@ -71,15 +73,20 @@ export function SetTable({
   const tShort = useTranslations('setKindShort')
   const locale = useLocale()
   const bodyweight = isBodyweight(exercise.equipment)
+  const unitLabel = t(`unit.${unit}`)
   const weight = (kg: number) =>
-    bodyweight ? (kg === 0 ? t('bodyweight') : `+${formatKg(kg)}`) : formatKg(kg)
+    bodyweight
+      ? kg === 0
+        ? t('bodyweight')
+        : `+${formatWeight(kg, unit)}`
+      : formatWeight(kg, unit)
   // The plan's rep range and the heaviest weight so far, as targets to beat.
   const { slot, bestKg } = state
   const hints = [
     slot.repsMin !== null && slot.repsMax !== null
       ? t('target', { reps: formatRepRange({ repsMin: slot.repsMin, repsMax: slot.repsMax }) })
       : null,
-    bestKg !== null && bestKg > 0 ? t('best', { weight: `${weight(bestKg)} kg` }) : null,
+    bestKg !== null && bestKg > 0 ? t('best', { weight: `${weight(bestKg)} ${unitLabel}` }) : null,
   ].filter((hint) => hint !== null)
 
   return (
@@ -102,7 +109,9 @@ export function SetTable({
       <div className={`${columns} text-label text-ink-3`} aria-hidden>
         <span>{t('colSet')}</span>
         <span>{t('colLast')}</span>
-        <span>{bodyweight ? t('colLoad') : t('colWeight')}</span>
+        <span>
+          {bodyweight ? t('colLoad') : t('colWeight')} {unitLabel}
+        </span>
         <span>{t('colReps')}</span>
         <span className="box-content w-40 px-4" />
       </div>

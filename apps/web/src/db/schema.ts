@@ -35,10 +35,10 @@ export interface ErrorLogEntry extends ClientError {
 // A setting that belongs to this device and never syncs. `activePlanId` names
 // the plan the Workout tab offers; keeping it here rather than as a flag on plan
 // rows means two devices can never both mark a plan active.
-export interface DeviceSetting {
-  key: 'activePlanId'
-  value: string
-}
+// `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
+// it is not kg (db/weight-units.ts).
+export type DeviceSetting =
+  { key: 'activePlanId'; value: string } | { key: `weightUnit:${string}`; value: string }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.

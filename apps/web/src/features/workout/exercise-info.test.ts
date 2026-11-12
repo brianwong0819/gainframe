@@ -1,7 +1,7 @@
 import { BUILT_IN_EXERCISES, type Exercise } from '@gainframe/shared'
 import { describe, expect, it } from 'vitest'
 
-import { findExercise, formatKg } from './exercise-info'
+import { findExercise, formatWeight } from './exercise-info'
 
 describe('findExercise', () => {
   const custom: Exercise = {
@@ -33,10 +33,15 @@ describe('findExercise', () => {
   })
 })
 
-describe('formatKg', () => {
+describe('formatWeight', () => {
   it('drops trailing zeros and float noise', () => {
-    expect(formatKg(60)).toBe('60')
-    expect(formatKg(62.5)).toBe('62.5')
-    expect(formatKg(0.1 + 0.2)).toBe('0.3')
+    expect(formatWeight(60, 'kg')).toBe('60')
+    expect(formatWeight(62.5, 'kg')).toBe('62.5')
+    expect(formatWeight(0.1 + 0.2, 'kg')).toBe('0.3')
+  })
+
+  it('shows pounds to 0.1 lb', () => {
+    expect(formatWeight(20.41, 'lb')).toBe('45')
+    expect(formatWeight(60, 'lb')).toBe('132.3')
   })
 })
