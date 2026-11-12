@@ -4,7 +4,7 @@ The handover note between sessions. Keep it short and current; update it in ever
 
 - **Milestone:** M1 Workout logging
 - **Current task:** none; M1-09 Plans done (pending bw's iPhone check). Next: M1-06 Rest timer, once bw says to continue
-- **Last updated:** 2026-11-09
+- **Last updated:** 2026-11-12
 
 ## Where I stopped
 
@@ -90,12 +90,16 @@ M1-09, part 5 (2026-11-09, PR `m1/09-plan-card`): with no workout in progress, t
 
 M1-09, part 6 (2026-11-09, PR `m1/09-add-to-plan`): the exercise detail sheet has "Add to plan", listing the days of every plan (current plan first); a tap appends the exercise with the default sets and range. Finishing a workout that did not follow a plan offers "Finish and save as a new plan day": `planItemsFromWorkout` (`packages/shared/src/domain/plan.ts`) turns each exercise's completed working and failure sets into target sets and a rep range, appended as the last day of the current plan (or of a new plan, which becomes current). M1-09 is done. Pending: bw iPhone check of the whole flow (make a plan, start its next day from the Workout tab, finish, see the next day offered).
 
+Weight units (2026-11-12, PR `m1/weight-units`), asked for by bw because some machines are labelled in pounds: tapping the weight label in the set panel switches that exercise between kg and lb. Weights are still stored in kg (`toKg` / `fromKg` in `packages/shared/src/domain/weight-unit.ts`: kg to 10 g, pounds shown to 0.1 lb, and a test proves every weight typed to 0.1 lb reads back as typed). In pounds the stepper steps by `domainConfig.weightStepLb` in whole pounds (`workoutSession.stepWeight`), the set table, last time and best weight show pounds, and the panel shows the weight in kg beneath. The unit is a device setting per exercise (`weightUnit:<exerciseId>` in `settings`, `src/db/weight-units.ts`), so it is remembered for that machine. Pending: bw iPhone check.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
 ## Follow-ups (noticed, not in scope yet)
+
+- The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
 - Plans: days and exercises keep the order they were added in; there is no way to reorder them yet (M1-09 adds them at the end). Add reordering if bw needs it after using plans.

@@ -65,7 +65,7 @@ Dependency direction: `web` → `shared`, `api` → `shared`. `shared` depends o
 
 ## Data model
 
-All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`; on the server also `server_version`. Units: kg, g, kcal. `weekly_summaries` and `nudges` are written by the server and only pulled; `push_subscriptions` and `ai_usage` are not synced.
+All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`; on the server also `server_version`. Units: kg, g, kcal (a weight shown in pounds is converted when typed and when shown). `weekly_summaries` and `nudges` are written by the server and only pulled; `push_subscriptions` and `ai_usage` are not synced.
 
 | Table | Key fields |
 |---|---|

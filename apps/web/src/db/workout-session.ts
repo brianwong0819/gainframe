@@ -1,8 +1,11 @@
 import {
   bestWeightKg,
+  fromKg,
   nextSetValues,
   previousPerformance,
+  toKg,
   toLocalDate,
+  type WeightUnit,
   type Workout,
   type WorkoutExercise,
   type WorkoutSet,
@@ -97,6 +100,12 @@ export function createWorkoutSession(
     const workout = await repos.workouts.get(id)
     if (workout === undefined) throw new Error(`No workout ${id}`)
     return workout
+  }
+
+  async function getSet(id: string): Promise<WorkoutSet> {
+    const set = await repos.workoutSets.get(id)
+    if (set === undefined) throw new Error(`No set ${id}`)
+    return set
   }
 
   const writeTables = [db.workouts, db.workoutExercises, db.workoutSets, db.outbox]
@@ -218,12 +227,20 @@ export function createWorkoutSession(
 
     // Moves a set's weight or reps by `delta`, never below 0, reading the stored
     // value in the same transaction so quick taps all count.
-    async stepSet(setId: string, field: 'weightKg' | 'reps', delta: number): Promise<WorkoutSet> {
+    async stepReps(setId: string, delta: number): Promise<WorkoutSet> {
       return db.transaction('rw', db.workoutSets, db.outbox, async () => {
-        const set = await repos.workoutSets.get(setId)
-        if (set === undefined) throw new Error(`No set ${setId}`)
-        const value = Math.max(0, Math.round((set[field] + delta) * 100) / 100)
-        return repos.workoutSets.update(setId, { [field]: value })
+        const set = await getSet(setId)
+        return repos.workoutSets.update(setId, { reps: Math.max(0, set.reps + delta) })
+      })
+    },
+
+    // Steps the weight as shown in `unit`, so taps in pounds land on whole
+    // steps of pounds (45, 50, 55 lb) rather than on converted kg.
+    async stepWeight(setId: string, delta: number, unit: WeightUnit): Promise<WorkoutSet> {
+      return db.transaction('rw', db.workoutSets, db.outbox, async () => {
+        const set = await getSet(setId)
+        const weightKg = toKg(Math.max(0, fromKg(set.weightKg, unit) + delta), unit)
+        return repos.workoutSets.update(setId, { weightKg })
       })
     },
 

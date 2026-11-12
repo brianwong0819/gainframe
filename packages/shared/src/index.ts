@@ -20,6 +20,7 @@ export {
   type PlanItemValues,
   suggestRestS,
 } from './domain/plan.ts'
+export { fromKg, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,
   estimateOneRepMax,
@@ -61,4 +62,6 @@ export {
   workoutSchema,
   type WorkoutSet,
   workoutSetSchema,
+  type WeightUnit,
+  weightUnitSchema,
 } from './schemas/workout.ts'
