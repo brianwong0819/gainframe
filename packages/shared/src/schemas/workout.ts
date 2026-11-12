@@ -21,6 +21,10 @@ export const workoutSchema = syncedRowSchema
 
 // warmup: preparation, never counted. working: a normal set. drop: a reduced-weight
 // set straight after another. failure: a working set taken to failure.
+// The unit a weight is shown and typed in. Weights are always stored in kg;
+// some gyms label plates and machine stacks in pounds.
+export const weightUnitSchema = z.enum(['kg', 'lb'])
+
 export const setKindSchema = z.enum(['warmup', 'working', 'drop', 'failure'])
 
 // One exercise slot in a workout, mirroring a plan item: its order in the
@@ -70,3 +74,4 @@ export type Workout = z.infer<typeof workoutSchema>
 export type WorkoutExercise = z.infer<typeof workoutExerciseSchema>
 export type SetKind = z.infer<typeof setKindSchema>
 export type WorkoutSet = z.infer<typeof workoutSetSchema>
+export type WeightUnit = z.infer<typeof weightUnitSchema>

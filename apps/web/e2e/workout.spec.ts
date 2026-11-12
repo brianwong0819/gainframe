@@ -83,3 +83,32 @@ test('leaving keeps the workout, and discarding deletes it', async ({ page }) =>
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByRole('button', { name: '开始训练' })).toBeVisible()
 })
+
+test('an exercise switched to pounds is typed and shown in pounds', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃卧推')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃卧推/ })
+    .click()
+
+  await page.getByRole('button', { name: '这个动作改用 lb 显示和输入重量' }).click()
+  const weight = page.getByRole('textbox', { name: '第 1 组重量' })
+  await weight.fill('45')
+  await weight.press('Enter')
+  await expect(weight).toHaveValue('45')
+  await expect(page.getByText('≈ 20.41 kg')).toBeVisible()
+  // One step in pounds is 5 lb.
+  await page.getByRole('button', { name: '第 1 组加重量' }).click()
+  await expect(weight).toHaveValue('50')
+  await expect(page.getByText('≈ 22.68 kg')).toBeVisible()
+
+  // The unit is kept for the exercise; switching back shows the same weight in kg.
+  await page.reload()
+  await expect(weight).toHaveValue('50')
+  await page.getByRole('button', { name: '这个动作改用 kg 显示和输入重量' }).click()
+  await expect(weight).toHaveValue('22.68')
+  await expect(page.getByText(/≈/)).toHaveCount(0)
+})
