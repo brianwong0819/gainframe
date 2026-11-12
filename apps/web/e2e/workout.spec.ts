@@ -95,6 +95,9 @@ test('an exercise switched to pounds is typed and shown in pounds', async ({ pag
     .click()
 
   await page.getByRole('button', { name: '这个动作改用 lb 显示和输入重量' }).click()
+  // The unit is read back from the database; typing before it arrives would
+  // parse the weight in kg (L-024).
+  await expect(page.getByRole('button', { name: '这个动作改用 kg 显示和输入重量' })).toBeVisible()
   const weight = page.getByRole('textbox', { name: '第 1 组重量' })
   await weight.fill('45')
   await weight.press('Enter')

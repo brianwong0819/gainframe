@@ -83,10 +83,11 @@ describe('workoutExerciseSchema', () => {
     exerciseId: '01960000-0000-7000-8000-0000000000b1',
     position: 0,
     supersetGroup: null,
-    note: 'Seat at notch 4',
+    note: 'Felt easy today',
     repsMin: null,
     repsMax: null,
     restS: null,
+    planNote: 'Seat at notch 4',
   }
 
   it('accepts a valid slot', () => {

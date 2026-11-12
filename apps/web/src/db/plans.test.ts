@@ -155,6 +155,7 @@ describe('plan store', () => {
       repsMin: null,
       repsMax: null,
       restS: null,
+      planNote: null,
     })
     for (const reps of [10, 8]) {
       await repos.workoutSets.create({

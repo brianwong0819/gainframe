@@ -42,7 +42,14 @@ export function suggestRestS(mechanic: Mechanic, repsMin: number): number {
 
 export type PlanItemValues = Pick<
   PlanItem,
-  'exerciseId' | 'position' | 'supersetGroup' | 'targetSets' | 'repsMin' | 'repsMax' | 'restS'
+  | 'exerciseId'
+  | 'position'
+  | 'supersetGroup'
+  | 'targetSets'
+  | 'repsMin'
+  | 'repsMax'
+  | 'restS'
+  | 'note'
 >
 
 // A finished workout as the items of a new plan day: each exercise in order,
@@ -75,6 +82,7 @@ export function planItemsFromWorkout(
           repsMin: Math.min(...reps),
           repsMax: Math.max(...reps),
           restS: slot.restS,
+          note: slot.planNote,
         },
       ]
     })

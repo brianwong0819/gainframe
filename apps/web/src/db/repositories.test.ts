@@ -58,6 +58,7 @@ function newSlot(workoutId: string, position: number) {
     repsMin: null,
     repsMax: null,
     restS: null,
+    planNote: null,
   })
 }
 
@@ -221,6 +222,7 @@ describe('remove', () => {
         repsMin: 8,
         repsMax: 12,
         restS: null,
+        note: null,
       })
     const push = await newDay('Push', 0)
     const pull = await newDay('Pull', 1)

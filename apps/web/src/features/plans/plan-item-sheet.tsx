@@ -2,6 +2,7 @@
 
 import { type Exercise, type PlanItem, planItemSchema, suggestRestS } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
+import { useId, useState } from 'react'
 
 import { repositories } from '@/db/client'
 import { Pressable } from '@/ui/pressable'
@@ -15,7 +16,9 @@ const chipClass = 'rounded-full bg-sunk px-16 py-12 text-label font-semibold tex
 
 type CountField = 'targetSets' | 'repsMin' | 'repsMax'
 
-type Changes = Partial<Pick<PlanItem, 'targetSets' | 'repsMin' | 'repsMax' | 'restS'>>
+type Changes = Partial<Pick<PlanItem, 'targetSets' | 'repsMin' | 'repsMax' | 'restS' | 'note'>>
+
+const NOTE_MAX = 500
 
 // Typed text as a whole number the item schema accepts for `field`, else null.
 function parseCount(text: string, field: CountField): number | null {
@@ -24,8 +27,9 @@ function parseCount(text: string, field: CountField): number | null {
   return planItemSchema.shape[field].safeParse(value).success ? value : null
 }
 
-// One plan item's target sets, rep range and rest. Every change is written at
-// once, like a set in a workout.
+// One plan item's target sets, rep range, rest and note. Every change is
+// written at once, like a set in a workout; the note when its field loses focus
+// (which closing the sheet also does).
 export function PlanItemSheet({
   item,
   custom,
@@ -38,6 +42,8 @@ export function PlanItemSheet({
   const t = useTranslations('plans')
   const { defaultRestS, mechanic } = restInfo(item.exerciseId, custom)
   const restS = item.restS ?? defaultRestS
+  const noteId = useId()
+  const [noteDraft, setNoteDraft] = useState<string | null>(null)
   const save = (changes: Changes) => {
     void repositories.planItems.update(item.id, changes)
   }
@@ -139,6 +145,30 @@ export function PlanItemSheet({
             </Pressable>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-8">
+        <label htmlFor={noteId} className={labelClass}>
+          {t('planNote')}
+        </label>
+        <textarea
+          id={noteId}
+          value={noteDraft ?? item.note ?? ''}
+          rows={3}
+          maxLength={NOTE_MAX}
+          placeholder={t('planNotePlaceholder')}
+          onChange={(event) => {
+            setNoteDraft(event.target.value)
+          }}
+          onBlur={() => {
+            if (noteDraft === null) return
+            const trimmed = noteDraft.trim()
+            const note = trimmed === '' ? null : trimmed
+            if (note !== item.note) save({ note })
+            setNoteDraft(null)
+          }}
+          className="w-full resize-none rounded-ctl bg-sunk px-16 py-12 text-input text-ink placeholder:text-ink-3"
+        />
       </div>
 
       <Pressable

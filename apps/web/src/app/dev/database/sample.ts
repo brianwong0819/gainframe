@@ -36,6 +36,7 @@ export async function logSampleWorkout(repos: Repositories, now: Date): Promise<
     repsMin: null,
     repsMax: null,
     restS: null,
+    planNote: null,
   })
   for (const [position, weightKg] of [60, 62.5, 65].entries()) {
     await repos.workoutSets.create({

@@ -189,6 +189,7 @@ export function createWorkoutSession(
             repsMin: item.repsMin,
             repsMax: item.repsMax,
             restS: item.restS,
+            planNote: item.note,
           })
           for (let n = 0; n < item.targetSets; n += 1) await createSet(slot, workout)
         }
@@ -210,6 +211,7 @@ export function createWorkoutSession(
           repsMin: null,
           repsMax: null,
           restS: null,
+          planNote: null,
         })
         await createSet(slot, workout)
         return slot

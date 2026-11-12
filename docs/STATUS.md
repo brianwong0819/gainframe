@@ -94,6 +94,8 @@ Weight units (2026-11-12, PR `m1/weight-units`), asked for by bw because some ma
 
 Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw: in the plan editor, tapping an exercise in "Add exercise" shows the same detail as the library (muscle map, cues, muscles, equipment, default rest) with "Add to “<day>”" kept at the bottom of the sheet and a way back to the list, which keeps its search (`features/plans/plan-exercise-picker.tsx`). `ExerciseDetail` now takes its actions as children. The picker in a workout still adds at once. Next, also from bw: a plan note per exercise, shown in every workout of that day and separate from the workout's own note.
 
+Plan note (2026-11-12, PR `m1/plan-item-note`), asked for by bw: a plan item has a `note` (up to 500 characters), edited in the item sheet and saved when the field loses focus; the plan editor shows it under the exercise. A workout slot started from the plan copies it as `planNote`, like the rep range and rest, and the exercise card shows it as "计划 · …" above the workout's own note, which stays for that workout only (its sheet now says so). Dexie version 7 gives older plan items and slots no plan note (upgrade test). `planItemsFromWorkout` carries a slot's plan note into a saved day.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.

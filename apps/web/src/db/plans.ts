@@ -140,6 +140,7 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
           supersetGroup: null,
           ...domainConfig.newPlanItem,
           restS: null,
+          note: null,
         })
       })
     },

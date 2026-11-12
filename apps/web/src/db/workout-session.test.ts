@@ -212,6 +212,7 @@ describe('startFromPlanDay', () => {
         repsMin: 8,
         repsMax: 12,
         restS,
+        note: restS === null ? null : 'Seat at notch 4',
       })
     await item(SQUAT, 1, 2, null)
     await item(BENCH, 0, 3, 150)
@@ -228,7 +229,9 @@ describe('startFromPlanDay', () => {
       [BENCH, 150],
       [SQUAT, null],
     ])
-    expect(state?.slots[0]?.slot).toMatchObject({ repsMin: 8, repsMax: 12 })
+    expect(state?.slots[0]?.slot).toMatchObject({ repsMin: 8, repsMax: 12, note: null })
+    // The plan's note is copied; the workout's own note starts empty.
+    expect(state?.slots.map(({ slot }) => slot.planNote)).toEqual(['Seat at notch 4', null])
     expect(state?.slots.map(({ sets }) => sets.length)).toEqual([3, 2])
     // Never done before: the default weight, and the low end of the rep range.
     expect(state?.slots[0]?.sets.map((set) => [set.weightKg, set.reps])).toEqual([

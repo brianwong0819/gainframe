@@ -17,6 +17,7 @@ const item = {
   repsMin: 8,
   repsMax: 12,
   restS: null,
+  note: null,
 }
 
 describe('planItemSchema', () => {
@@ -28,5 +29,10 @@ describe('planItemSchema', () => {
   it('rejects a rep range that ends below its start', () => {
     const result = planItemSchema.safeParse({ ...item, repsMin: 12, repsMax: 8 })
     expect(result.error?.issues[0]?.path).toEqual(['repsMax'])
+  })
+
+  it('keeps a note up to 500 characters', () => {
+    expect(planItemSchema.safeParse({ ...item, note: 'Seat at notch 4' }).success).toBe(true)
+    expect(planItemSchema.safeParse({ ...item, note: 'x'.repeat(501) }).success).toBe(false)
   })
 })

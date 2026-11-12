@@ -36,7 +36,7 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(6)
+    expect(current.verno).toBe(7)
     current.close()
   })
 
@@ -65,7 +65,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(6)
+    expect(v3.verno).toBe(7)
     v3.close()
   })
 
@@ -164,7 +164,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(6)
+    expect(v5.verno).toBe(7)
     v5.close()
   })
 
@@ -210,9 +210,75 @@ describe('Dexie schema upgrades', () => {
       repsMin: null,
       repsMax: null,
       restS: null,
+      planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(6)
+    expect(v6.verno).toBe(7)
     v6.close()
+  })
+
+  it('gives version 6 plan items and slots no plan note in version 7', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v6 = new Dexie('upgrade', options)
+    v6.version(1).stores(STORES_V1)
+    v6.version(2).stores({ errors: '++seq' })
+    v6.version(3).stores({})
+    v6.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v6.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    v6.version(6).stores({})
+    const row = {
+      userId: null,
+      createdAt: '2026-11-09T10:00:00.000Z',
+      updatedAt: '2026-11-09T10:00:00.000Z',
+      deletedAt: null,
+    }
+    const item = {
+      ...row,
+      id: '01960000-0000-7000-8000-000000000001',
+      planId: '01960000-0000-7000-8000-0000000000a1',
+      planDayId: '01960000-0000-7000-8000-0000000000a2',
+      exerciseId: '00000000-0000-7000-8000-000000000001',
+      position: 0,
+      supersetGroup: null,
+      targetSets: 3,
+      repsMin: 8,
+      repsMax: 12,
+      restS: null,
+    }
+    const slot = {
+      ...row,
+      id: '01960000-0000-7000-8000-000000000002',
+      workoutId: '01960000-0000-7000-8000-0000000000a3',
+      exerciseId: '00000000-0000-7000-8000-000000000001',
+      position: 0,
+      supersetGroup: null,
+      note: 'Felt easy',
+      repsMin: 8,
+      repsMax: 12,
+      restS: null,
+    }
+    await v6.table('planItems').add(item)
+    await v6.table('workoutExercises').add(slot)
+    v6.close()
+
+    const v7 = new GainframeDb('upgrade', options)
+    expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
+    expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
+    expect(await v7.outbox.count()).toBe(0)
+    expect(v7.verno).toBe(7)
+    v7.close()
   })
 })

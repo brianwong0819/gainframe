@@ -100,6 +100,9 @@ function Day({
                       ? t('restDefault')
                       : t('rest', { time: formatRest(item.restS) })}
                   </span>
+                  {item.note !== null && (
+                    <span className="truncate text-label text-ink-2">{item.note}</span>
+                  )}
                 </span>
                 <span className="text-ink-3">
                   <Chevron direction="right" />

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { restSecondsSchema } from './exercise.ts'
+import { planNoteSchema } from './plan.ts'
 import { instantSchema, localDateSchema, syncedRowSchema } from './row.ts'
 
 export const workoutSchema = syncedRowSchema
@@ -33,6 +34,8 @@ export const setKindSchema = z.enum(['warmup', 'working', 'drop', 'failure'])
 // plan copies the item's rep range and rest, so later edits to the plan do not
 // change past workouts; all three are null for an exercise added by hand, and
 // `restS` is also null when the item uses the exercise's default rest.
+// `planNote` copies the item's note the same way (null without one); `note` is
+// the user's own note for this workout only.
 export const workoutExerciseSchema = syncedRowSchema
   .extend({
     workoutId: z.uuid(),
@@ -43,6 +46,7 @@ export const workoutExerciseSchema = syncedRowSchema
     repsMin: z.int().min(1).max(100).nullable(),
     repsMax: z.int().min(1).max(100).nullable(),
     restS: restSecondsSchema.nullable(),
+    planNote: planNoteSchema.nullable(),
   })
   .refine(
     (slot) => slot.repsMin === null || slot.repsMax === null || slot.repsMin <= slot.repsMax,

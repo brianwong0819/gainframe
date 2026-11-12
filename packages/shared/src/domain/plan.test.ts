@@ -122,6 +122,7 @@ describe('planItemsFromWorkout', () => {
     repsMin: null,
     repsMax: null,
     restS: null,
+    planNote: null,
     ...fields,
   })
   let setId = 0
@@ -144,7 +145,7 @@ describe('planItemsFromWorkout', () => {
   }
 
   it('turns completed working sets into target sets and a rep range, in slot order', () => {
-    const bench = slot(1, 1, { restS: 150 })
+    const bench = slot(1, 1, { restS: 150, planNote: 'Grip one finger out' })
     const squat = slot(2, 0)
     const sets = [
       set(bench.id, 10),
@@ -164,6 +165,7 @@ describe('planItemsFromWorkout', () => {
         repsMin: 5,
         repsMax: 5,
         restS: null,
+        note: null,
       },
       {
         exerciseId: bench.exerciseId,
@@ -173,6 +175,7 @@ describe('planItemsFromWorkout', () => {
         repsMin: 7,
         repsMax: 10,
         restS: 150,
+        note: 'Grip one finger out',
       },
     ])
   })
@@ -191,6 +194,7 @@ describe('planItemsFromWorkout', () => {
         repsMin: 1,
         repsMax: 1,
         restS: null,
+        note: null,
       },
     ])
   })

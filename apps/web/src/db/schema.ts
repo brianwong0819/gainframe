@@ -129,6 +129,24 @@ export class GainframeDb extends Dexie {
             slot.restS ??= null
           }),
       )
+    // Plan items gain the plan's note, and slots a copy of it; older rows have
+    // none. No outbox entry, as in version 3.
+    this.version(7)
+      .stores({})
+      .upgrade(async (tx) => {
+        await tx
+          .table<Record<string, unknown>, string>('planItems')
+          .toCollection()
+          .modify((item) => {
+            item.note ??= null
+          })
+        await tx
+          .table<Record<string, unknown>, string>('workoutExercises')
+          .toCollection()
+          .modify((slot) => {
+            slot.planNote ??= null
+          })
+      })
   }
 }
 
@@ -164,7 +182,7 @@ export async function moveSetsIntoSlots(tx: Transaction): Promise<void> {
     const position = nextPosition.get(workoutId) ?? 0
     nextPosition.set(workoutId, position + 1)
     const live = group.some((set) => set.deletedAt === null)
-    const slot: Omit<WorkoutExercise, 'repsMin' | 'repsMax' | 'restS'> = {
+    const slot: Omit<WorkoutExercise, 'repsMin' | 'repsMax' | 'restS' | 'planNote'> = {
       id: newId(nowMs),
       userId: null,
       createdAt: at,

@@ -95,8 +95,19 @@ export function SetTable({
         <div className="flex min-w-0 flex-col gap-4">
           <h2 className="text-body font-semibold text-ink">{exerciseName(exercise, locale)}</h2>
           {hints.length > 0 && <p className="text-label text-ink-3">{hints.join(' · ')}</p>}
-          {state.slot.note !== null && (
-            <p className="text-label whitespace-pre-line text-ink-2">{state.slot.note}</p>
+          {slot.planNote !== null && (
+            <p className="text-label whitespace-pre-line text-ink-2">
+              <span className="text-ink-3">{t('planNoteLabel')} · </span>
+              {slot.planNote}
+            </p>
+          )}
+          {slot.note !== null && (
+            <p className="text-label whitespace-pre-line text-ink-2">
+              {slot.planNote !== null && (
+                <span className="text-ink-3">{t('todayNoteLabel')} · </span>
+              )}
+              {slot.note}
+            </p>
           )}
         </div>
         <Pressable
