@@ -13,6 +13,7 @@ import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
+import { AddToPlan } from '../plans/add-to-plan'
 import { ExerciseDetail } from './exercise-detail'
 import { ExerciseForm } from './exercise-form'
 import {
@@ -90,6 +91,7 @@ function EntryRow({
 export function ExerciseLibrary() {
   const t = useTranslations('exercises')
   const tForm = useTranslations('exerciseForm')
+  const tDetail = useTranslations('exerciseDetail')
   const tMuscle = useTranslations('muscle')
   const custom = useCustomExercises()
   const [query, setQuery] = useState('')
@@ -213,13 +215,20 @@ export function ExerciseLibrary() {
         }
       >
         {content?.kind === 'detail' && (
-          <ExerciseDetail
-            exercise={content.exercise}
-            onEdit={() => {
-              const { exercise } = content
-              if (exercise.custom) edit(exercise)
-            }}
-          />
+          <ExerciseDetail exercise={content.exercise}>
+            <AddToPlan key={content.exercise.id} exerciseId={content.exercise.id} />
+            {content.exercise.custom && (
+              <Pressable
+                onClick={() => {
+                  const { exercise } = content
+                  if (exercise.custom) edit(exercise)
+                }}
+                className="rounded-full bg-sunk px-20 py-16 font-semibold text-ink"
+              >
+                {tDetail('edit')}
+              </Pressable>
+            )}
+          </ExerciseDetail>
         )}
         {content?.kind === 'form' && (
           <ExerciseForm

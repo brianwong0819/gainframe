@@ -2,21 +2,19 @@
 
 import { builtInExerciseCues } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
+import type { ReactNode } from 'react'
 
-import { Pressable } from '@/ui/pressable'
-
-import { AddToPlan } from '../plans/add-to-plan'
 import { formatRest, type LibraryEntry } from './library'
 import { MuscleMap } from './muscle-map'
 
-// The detail of an exercise: where it works and how it is set up. A custom
-// exercise has no mechanic or cues, and has an Edit button.
+// The detail of an exercise: where it works and how it is set up, followed by
+// the caller's actions (`children`). A custom exercise has no mechanic or cues.
 export function ExerciseDetail({
   exercise,
-  onEdit,
+  children,
 }: {
   exercise: LibraryEntry
-  onEdit: () => void
+  children?: ReactNode
 }) {
   const t = useTranslations('exerciseDetail')
   const tMuscle = useTranslations('muscle')
@@ -81,15 +79,7 @@ export function ExerciseDetail({
           <dd className="num text-body text-ink">{formatRest(exercise.defaultRestS)}</dd>
         </div>
       </dl>
-      <AddToPlan key={exercise.id} exerciseId={exercise.id} />
-      {exercise.custom && (
-        <Pressable
-          onClick={onEdit}
-          className="rounded-full bg-sunk px-20 py-16 font-semibold text-ink"
-        >
-          {t('edit')}
-        </Pressable>
-      )}
+      {children}
     </div>
   )
 }

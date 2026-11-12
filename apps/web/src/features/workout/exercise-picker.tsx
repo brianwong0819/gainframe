@@ -5,11 +5,11 @@ import { useState } from 'react'
 
 import { Pressable } from '@/ui/pressable'
 
-import { exerciseName, libraryEntries } from '../exercises/library'
+import { exerciseName, type LibraryEntry, libraryEntries } from '../exercises/library'
 import { useCustomExercises } from '../exercises/use-custom-exercises'
 
 // The exercise library as a list to pick from, with the same search.
-export function ExercisePicker({ onPick }: { onPick: (exerciseId: string) => void }) {
+export function ExercisePicker({ onPick }: { onPick: (exercise: LibraryEntry) => void }) {
   const t = useTranslations('exercises')
   const tMuscle = useTranslations('muscle')
   const locale = useLocale()
@@ -38,7 +38,7 @@ export function ExercisePicker({ onPick }: { onPick: (exerciseId: string) => voi
               <Pressable
                 className="flex w-full flex-col py-12 text-left"
                 onClick={() => {
-                  onPick(entry.id)
+                  onPick(entry)
                 }}
               >
                 <span className="text-body text-ink">{exerciseName(entry, locale)}</span>

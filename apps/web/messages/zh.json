@@ -192,6 +192,8 @@
     "missing": "这个计划不存在或已删除。",
     "close": "关闭",
     "pickerTitle": "添加到「{day}」",
+    "backToPicker": "返回动作列表",
+    "addToDay": "加入「{day}」",
     "sets": "组数",
     "repsMin": "最少次数",
     "repsMax": "最多次数",

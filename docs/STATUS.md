@@ -4,7 +4,7 @@ The handover note between sessions. Keep it short and current; update it in ever
 
 - **Milestone:** M1 Workout logging
 - **Current task:** none; M1-09 Plans done (pending bw's iPhone check). Next: M1-06 Rest timer, once bw says to continue
-- **Last updated:** 2026-11-09
+- **Last updated:** 2026-11-12
 
 ## Where I stopped
 
@@ -89,6 +89,8 @@ M1-09, part 4 (2026-11-09, PR `m1/09-start-from-plan`): `workoutSession.startFro
 M1-09, part 5 (2026-11-09, PR `m1/09-plan-card`): with no workout in progress, the Workout tab shows the current plan's next day (`planStore.upNext`): its place in the rotation ("第 2/3 天 · 推拉腿"), name and exercises, a start button, "Another day" (a sheet of the plan's days) and "Empty workout". Without a current plan, or for a plan with no days, the tab keeps the plain start button. Each exercise card in the workout shows the plan's rep range and the best weight of earlier workouts in grey. `e2e/plans.spec.ts` starts day 1 from the tab, finishes it and sees day 2 offered. Pending: bw iPhone check of the whole plan flow.
 
 M1-09, part 6 (2026-11-09, PR `m1/09-add-to-plan`): the exercise detail sheet has "Add to plan", listing the days of every plan (current plan first); a tap appends the exercise with the default sets and range. Finishing a workout that did not follow a plan offers "Finish and save as a new plan day": `planItemsFromWorkout` (`packages/shared/src/domain/plan.ts`) turns each exercise's completed working and failure sets into target sets and a rep range, appended as the last day of the current plan (or of a new plan, which becomes current). M1-09 is done. Pending: bw iPhone check of the whole flow (make a plan, start its next day from the Workout tab, finish, see the next day offered).
+
+Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw: in the plan editor, tapping an exercise in "Add exercise" shows the same detail as the library (muscle map, cues, muscles, equipment, default rest) with "Add to “<day>”" kept at the bottom of the sheet and a way back to the list, which keeps its search (`features/plans/plan-exercise-picker.tsx`). `ExerciseDetail` now takes its actions as children. The picker in a workout still adds at once. Next, also from bw: a plan note per exercise, shown in every workout of that day and separate from the workout's own note.
 
 ## Blocked on bw
 

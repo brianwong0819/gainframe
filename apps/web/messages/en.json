@@ -192,6 +192,8 @@
     "missing": "This plan does not exist or was deleted.",
     "close": "Close",
     "pickerTitle": "Add to “{day}”",
+    "backToPicker": "Back to exercises",
+    "addToDay": "Add to “{day}”",
     "sets": "Sets",
     "repsMin": "Min reps",
     "repsMax": "Max reps",
