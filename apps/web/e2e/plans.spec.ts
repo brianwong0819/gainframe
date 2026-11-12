@@ -104,6 +104,13 @@ test("the Workout tab offers the current plan's next day and starts it", async (
     .click()
   await page.getByRole('dialog').getByRole('button', { name: '加入「推」' }).click()
   await expect(page.getByRole('dialog')).toBeHidden()
+  // The plan note is saved when its field loses focus, and shown on the row.
+  await page.getByRole('button', { name: /^杠铃卧推 3 组/ }).click()
+  const note = page.getByRole('dialog').getByRole('textbox', { name: '计划备注' })
+  await note.fill('握距比肩宽一指')
+  await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByRole('main').getByText('握距比肩宽一指')).toBeVisible()
   await page.getByRole('button', { name: '加一天' }).click()
   await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveValue('第 2 天')
 
@@ -113,6 +120,7 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await page.getByRole('button', { name: '开始「推」' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await expect(page.getByText('目标 8–12 次')).toBeVisible()
+  await expect(page.getByText('计划 · 握距比肩宽一指')).toBeVisible()
   await expect(page.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
 
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()

@@ -43,6 +43,7 @@ export function SlotNote({ slot, onDone }: { slot: WorkoutExercise; onDone: () =
           }}
           className="w-full resize-none rounded-ctl bg-sunk px-16 py-12 text-input text-ink placeholder:text-ink-3"
         />
+        <p className="text-label text-ink-2">{t('noteHint')}</p>
       </div>
       <Pressable type="submit" className="rounded-ctl bg-ink py-12 text-body font-semibold text-bg">
         {t('saveNote')}
