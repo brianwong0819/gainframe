@@ -151,9 +151,9 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         {sheetSlot && <SlotNote key={sheetSlot.id} slot={sheetSlot} onDone={close} />}
         {sheet?.kind === 'picker' && (
           <ExercisePicker
-            onPick={(exerciseId) => {
+            onPick={({ id }) => {
               setSheetOpen(false)
-              void workoutSession.addExercise(workout.id, exerciseId)
+              void workoutSession.addExercise(workout.id, id)
             }}
           />
         )}

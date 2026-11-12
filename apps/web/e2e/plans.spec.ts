@@ -24,11 +24,17 @@ test('a new plan with two days and an exercise survives a reload', async ({ page
   await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveValue('第 2 天')
 
   await page.getByRole('button', { name: '添加动作' }).first().click()
+  const dialog = page.getByRole('dialog')
   await page.getByRole('searchbox').fill('杠铃卧推')
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: /^杠铃卧推/ })
-    .click()
+  await dialog.getByRole('button', { name: /^杠铃卧推/ }).click()
+  // A tap shows the exercise's detail first; back keeps the search.
+  await expect(dialog.getByRole('heading', { name: '杠铃卧推' })).toBeVisible()
+  await expect(dialog.getByRole('img', { name: /^肌肉示意图。主要：胸/ })).toBeVisible()
+  await dialog.getByRole('button', { name: '返回动作列表' }).click()
+  await expect(page.getByRole('searchbox')).toHaveValue('杠铃卧推')
+  await dialog.getByRole('button', { name: /^杠铃卧推/ }).click()
+  await dialog.getByRole('button', { name: '加入「推」' }).click()
+  await expect(dialog).toBeHidden()
   // Shown once read back from the database (L-024).
   await expect(page.getByRole('main').getByText('3 组 · 8–12 次')).toBeVisible()
   await expect(name).toHaveValue('推拉腿')
@@ -53,6 +59,7 @@ test("an exercise's sets, rep range and suggested rest are kept", async ({ page 
     .getByRole('dialog')
     .getByRole('button', { name: /^杠铃深蹲/ })
     .click()
+  await page.getByRole('dialog').getByRole('button', { name: '加入「第 1 天」' }).click()
   // The picker sheet sits inside the page; wait for it to close before tapping
   // the new row.
   await expect(page.getByRole('dialog')).toBeHidden()
@@ -95,6 +102,7 @@ test("the Workout tab offers the current plan's next day and starts it", async (
     .getByRole('dialog')
     .getByRole('button', { name: /^杠铃卧推/ })
     .click()
+  await page.getByRole('dialog').getByRole('button', { name: '加入「推」' }).click()
   await expect(page.getByRole('dialog')).toBeHidden()
   await page.getByRole('button', { name: '加一天' }).click()
   await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveValue('第 2 天')

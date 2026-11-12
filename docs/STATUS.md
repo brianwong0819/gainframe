@@ -92,6 +92,8 @@ M1-09, part 6 (2026-11-09, PR `m1/09-add-to-plan`): the exercise detail sheet ha
 
 Weight units (2026-11-12, PR `m1/weight-units`), asked for by bw because some machines are labelled in pounds: tapping the weight label in the set panel switches that exercise between kg and lb. Weights are still stored in kg (`toKg` / `fromKg` in `packages/shared/src/domain/weight-unit.ts`: kg to 10 g, pounds shown to 0.1 lb, and a test proves every weight typed to 0.1 lb reads back as typed). In pounds the stepper steps by `domainConfig.weightStepLb` in whole pounds (`workoutSession.stepWeight`), the set table, last time and best weight show pounds, and the panel shows the weight in kg beneath. The unit is a device setting per exercise (`weightUnit:<exerciseId>` in `settings`, `src/db/weight-units.ts`), so it is remembered for that machine. Pending: bw iPhone check.
 
+Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw: in the plan editor, tapping an exercise in "Add exercise" shows the same detail as the library (muscle map, cues, muscles, equipment, default rest) with "Add to “<day>”" kept at the bottom of the sheet and a way back to the list, which keeps its search (`features/plans/plan-exercise-picker.tsx`). `ExerciseDetail` now takes its actions as children. The picker in a workout still adds at once. Next, also from bw: a plan note per exercise, shown in every workout of that day and separate from the workout's own note.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.

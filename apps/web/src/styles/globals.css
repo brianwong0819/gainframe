@@ -239,6 +239,17 @@
     background: var(--surface);
   }
 
+  /* An action kept in reach at the bottom of a scrolling sheet. It covers the
+   * panel's bottom padding too, so content never shows below it. */
+  .sheet-footer {
+    --sheet-footer-pad: calc(var(--safe-bottom) + var(--space-20));
+    position: sticky;
+    bottom: calc(-1 * var(--sheet-footer-pad));
+    margin-bottom: calc(-1 * var(--sheet-footer-pad));
+    padding: var(--space-8) 0 var(--sheet-footer-pad);
+    background: var(--surface);
+  }
+
   .sheet-grab {
     align-self: center;
     width: var(--space-40);

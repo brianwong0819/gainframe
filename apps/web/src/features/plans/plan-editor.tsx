@@ -12,11 +12,11 @@ import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
-import { exerciseName, formatRest } from '../exercises/library'
+import { exerciseName, formatRest, type LibraryEntry } from '../exercises/library'
 import { findExercise } from '../workout/exercise-info'
-import { ExercisePicker } from '../workout/exercise-picker'
 import { formatRepRange } from './item-edit'
 import { NameField } from './name-field'
+import { PlanExercisePicker } from './plan-exercise-picker'
 import { PlanItemSheet } from './plan-item-sheet'
 
 // Custom exercises including deleted ones, so names never go missing.
@@ -25,7 +25,8 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const quietButtonClass =
   'self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2'
 
-type SheetContent = { kind: 'picker'; day: PlanDay } | { kind: 'item'; itemId: string }
+type SheetContent =
+  { kind: 'picker'; day: PlanDay; picked: LibraryEntry | null } | { kind: 'item'; itemId: string }
 
 // A button that asks once more before it acts.
 function ConfirmButton({
@@ -148,7 +149,9 @@ export function PlanEditor({ state }: { state: PlanState }) {
       : undefined
   const sheetTitle =
     sheet?.kind === 'picker'
-      ? t('pickerTitle', { day: sheet.day.name })
+      ? sheet.picked
+        ? exerciseName(sheet.picked, locale)
+        : t('pickerTitle', { day: sheet.day.name })
       : sheetItem
         ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
         : ''
@@ -182,7 +185,7 @@ export function PlanEditor({ state }: { state: PlanState }) {
           n={index + 1}
           custom={custom}
           onAddExercise={() => {
-            open({ kind: 'picker', day: dayState.day })
+            open({ kind: 'picker', day: dayState.day, picked: null })
           }}
           onOpenItem={(item) => {
             open({ kind: 'item', itemId: item.id })
@@ -215,10 +218,18 @@ export function PlanEditor({ state }: { state: PlanState }) {
         title={sheetTitle}
       >
         {sheet?.kind === 'picker' && (
-          <ExercisePicker
-            onPick={(exerciseId) => {
+          <PlanExercisePicker
+            day={sheet.day}
+            picked={sheet.picked}
+            onPick={(picked) => {
+              setSheet({ ...sheet, picked })
+            }}
+            onBack={() => {
+              setSheet({ ...sheet, picked: null })
+            }}
+            onAdd={({ id }) => {
               setSheetOpen(false)
-              void planStore.addItem(sheet.day.id, exerciseId)
+              void planStore.addItem(sheet.day.id, id)
             }}
           />
         )}
