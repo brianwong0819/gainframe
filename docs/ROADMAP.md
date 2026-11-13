@@ -128,13 +128,13 @@ Done when: a meal is logged in under 30 seconds and the eval script reports mean
 
 Done when: the first screen shows what is left for today and this week's weight change.
 
-- [ ] **M4-01 Goal settings**: phase (default: bulk), protein method (g/kg or fixed), energy estimate (Mifflin-St Jeor × activity factor), suggested surplus; all overridable.
+- [ ] **M4-01 Goal settings**: profile fields sex, birth year and height (each optional, explained as used only for these estimates and, after the MVP, the strength standing in M8), phase (default: bulk), protein method (g/kg or fixed), energy estimate (Mifflin-St Jeor × activity factor), suggested surplus; all overridable. When the latest body metrics include body fat, also show the Katch-McArdle estimate, which uses lean mass instead of height and age.
   Verify: suggestions for the owner's height and weight match a hand calculation (formula in the tests).
-- [ ] **M4-02 Body weight**: daily weigh-ins, 7-day average, weekly rate, target corridor.
-  Verify: fixture tests check averages and rate; the UI shows on target / too slow / too fast.
+- [ ] **M4-02 Body weight and composition**: daily weigh-ins, 7-day average, weekly rate, target corridor. One `body_metrics` row per measurement: weight always; body fat %, skeletal muscle mass and fat mass optional, for users with a body composition scan (InBody or a smart scale); `source` (`manual` now; `scan` and `health` reserved for the version-2 imports below). Manual entry only. With two scans or more, show the change in fat-free mass and fat mass between them next to the weight change ("+2.0 kg since 1 Oct: +1.2 lean, +0.8 fat"), labelled with both dates and a note that readings depend on hydration and measuring conditions; never a daily composition trend, which home bioimpedance cannot support. Pure functions in `packages/shared/src/domain` (7-day average, weekly rate, composition change).
+  Verify: fixture tests check averages, rate and composition change; the UI shows on target / too slow / too fast; a weight-only user sees no empty composition fields.
 - [ ] **M4-03 Today screen**: surplus gauge, protein ring, today's workout, weight card, all live.
   Verify: logging a meal rolls the numbers on Today to their new values.
-- [ ] **M4-04 Trend charts**: visx charts for weight, per-exercise e1RM, weekly volume, protein and kcal history; scrubbing tooltip.
+- [ ] **M4-04 Trend charts**: visx charts for weight (with body fat % and skeletal muscle mass as points at each scan, when present), per-exercise e1RM, weekly volume, protein and kcal history; scrubbing tooltip.
   Verify: scrubbing holds 60 fps on iPhone (Safari timeline).
 - [ ] **M4-05 Wide layout**: two-column desktop layout for reviewers on laptops.
   Verify: no stretched single-column pages at 1440 px.
@@ -188,6 +188,19 @@ Done when: a stranger understands the project and tries it within 5 minutes.
 
 Verify (all of M7): someone new to the project understands it and tries it successfully within 5 minutes.
 
+## M8 Strength standing (after the MVP)
+
+Done when: the exercise detail and the workout summary show, for the back squat, bench press and deadlift, where the user's estimated 1RM sits among drug-tested raw powerlifters of the same sex, body weight and age, with the source and its bias stated.
+
+Decided in [ADR-0006](adr/0006-strength-standing.md) (proposed until M8-01 starts). Only these three lifts: they are the only ones with an open, large dataset. Not shown for any other exercise, nor when sex, birth year or a body weight from the last 14 days is missing (the screen says which is missing instead).
+
+- [ ] **M8-01 Norms table**: `scripts/strength-norms.ts` reads a dated OpenPowerlifting bulk CSV snapshot (public domain; the file is downloaded by hand, never committed), keeps raw, drug-tested entries with a successful lift, takes each lifter's best result, and writes percentile breakpoints (P5 to P95) by sex, lift, body-weight band and age band to `packages/shared/src/strength-norms.ts`, with the snapshot date and row counts. Cells with fewer than `domainConfig.strengthNormsMinCell` lifters merge into the neighbouring band. Credit in `docs/design/credits.md` and in the app.
+  Verify: the young-adult P90 relative strength matches van den Hoek et al. (2024) within 5% (squat 2.83, bench 1.95, deadlift 3.25 × body weight for men); the generated file is under 30 KB.
+- [ ] **M8-02 Standing function**: `strengthStanding(e1rmKg, bodyWeightKg, sex, age, lift)` in `packages/shared/src/domain` interpolates the percentile and returns null outside the table; it uses the best e1RM of the last 8 weeks from sets of 1–5 reps when there are any, else of up to `e1rmMaxReps`, and reports which.
+  Verify: fixture tests cover band edges, merged cells, missing inputs and an e1RM above P95 ("above the 95th percentile", never a made-up number).
+- [ ] **M8-03 Standing UI**: a quiet row in the exercise detail and the workout summary: the percentile as a number with a thin 0–100 scale (tokens only, no medals, ranks or colours for "good"), the comparison group in words ("raw tested lifters, 66–74 kg, 18–35"), the e1RM it is based on, a source tag and "for reference only; competition lifts follow stricter rules than gym sets". History of the percentile over time in the exercise's trend chart.
+  Verify: 👤 bw reads the row on the iPhone and finds the comparison group and the caveat clear; screenshots at 390×844, light and dark.
+
 ---
 
-If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: training programmes, CSV import/export, text-based meal estimates.
+If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: M8 strength standing, training programmes, CSV import/export, text-based meal estimates. Version 2: body composition import from an InBody result sheet photo (through the M3 vision pipeline, every field confirmed by the user before saving) and Apple Health weight through an iOS Shortcut ([ADR-0004](adr/0004-pwa-over-native.md)), both writing `body_metrics` rows with their own `source`.

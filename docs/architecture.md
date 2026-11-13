@@ -69,8 +69,8 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 
 | Table | Key fields |
 |---|---|
-| profiles | phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
-| body_metrics | local_date, weight_kg |
+| profiles | sex, birth_year, height_cm (all nullable), phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
+| body_metrics | measured_at, local_date, weight_kg, body_fat_pct, skeletal_muscle_kg, fat_mass_kg (the last three nullable), source (manual/scan/health) |
 | exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are the constant `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` with fixed IDs) |
 | plans / plan_days / plan_items | name; plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s (no weight; which plan is active is a device setting, not a column) |
 | workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note |

@@ -111,6 +111,8 @@ M1-06, part 2 (2026-11-13, PR `m1/06-rest-timer`): the rest sheet, pill and cue 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
 - Settings → Code security: enable Dependabot alerts and Dependabot security updates.
 
+Plan update (2026-11-13, PR `m4/plan-body-metrics-strength`): at bw's request, M4-02 now covers optional body composition (body fat %, skeletal muscle mass, fat mass) next to weight, entered by hand; M4-01 adds optional sex, birth year and height to the profile; a post-MVP milestone M8 adds a strength standing for the squat, bench press and deadlift from OpenPowerlifting data ([ADR-0006](adr/0006-strength-standing.md), proposed). InBody photo import and Apple Health weight are listed as version 2 at the end of `docs/ROADMAP.md`.
+
 ## Follow-ups (noticed, not in scope yet)
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
