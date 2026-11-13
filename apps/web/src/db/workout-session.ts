@@ -3,6 +3,7 @@ import {
   fromKg,
   nextSetValues,
   previousPerformance,
+  stepToGrid,
   toKg,
   toLocalDate,
   type WeightUnit,
@@ -236,12 +237,18 @@ export function createWorkoutSession(
       })
     },
 
-    // Steps the weight as shown in `unit`, so taps in pounds land on whole
-    // steps of pounds (45, 50, 55 lb) rather than on converted kg.
-    async stepWeight(setId: string, delta: number, unit: WeightUnit): Promise<WorkoutSet> {
+    // Steps the weight as shown in `unit` to the next multiple of `step`, so
+    // taps land on whole steps (45, 50, 55 lb; 5, 7.5, 10 kg) even from a weight
+    // converted from the other unit.
+    async stepWeight(
+      setId: string,
+      step: number,
+      direction: -1 | 1,
+      unit: WeightUnit,
+    ): Promise<WorkoutSet> {
       return db.transaction('rw', db.workoutSets, db.outbox, async () => {
         const set = await getSet(setId)
-        const weightKg = toKg(Math.max(0, fromKg(set.weightKg, unit) + delta), unit)
+        const weightKg = toKg(stepToGrid(fromKg(set.weightKg, unit), step, direction), unit)
         return repos.workoutSets.update(setId, { weightKg })
       })
     },

@@ -2,7 +2,7 @@ import {
   BUILT_IN_EXERCISES,
   type Equipment,
   type Exercise,
-  fromKg,
+  displayWeight,
   type WeightUnit,
 } from '@gainframe/shared'
 
@@ -20,9 +20,9 @@ export function findExercise(id: string, custom: readonly Exercise[]): ExerciseI
   return builtIns.get(id) ?? custom.find((exercise) => exercise.id === id) ?? unknown
 }
 
-// A stored weight in `unit` as a plain number: 60, 62.5, 1.25, 135.5.
+// A stored weight in `unit` as a plain number: 60, 62.5, 1.25, 4.5, 135.5.
 export function formatWeight(kg: number, unit: WeightUnit): string {
-  return String(fromKg(kg, unit))
+  return String(displayWeight(kg, unit))
 }
 
 export function isBodyweight(equipment: Equipment): boolean {

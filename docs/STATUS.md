@@ -4,7 +4,7 @@ The handover note between sessions. Keep it short and current; update it in ever
 
 - **Milestone:** M1 Workout logging
 - **Current task:** none; M1-09 Plans done (pending bw's iPhone check). Next: M1-06 Rest timer, once bw says to continue
-- **Last updated:** 2026-11-12
+- **Last updated:** 2026-11-13
 
 ## Where I stopped
 
@@ -91,6 +91,8 @@ M1-09, part 5 (2026-11-09, PR `m1/09-plan-card`): with no workout in progress, t
 M1-09, part 6 (2026-11-09, PR `m1/09-add-to-plan`): the exercise detail sheet has "Add to plan", listing the days of every plan (current plan first); a tap appends the exercise with the default sets and range. Finishing a workout that did not follow a plan offers "Finish and save as a new plan day": `planItemsFromWorkout` (`packages/shared/src/domain/plan.ts`) turns each exercise's completed working and failure sets into target sets and a rep range, appended as the last day of the current plan (or of a new plan, which becomes current). M1-09 is done. Pending: bw iPhone check of the whole flow (make a plan, start its next day from the Workout tab, finish, see the next day offered).
 
 Weight units (2026-11-12, PR `m1/weight-units`), asked for by bw because some machines are labelled in pounds: tapping the weight label in the set panel switches that exercise between kg and lb. Weights are still stored in kg (`toKg` / `fromKg` in `packages/shared/src/domain/weight-unit.ts`: kg to 10 g, pounds shown to 0.1 lb, and a test proves every weight typed to 0.1 lb reads back as typed). In pounds the stepper steps by `domainConfig.weightStepLb` in whole pounds (`workoutSession.stepWeight`), the set table, last time and best weight show pounds, and the panel shows the weight in kg beneath. The unit is a device setting per exercise (`weightUnit:<exerciseId>` in `settings`, `src/db/weight-units.ts`), so it is remembered for that machine. Pending: bw iPhone check.
+
+Weight step grid (2026-11-13, PR `m1/weight-step-grid`), from bw's iPhone check: a weight typed in pounds and shown in kg read 4.54 kg, and each step kept the odd remainder (16.56 kg). A stepper tap now moves to the next multiple of the step in the shown unit (`stepToGrid`: 4.54 kg + 2.5 gives 5, then 7.5), and kg weights off the 0.25 kg grid show to 0.1 kg (`displayWeight`: 4.5); the stored value is unchanged until the user steps or types.
 
 Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw: in the plan editor, tapping an exercise in "Add exercise" shows the same detail as the library (muscle map, cues, muscles, equipment, default rest) with "Add to “<day>”" kept at the bottom of the sheet and a way back to the list, which keeps its search (`features/plans/plan-exercise-picker.tsx`). `ExerciseDetail` now takes its actions as children. The picker in a workout still adds at once. Next, also from bw: a plan note per exercise, shown in every workout of that day and separate from the workout's own note.
 
