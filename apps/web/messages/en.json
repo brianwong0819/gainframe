@@ -66,7 +66,17 @@
     "plansNone": "No plan yet",
     "target": "target {reps} reps",
     "best": "best {weight}",
-    "finishAndSave": "Finish and save as a new plan day"
+    "finishAndSave": "Finish and save as a new plan day",
+    "rest": "Rest",
+    "restTitle": "Rest",
+    "restOver": "Rest over",
+    "restDone": "Start next set",
+    "restLess": "Rest {s} s less",
+    "restMore": "Rest {s} s more",
+    "restOpen": "Show the rest timer",
+    "restStop": "Stop the sound and end the rest",
+    "restAwayHint": "No sound plays while the phone is locked or in another app; you are reminded when you come back.",
+    "restLeft": "left"
   },
   "food": {
     "title": "Food",

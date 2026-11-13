@@ -25,7 +25,7 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | `--short` | `#A85A14` | `#E39A54` | below target only |
 | `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
 
-Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
+Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Display 48/300 (the rest countdown only), title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
 
 Spacing scale: 4 · 8 · 12 · 16 · 20 · 28 · 40 — nothing else. Radii: control 12, group 20, media/sheet 24–28, pills fully round.
 
@@ -58,6 +58,8 @@ Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(ta
 **Muscle map.** `src/features/exercises/muscle-map.tsx` draws one front-and-back body in SVG: the primary muscle in `--accent`, secondary muscles in `--accent-soft`, the rest in `--sunk`. In the exercise form it is also a picker (first tap primary, later taps secondary, a second tap removes). Some regions are about 10 px wide, under the 44 px tap target, so a row of muscle buttons in the same two colours sits below it as the control that always works.
 
 **Active workout.** Each exercise is a card with a set table (set, last time, weight, reps, check), as in the prototype. Unlike the prototype, the steppers are not in every row: at 320 px a row cannot hold two steppers with 44 px targets. The selected set (the first not done, or the one tapped) is edited in a panel that sticks above the tab bar, in the thumb zone, with two full-width steppers (48 px targets) and the complete button. For a bodyweight exercise the weight column is the added load and 0 reads "自重 / BW". Tapping the weight label in the panel (a `kg | lb` pill) switches that exercise between kg and pounds; in pounds every weight of the exercise reads in pounds and the panel shows the kg value beneath, for gyms that label some machines in pounds. Tapping a stepper's number opens the keypad to type it (`src/ui/stepper.tsx`); the numbers roll (`src/ui/rolling-number.tsx`), and the set check pops its disc with `pop` and draws the tick.
+
+**Rest timer.** Completing a set with sets still to do opens the rest sheet (`features/workout/rest-timer.tsx`): a ring that empties with `soft` as the rest runs out, the time left in the display size, −15 / +15 and "开始下一组 / Start next set", which ends the rest. Closing or dragging the sheet down collapses it to a pill centred above the set panel (`.workout-dock`, which keeps both above the tab bar); the pill enters with `pop` and reopens the sheet. When the rest is over the pill turns `--accent`, reads "休息结束 +0:42" and a tap stops the cue and ends the rest. A rest that ended while the app was hidden shows a one-line note that a locked phone gives no alert (ADR-0005).
 
 ## Celebrations (three tiers, only at meaningful moments)
 

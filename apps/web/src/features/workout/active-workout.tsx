@@ -1,9 +1,10 @@
 'use client'
 
 import type { Exercise, Workout, WorkoutSet } from '@gainframe/shared'
+import { AnimatePresence } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { db, planStore, repositories, weightUnits, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
@@ -15,6 +16,8 @@ import { ExerciseDetail } from '../exercises/exercise-detail'
 import { exerciseName, findLibraryEntry } from '../exercises/library'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
+import { allowScreenOff, keepScreenOn, prepareRestCue } from './rest-cue'
+import { RestPanel, RestPill, useRest } from './rest-timer'
 import { SetDetails } from './set-details'
 import { SetPanel } from './set-panel'
 import { SetTable } from './set-table'
@@ -30,6 +33,7 @@ type SheetContent =
   | { kind: 'set'; setId: string; n: number }
   | { kind: 'note'; slotId: string }
   | { kind: 'exercise'; exerciseId: string }
+  | { kind: 'rest' }
 
 // The set the panel edits: the one the user tapped while it is still there and
 // not done, else the first set not done yet.
@@ -43,11 +47,20 @@ function selectedSet(state: ActiveWorkoutState, chosenId: string | null) {
   )
 }
 
-// Completing a set starts the rest after it (M1-06); undoing it cancels that rest.
-function toggleDone(set: WorkoutSet) {
-  void (set.completedAt === null
-    ? workoutSession.completeSet(set.id)
-    : workoutSession.uncompleteSet(set.id))
+// The screen stays on while a workout is open (ADR-0005); iOS drops the lock
+// whenever the app is hidden, so it is taken again on each return.
+function useScreenOn() {
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') keepScreenOn()
+    }
+    keepScreenOn()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      allowScreenOff()
+    }
+  }, [])
 }
 
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
@@ -60,6 +73,8 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const [sheet, setSheet] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const { workout } = state
+  const rest = useRest(workout)
+  useScreenOn()
   const selected = selectedSet(state, chosenId)
   const done = state.slots.reduce(
     (count, { sets }) => count + sets.filter((set) => set.completedAt !== null).length,
@@ -73,6 +88,24 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const close = () => {
     setSheetOpen(false)
   }
+
+  // Completing a set starts the rest after it (M1-06) and opens the rest
+  // sheet; undoing it cancels that rest. The tap also unlocks the cue's audio.
+  function toggleDone(set: WorkoutSet) {
+    if (set.completedAt !== null) {
+      void workoutSession.uncompleteSet(set.id)
+      return
+    }
+    prepareRestCue()
+    keepScreenOn()
+    void workoutSession.completeSet(set.id).then(({ restEndsAt }) => {
+      if (restEndsAt !== null) open({ kind: 'rest' })
+    })
+  }
+  // The rest sheet closes by itself when the rest ends; closed while the rest
+  // runs, it collapses to the pill.
+  const restSheet = sheet?.kind === 'rest'
+  const shown = sheetOpen && !(restSheet && rest === null)
 
   // The sheet shows the live rows, so a picked chip shows at once.
   const sheetSet =
@@ -91,6 +124,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     finish: t('finishTitle'),
     set: sheet?.kind === 'set' ? `${t('colSet')} ${String(sheet.n)}` : '',
     note: t('note'),
+    rest: t('restTitle'),
   }
 
   return (
@@ -143,21 +177,38 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           {t('finish')}
         </Pressable>
       </div>
-      {selected && (
-        <SetPanel
-          key={selected.set.id}
-          set={selected.set}
-          n={selected.n}
-          exerciseId={selected.exerciseId}
-          exercise={findExercise(selected.exerciseId, custom)}
-          unit={unitOf(selected.exerciseId)}
-          onDetails={() => {
-            open({ kind: 'set', setId: selected.set.id, n: selected.n })
-          }}
-        />
-      )}
+      <div className="workout-dock flex flex-col gap-8">
+        <AnimatePresence>
+          {rest && !(shown && restSheet) && (
+            <RestPill
+              key="rest"
+              workout={workout}
+              rest={rest}
+              onOpen={() => {
+                open({ kind: 'rest' })
+              }}
+            />
+          )}
+        </AnimatePresence>
+        {selected && (
+          <SetPanel
+            key={selected.set.id}
+            set={selected.set}
+            n={selected.n}
+            exerciseId={selected.exerciseId}
+            exercise={findExercise(selected.exerciseId, custom)}
+            unit={unitOf(selected.exerciseId)}
+            onDetails={() => {
+              open({ kind: 'set', setId: selected.set.id, n: selected.n })
+            }}
+            onComplete={() => {
+              toggleDone(selected.set)
+            }}
+          />
+        )}
+      </div>
       <Sheet
-        open={sheetOpen}
+        open={shown}
         onClose={close}
         closeLabel={t('close')}
         title={sheet ? title[sheet.kind] : ''}
@@ -173,6 +224,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           />
         )}
         {sheetExercise && <ExerciseDetail exercise={sheetExercise} />}
+        {restSheet && rest && <RestPanel workout={workout} rest={rest} />}
         {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>

@@ -18,6 +18,8 @@ interface SetPanelProps {
   exercise: ExerciseInfo
   unit: WeightUnit
   onDetails: () => void
+  // Completes the set; the caller also starts the rest after it.
+  onComplete: () => void
 }
 
 // The selected set's weight and reps, with big steppers and the complete
@@ -25,7 +27,15 @@ interface SetPanelProps {
 // weight is shown and typed in the exercise's unit; tapping the weight label
 // switches it between kg and lb for this exercise, and a weight in pounds shows
 // its kg beneath.
-export function SetPanel({ set, n, exerciseId, exercise, unit, onDetails }: SetPanelProps) {
+export function SetPanel({
+  set,
+  n,
+  exerciseId,
+  exercise,
+  unit,
+  onDetails,
+  onComplete,
+}: SetPanelProps) {
   const t = useTranslations('workout')
   const tKind = useTranslations('setKind')
   const locale = useLocale()
@@ -110,9 +120,7 @@ export function SetPanel({ set, n, exerciseId, exercise, unit, onDetails }: SetP
         />
       </div>
       <Pressable
-        onClick={() => {
-          void workoutSession.completeSet(set.id)
-        }}
+        onClick={onComplete}
         className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
       >
         {t('complete', { n })}
