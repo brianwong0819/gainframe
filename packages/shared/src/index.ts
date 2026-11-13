@@ -14,12 +14,7 @@ export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
-export {
-  nextPlanDay,
-  planItemsFromWorkout,
-  type PlanItemValues,
-  suggestRestS,
-} from './domain/plan.ts'
+export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
 export { fromKg, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,

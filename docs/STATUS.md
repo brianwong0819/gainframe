@@ -96,6 +96,8 @@ Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw
 
 Plan note (2026-11-12, PR `m1/plan-item-note`), asked for by bw: a plan item has a `note` (up to 500 characters), edited in the item sheet and saved when the field loses focus; the plan editor shows it under the exercise. A workout slot started from the plan copies it as `planNote`, like the rep range and rest, and the exercise card shows it as "计划 · …" above the workout's own note, which stays for that workout only (its sheet now says so). Dexie version 7 gives older plan items and slots no plan note (upgrade test). `planItemsFromWorkout` carries a slot's plan note into a saved day.
 
+Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw: an ⓘ beside the exercise name on each workout card, and "动作详情" in a plan item's sheet, open the same `ExerciseDetail` as the library. In the item sheet the detail replaces the settings with a way back (`ExerciseDetailView`, also used by the plan's exercise picker); `ExerciseInfoButton` is the one button for it. bw found the rest "Suggest" button of no use, so it is gone together with `suggestRestS` and `domainConfig.suggestedRestS`; `findLibraryEntry` replaces `restInfo`.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
@@ -103,6 +105,7 @@ Plan note (2026-11-12, PR `m1/plan-item-note`), asked for by bw: a plan item has
 
 ## Follow-ups (noticed, not in scope yet)
 
+- WebKit e2e, intermittently: after "新建计划" the plan editor never shows the first day's name field (`e2e/plans.spec.ts`; iPhone SE on `main` run 43249089641, iPhone 17 Pro Max on PR #79). Suspect: `usePlanIdFromHash` reads `location.hash` during the render that `router.push` starts, and nothing re-reads it if the URL is updated afterwards without a `hashchange`. Reproduce in WebKit and fix before bw relies on creating plans.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.

@@ -12,6 +12,20 @@ const builtIns: readonly LibraryEntry[] = BUILT_IN_EXERCISES.map((exercise) => (
   custom: false,
 }))
 
+const builtInsById = new Map(builtIns.map((entry) => [entry.id, entry]))
+
+// One exercise as a library entry, built-in or the user's own (`custom` may
+// include deleted ones); undefined for an ID that matches neither.
+export function findLibraryEntry(
+  id: string,
+  custom: readonly Exercise[],
+): LibraryEntry | undefined {
+  const builtIn = builtInsById.get(id)
+  if (builtIn) return builtIn
+  const own = custom.find((exercise) => exercise.id === id)
+  return own && { ...own, custom: true }
+}
+
 // The user's exercises, newest first, then the built-in ones in catalog order,
 // narrowed to one muscle group (null for all) and the search query.
 export function libraryEntries(
