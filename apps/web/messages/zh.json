@@ -66,7 +66,17 @@
     "plansNone": "还没有计划",
     "target": "目标 {reps} 次",
     "best": "最高 {weight}",
-    "finishAndSave": "结束，并存成计划的新一天"
+    "finishAndSave": "结束，并存成计划的新一天",
+    "rest": "休息",
+    "restTitle": "组间休息",
+    "restOver": "休息结束",
+    "restDone": "开始下一组",
+    "restLess": "少休息 {s} 秒",
+    "restMore": "多休息 {s} 秒",
+    "restOpen": "展开休息计时",
+    "restStop": "停止提示音，结束休息",
+    "restAwayHint": "锁屏或切到别的 App 时不会响铃，回到这里才会提醒。",
+    "restLeft": "剩余"
   },
   "food": {
     "title": "饮食",

@@ -135,6 +135,12 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await expect(page.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
 
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
+  // Two sets are still to do, so the rest sheet opens; "start next set" ends the rest.
+  await page
+    .getByRole('dialog', { name: '组间休息' })
+    .getByRole('button', { name: '开始下一组' })
+    .click()
+  await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
   await page.getByRole('button', { name: '结束训练' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()

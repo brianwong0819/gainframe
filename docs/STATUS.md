@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-06 Rest timer (bw said to continue on 2026-11-13)
+- **Current task:** none; M1-06 Rest timer done (pending bw's iPhone check). Next: M1-07, once bw says to continue
 - **Last updated:** 2026-11-13
 
 ## Where I stopped
@@ -103,6 +103,8 @@ Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw
 Plan creation fix (2026-11-13, PR `m1/plan-create-flake`, L-028): the intermittent WebKit e2e failure after "新建计划" was a tap before hydration, not the URL fragment. The plan list's create button now renders once the list has loaded; an e2e test taps it with the JavaScript chunks delayed.
 
 M1-06, part 1 (2026-11-13, PR `m1/06-rest-data`): workouts gain `restStartedAt` / `restEndsAt` (Dexie v8, upgrade test; the end stays set after it passes until dismissed, so a relaunch can show an overdue rest). `workoutSession.completeSet` writes the set and its rest in one transaction: the slot's rest from the plan, else the exercise's default (`restSeconds` in `packages/shared/src/domain/rest.ts`, fallback 90 s in `domainConfig.rest`), no rest after the last set still to do. `uncompleteSet` and `finish` clear it; `adjustRest` moves the end by ±15 s, never before now; `endRest` ends it. The set table and panel now complete sets through the session. No timer UI yet.
+
+M1-06, part 2 (2026-11-13, PR `m1/06-rest-timer`): the rest sheet, pill and cue (`features/workout/rest-timer.tsx`, `rest-cue.ts`; "Rest timer" in `docs/design-system.md`). `useRest` recomputes the rest from the stored end every 250 ms and on each return to the page. The cue is three rising beeps from Web Audio, unlocked in the completing tap and played from a timer, never scheduled ahead on the audio clock; it repeats every 2.5 s for up to a minute when the rest ends on screen, and plays once when a rest that ended while hidden is first seen. Audio session `transient` (bw's measurement: only `playback` plays with the ringer off, and it stops music; ADR-0005). The screen wake lock is held while the workout screen is open and re-requested on return and on each completed set. New display type size 48/300. e2e `rest-timer.spec.ts` uses Playwright's clock: `setSystemTime`, not `fastForward`, because a fast-forward left Motion's exit animations unfinished.
 
 ## Blocked on bw
 

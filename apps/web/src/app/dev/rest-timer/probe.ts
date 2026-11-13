@@ -1,13 +1,7 @@
 // Browser plumbing for the rest-timer field test (M0-13): a persisted event
 // log, the audio cue and the screen wake lock. Findings feed ADR-0005.
 
-// The Audio Session API (Safari 16.4+) is not in TypeScript's DOM library yet.
-// https://w3c.github.io/audio-session/
-declare global {
-  interface Navigator {
-    readonly audioSession?: { type: AudioSessionType }
-  }
-}
+// `navigator.audioSession` is declared in src/features/workout/rest-cue.ts.
 
 export const audioSessionTypes = ['auto', 'ambient', 'transient', 'playback'] as const
 export type AudioSessionType = (typeof audioSessionTypes)[number]
