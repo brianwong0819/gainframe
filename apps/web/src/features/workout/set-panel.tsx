@@ -83,7 +83,7 @@ export function SetPanel({ set, n, exerciseId, exercise, unit, onDetails }: SetP
           decreaseLabel={t('weightDown', { n })}
           increaseLabel={t('weightUp', { n })}
           onStep={(direction) => {
-            void workoutSession.stepWeight(set.id, direction * step, unit)
+            void workoutSession.stepWeight(set.id, step, direction, unit)
           }}
         />
         {unit === 'lb' && set.weightKg > 0 && (
