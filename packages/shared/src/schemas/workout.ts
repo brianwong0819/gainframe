@@ -12,11 +12,26 @@ export const workoutSchema = syncedRowSchema
     planDayId: z.uuid().nullable(),
     localDate: localDateSchema,
     note: z.string().max(2000).nullable(),
+    // The rest after the last completed set (M1-06): when it started and when
+    // it ends, both null when no rest is running. The end stays set after it
+    // passes until the user dismisses the cue, so a relaunch can show the rest
+    // as overdue. Kept on the row, not in memory, because iOS may end the app
+    // between sets.
+    restStartedAt: instantSchema.nullable(),
+    restEndsAt: instantSchema.nullable(),
   })
   .refine(
     (workout) =>
       workout.endedAt === null || Date.parse(workout.endedAt) >= Date.parse(workout.startedAt),
     { message: 'A workout cannot end before it starts', path: ['endedAt'] },
+  )
+  .refine(
+    (workout) =>
+      workout.restStartedAt === null
+        ? workout.restEndsAt === null
+        : workout.restEndsAt !== null &&
+          Date.parse(workout.restEndsAt) >= Date.parse(workout.restStartedAt),
+    { message: 'A rest needs a start and an end no earlier than it', path: ['restEndsAt'] },
   )
 
 // warmup: preparation, never counted. working: a normal set. drop: a reduced-weight

@@ -15,6 +15,13 @@ export { domainConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
+export {
+  adjustRestEnd,
+  type RestState,
+  restSeconds,
+  restState,
+  type RestTimes,
+} from './domain/rest.ts'
 export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,

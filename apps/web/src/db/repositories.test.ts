@@ -43,6 +43,8 @@ function newWorkout() {
     planDayId: null,
     localDate: toLocalDate(clock.toISOString(), 'Asia/Kuala_Lumpur'),
     note: null,
+    restStartedAt: null,
+    restEndsAt: null,
   })
 }
 

@@ -1,8 +1,11 @@
 import {
+  adjustRestEnd,
+  BUILT_IN_EXERCISES,
   bestWeightKg,
   fromKg,
   nextSetValues,
   previousPerformance,
+  restSeconds,
   stepToGrid,
   toKg,
   toLocalDate,
@@ -36,6 +39,10 @@ export interface ActiveWorkoutState {
 }
 
 const live = (row: { deletedAt: string | null }) => row.deletedAt === null
+
+const builtInRest = new Map(BUILT_IN_EXERCISES.map(({ id, defaultRestS }) => [id, defaultRestS]))
+
+const noRest = { restStartedAt: null, restEndsAt: null } as const
 
 function nextPosition(rows: readonly { position: number }[]): number {
   return rows.reduce((max, row) => Math.max(max, row.position + 1), 0)
@@ -111,6 +118,19 @@ export function createWorkoutSession(
 
   const writeTables = [db.workouts, db.workoutExercises, db.workoutSets, db.outbox]
 
+  // The rest after a set of `slot`, in seconds (0 for none).
+  async function restAfter(slot: WorkoutExercise): Promise<number> {
+    const custom = builtInRest.has(slot.exerciseId)
+      ? undefined
+      : await db.exercises.get(slot.exerciseId)
+    return restSeconds(slot.restS, builtInRest.get(slot.exerciseId) ?? custom?.defaultRestS ?? null)
+  }
+
+  async function clearRest(workout: Workout): Promise<Workout> {
+    if (workout.restStartedAt === null) return workout
+    return repos.workouts.update(workout.id, noRest)
+  }
+
   return {
     findActive,
 
@@ -157,6 +177,7 @@ export function createWorkoutSession(
           planDayId: null,
           localDate: toLocalDate(startedAt, timeZone),
           note: null,
+          ...noRest,
         })
       })
     },
@@ -178,6 +199,7 @@ export function createWorkoutSession(
           planDayId: dayId,
           localDate: toLocalDate(startedAt, timeZone),
           note: null,
+          ...noRest,
         })
         const ordered = items.toSorted((a, b) => a.position - b.position)
         for (const [position, item] of ordered.entries()) {
@@ -253,8 +275,60 @@ export function createWorkoutSession(
       })
     },
 
+    // Completes a set and, in the same transaction, starts the rest after it:
+    // the slot's rest, else the exercise's default. No rest follows the last
+    // set still to do, or an exercise whose rest is 0.
+    async completeSet(setId: string): Promise<Workout> {
+      return db.transaction('rw', [...writeTables, db.exercises], async () => {
+        const at = now()
+        const set = await repos.workoutSets.update(setId, { completedAt: at.toISOString() })
+        const slot = await repos.workoutExercises.get(set.workoutExerciseId)
+        if (slot === undefined) throw new Error(`No exercise slot ${set.workoutExerciseId}`)
+        const workout = await getWorkout(set.workoutId)
+        const slots = await db.workoutExercises.where('workoutId').equals(workout.id).toArray()
+        const liveSlots = new Set(slots.filter(live).map(({ id }) => id))
+        const sets = await db.workoutSets.where('workoutId').equals(workout.id).toArray()
+        const toDo = sets.some(
+          (other) =>
+            live(other) && liveSlots.has(other.workoutExerciseId) && other.completedAt === null,
+        )
+        const restS = toDo ? await restAfter(slot) : 0
+        if (restS === 0) return clearRest(workout)
+        return repos.workouts.update(workout.id, {
+          restStartedAt: at.toISOString(),
+          restEndsAt: new Date(at.getTime() + restS * 1000).toISOString(),
+        })
+      })
+    },
+
+    // Marks a completed set as not done; the rest it started no longer applies.
+    async uncompleteSet(setId: string): Promise<Workout> {
+      return db.transaction('rw', writeTables, async () => {
+        const set = await repos.workoutSets.update(setId, { completedAt: null })
+        return clearRest(await getWorkout(set.workoutId))
+      })
+    },
+
+    // Moves the running rest's end by `deltaS` seconds, never before now.
+    async adjustRest(workoutId: string, deltaS: number): Promise<Workout> {
+      return db.transaction('rw', db.workouts, db.outbox, async () => {
+        const workout = await getWorkout(workoutId)
+        if (workout.restEndsAt === null) return workout
+        return repos.workouts.update(workoutId, {
+          restEndsAt: adjustRestEnd(workout.restEndsAt, deltaS, now().getTime()),
+        })
+      })
+    },
+
+    // Ends the rest: skipped, or its cue dismissed.
+    async endRest(workoutId: string): Promise<Workout> {
+      return db.transaction('rw', db.workouts, db.outbox, async () =>
+        clearRest(await getWorkout(workoutId)),
+      )
+    },
+
     async finish(workoutId: string): Promise<Workout> {
-      return repos.workouts.update(workoutId, { endedAt: now().toISOString() })
+      return repos.workouts.update(workoutId, { endedAt: now().toISOString(), ...noRest })
     },
   }
 }

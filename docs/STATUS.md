@@ -102,6 +102,8 @@ Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw
 
 Plan creation fix (2026-11-13, PR `m1/plan-create-flake`, L-028): the intermittent WebKit e2e failure after "新建计划" was a tap before hydration, not the URL fragment. The plan list's create button now renders once the list has loaded; an e2e test taps it with the JavaScript chunks delayed.
 
+M1-06, part 1 (2026-11-13, PR `m1/06-rest-data`): workouts gain `restStartedAt` / `restEndsAt` (Dexie v8, upgrade test; the end stays set after it passes until dismissed, so a relaunch can show an overdue rest). `workoutSession.completeSet` writes the set and its rest in one transaction: the slot's rest from the plan, else the exercise's default (`restSeconds` in `packages/shared/src/domain/rest.ts`, fallback 90 s in `domainConfig.rest`), no rest after the last set still to do. `uncompleteSet` and `finish` clear it; `adjustRest` moves the end by ±15 s, never before now; `endRest` ends it. The set table and panel now complete sets through the session. No timer UI yet.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.

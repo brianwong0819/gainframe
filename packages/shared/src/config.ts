@@ -31,4 +31,7 @@ export const domainConfig = {
   firstSet: { weightKg: 0, reps: 8 },
   // An exercise added to a plan day: the common hypertrophy range.
   newPlanItem: { targetSets: 3, repsMin: 8, repsMax: 12 },
+  // The rest timer: one tap on -15 s / +15 s, and the rest for an exercise
+  // that cannot be found (its default rest is unknown).
+  rest: { stepS: 15, fallbackS: 90 },
 } as const

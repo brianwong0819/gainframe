@@ -35,6 +35,8 @@ async function finishedWorkout(planDayId: string) {
     planDayId,
     localDate: toLocalDate(startedAt, 'Asia/Kuala_Lumpur'),
     note: null,
+    restStartedAt: null,
+    restEndsAt: null,
   })
 }
 
