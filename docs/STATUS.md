@@ -105,6 +105,7 @@ Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw
 
 ## Follow-ups (noticed, not in scope yet)
 
+- WebKit e2e, intermittently: after "新建计划" the plan editor never shows the first day's name field (`e2e/plans.spec.ts`; iPhone SE on `main` run 43249089641, iPhone 17 Pro Max on PR #79). Suspect: `usePlanIdFromHash` reads `location.hash` during the render that `router.push` starts, and nothing re-reads it if the URL is updated afterwards without a `hashchange`. Reproduce in WebKit and fix before bw relies on creating plans.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
