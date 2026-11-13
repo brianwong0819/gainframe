@@ -10,7 +10,9 @@ import { Pressable, PressableLink } from '@/ui/pressable'
 import { usePlans } from './use-plans'
 
 // The user's plans, the active one marked. Creating a plan opens it in the
-// editor; the first plan becomes the active one.
+// editor; the first plan becomes the active one. The create button appears
+// with the list: the prerendered page would show it before hydration, and a
+// tap then does nothing.
 export function PlanList() {
   const t = useTranslations('plans')
   const router = useRouter()
@@ -44,16 +46,18 @@ export function PlanList() {
           </span>
         </PressableLink>
       ))}
-      <Pressable
-        onClick={() => {
-          void planStore.create(t('newName'), t('dayName', { n: 1 })).then((plan) => {
-            router.push(`/workout/plan#${plan.id}`)
-          })
-        }}
-        className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
-      >
-        {t('create')}
-      </Pressable>
+      {plans && (
+        <Pressable
+          onClick={() => {
+            void planStore.create(t('newName'), t('dayName', { n: 1 })).then((plan) => {
+              router.push(`/workout/plan#${plan.id}`)
+            })
+          }}
+          className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
+        >
+          {t('create')}
+        </Pressable>
+      )}
     </>
   )
 }
