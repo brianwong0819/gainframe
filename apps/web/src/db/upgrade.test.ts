@@ -31,12 +31,17 @@ describe('Dexie schema upgrades', () => {
 
     const current = new GainframeDb('upgrade', options)
     const { templateId, ...rest } = workout
-    expect(await current.workouts.get(workout.id)).toEqual({ ...rest, planDayId: templateId })
+    expect(await current.workouts.get(workout.id)).toEqual({
+      ...rest,
+      planDayId: templateId,
+      restStartedAt: null,
+      restEndsAt: null,
+    })
     expect(await current.outbox.toArray()).toEqual([
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(7)
+    expect(current.verno).toBe(8)
     current.close()
   })
 
@@ -65,7 +70,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(7)
+    expect(v3.verno).toBe(8)
     v3.close()
   })
 
@@ -160,11 +165,16 @@ describe('Dexie schema upgrades', () => {
 
     const v5 = new GainframeDb('upgrade', options)
     const { templateId, ...rest } = workout
-    expect(await v5.workouts.get(workout.id)).toEqual({ ...rest, planDayId: templateId })
+    expect(await v5.workouts.get(workout.id)).toEqual({
+      ...rest,
+      planDayId: templateId,
+      restStartedAt: null,
+      restEndsAt: null,
+    })
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(7)
+    expect(v5.verno).toBe(8)
     v5.close()
   })
 
@@ -213,7 +223,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(7)
+    expect(v6.verno).toBe(8)
     v6.close()
   })
 
@@ -278,7 +288,56 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(7)
+    expect(v7.verno).toBe(8)
     v7.close()
+  })
+
+  it('gives version 7 workouts no running rest in version 8', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v7 = new Dexie('upgrade', options)
+    v7.version(1).stores(STORES_V1)
+    v7.version(2).stores({ errors: '++seq' })
+    v7.version(3).stores({})
+    v7.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v7.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    v7.version(6).stores({})
+    v7.version(7).stores({})
+    const workout = {
+      id: '01960000-0000-7000-8000-000000000001',
+      userId: null,
+      createdAt: '2026-11-13T10:00:00.000Z',
+      updatedAt: '2026-11-13T10:00:00.000Z',
+      deletedAt: null,
+      startedAt: '2026-11-13T10:00:00.000Z',
+      endedAt: null,
+      planDayId: null,
+      localDate: '2026-11-13',
+      note: null,
+    }
+    await v7.table('workouts').add(workout)
+    v7.close()
+
+    const v8 = new GainframeDb('upgrade', options)
+    expect(await v8.workouts.get(workout.id)).toEqual({
+      ...workout,
+      restStartedAt: null,
+      restEndsAt: null,
+    })
+    expect(await v8.outbox.count()).toBe(0)
+    expect(v8.verno).toBe(8)
+    v8.close()
   })
 })

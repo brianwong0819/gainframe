@@ -46,6 +46,8 @@ function workout(
     planDayId: planDay?.id ?? null,
     localDate: localDateSchema.parse('2026-11-02'),
     note: null,
+    restStartedAt: null,
+    restEndsAt: null,
     ...fields,
   }
 }

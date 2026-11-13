@@ -60,6 +60,8 @@ describe('workoutSchema', () => {
     planDayId: null,
     localDate: '2026-11-08',
     note: null,
+    restStartedAt: null,
+    restEndsAt: null,
   }
 
   it('accepts a valid workout', () => {
@@ -73,6 +75,26 @@ describe('workoutSchema', () => {
 
   it('rejects a local date that is not YYYY-MM-DD', () => {
     expect(workoutSchema.safeParse({ ...validWorkout, localDate: '8/11/2026' }).success).toBe(false)
+  })
+
+  it('accepts a running rest', () => {
+    const resting = {
+      ...validWorkout,
+      restStartedAt: '2026-11-08T10:10:00.000Z',
+      restEndsAt: '2026-11-08T10:12:00.000Z',
+    }
+    expect(workoutSchema.safeParse(resting).success).toBe(true)
+  })
+
+  it('rejects a rest with only one of its times, or ending before it starts', () => {
+    for (const times of [
+      { restStartedAt: '2026-11-08T10:10:00.000Z', restEndsAt: null },
+      { restStartedAt: null, restEndsAt: '2026-11-08T10:12:00.000Z' },
+      { restStartedAt: '2026-11-08T10:10:00.000Z', restEndsAt: '2026-11-08T10:09:00.000Z' },
+    ]) {
+      const result = workoutSchema.safeParse({ ...validWorkout, ...times })
+      expect(result.error?.issues[0]?.path).toEqual(['restEndsAt'])
+    }
   })
 })
 

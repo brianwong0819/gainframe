@@ -51,6 +51,8 @@ function workout(id: string, startedAt: string, fields: Partial<Workout> = {}): 
     planDayId: null,
     localDate: localDateSchema.parse(startedAt.slice(0, 10)),
     note: null,
+    restStartedAt: null,
+    restEndsAt: null,
     ...fields,
   }
 }

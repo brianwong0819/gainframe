@@ -43,10 +43,11 @@ function selectedSet(state: ActiveWorkoutState, chosenId: string | null) {
   )
 }
 
+// Completing a set starts the rest after it (M1-06); undoing it cancels that rest.
 function toggleDone(set: WorkoutSet) {
-  void repositories.workoutSets.update(set.id, {
-    completedAt: set.completedAt === null ? new Date().toISOString() : null,
-  })
+  void (set.completedAt === null
+    ? workoutSession.completeSet(set.id)
+    : workoutSession.uncompleteSet(set.id))
 }
 
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {

@@ -280,3 +280,81 @@ describe('startFromPlanDay', () => {
     expect(await db.workoutExercises.count()).toBe(0)
   })
 })
+
+describe('rest', () => {
+  // The built-in barbell bench press, whose default rest is 180 s.
+  const BUILT_IN_BENCH = '00000000-0000-7000-8000-000000000001'
+
+  async function workoutWithSets(exerciseId: string, count: number) {
+    const workout = await session.start(ZONE)
+    const slot = await session.addExercise(workout.id, exerciseId)
+    for (let n = 1; n < count; n += 1) await session.addSet(slot.id)
+    const sets = await db.workoutSets.where('workoutExerciseId').equals(slot.id).toArray()
+    return { workout, slot, sets: sets.toSorted((a, b) => a.position - b.position) }
+  }
+
+  it("starts the exercise's default rest with the completed set, in one change", async () => {
+    const { workout, sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
+    advance(60_000)
+    const resting = await session.completeSet(sets[0]?.id ?? '')
+    expect(resting).toMatchObject({
+      restStartedAt: '2026-11-08T10:01:00.000Z',
+      restEndsAt: '2026-11-08T10:04:00.000Z',
+    })
+    expect(await db.workouts.get(workout.id)).toEqual(resting)
+    expect((await db.workoutSets.get(sets[0]?.id ?? ''))?.completedAt).toBe(clock.toISOString())
+  })
+
+  it("prefers the plan's rest copied to the slot, then a custom exercise's default", async () => {
+    const custom = await repos.exercises.create({
+      nameZh: '地雷管推举',
+      nameEn: null,
+      muscle: 'shoulders',
+      secondaryMuscles: [],
+      equipment: 'barbell',
+      defaultRestS: 75,
+    })
+    const { slot, sets } = await workoutWithSets(custom.id, 3)
+    expect((await session.completeSet(sets[0]?.id ?? '')).restEndsAt).toBe(
+      '2026-11-08T10:01:15.000Z',
+    )
+    await repos.workoutExercises.update(slot.id, { restS: 30 })
+    expect((await session.completeSet(sets[1]?.id ?? '')).restEndsAt).toBe(
+      '2026-11-08T10:00:30.000Z',
+    )
+  })
+
+  it('starts no rest after the last set still to do, or for a rest of 0', async () => {
+    const { slot, sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
+    await session.completeSet(sets[0]?.id ?? '')
+    const done = await session.completeSet(sets[1]?.id ?? '')
+    expect(done).toMatchObject({ restStartedAt: null, restEndsAt: null })
+
+    await session.uncompleteSet(sets[1]?.id ?? '')
+    await repos.workoutExercises.update(slot.id, { restS: 0 })
+    await session.addSet(slot.id)
+    expect(await session.completeSet(sets[1]?.id ?? '')).toMatchObject({ restEndsAt: null })
+  })
+
+  it('cancels the rest when the set is marked not done', async () => {
+    const { sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
+    await session.completeSet(sets[0]?.id ?? '')
+    const undone = await session.uncompleteSet(sets[0]?.id ?? '')
+    expect(undone).toMatchObject({ restStartedAt: null, restEndsAt: null })
+    expect((await db.workoutSets.get(sets[0]?.id ?? ''))?.completedAt).toBeNull()
+  })
+
+  it('moves the end in steps, never before now, and ends on request or finish', async () => {
+    const { workout, sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
+    await session.completeSet(sets[0]?.id ?? '')
+    expect((await session.adjustRest(workout.id, 15)).restEndsAt).toBe('2026-11-08T10:03:15.000Z')
+    advance(60_000)
+    expect((await session.adjustRest(workout.id, -600)).restEndsAt).toBe(clock.toISOString())
+    expect(await session.endRest(workout.id)).toMatchObject({ restEndsAt: null })
+    // Nothing to move once the rest has ended.
+    expect((await session.adjustRest(workout.id, 15)).restEndsAt).toBeNull()
+
+    await session.completeSet(sets[0]?.id ?? '')
+    expect(await session.finish(workout.id)).toMatchObject({ restStartedAt: null })
+  })
+})

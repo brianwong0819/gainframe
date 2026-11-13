@@ -147,6 +147,19 @@ export class GainframeDb extends Dexie {
             slot.planNote ??= null
           })
       })
+    // M1-06: a workout keeps its running rest; existing workouts have none. No
+    // outbox entry, as in version 3.
+    this.version(8)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table<Record<string, unknown>, string>('workouts')
+          .toCollection()
+          .modify((workout) => {
+            workout.restStartedAt ??= null
+            workout.restEndsAt ??= null
+          }),
+      )
   }
 }
 

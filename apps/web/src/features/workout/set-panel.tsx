@@ -111,7 +111,7 @@ export function SetPanel({ set, n, exerciseId, exercise, unit, onDetails }: SetP
       </div>
       <Pressable
         onClick={() => {
-          void repositories.workoutSets.update(set.id, { completedAt: new Date().toISOString() })
+          void workoutSession.completeSet(set.id)
         }}
         className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
       >
