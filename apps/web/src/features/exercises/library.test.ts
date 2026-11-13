@@ -5,6 +5,7 @@ import type { Exercise } from '@gainframe/shared'
 import {
   draftToExercise,
   exerciseName,
+  findLibraryEntry,
   formatRest,
   libraryEntries,
   type MuscleSelection,
@@ -121,5 +122,20 @@ describe('pickMuscle', () => {
       secondaryMuscles: [],
     })
     expect(taps('full_body', 'quads')).toEqual({ muscle: 'quads', secondaryMuscles: [] })
+  })
+})
+
+describe('findLibraryEntry', () => {
+  it('finds a built-in exercise and a custom one, and nothing else', () => {
+    expect(findLibraryEntry('00000000-0000-7000-8000-000000000001', [])).toMatchObject({
+      custom: false,
+      mechanic: 'compound',
+    })
+    const own = custom({
+      id: '01960000-0000-7000-8000-000000000001',
+      createdAt: '2026-11-13T00:00:00.000Z',
+    })
+    expect(findLibraryEntry(own.id, [own])).toEqual({ ...own, custom: true })
+    expect(findLibraryEntry('01960000-0000-7000-8000-000000000002', [own])).toBeUndefined()
   })
 })

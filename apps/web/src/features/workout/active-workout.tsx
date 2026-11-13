@@ -1,7 +1,7 @@
 'use client'
 
 import type { Exercise, Workout, WorkoutSet } from '@gainframe/shared'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -11,6 +11,8 @@ import type { ActiveWorkoutState } from '@/db/workout-session'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
+import { ExerciseDetail } from '../exercises/exercise-detail'
+import { exerciseName, findLibraryEntry } from '../exercises/library'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
 import { SetDetails } from './set-details'
@@ -27,6 +29,7 @@ type SheetContent =
   | { kind: 'finish' }
   | { kind: 'set'; setId: string; n: number }
   | { kind: 'note'; slotId: string }
+  | { kind: 'exercise'; exerciseId: string }
 
 // The set the panel edits: the one the user tapped while it is still there and
 // not done, else the first set not done yet.
@@ -48,6 +51,7 @@ function toggleDone(set: WorkoutSet) {
 
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const t = useTranslations('workout')
+  const locale = useLocale()
   const custom = useLiveQuery(allCustomExercises) ?? []
   const units = useLiveQuery(loadWeightUnits)
   const unitOf = (exerciseId: string) => units?.get(exerciseId) ?? 'kg'
@@ -78,7 +82,10 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     sheet?.kind === 'note'
       ? state.slots.find(({ slot }) => slot.id === sheet.slotId)?.slot
       : undefined
+  const sheetExercise =
+    sheet?.kind === 'exercise' ? findLibraryEntry(sheet.exerciseId, custom) : undefined
   const title = {
+    exercise: sheetExercise ? exerciseName(sheetExercise, locale) : '',
     picker: t('pickerTitle'),
     finish: t('finishTitle'),
     set: sheet?.kind === 'set' ? `${t('colSet')} ${String(sheet.n)}` : '',
@@ -102,6 +109,13 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           onNote={() => {
             open({ kind: 'note', slotId: slotState.slot.id })
           }}
+          onInfo={
+            findLibraryEntry(slotState.slot.exerciseId, custom)
+              ? () => {
+                  open({ kind: 'exercise', exerciseId: slotState.slot.exerciseId })
+                }
+              : null
+          }
           onToggle={toggleDone}
           onAddSet={() => {
             void workoutSession.addSet(slotState.slot.id).then((set) => {
@@ -157,6 +171,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             }}
           />
         )}
+        {sheetExercise && <ExerciseDetail exercise={sheetExercise} />}
         {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>

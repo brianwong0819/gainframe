@@ -96,6 +96,8 @@ Plan exercise detail (2026-11-12, PR `m1/plan-exercise-detail`), asked for by bw
 
 Plan note (2026-11-12, PR `m1/plan-item-note`), asked for by bw: a plan item has a `note` (up to 500 characters), edited in the item sheet and saved when the field loses focus; the plan editor shows it under the exercise. A workout slot started from the plan copies it as `planNote`, like the rep range and rest, and the exercise card shows it as "计划 · …" above the workout's own note, which stays for that workout only (its sheet now says so). Dexie version 7 gives older plan items and slots no plan note (upgrade test). `planItemsFromWorkout` carries a slot's plan note into a saved day.
 
+Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw: an ⓘ beside the exercise name on each workout card, and "动作详情" in a plan item's sheet, open the same `ExerciseDetail` as the library. In the item sheet the detail replaces the settings with a way back (`ExerciseDetailView`, also used by the plan's exercise picker); `ExerciseInfoButton` is the one button for it. bw found the rest "Suggest" button of no use, so it is gone together with `suggestRestS` and `domainConfig.suggestedRestS`; `findLibraryEntry` replaces `restInfo`.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.

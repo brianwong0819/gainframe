@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { PlanDay } from '../schemas/plan.ts'
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { nextPlanDay, planItemsFromWorkout, suggestRestS } from './plan.ts'
+import { nextPlanDay, planItemsFromWorkout } from './plan.ts'
 
 const PLAN = '01960000-0000-7000-8000-0000000000f1'
 const DELETED = '2026-11-03T09:00:00.000Z'
@@ -90,22 +90,6 @@ describe('nextPlanDay', () => {
       workout(deletedPull, '2026-11-04T10:00:00.000Z'),
     ]
     expect(nextPlanDay([push, deletedPull, legs], workouts)).toBe(legs)
-  })
-})
-
-describe('suggestRestS', () => {
-  it('rests a 5-rep squat longer than a 15-rep lateral raise', () => {
-    expect(suggestRestS('compound', 5)).toBe(180)
-    expect(suggestRestS('isolation', 15)).toBe(60)
-  })
-
-  it('takes the band that covers the low end of the rep range', () => {
-    expect(suggestRestS('compound', 6)).toBe(150)
-    expect(suggestRestS('compound', 8)).toBe(150)
-    expect(suggestRestS('compound', 9)).toBe(120)
-    expect(suggestRestS('compound', 20)).toBe(90)
-    expect(suggestRestS('isolation', 8)).toBe(90)
-    expect(suggestRestS('isolation', 12)).toBe(75)
   })
 })
 

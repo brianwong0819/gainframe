@@ -1,6 +1,6 @@
 'use client'
 
-import { type Exercise, type PlanItem, planItemSchema, suggestRestS } from '@gainframe/shared'
+import { type Exercise, type PlanItem, planItemSchema } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 import { useId, useState } from 'react'
 
@@ -8,8 +8,10 @@ import { repositories } from '@/db/client'
 import { Pressable } from '@/ui/pressable'
 import { Stepper } from '@/ui/stepper'
 
-import { formatRest, REST_MAX_S, REST_STEP_S } from '../exercises/library'
-import { restInfo, withRepsMax, withRepsMin } from './item-edit'
+import { ExerciseDetailView } from '../exercises/exercise-detail-view'
+import { ExerciseInfoButton } from '../exercises/exercise-info-button'
+import { findLibraryEntry, formatRest, REST_MAX_S, REST_STEP_S } from '../exercises/library'
+import { withRepsMax, withRepsMin } from './item-edit'
 
 const labelClass = 'text-label text-ink-3'
 const chipClass = 'rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink'
@@ -40,7 +42,9 @@ export function PlanItemSheet({
   onRemoved: () => void
 }) {
   const t = useTranslations('plans')
-  const { defaultRestS, mechanic } = restInfo(item.exerciseId, custom)
+  const exercise = findLibraryEntry(item.exerciseId, custom)
+  const defaultRestS = exercise?.defaultRestS ?? 0
+  const [showingDetail, setShowingDetail] = useState(false)
   const restS = item.restS ?? defaultRestS
   const noteId = useId()
   const [noteDraft, setNoteDraft] = useState<string | null>(null)
@@ -77,8 +81,31 @@ export function PlanItemSheet({
     </>
   )
 
+  if (showingDetail && exercise) {
+    return (
+      <div className="flex flex-col gap-16">
+        <ExerciseDetailView
+          exercise={exercise}
+          backLabel={t('backToItem')}
+          onBack={() => {
+            setShowingDetail(false)
+          }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-20">
+      {exercise && (
+        <ExerciseInfoButton
+          label={t('exerciseDetail')}
+          showLabel
+          onClick={() => {
+            setShowingDetail(true)
+          }}
+        />
+      )}
       <div className="grid grid-cols-[auto_1fr] items-center gap-x-12 gap-y-8">
         {counter(t('sets'), item.targetSets, 1, 20, 'targetSets', (targetSets) => {
           save({ targetSets })
@@ -122,16 +149,6 @@ export function PlanItemSheet({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-8">
-          {mechanic !== null && (
-            <Pressable
-              onClick={() => {
-                save({ restS: suggestRestS(mechanic, item.repsMin) })
-              }}
-              className={chipClass}
-            >
-              {t('suggest')}
-            </Pressable>
-          )}
           {item.restS === null ? (
             <span className="text-label text-ink-3">{t('restIsDefault')}</span>
           ) : (

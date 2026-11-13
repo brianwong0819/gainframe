@@ -9,6 +9,7 @@ import { fade, pop } from '@/ui/motion'
 import { Pressable } from '@/ui/pressable'
 import { RollingNumber } from '@/ui/rolling-number'
 
+import { ExerciseInfoButton } from '../exercises/exercise-info-button'
 import { exerciseName } from '../exercises/library'
 import { formatRepRange } from '../plans/item-edit'
 import { type ExerciseInfo, formatWeight, isBodyweight } from './exercise-info'
@@ -22,6 +23,8 @@ interface SetTableProps {
   onToggle: (set: WorkoutSet) => void
   onAddSet: () => void
   onNote: () => void
+  // Opens the exercise's detail; null for an exercise that cannot be found.
+  onInfo: (() => void) | null
 }
 
 const columns = 'grid grid-cols-[2fr_3fr_3fr_3fr_auto] items-center gap-8'
@@ -68,6 +71,7 @@ export function SetTable({
   onToggle,
   onAddSet,
   onNote,
+  onInfo,
 }: SetTableProps) {
   const t = useTranslations('workout')
   const tShort = useTranslations('setKindShort')
@@ -93,7 +97,15 @@ export function SetTable({
     <section className="flex flex-col gap-8 rounded-group bg-surface p-16">
       <div className="flex items-start justify-between gap-12">
         <div className="flex min-w-0 flex-col gap-4">
-          <h2 className="text-body font-semibold text-ink">{exerciseName(exercise, locale)}</h2>
+          <div className="flex items-center gap-8">
+            <h2 className="text-body font-semibold text-ink">{exerciseName(exercise, locale)}</h2>
+            {onInfo && (
+              <ExerciseInfoButton
+                label={t('exerciseDetail', { name: exerciseName(exercise, locale) })}
+                onClick={onInfo}
+              />
+            )}
+          </div>
           {hints.length > 0 && <p className="text-label text-ink-3">{hints.join(' · ')}</p>}
           {slot.planNote !== null && (
             <p className="text-label whitespace-pre-line text-ink-2">

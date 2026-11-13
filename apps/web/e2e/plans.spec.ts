@@ -50,7 +50,7 @@ test('a new plan with two days and an exercise survives a reload', async ({ page
   ).toBeVisible()
 })
 
-test("an exercise's sets, rep range and suggested rest are kept", async ({ page }) => {
+test("an exercise's sets, rep range and rest are kept, and its detail opens", async ({ page }) => {
   await page.goto('/workout/plans')
   await page.getByRole('button', { name: '新建计划' }).click()
   await page.getByRole('button', { name: '添加动作' }).click()
@@ -78,16 +78,21 @@ test("an exercise's sets, rep range and suggested rest are kept", async ({ page 
   await repsMax.fill('4')
   await repsMax.press('Enter')
   await expect(repsMax).toHaveValue('4')
-  await dialog.getByRole('button', { name: '建议' }).click()
+  await dialog.getByRole('button', { name: '休息加 15 秒' }).click()
   await expect(dialog.getByRole('button', { name: '改回默认 3:00' })).toBeVisible()
+  // The same detail as the library, and back to the settings.
+  await dialog.getByRole('button', { name: '动作详情' }).click()
+  await expect(dialog.getByRole('img', { name: /^肌肉示意图。主要：股四头/ })).toBeVisible()
+  await dialog.getByRole('button', { name: '返回设置' }).click()
+  await expect(dialog.getByRole('textbox', { name: '最多次数' })).toHaveValue('4')
   // WebKit leaves the page behind a modal dialog out of the accessibility tree,
   // so the row is checked once the sheet has closed.
   await dialog.getByRole('button', { name: '关闭' }).click()
   await expect(dialog).toBeHidden()
-  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
+  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:15')).toBeVisible()
 
   await page.reload()
-  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:00')).toBeVisible()
+  await expect(page.getByRole('main').getByText('4 组 · 4 次 · 休息 3:15')).toBeVisible()
 })
 
 test("the Workout tab offers the current plan's next day and starts it", async ({ page }) => {
@@ -121,6 +126,12 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await expect(page.getByText('目标 8–12 次')).toBeVisible()
   await expect(page.getByText('计划 · 握距比肩宽一指')).toBeVisible()
+  // The ⓘ beside the name opens the exercise's detail.
+  await page.getByRole('button', { name: '杠铃卧推 的动作详情' }).click()
+  const detail = page.getByRole('dialog')
+  await expect(detail.getByRole('img', { name: /^肌肉示意图。主要：胸/ })).toBeVisible()
+  await detail.getByRole('button', { name: '关闭' }).click()
+  await expect(detail).toBeHidden()
   await expect(page.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
 
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
