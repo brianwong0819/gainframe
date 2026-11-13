@@ -179,21 +179,31 @@ describe('stepWeight and stepReps', () => {
 
   it('applies quick taps to the stored value and stops at 0', async () => {
     const id = await firstSetId()
-    await Promise.all([1, 2, 3].map(() => session.stepWeight(id, 2.5, 'kg')))
+    await Promise.all([1, 2, 3].map(() => session.stepWeight(id, 2.5, 1, 'kg')))
     expect((await repos.workoutSets.get(id))?.weightKg).toBe(7.5)
     await session.stepReps(id, -20)
     expect((await repos.workoutSets.get(id))?.reps).toBe(0)
-    await session.stepWeight(id, -10, 'kg')
+    for (let tap = 0; tap < 4; tap += 1) await session.stepWeight(id, 2.5, -1, 'kg')
     expect((await repos.workoutSets.get(id))?.weightKg).toBe(0)
   })
 
   it('steps in whole pounds when the weight is shown in pounds', async () => {
     const id = await firstSetId()
     await repos.workoutSets.update(id, { weightKg: toKg(45, 'lb') })
-    for (let tap = 0; tap < 20; tap += 1) await session.stepWeight(id, 5, 'lb')
+    for (let tap = 0; tap < 20; tap += 1) await session.stepWeight(id, 5, 1, 'lb')
     const weightKg = (await repos.workoutSets.get(id))?.weightKg ?? 0
     expect(fromKg(weightKg, 'lb')).toBe(145)
     expect(weightKg).toBe(65.77)
+  })
+
+  it('lands a weight converted from pounds on the kg grid', async () => {
+    const id = await firstSetId()
+    await repos.workoutSets.update(id, { weightKg: toKg(10, 'lb') })
+    await session.stepWeight(id, 2.5, 1, 'kg')
+    expect((await repos.workoutSets.get(id))?.weightKg).toBe(5)
+    await repos.workoutSets.update(id, { weightKg: toKg(10, 'lb') })
+    await session.stepWeight(id, 2.5, -1, 'kg')
+    expect((await repos.workoutSets.get(id))?.weightKg).toBe(2.5)
   })
 })
 

@@ -102,16 +102,20 @@ test('an exercise switched to pounds is typed and shown in pounds', async ({ pag
   await weight.fill('45')
   await weight.press('Enter')
   await expect(weight).toHaveValue('45')
-  await expect(page.getByText('≈ 20.41 kg')).toBeVisible()
+  await expect(page.getByText('≈ 20.4 kg')).toBeVisible()
   // One step in pounds is 5 lb.
   await page.getByRole('button', { name: '第 1 组加重量' }).click()
   await expect(weight).toHaveValue('50')
-  await expect(page.getByText('≈ 22.68 kg')).toBeVisible()
+  await expect(page.getByText('≈ 22.7 kg')).toBeVisible()
 
-  // The unit is kept for the exercise; switching back shows the same weight in kg.
+  // The unit is kept for the exercise; switching back shows the same weight in kg,
+  // to 0.1 kg because it is off the 0.25 kg grid.
   await page.reload()
   await expect(weight).toHaveValue('50')
   await page.getByRole('button', { name: '这个动作改用 kg 显示和输入重量' }).click()
-  await expect(weight).toHaveValue('22.68')
+  await expect(weight).toHaveValue('22.7')
   await expect(page.getByText(/≈/)).toHaveCount(0)
+  // A step from a weight converted from pounds lands on the 2.5 kg grid.
+  await page.getByRole('button', { name: '第 1 组加重量' }).click()
+  await expect(weight).toHaveValue('25')
 })

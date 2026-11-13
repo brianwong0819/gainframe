@@ -38,6 +38,7 @@ describe('formatWeight', () => {
     expect(formatWeight(60, 'kg')).toBe('60')
     expect(formatWeight(62.5, 'kg')).toBe('62.5')
     expect(formatWeight(0.1 + 0.2, 'kg')).toBe('0.3')
+    expect(formatWeight(4.54, 'kg')).toBe('4.5')
   })
 
   it('shows pounds to 0.1 lb', () => {

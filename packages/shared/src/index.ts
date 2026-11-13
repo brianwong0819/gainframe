@@ -15,7 +15,7 @@ export { domainConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
-export { fromKg, toKg } from './domain/weight-unit.ts'
+export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,
   estimateOneRepMax,
