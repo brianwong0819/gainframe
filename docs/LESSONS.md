@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- A button that writes (create, start, add) renders only once the data it acts on has loaded, so a prerendered page never shows a control that cannot respond yet; test such a flow with the JavaScript chunks delayed. ([L-028](#l-028--2026-11-13--ui--new-plan-sometimes-did-nothing))
 - In e2e tests, assert each value right after entering it (`toHaveValue`), enter text with `fill`, and check the page behind a sheet only after the sheet has closed; WebKit runs only in CI. ([L-027](#l-027--2026-11-09--test--a-plan-test-passed-in-chromium-and-failed-on-every-iphone))
 - A query read through `useLiveQuery` calls Dexie directly; it never awaits one of our own async helpers (a repository's `get`, another loader) before its last read, and an e2e test checks the screen updates after a write. ([L-026](#l-026--2026-11-09--ui--the-plan-editor-did-not-show-new-days))
 - Every page below a tab has a back link and every sheet a close button; list a new page in `e2e/pages.ts` with its `parent`. A screen with only a forward action ("Finish") is a trap. ([L-025](#l-025--2026-11-09--ui--the-workout-in-progress-had-no-way-back))
@@ -49,6 +50,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-028 · 2026-11-13 · ui · "New plan" sometimes did nothing
+- **What happened:** the Device layout job failed now and then on WebKit (iPhone SE on `main`, iPhone 17 Pro Max on #79): after tapping "新建计划" the plan editor never appeared. STATUS suspected the hash being read before `router.push` updated the URL.
+- **Root cause:** the static export prerenders the button, so it is visible and tappable before React hydrates the page and attaches its handler. The test tapped it right after `goto`; on a slower WebKit run the tap landed before hydration and was lost. A user opening the page on a slow phone could lose the tap the same way. Reproduced in Chromium by delaying the JavaScript chunks by 400 ms.
+- **Fix:** PR `m1/plan-create-flake` renders the button only once the plan list has loaded, which happens after hydration. A new e2e test delays the chunks and taps at once.
+- **Prevention:** rule added under "Active rules".
+- **Status:** documented
 
 ### L-027 · 2026-11-09 · test · A plan test passed in Chromium and failed on every iPhone
 - **What happened:** on #72 the Device layout job failed on the four WebKit projects: the plan row's text was not found after editing the item in its sheet. It passed on Pixel 7 and Galaxy S24, the only projects the cloud container can run.

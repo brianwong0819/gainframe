@@ -185,3 +185,15 @@ test('an exercise is added to a plan day from its detail, and a workout saved as
   await expect(page.getByRole('button', { name: /^杠铃卧推 3 组/ })).toBeVisible()
   await expect(page.getByRole('button', { name: /^杠铃深蹲 1 组 · 8 次/ })).toBeVisible()
 })
+
+// The prerendered page shows its content before React has attached its event
+// handlers; a tap in that window was lost and the editor never opened.
+test('"新建计划" opens the editor even when tapped as soon as it shows', async ({ page }) => {
+  await page.route(/\/_next\/static\/chunks\/.+\.js$/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    await route.continue()
+  })
+  await page.goto('/workout/plans', { waitUntil: 'commit' })
+  await page.getByRole('button', { name: '新建计划' }).click()
+  await expect(page.getByRole('textbox', { name: '第 1 天的名称' })).toHaveValue('第 1 天')
+})

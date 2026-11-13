@@ -3,8 +3,8 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-09 Plans done (pending bw's iPhone check). Next: M1-06 Rest timer, once bw says to continue
-- **Last updated:** 2026-11-12
+- **Current task:** M1-06 Rest timer (bw said to continue on 2026-11-13)
+- **Last updated:** 2026-11-13
 
 ## Where I stopped
 
@@ -98,6 +98,8 @@ Plan note (2026-11-12, PR `m1/plan-item-note`), asked for by bw: a plan item has
 
 Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw: an ⓘ beside the exercise name on each workout card, and "动作详情" in a plan item's sheet, open the same `ExerciseDetail` as the library. In the item sheet the detail replaces the settings with a way back (`ExerciseDetailView`, also used by the plan's exercise picker); `ExerciseInfoButton` is the one button for it. bw found the rest "Suggest" button of no use, so it is gone together with `suggestRestS` and `domainConfig.suggestedRestS`; `findLibraryEntry` replaces `restInfo`.
 
+Plan creation fix (2026-11-13, PR `m1/plan-create-flake`, L-028): the intermittent WebKit e2e failure after "新建计划" was a tap before hydration, not the URL fragment. The plan list's create button now renders once the list has loaded; an e2e test taps it with the JavaScript chunks delayed.
+
 ## Blocked on bw
 
 - Branch protection on `main` exists (2026-11-07) but GitHub does not enforce it on a private repository on the free plan; until the repository is public, every check is confirmed green before merging.
@@ -105,7 +107,6 @@ Exercise info button (2026-11-13, PR `m1/exercise-info-button`), asked for by bw
 
 ## Follow-ups (noticed, not in scope yet)
 
-- WebKit e2e, intermittently: after "新建计划" the plan editor never shows the first day's name field (`e2e/plans.spec.ts`; iPhone SE on `main` run 43249089641, iPhone 17 Pro Max on PR #79). Suspect: `usePlanIdFromHash` reads `location.hash` during the render that `router.push` starts, and nothing re-reads it if the URL is updated afterwards without a `hashchange`. Reproduce in WebKit and fix before bw relies on creating plans.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
