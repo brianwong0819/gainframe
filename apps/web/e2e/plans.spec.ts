@@ -222,7 +222,14 @@ test('a superset linked in the plan carries into its workout', async ({ page }) 
   await page.getByRole('button', { name: /^杠铃深蹲 3 组/ }).click()
   const dialog = page.getByRole('dialog')
   await dialog.getByRole('button', { name: '上移' }).click()
+  // Each write shows in the sheet once read back from the database (L-024).
+  await expect(dialog.getByRole('button', { name: '上移' })).toBeDisabled()
   await dialog.getByRole('button', { name: '和「杠铃卧推」组成超级组' }).click()
+  await expect(dialog.getByRole('button', { name: '和「杠铃卧推」拆开' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(dialog.getByText(/每轮的休息看最后一个动作/)).toBeVisible()
   await dialog.getByRole('button', { name: '关闭' }).click()
   await expect(dialog).toBeHidden()
   await expect(page.getByRole('region', { name: '超级组 A · 轮流做' })).toBeVisible()
