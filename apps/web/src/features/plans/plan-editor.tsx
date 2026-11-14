@@ -1,6 +1,12 @@
 'use client'
 
-import type { Exercise, PlanDay, PlanItem } from '@gainframe/shared'
+import {
+  type Exercise,
+  linkedWithNext,
+  type PlanDay,
+  type PlanItem,
+  supersetLabels,
+} from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -11,6 +17,7 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
+import { SupersetLink } from '@/ui/superset-link'
 
 import { exerciseName, formatRest, type LibraryEntry } from '../exercises/library'
 import { findExercise } from '../workout/exercise-info'
@@ -66,8 +73,11 @@ function Day({
   onOpenItem: (item: PlanItem) => void
 }) {
   const t = useTranslations('plans')
+  const tWorkout = useTranslations('workout')
   const locale = useLocale()
   const { day, items } = state
+  const labels = supersetLabels(items)
+  const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
       <NameField
@@ -81,7 +91,7 @@ function Day({
       {items.length === 0 && <p className="text-body text-ink-2">{t('noItems')}</p>}
       {items.length > 0 && (
         <ul>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <li key={item.id} className="border-t border-line first:border-t-0">
               <Pressable
                 onClick={() => {
@@ -90,8 +100,13 @@ function Day({
                 className="flex w-full items-center justify-between gap-12 py-12 text-left"
               >
                 <span className="flex min-w-0 flex-col">
-                  <span className="text-body text-ink">
-                    {exerciseName(findExercise(item.exerciseId, custom), locale)}
+                  <span className="flex items-center gap-8 text-body text-ink">
+                    {labels.has(item.id) && (
+                      <span className="num shrink-0 rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
+                        {labels.get(item.id)}
+                      </span>
+                    )}
+                    {nameOf(item.exerciseId)}
                   </span>
                   <span className="text-label text-ink-3">
                     {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
@@ -108,6 +123,19 @@ function Day({
                   <Chevron direction="right" />
                 </span>
               </Pressable>
+              {index < items.length - 1 && (
+                <SupersetLink
+                  linked={linkedWithNext(items, item.id)}
+                  text={tWorkout('superset')}
+                  label={tWorkout('supersetPair', {
+                    first: nameOf(item.exerciseId),
+                    second: nameOf(items[index + 1]?.exerciseId ?? ''),
+                  })}
+                  onToggle={(linked) => {
+                    void planStore.linkWithNext(item.id, !linked)
+                  }}
+                />
+              )}
             </li>
           ))}
         </ul>

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { toLocalDate } from '@gainframe/shared'
 
+import { createWorkoutSession } from './workout-session'
 import { createPlanStore, type PlanStore } from './plans'
 import { createRepositories, type Repositories } from './repositories'
 import { GainframeDb } from './schema'
@@ -125,6 +126,25 @@ describe('plan store', () => {
     expect(state?.active).toBe(true)
     expect(state?.days.map(({ day }) => day.name)).toEqual(['Push', 'Pull'])
     expect(state?.days[1]?.items.map((item) => item.exerciseId)).toEqual([BENCH, SQUAT])
+  })
+
+  it('links items into a superset that a workout from the day copies', async () => {
+    const plan = await plans.create('Upper Lower', 'Upper')
+    const day = (await plans.load(plan.id))?.days[0]?.day
+    const bench = await plans.addItem(day?.id ?? '', BENCH)
+    await plans.addItem(day?.id ?? '', SQUAT)
+    await plans.linkWithNext(bench.id, true)
+    const groups = async () =>
+      (await plans.load(plan.id))?.days[0]?.items.map((item) => item.supersetGroup)
+    expect(await groups()).toEqual([0, 0])
+
+    const session = createWorkoutSession(db, repos, () => clock)
+    await session.startFromPlanDay(day?.id ?? '', 'Asia/Kuala_Lumpur')
+    const active = await session.loadActive()
+    expect(active?.slots.map(({ slot }) => slot.supersetGroup)).toEqual([0, 0])
+
+    await plans.linkWithNext(bench.id, false)
+    expect(await groups()).toEqual([null, null])
   })
 
   it('leaves deleted days and items out, and loads a deleted plan as null', async () => {

@@ -1,10 +1,12 @@
 import {
   domainConfig,
+  linkWithNext,
   nextPlanDay,
   type Plan,
   type PlanDay,
   type PlanItem,
   planItemsFromWorkout,
+  unlinkFromNext,
 } from '@gainframe/shared'
 
 import type { Repositories } from './repositories'
@@ -142,6 +144,24 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
           restS: null,
           note: null,
         })
+      })
+    },
+
+    // Joins an exercise of a day with the one after it into a superset, or
+    // splits the superset between them; a workout from the day copies the groups.
+    async linkWithNext(itemId: string, linked: boolean): Promise<void> {
+      await db.transaction('rw', db.planItems, db.outbox, async () => {
+        const item = await repos.planItems.get(itemId)
+        if (item === undefined) throw new Error(`No plan item ${itemId}`)
+        const items = await db.planItems
+          .where('planDayId')
+          .equals(item.planDayId)
+          .filter((other) => other.deletedAt === null)
+          .toArray()
+        const changes = linked ? linkWithNext(items, itemId) : unlinkFromNext(items, itemId)
+        for (const { id, supersetGroup } of changes) {
+          await repos.planItems.update(id, { supersetGroup })
+        }
       })
     },
 

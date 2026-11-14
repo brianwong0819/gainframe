@@ -203,3 +203,33 @@ test('"新建计划" opens the editor even when tapped as soon as it shows', asy
   await page.getByRole('button', { name: '新建计划' }).click()
   await expect(page.getByRole('textbox', { name: '第 1 天的名称' })).toHaveValue('第 1 天')
 })
+
+test('a superset linked in the plan carries into its workout', async ({ page }) => {
+  await page.goto('/workout/plans')
+  await page.getByRole('button', { name: '新建计划' }).click()
+  for (const name of ['杠铃卧推', '杠铃深蹲']) {
+    await page.getByRole('button', { name: '添加动作' }).click()
+    await page.getByRole('searchbox').fill(name)
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: new RegExp(`^${name}`) })
+      .click()
+    await page.getByRole('dialog').getByRole('button', { name: '加入「第 1 天」' }).click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.getByRole('button', { name: new RegExp(`^${name} 3 组`) })).toBeVisible()
+  }
+  const link = page.getByRole('button', { name: '杠铃卧推 和 杠铃深蹲 组成超级组' })
+  await link.click()
+  await expect(link).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: /^A1 杠铃卧推/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^A2 杠铃深蹲/ })).toBeVisible()
+
+  await page.getByRole('link', { name: '训练计划' }).click()
+  await page.getByRole('link', { name: '训练', exact: true }).first().click()
+  await page.getByRole('button', { name: '开始「第 1 天」' }).click()
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
+  await expect(page.locator('.set-panel')).toContainText('A1 · 杠铃卧推 · 组 1')
+  await expect(
+    page.getByRole('button', { name: '杠铃卧推 和 杠铃深蹲 组成超级组' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+})
