@@ -17,6 +17,8 @@
     "active": "训练中",
     "addExercise": "添加动作",
     "addSet": "加一组",
+    "superset": "超级组",
+    "supersetPair": "{first} 和 {second} 组成超级组",
     "noExercises": "从动作库里挑第一个动作。",
     "finish": "结束训练",
     "finishTitle": "结束这次训练？",

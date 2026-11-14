@@ -25,6 +25,8 @@ interface SetTableProps {
   onNote: () => void
   // Opens the exercise's detail; null for an exercise that cannot be found.
   onInfo: (() => void) | null
+  // The exercise's place in its superset ("A1"); null when it stands alone.
+  supersetLabel: string | null
 }
 
 const columns = 'grid grid-cols-[2fr_3fr_3fr_3fr_auto] items-center gap-8'
@@ -72,6 +74,7 @@ export function SetTable({
   onAddSet,
   onNote,
   onInfo,
+  supersetLabel,
 }: SetTableProps) {
   const t = useTranslations('workout')
   const tShort = useTranslations('setKindShort')
@@ -98,6 +101,11 @@ export function SetTable({
       <div className="flex items-start justify-between gap-12">
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex items-center gap-8">
+            {supersetLabel !== null && (
+              <span className="num shrink-0 rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
+                {supersetLabel}
+              </span>
+            )}
             <h2 className="text-body font-semibold text-ink">{exerciseName(exercise, locale)}</h2>
             {onInfo && (
               <ExerciseInfoButton

@@ -1,16 +1,24 @@
 'use client'
 
-import { type Exercise, setOrder, type Workout, type WorkoutSet } from '@gainframe/shared'
+import {
+  type Exercise,
+  linkedWithNext,
+  setOrder,
+  supersetLabels,
+  type Workout,
+  type WorkoutSet,
+} from '@gainframe/shared'
 import { AnimatePresence } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 import { db, planStore, repositories, weightUnits, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import type { ActiveWorkoutState } from '@/db/workout-session'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
+import { SupersetLink } from '@/ui/superset-link'
 
 import { ExerciseDetail } from '../exercises/exercise-detail'
 import { exerciseName, findLibraryEntry } from '../exercises/library'
@@ -42,7 +50,12 @@ function selectedSet(state: ActiveWorkoutState, chosenId: string | null) {
   const sets = setOrder(
     state.slots.map(({ slot, sets }) => ({
       slot,
-      sets: sets.map((set, index) => ({ set, n: index + 1, exerciseId: slot.exerciseId })),
+      sets: sets.map((set, index) => ({
+        set,
+        n: index + 1,
+        exerciseId: slot.exerciseId,
+        slotId: slot.id,
+      })),
     })),
   )
   return (
@@ -80,6 +93,9 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const rest = useRest(workout)
   useScreenOn()
   const selected = selectedSet(state, chosenId)
+  const slotRows = state.slots.map(({ slot }) => slot)
+  const labels = supersetLabels(slotRows)
+  const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
   const done = state.slots.reduce(
     (count, { sets }) => count + sets.filter((set) => set.completedAt !== null).length,
     0,
@@ -134,35 +150,52 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   return (
     <>
       {state.slots.length === 0 && <p className="text-body text-ink-2">{t('noExercises')}</p>}
-      {state.slots.map((slotState) => (
-        <SetTable
-          key={slotState.slot.id}
-          state={slotState}
-          exercise={findExercise(slotState.slot.exerciseId, custom)}
-          unit={unitOf(slotState.slot.exerciseId)}
-          selectedId={selected?.set.id ?? null}
-          onSelect={(set, n) => {
-            if (set.completedAt === null) setChosenId(set.id)
-            else open({ kind: 'set', setId: set.id, n })
-          }}
-          onNote={() => {
-            open({ kind: 'note', slotId: slotState.slot.id })
-          }}
-          onInfo={
-            findLibraryEntry(slotState.slot.exerciseId, custom)
-              ? () => {
-                  open({ kind: 'exercise', exerciseId: slotState.slot.exerciseId })
-                }
-              : null
-          }
-          onToggle={toggleDone}
-          onAddSet={() => {
-            void workoutSession.addSet(slotState.slot.id).then((set) => {
-              setChosenId(set.id)
-            })
-          }}
-        />
-      ))}
+      <div className="flex flex-col">
+        {state.slots.map((slotState, index) => (
+          <Fragment key={slotState.slot.id}>
+            <SetTable
+              state={slotState}
+              exercise={findExercise(slotState.slot.exerciseId, custom)}
+              unit={unitOf(slotState.slot.exerciseId)}
+              selectedId={selected?.set.id ?? null}
+              onSelect={(set, n) => {
+                if (set.completedAt === null) setChosenId(set.id)
+                else open({ kind: 'set', setId: set.id, n })
+              }}
+              onNote={() => {
+                open({ kind: 'note', slotId: slotState.slot.id })
+              }}
+              onInfo={
+                findLibraryEntry(slotState.slot.exerciseId, custom)
+                  ? () => {
+                      open({ kind: 'exercise', exerciseId: slotState.slot.exerciseId })
+                    }
+                  : null
+              }
+              supersetLabel={labels.get(slotState.slot.id) ?? null}
+              onToggle={toggleDone}
+              onAddSet={() => {
+                void workoutSession.addSet(slotState.slot.id).then((set) => {
+                  setChosenId(set.id)
+                })
+              }}
+            />
+            {index < state.slots.length - 1 && (
+              <SupersetLink
+                linked={linkedWithNext(slotRows, slotState.slot.id)}
+                text={t('superset')}
+                label={t('supersetPair', {
+                  first: nameOf(slotState.slot.exerciseId),
+                  second: nameOf(state.slots[index + 1]?.slot.exerciseId ?? ''),
+                })}
+                onToggle={(linked) => {
+                  void workoutSession.linkWithNext(slotState.slot.id, !linked)
+                }}
+              />
+            )}
+          </Fragment>
+        ))}
+      </div>
       <div className="flex gap-8">
         <Pressable
           onClick={() => {
@@ -201,6 +234,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             n={selected.n}
             exerciseId={selected.exerciseId}
             exercise={findExercise(selected.exerciseId, custom)}
+            supersetLabel={labels.get(selected.slotId) ?? null}
             unit={unitOf(selected.exerciseId)}
             onDetails={() => {
               open({ kind: 'set', setId: selected.set.id, n: selected.n })

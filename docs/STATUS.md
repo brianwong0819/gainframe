@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-07 Supersets (part 1 of 3)
+- **Current task:** M1-07 Supersets (part 2 of 3)
 - **Last updated:** 2026-11-14
 
 ## Where I stopped
@@ -114,6 +114,8 @@ M1-06, part 2 (2026-11-13, PR `m1/06-rest-timer`): the rest sheet, pill and cue 
 Plan update (2026-11-13, PR `m4/plan-body-metrics-strength`): at bw's request, M4-02 now covers optional body composition (body fat %, skeletal muscle mass, fat mass) next to weight, entered by hand; M4-01 adds optional sex, birth year and height to the profile; a post-MVP milestone M8 adds a strength standing for the squat, bench press and deadlift from OpenPowerlifting data ([ADR-0006](adr/0006-strength-standing.md), proposed). InBody photo import and Apple Health weight are listed as version 2 at the end of `docs/ROADMAP.md`.
 
 M1-07, part 1 (2026-11-14, PR `m1/07-superset-rules`): `packages/shared/src/domain/superset.ts` holds the superset rules for slots and plan items alike: `setOrder` (a superset's sets round by round, A1 set 1, A2 set 1, A1 set 2, which the set panel now follows), `restSlotAfter` (a rest only once no member has a set left in this round or an earlier one, taking the last member's rest), `linkWithNext` / `unlinkFromNext` (join an item with the next one, merging groups; a split side with one item becomes standalone) and `supersetLabels` (A1, A2, B1). A group with one live item left is standalone. `workoutSession.completeSet` uses `restSlotAfter`; `workoutSession.linkWithNext` writes the group changes. No UI yet: part 2 adds the control and labels to the workout, part 3 to the plan editor.
+
+M1-07, part 2 (2026-11-14, PR `m1/07-superset-workout`): between two exercise cards of the workout, a "Superset" toggle (`src/ui/superset-link.tsx`, pressed while linked, labelled with both names for screen readers) joins them or splits the superset there; grouped cards and the set panel show "A1", "A2". `e2e/superset.spec.ts` runs the Verify: three rounds of bench press and squat open the rest only after each A2 set, never after an A1 set, and not after the last round. Pending: bw's iPhone check.
 
 ## Follow-ups (noticed, not in scope yet)
 
