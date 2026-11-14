@@ -52,7 +52,7 @@ export function SetPanel({
   return (
     <div className="set-panel flex flex-col gap-12 rounded-group bg-surface p-16">
       <div className="flex items-center justify-between gap-12">
-        <p className="min-w-0 truncate text-label text-ink-2">
+        <p className="min-w-0 truncate text-label font-semibold text-accent">
           {supersetLabel !== null && `${supersetLabel} · `}
           {exerciseName(exercise, locale)} · {t('colSet')} {n}
           {set.kind !== 'working' && ` · ${tKind(set.kind)}`}

@@ -49,7 +49,7 @@
     "rpe": "RPE",
     "rpeNone": "None",
     "rpeHint": "RPE is how hard the set felt: 10 = no rep left, 8 = two reps left.",
-    "deleteSet": "Delete set",
+    "deleteSet": "Delete this set from this workout",
     "note": "Note",
     "notePlaceholder": "How it felt today…",
     "noteHint": "Kept with this workout only. For something to see every time, use the plan note.",
