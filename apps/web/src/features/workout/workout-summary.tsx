@@ -40,17 +40,19 @@ export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
     { label: t('duration'), value: duration },
     { label: t('volume'), value: `${number.format(summary.volumeKg)} ${tWorkout('unit.kg')}` },
     { label: t('sets'), value: String(summary.setsDone) },
-    { label: t('records'), value: String(summary.recordCount) },
+    { label: t('records'), value: String(summary.recordCount), anchor: true },
   ]
 
   const exercises = summary.exercises.filter(({ setsDone }) => setsDone > 0)
   return (
     <>
       <dl className="grid grid-cols-2 gap-8">
-        {figures.map(({ label, value }) => (
+        {figures.map(({ label, value, anchor }) => (
           <div key={label} className="flex flex-col gap-4 rounded-group bg-surface p-16">
             <dt className="text-label text-ink-3">{label}</dt>
-            <dd className="num text-section text-ink">{value}</dd>
+            <dd className="num text-section text-ink" data-celebration-anchor={anchor}>
+              {value}
+            </dd>
           </div>
         ))}
       </dl>

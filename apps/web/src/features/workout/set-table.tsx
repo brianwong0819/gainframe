@@ -20,7 +20,10 @@ interface SetTableProps {
   unit: WeightUnit
   selectedId: string | null
   onSelect: (set: WorkoutSet, n: number) => void
-  onToggle: (set: WorkoutSet) => void
+  // `anchor` is the tapped check, where the celebration starts.
+  onToggle: (set: WorkoutSet, anchor: Element) => void
+  // The sets of this slot that set a record, tagged "New PR".
+  recordIds: ReadonlySet<string>
   onAddSet: () => void
   // Opens the exercise's actions: move, superset, note, remove.
   onActions: () => void
@@ -77,6 +80,7 @@ export function SetTable({
   onActions,
   onInfo,
   supersetLabel,
+  recordIds,
 }: SetTableProps) {
   const t = useTranslations('workout')
   const tShort = useTranslations('setKindShort')
@@ -169,9 +173,13 @@ export function SetTable({
                 <span className="num pl-8 text-label text-ink-3">
                   {set.kind === 'working' ? n : tShort(set.kind)}
                 </span>
-                <span className="num text-label text-ink-3">
-                  {last ? `${weight(last.weightKg)}×${String(last.reps)}` : t('lastNone')}
-                </span>
+                {recordIds.has(set.id) ? (
+                  <span className="text-label font-semibold text-accent">{t('newRecord')}</span>
+                ) : (
+                  <span className="num text-label text-ink-3">
+                    {last ? `${weight(last.weightKg)}×${String(last.reps)}` : t('lastNone')}
+                  </span>
+                )}
                 <span className={`num text-body ${done ? 'text-ink' : 'text-ink-2'}`}>
                   <RollingNumber value={weight(set.weightKg)} />
                 </span>
@@ -183,8 +191,8 @@ export function SetTable({
                 className="p-4"
                 aria-label={done ? t('undo', { n }) : t('complete', { n })}
                 aria-pressed={done}
-                onClick={() => {
-                  onToggle(set)
+                onClick={(event) => {
+                  onToggle(set, event.currentTarget)
                 }}
               >
                 <Check done={done} />

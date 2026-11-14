@@ -2,6 +2,7 @@
 
 import {
   type Exercise,
+  findPersonalRecords,
   setOrder,
   supersetBlocks,
   supersetLabels,
@@ -11,11 +12,13 @@ import {
 import { AnimatePresence } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { db, planStore, repositories, weightUnits, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import type { ActiveWorkoutState } from '@/db/workout-session'
+import { loadRules } from '@/db/workout-summary'
+import { celebrationsOff, celebrationTiming, chalk, plates, recordBadge } from '@/ui/celebration'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 import { SupersetBlock } from '@/ui/superset-block'
@@ -24,6 +27,7 @@ import { ExerciseDetail } from '../exercises/exercise-detail'
 import { exerciseName, findLibraryEntry } from '../exercises/library'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
+import { markJustFinished } from './just-finished'
 import { allowScreenOff, keepScreenOn, prepareRestCue } from './rest-cue'
 import { RestPanel, RestPill, useRest } from './rest-timer'
 import { SetDetails } from './set-details'
@@ -34,6 +38,7 @@ import { SlotActions } from './slot-actions'
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const loadWeightUnits = () => weightUnits.all()
+const noExercises: Exercise[] = []
 
 type SheetContent =
   | { kind: 'picker' }
@@ -83,7 +88,7 @@ function useScreenOn() {
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const t = useTranslations('workout')
   const locale = useLocale()
-  const custom = useLiveQuery(allCustomExercises) ?? []
+  const custom = useLiveQuery(allCustomExercises) ?? noExercises
   const units = useLiveQuery(loadWeightUnits)
   const unitOf = (exerciseId: string) => units?.get(exerciseId) ?? 'kg'
   const [chosenId, setChosenId] = useState<string | null>(null)
@@ -100,6 +105,25 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     (count, { sets }) => count + sets.filter((set) => set.completedAt !== null).length,
     0,
   )
+  // The records of this workout so far, and whether completing `set` now
+  // would set one.
+  const isBodyweight = useMemo(() => loadRules(custom).isBodyweight, [custom])
+  const earlier = useMemo(
+    () => [
+      ...new Map(
+        state.slots.flatMap(({ earlier }) => earlier).map((set) => [set.id, set]),
+      ).values(),
+    ],
+    [state.slots],
+  )
+  const doneSets = state.slots.flatMap(({ sets }) => sets.filter((set) => set.completedAt !== null))
+  const recordIds = new Set(findPersonalRecords(doneSets, earlier, isBodyweight).keys())
+  const wouldBeRecord = (set: WorkoutSet) =>
+    findPersonalRecords(
+      [...doneSets, { ...set, completedAt: new Date().toISOString() }],
+      earlier,
+      isBodyweight,
+    ).has(set.id)
 
   function open(content: SheetContent) {
     setSheet(content)
@@ -109,17 +133,40 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     setSheetOpen(false)
   }
 
-  // Completing a set starts the rest after it (M1-06) and opens the rest
-  // sheet; undoing it cancels that rest. The tap also unlocks the cue's audio.
-  function toggleDone(set: WorkoutSet) {
+  // Completing a set starts the rest after it (M1-06) and celebrates it at
+  // the tapped button: chalk always, plates and the "New PR" tag for a record,
+  // smaller plates for an exercise's last set. The rest sheet opens once the
+  // celebration has played, so it does not cover it; the rest itself counts
+  // from the tap. Undoing a set cancels its rest. The tap also unlocks the
+  // cue's audio.
+  function toggleDone(set: WorkoutSet, anchor: Element) {
     if (set.completedAt !== null) {
       void workoutSession.uncompleteSet(set.id)
       return
     }
     prepareRestCue()
     keepScreenOn()
+    const record = wouldBeRecord(set)
+    const slotSets = state.slots.find(({ sets }) => sets.some(({ id }) => id === set.id))?.sets
+    const lastOfExercise =
+      slotSets?.every((other) => other.id === set.id || other.completedAt !== null) ?? false
+    chalk(anchor)
+    if (record) {
+      plates(anchor)
+      recordBadge(anchor, t('newRecord'))
+    } else if (lastOfExercise) {
+      plates(anchor, 14, 0.85)
+    }
+    const waitS = celebrationsOff()
+      ? 0
+      : record
+        ? celebrationTiming.recordS
+        : celebrationTiming.chalkS
     void workoutSession.completeSet(set.id).then(({ restEndsAt }) => {
-      if (restEndsAt !== null) open({ kind: 'rest' })
+      if (restEndsAt === null) return
+      setTimeout(() => {
+        open({ kind: 'rest' })
+      }, waitS * 1000)
     })
   }
   // The rest sheet closes by itself when the rest ends; closed while the rest
@@ -173,6 +220,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             : null
         }
         supersetLabel={labels.get(slotId) ?? null}
+        recordIds={recordIds}
         onToggle={toggleDone}
         onAddSet={() => {
           void workoutSession.addSet(slotId).then((set) => {
@@ -256,8 +304,8 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             onDetails={() => {
               open({ kind: 'set', setId: selected.set.id, n: selected.n })
             }}
-            onComplete={() => {
-              toggleDone(selected.set)
+            onComplete={(anchor) => {
+              toggleDone(selected.set, anchor)
             }}
           />
         )}
@@ -312,6 +360,7 @@ function FinishConfirm({
   // Finishing opens the workout's summary; discarding returns to the tab.
   const leave = (write: Promise<unknown>, to: string) => {
     onDone()
+    if (to !== '/workout') markJustFinished(workout.id)
     void write.then(() => {
       router.replace(to)
     })

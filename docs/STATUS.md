@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-08 Finish workout + summary, in three PRs: record and summary rules (done), summary screen (done), celebrations
+- **Current task:** none; M1-08 Finish workout + summary done (pending bw's iPhone check). Next: M1-10 History, once bw says to continue
 - **Last updated:** 2026-11-14
 
 ## Where I stopped
@@ -129,9 +129,11 @@ M1-08 PR 1 (2026-11-14, `m1/08-records-domain`): `findPersonalRecords` now retur
 
 M1-08 PR 2 (2026-11-14, `m1/08-workout-summary`): finishing a workout (also "finish and save as a plan day") opens `/workout/summary#<id>`: time, volume, sets and PRs as four tiles, then each exercise with its sets, volume, top set and each record set with a "New PR" tag and what it beat (estimated 1RM, or most reps at that weight or more). `loadWorkoutSummary` (`src/db/workout-summary.ts`) reads with direct Dexie calls only (L-026) and compares with live workouts that started earlier; `WorkoutSummaryView` is the part M1-10's workout detail reuses. The URL-fragment hook moved to `src/ui/use-id-from-hash.ts` for both pages, and the set-weight text ("+10", "BW") to `formatSetWeight`.
 
+M1-08 PR 3 (2026-11-14, `m1/08-celebrations`): `src/ui/celebration.ts` draws the three tiers on one fixed canvas (adapted from the prototype's effect code): chalk at every completed set, plates and a rising "新纪录" tag for a record (predicted at the tap with `findPersonalRecords` over the slots' `earlier` sets, now loaded with each slot), smaller plates for an exercise's last set, and a ripple from the PR count when the summary opens after finishing. The rest sheet waits for the celebration; record rows show "新纪录" in the "last time" column. Off under Reduce Motion (the e2e default; `e2e/summary.spec.ts` turns motion on for its celebration test). Timing rules in "Celebrations" in `docs/design-system.md`. Pending: bw's iPhone check that the plates feel right and the rest sheet delay is not annoying.
+
 ## Follow-ups (noticed, not in scope yet)
 
-
+- The summary shows durations under a minute as "0 min"; consider seconds or "< 1 min" when M1-10 shows short entries.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
