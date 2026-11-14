@@ -295,7 +295,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
 }
 
 // Finishing keeps the workout; discarding deletes it with its sets, so it asks
-// twice. Either way the screen returns to the Workout tab.
+// twice.
 function FinishConfirm({
   workout,
   done,
@@ -309,18 +309,20 @@ function FinishConfirm({
   const tPlans = useTranslations('plans')
   const router = useRouter()
   const [discarding, setDiscarding] = useState(false)
-  const leave = (write: Promise<unknown>) => {
+  // Finishing opens the workout's summary; discarding returns to the tab.
+  const leave = (write: Promise<unknown>, to: string) => {
     onDone()
     void write.then(() => {
-      router.replace('/workout')
+      router.replace(to)
     })
   }
+  const summary = `/workout/summary#${workout.id}`
   return (
     <div className="flex flex-col gap-20">
       <p className="text-body text-ink-2">{t('finishBody', { done })}</p>
       <Pressable
         onClick={() => {
-          leave(workoutSession.finish(workout.id))
+          leave(workoutSession.finish(workout.id), summary)
         }}
         className="rounded-ctl bg-ink py-12 text-body font-semibold text-bg"
       >
@@ -336,6 +338,7 @@ function FinishConfirm({
                   day: (n) => tPlans('dayName', { n }),
                 }),
               ),
+              summary,
             )
           }}
           className="rounded-ctl bg-sunk py-12 text-body font-semibold text-ink"
@@ -345,7 +348,7 @@ function FinishConfirm({
       )}
       <Pressable
         onClick={() => {
-          if (discarding) leave(repositories.workouts.remove(workout.id))
+          if (discarding) leave(repositories.workouts.remove(workout.id), '/workout')
           else setDiscarding(true)
         }}
         className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"

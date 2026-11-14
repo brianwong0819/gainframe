@@ -144,6 +144,8 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
   await page.getByRole('button', { name: '结束训练' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
+  await expect(page).toHaveURL(/\/workout\/summary\/?#/)
+  await page.getByRole('link', { name: '完成', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByText('第 2/2 天 · 新计划')).toBeVisible()
 })
@@ -183,6 +185,8 @@ test('an exercise is added to a plan day from its detail, and a workout saved as
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
   await page.getByRole('button', { name: '结束训练' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '结束，并存成计划的新一天' }).click()
+  await expect(page).toHaveURL(/\/workout\/summary\/?#/)
+  await page.getByRole('link', { name: '训练', exact: true }).first().click()
   await expect(page).toHaveURL(/\/workout\/?$/)
 
   await page.getByRole('link', { name: /训练计划/ }).click()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useSyncExternalStore } from 'react'
+import { useMemo } from 'react'
 
 import { planStore } from '@/db/client'
 import type { PlanState, PlanSummary } from '@/db/plans'
@@ -23,24 +23,4 @@ export function usePlan(planId: string | null | undefined): PlanState | null | u
   )
   const state = useLiveQuery(query)
   return planId === undefined ? undefined : state
-}
-
-function subscribeToHash(onChange: () => void) {
-  window.addEventListener('hashchange', onChange)
-  return () => {
-    window.removeEventListener('hashchange', onChange)
-  }
-}
-
-// The plan the editor shows, from the URL fragment (`/workout/plan#<id>`). A
-// fragment, not a query string: the exported page is one static file, and the
-// service worker's precache matches the URL without its fragment, so the page
-// also opens offline. Undefined on the server render, where it is not known;
-// null when the URL has none.
-export function usePlanIdFromHash(): string | null | undefined {
-  return useSyncExternalStore(
-    subscribeToHash,
-    () => decodeURIComponent(window.location.hash.slice(1)) || null,
-    () => undefined,
-  )
 }

@@ -85,6 +85,23 @@
     "restAwayHint": "锁屏或切到别的 App 时不会响铃，回到这里才会提醒。",
     "restLeft": "剩余"
   },
+  "summary": {
+    "title": "训练完成",
+    "duration": "时长",
+    "volume": "容量",
+    "sets": "组数",
+    "records": "新纪录",
+    "hours": "{hours} 小时 {minutes} 分",
+    "minutes": "{minutes} 分钟",
+    "exerciseLine": "{sets} 组 · {volume} kg",
+    "top": "最重一组 {set}",
+    "newRecord": "新纪录",
+    "recordE1rm": "估算 1RM {weight}",
+    "recordReps": "同等或更重重量下次数最多",
+    "none": "没有打勾的组，这次没有记录。",
+    "missing": "这次训练已不存在。",
+    "done": "完成"
+  },
   "food": {
     "title": "饮食",
     "empty": "今天还没有记录饮食。"

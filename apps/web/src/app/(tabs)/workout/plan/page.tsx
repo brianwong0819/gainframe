@@ -3,13 +3,14 @@
 import { useTranslations } from 'next-intl'
 
 import { PlanEditor } from '@/features/plans/plan-editor'
-import { usePlan, usePlanIdFromHash } from '@/features/plans/use-plans'
+import { usePlan } from '@/features/plans/use-plans'
 import { BackLink } from '@/ui/back-link'
+import { useIdFromHash } from '@/ui/use-id-from-hash'
 
-// One plan, at /workout/plan#<id> (see usePlanIdFromHash).
+// One plan, at /workout/plan#<id> (see useIdFromHash).
 export default function PlanPage() {
   const t = useTranslations('plans')
-  const state = usePlan(usePlanIdFromHash())
+  const state = usePlan(useIdFromHash())
   return (
     <main className="flex flex-col gap-20">
       <BackLink href="/workout/plans" label={t('title')} />

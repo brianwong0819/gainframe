@@ -12,7 +12,7 @@ import { RollingNumber } from '@/ui/rolling-number'
 import { ExerciseInfoButton } from '../exercises/exercise-info-button'
 import { exerciseName } from '../exercises/library'
 import { formatRepRange } from '../plans/item-edit'
-import { type ExerciseInfo, formatWeight, isBodyweight } from './exercise-info'
+import { type ExerciseInfo, formatSetWeight, isBodyweight } from './exercise-info'
 
 interface SetTableProps {
   state: SlotState
@@ -83,12 +83,7 @@ export function SetTable({
   const locale = useLocale()
   const bodyweight = isBodyweight(exercise.equipment)
   const unitLabel = t(`unit.${unit}`)
-  const weight = (kg: number) =>
-    bodyweight
-      ? kg === 0
-        ? t('bodyweight')
-        : `+${formatWeight(kg, unit)}`
-      : formatWeight(kg, unit)
+  const weight = (kg: number) => formatSetWeight(kg, unit, bodyweight, t('bodyweight'))
   // The plan's rep range and the heaviest weight so far, as targets to beat.
   const { slot, bestKg } = state
   const hints = [

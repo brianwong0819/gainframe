@@ -85,6 +85,23 @@
     "restAwayHint": "No sound plays while the phone is locked or in another app; you are reminded when you come back.",
     "restLeft": "left"
   },
+  "summary": {
+    "title": "Workout done",
+    "duration": "Time",
+    "volume": "Volume",
+    "sets": "Sets",
+    "records": "PRs",
+    "hours": "{hours} h {minutes} min",
+    "minutes": "{minutes} min",
+    "exerciseLine": "{sets, plural, one {# set} other {# sets}} · {volume} kg",
+    "top": "Top set {set}",
+    "newRecord": "New PR",
+    "recordE1rm": "est. 1RM {weight}",
+    "recordReps": "most reps at this weight or more",
+    "none": "No sets were ticked, so nothing was recorded.",
+    "missing": "This workout no longer exists.",
+    "done": "Done"
+  },
   "food": {
     "title": "Food",
     "empty": "No meals logged today."
