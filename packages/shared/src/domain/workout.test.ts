@@ -13,6 +13,7 @@ import {
 
 const BENCH = '01960000-0000-7000-8000-000000000001'
 const SQUAT = '01960000-0000-7000-8000-000000000002'
+const DIP = '01960000-0000-7000-8000-000000000003'
 const MONDAY = '01960000-0000-7000-8000-0000000000a1'
 const THURSDAY = '01960000-0000-7000-8000-0000000000a2'
 const SATURDAY = '01960000-0000-7000-8000-0000000000a3'
@@ -23,6 +24,9 @@ const row = {
   updatedAt: '2026-11-02T10:00:00.000Z',
   deletedAt: null,
 }
+
+const isDip = (exerciseId: string) => exerciseId === DIP
+const barbellOnly = { isBodyweight: isDip, bodyWeightKg: null }
 
 let nextId = 0
 
@@ -81,7 +85,7 @@ describe('totalVolumeKg', () => {
       set({ weightKg: 50, reps: 8, kind: 'drop' }),
       set({ weightKg: 60, reps: 6, kind: 'failure' }),
     ]
-    expect(totalVolumeKg(sets)).toBe(600 + 400 + 360)
+    expect(totalVolumeKg(sets, barbellOnly)).toBe(600 + 400 + 360)
   })
 
   it('leaves out warm-ups, unfinished sets, deleted sets and 0-rep sets', () => {
@@ -92,11 +96,24 @@ describe('totalVolumeKg', () => {
       set({ weightKg: 60, reps: 0 }),
       set({ weightKg: 60, reps: 5 }),
     ]
-    expect(totalVolumeKg(sets)).toBe(300)
+    expect(totalVolumeKg(sets, barbellOnly)).toBe(300)
   })
 
   it('is 0 for no sets', () => {
-    expect(totalVolumeKg([])).toBe(0)
+    expect(totalVolumeKg([], barbellOnly)).toBe(0)
+  })
+
+  it('counts only the added load of a bodyweight set until body weight is known', () => {
+    const sets = [
+      set({ exerciseId: DIP, weightKg: 0, reps: 10 }),
+      set({ exerciseId: DIP, weightKg: 10, reps: 5 }),
+    ]
+    expect(totalVolumeKg(sets, { isBodyweight: isDip, bodyWeightKg: null })).toBe(50)
+  })
+
+  it('adds the body weight to a bodyweight set once it is known', () => {
+    const sets = [set({ exerciseId: DIP, weightKg: 10, reps: 5 }), set({ weightKg: 60, reps: 10 })]
+    expect(totalVolumeKg(sets, { isBodyweight: isDip, bodyWeightKg: 70 })).toBe(80 * 5 + 600)
   })
 })
 
@@ -198,16 +215,47 @@ describe('nextSetValues', () => {
 
 describe('findPersonalRecords', () => {
   const history = [set({ weightKg: 80, reps: 5 })] // e1RM 93.3
+  const records = (current: WorkoutSet[], earlier: WorkoutSet[] = history) =>
+    findPersonalRecords(current, earlier, isDip)
 
   it('marks a working set that beats the best earlier e1RM', () => {
     const record = set({ workoutId: THURSDAY, weightKg: 85, reps: 5 }) // 99.2
     const below = set({ workoutId: THURSDAY, weightKg: 80, reps: 4 }) // 90.7
-    expect(findPersonalRecords([record, below], history)).toEqual(new Set([record.id]))
+    expect(records([record, below])).toEqual(new Map([[record.id, ['e1rm', 'reps']]]))
   })
 
-  it('does not count an equal e1RM as a record', () => {
+  it('does not count an equal set as a record', () => {
     const equal = set({ workoutId: THURSDAY, weightKg: 80, reps: 5 })
-    expect(findPersonalRecords([equal], history).size).toBe(0)
+    expect(records([equal]).size).toBe(0)
+  })
+
+  it('marks more reps at the same or a higher weight as a rep record', () => {
+    // 60 × 6 has the lower e1RM (72), but nothing at 60 kg or more reached 6 reps.
+    const lighter = set({ workoutId: THURSDAY, weightKg: 60, reps: 6 })
+    expect(records([lighter])).toEqual(new Map([[lighter.id, ['reps']]]))
+  })
+
+  it('does not count fewer reps at a lower weight', () => {
+    const lighter = set({ workoutId: THURSDAY, weightKg: 70, reps: 5 })
+    expect(records([lighter]).size).toBe(0)
+  })
+
+  it('counts a set above the e1RM rep limit as a rep record only', () => {
+    const many = set({ workoutId: THURSDAY, weightKg: 80, reps: 15 })
+    expect(records([many])).toEqual(new Map([[many.id, ['reps']]]))
+  })
+
+  it('counts a bodyweight exercise by reps only', () => {
+    const earlier = [set({ exerciseId: DIP, weightKg: 0, reps: 10 })]
+    const more = set({ workoutId: THURSDAY, exerciseId: DIP, weightKg: 0, reps: 11 })
+    const loaded = set({ workoutId: THURSDAY, exerciseId: DIP, weightKg: 10, reps: 5 })
+    const fewer = set({ workoutId: THURSDAY, exerciseId: DIP, weightKg: 0, reps: 9 })
+    expect(records([more, loaded, fewer], earlier)).toEqual(
+      new Map([
+        [more.id, ['reps']],
+        [loaded.id, ['reps']],
+      ]),
+    )
   })
 
   it('never counts warm-up or drop sets as records', () => {
@@ -215,26 +263,30 @@ describe('findPersonalRecords', () => {
       set({ workoutId: THURSDAY, weightKg: 100, reps: 5, kind: 'warmup' }),
       set({ workoutId: THURSDAY, weightKg: 100, reps: 5, kind: 'drop' }),
     ]
-    expect(findPersonalRecords(current, history).size).toBe(0)
+    expect(records(current).size).toBe(0)
   })
 
   it('counts a failure set as a record', () => {
     const failure = set({ workoutId: THURSDAY, weightKg: 85, reps: 6, kind: 'failure' })
-    expect(findPersonalRecords([failure], history)).toEqual(new Set([failure.id]))
+    expect(records([failure])).toEqual(new Map([[failure.id, ['e1rm', 'reps']]]))
   })
 
-  it('ignores 0-rep sets and sets above the rep limit', () => {
-    const current = [
-      set({ workoutId: THURSDAY, weightKg: 200, reps: 0 }),
-      set({ workoutId: THURSDAY, weightKg: 80, reps: 20 }),
-    ]
-    expect(findPersonalRecords(current, history).size).toBe(0)
+  it('ignores 0-rep sets', () => {
+    expect(records([set({ workoutId: THURSDAY, weightKg: 200, reps: 0 })]).size).toBe(0)
+  })
+
+  it('needs an earlier e1RM to report an e1RM record', () => {
+    const highReps = [set({ weightKg: 50, reps: 15 })]
+    const heavy = set({ workoutId: THURSDAY, weightKg: 60, reps: 5 })
+    expect(records([heavy], highReps)).toEqual(new Map([[heavy.id, ['reps']]]))
   })
 
   it('does not let a warm-up in the history raise the bar', () => {
     const heavyWarmup = set({ weightKg: 120, reps: 5, kind: 'warmup' })
     const record = set({ workoutId: THURSDAY, weightKg: 85, reps: 5 })
-    expect(findPersonalRecords([record], [...history, heavyWarmup])).toEqual(new Set([record.id]))
+    expect(records([record], [...history, heavyWarmup])).toEqual(
+      new Map([[record.id, ['e1rm', 'reps']]]),
+    )
   })
 
   it('compares each set with the earlier sets of the same workout', () => {
@@ -258,14 +310,17 @@ describe('findPersonalRecords', () => {
       completedAt: '2026-11-05T10:20:00.000Z',
     })
     // Passed out of order: completion time decides.
-    expect(findPersonalRecords([higher, lower, first], history)).toEqual(
-      new Set([first.id, higher.id]),
+    expect(records([higher, lower, first])).toEqual(
+      new Map([
+        [first.id, ['e1rm', 'reps']],
+        [higher.id, ['e1rm', 'reps']],
+      ]),
     )
   })
 
   it('has no records for an exercise done for the first time', () => {
     const squat = set({ workoutId: THURSDAY, exerciseId: SQUAT, weightKg: 100, reps: 5 })
-    expect(findPersonalRecords([squat], history).size).toBe(0)
+    expect(records([squat]).size).toBe(0)
   })
 
   it('ignores deleted sets on both sides', () => {
@@ -277,8 +332,8 @@ describe('findPersonalRecords', () => {
       reps: 5,
       deletedAt: '2026-11-05T11:00:00.000Z',
     })
-    expect(findPersonalRecords([record, deletedRecord], [...history, deletedBest])).toEqual(
-      new Set([record.id]),
+    expect(records([record, deletedRecord], [...history, deletedBest])).toEqual(
+      new Map([[record.id, ['e1rm', 'reps']]]),
     )
   })
 })

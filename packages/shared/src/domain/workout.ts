@@ -37,11 +37,22 @@ export function estimateOneRepMax(weightKg: number, reps: number): number | null
   return weightKg * (1 + reps / 30)
 }
 
-// Total weight × reps of completed, non-deleted sets, warm-ups excluded, in kg.
-export function totalVolumeKg(sets: readonly WorkoutSet[]): number {
+// How the load of a set is counted. A bodyweight exercise stores only the added
+// load in `weightKg`; its volume adds `bodyWeightKg` when the user's body weight
+// is known (M4-02) and counts the added load alone until then.
+export interface LoadRules {
+  isBodyweight: (exerciseId: string) => boolean
+  bodyWeightKg: number | null
+}
+
+// Total load × reps of completed, non-deleted sets, warm-ups excluded, in kg.
+export function totalVolumeKg(sets: readonly WorkoutSet[], rules: LoadRules): number {
   return sets
     .filter((set) => isDone(set) && countsTowardVolume(set.kind))
-    .reduce((sum, set) => sum + set.weightKg * set.reps, 0)
+    .reduce((sum, set) => {
+      const bodyKg = rules.isBodyweight(set.exerciseId) ? (rules.bodyWeightKg ?? 0) : 0
+      return sum + (set.weightKg + bodyKg) * set.reps
+    }, 0)
 }
 
 // The completed sets of `exerciseId` from the latest workout that started before
@@ -104,39 +115,62 @@ export function nextSetValues(
   return { kind: source.kind, weightKg: source.weightKg, reps: source.reps }
 }
 
-// IDs of the sets in `current` that set a new estimated-1RM record for their
-// exercise. A set is a record when its e1RM beats every earlier counted set: all of
-// `history` plus the sets before it in `current` (by completion time). Warm-up and
-// drop sets never count, and an exercise with no counted history has no records,
-// so a first workout is not a wall of PRs.
+// e1rm: a higher estimated 1RM than any earlier set. reps: more reps than any
+// earlier set at the same or a higher weight, which also covers sets above
+// `domainConfig.e1rmMaxReps` (for a bodyweight exercise, the added load is the
+// weight).
+export type RecordKind = 'e1rm' | 'reps'
+
+// The sets in `current` that set a new record for their exercise, with the kinds
+// they set, in that order. Each set is compared with every earlier counted set:
+// all of `history` plus the sets before it in `current` (by completion time).
+// Warm-up and drop sets never count; an exercise with no counted history has no
+// records, so a first workout is not a wall of PRs. A bodyweight exercise has
+// only rep records, since an e1RM of the added load alone means nothing.
 export function findPersonalRecords(
   current: readonly WorkoutSet[],
   history: readonly WorkoutSet[],
-): Set<string> {
-  const best = new Map<string, number>()
-  for (const set of history) {
-    const e1rm = recordValue(set)
-    if (e1rm === null) continue
-    best.set(set.exerciseId, Math.max(best.get(set.exerciseId) ?? 0, e1rm))
+  isBodyweight: (exerciseId: string) => boolean,
+): Map<string, RecordKind[]> {
+  const earlier = new Map<string, WorkoutSet[]>()
+  const remember = (set: WorkoutSet) => {
+    earlier.set(set.exerciseId, [...(earlier.get(set.exerciseId) ?? []), set])
   }
-  const records = new Set<string>()
+  history.filter(countsAsRecord).forEach(remember)
+  const records = new Map<string, RecordKind[]>()
   const ordered = current
-    .filter((set) => recordValue(set) !== null)
+    .filter(countsAsRecord)
     .toSorted((a, b) => Date.parse(a.completedAt ?? '') - Date.parse(b.completedAt ?? ''))
   for (const set of ordered) {
-    const e1rm = recordValue(set)
-    const previous = best.get(set.exerciseId)
-    if (e1rm === null || previous === undefined) continue
-    if (e1rm > previous) {
-      records.add(set.id)
-      best.set(set.exerciseId, e1rm)
-    }
+    const before = earlier.get(set.exerciseId) ?? []
+    const kinds: RecordKind[] = []
+    if (!isBodyweight(set.exerciseId) && beatsE1rm(set, before)) kinds.push('e1rm')
+    if (before.length > 0 && beatsReps(set, before)) kinds.push('reps')
+    if (kinds.length > 0) records.set(set.id, kinds)
+    remember(set)
   }
   return records
 }
 
-function recordValue(set: WorkoutSet): number | null {
-  if (!isDone(set) || !countsTowardRecords(set.kind)) return null
+function countsAsRecord(set: WorkoutSet): boolean {
+  return isDone(set) && countsTowardRecords(set.kind) && set.reps > 0
+}
+
+function positiveE1rm(set: WorkoutSet): number | null {
   const e1rm = estimateOneRepMax(set.weightKg, set.reps)
   return e1rm === null || e1rm <= 0 ? null : e1rm
+}
+
+// Needs an earlier e1RM to beat: sets above the rep limit have none.
+function beatsE1rm(set: WorkoutSet, before: readonly WorkoutSet[]): boolean {
+  const e1rm = positiveE1rm(set)
+  const best = before.reduce<number | null>((max, other) => {
+    const value = positiveE1rm(other)
+    return value === null ? max : Math.max(max ?? 0, value)
+  }, null)
+  return e1rm !== null && best !== null && e1rm > best
+}
+
+function beatsReps(set: WorkoutSet, before: readonly WorkoutSet[]): boolean {
+  return before.every((other) => other.weightKg < set.weightKg || other.reps < set.reps)
 }
