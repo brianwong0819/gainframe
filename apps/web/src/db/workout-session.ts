@@ -3,12 +3,15 @@ import {
   BUILT_IN_EXERCISES,
   bestWeightKg,
   fromKg,
+  linkWithNext,
   nextSetValues,
   previousPerformance,
   restSeconds,
+  restSlotAfter,
   stepToGrid,
   toKg,
   toLocalDate,
+  unlinkFromNext,
   type WeightUnit,
   type Workout,
   type WorkoutExercise,
@@ -124,6 +127,10 @@ export function createWorkoutSession(
       ? undefined
       : await db.exercises.get(slot.exerciseId)
     return restSeconds(slot.restS, builtInRest.get(slot.exerciseId) ?? custom?.defaultRestS ?? null)
+  }
+
+  async function liveSlots(workoutId: string): Promise<WorkoutExercise[]> {
+    return db.workoutExercises.where('workoutId').equals(workoutId).filter(live).toArray()
   }
 
   async function clearRest(workout: Workout): Promise<Workout> {
@@ -276,28 +283,44 @@ export function createWorkoutSession(
     },
 
     // Completes a set and, in the same transaction, starts the rest after it:
-    // the slot's rest, else the exercise's default. No rest follows the last
-    // set still to do, or an exercise whose rest is 0.
+    // the slot's rest, else the exercise's default. In a superset the rest
+    // waits for the end of the round and takes the last member's rest. No
+    // rest follows the last set still to do, or an exercise whose rest is 0.
     async completeSet(setId: string): Promise<Workout> {
       return db.transaction('rw', [...writeTables, db.exercises], async () => {
         const at = now()
         const set = await repos.workoutSets.update(setId, { completedAt: at.toISOString() })
-        const slot = await repos.workoutExercises.get(set.workoutExerciseId)
-        if (slot === undefined) throw new Error(`No exercise slot ${set.workoutExerciseId}`)
         const workout = await getWorkout(set.workoutId)
-        const slots = await db.workoutExercises.where('workoutId').equals(workout.id).toArray()
-        const liveSlots = new Set(slots.filter(live).map(({ id }) => id))
-        const sets = await db.workoutSets.where('workoutId').equals(workout.id).toArray()
-        const toDo = sets.some(
-          (other) =>
-            live(other) && liveSlots.has(other.workoutExerciseId) && other.completedAt === null,
+        const slots = await liveSlots(workout.id)
+        const ids = new Set(slots.map(({ id }) => id))
+        const sets = (await db.workoutSets.where('workoutId').equals(workout.id).toArray()).filter(
+          (other) => live(other) && ids.has(other.workoutExerciseId),
         )
-        const restS = toDo ? await restAfter(slot) : 0
+        const toDo = sets.some((other) => other.completedAt === null)
+        const restSlotId = toDo
+          ? restSlotAfter(slots, sets, set.workoutExerciseId, set.position)
+          : null
+        const restSlot = slots.find(({ id }) => id === restSlotId)
+        const restS = restSlot === undefined ? 0 : await restAfter(restSlot)
         if (restS === 0) return clearRest(workout)
         return repos.workouts.update(workout.id, {
           restStartedAt: at.toISOString(),
           restEndsAt: new Date(at.getTime() + restS * 1000).toISOString(),
         })
+      })
+    },
+
+    // Joins an exercise with the one after it into a superset, or splits the
+    // superset between them.
+    async linkWithNext(slotId: string, linked: boolean): Promise<void> {
+      await db.transaction('rw', db.workoutExercises, db.outbox, async () => {
+        const slot = await repos.workoutExercises.get(slotId)
+        if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
+        const slots = await liveSlots(slot.workoutId)
+        const changes = linked ? linkWithNext(slots, slotId) : unlinkFromNext(slots, slotId)
+        for (const { id, supersetGroup } of changes) {
+          await repos.workoutExercises.update(id, { supersetGroup })
+        }
       })
     },
 
