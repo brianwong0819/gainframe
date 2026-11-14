@@ -121,9 +121,10 @@ M1-07, part 3 (2026-11-14, PR `m1/07-superset-plans`): the plan editor has the s
 
 Reordering and superset blocks (2026-11-14, PRs `m1/reorder-data`, `m1/reorder-ui`), asked for by bw after M1-07: `moveItem` (`packages/shared`) moves an exercise one step, a standalone one past a whole superset, a member within its group, a group's edge member the whole group; `workoutSession.moveSlot` and `planStore.moveItem` write it. Each workout card's "⋯" (bw chose it over drag-to-reorder) opens its sheet: move up / down, superset with the next exercise or split, the workout note and remove (`features/workout/slot-actions.tsx`); the plan item sheet has the same row (`src/ui/order-actions.tsx`). The toggle between cards from M1-07 is gone. A superset is drawn as one block (`src/ui/superset-block.tsx`, `supersetBlocks`): an accent-wash panel titled "Superset A · alternate" with the round in progress in the workout ("Round 2/3"). Pending: bw's iPhone check.
 
+Design review (2026-11-14, PR `m1/design-review-fixes`), asked for by bw: screenshots of Today, the Workout tab, the workout in progress, plans, the plan editor and item sheet, the library and Food at 390×844 checked against `docs/design-system.md` and `CLAUDE.md`: tokens only, every page has a back link and every sheet a close button, the exercise detail is the shared `ExerciseDetail`, no AI look. Fixed: an unchecked set showed a dot inside its circle (the tick's zero-length path with round caps), now faded out; the plan item sheet explains that in a superset only the last exercise's rest is used. No other inconsistency found.
+
 ## Follow-ups (noticed, not in scope yet)
 
-- In a superset only the last exercise's rest is used; the plan item sheet still offers a rest for the other members without saying so. Hide or explain it there if bw finds it confusing.
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
