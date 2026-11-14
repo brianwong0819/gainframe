@@ -1,16 +1,30 @@
 'use client'
 
-import { type Exercise, type PlanItem, planItemSchema } from '@gainframe/shared'
-import { useTranslations } from 'next-intl'
+import {
+  type Exercise,
+  linkedWithNext,
+  moveItem,
+  type PlanItem,
+  planItemSchema,
+} from '@gainframe/shared'
+import { useLocale, useTranslations } from 'next-intl'
 import { useId, useState } from 'react'
 
-import { repositories } from '@/db/client'
+import { planStore, repositories } from '@/db/client'
+import { OrderActions } from '@/ui/order-actions'
 import { Pressable } from '@/ui/pressable'
 import { Stepper } from '@/ui/stepper'
 
 import { ExerciseDetailView } from '../exercises/exercise-detail-view'
 import { ExerciseInfoButton } from '../exercises/exercise-info-button'
-import { findLibraryEntry, formatRest, REST_MAX_S, REST_STEP_S } from '../exercises/library'
+import {
+  exerciseName,
+  findLibraryEntry,
+  formatRest,
+  REST_MAX_S,
+  REST_STEP_S,
+} from '../exercises/library'
+import { findExercise } from '../workout/exercise-info'
 import { withRepsMax, withRepsMin } from './item-edit'
 
 const labelClass = 'text-label text-ink-3'
@@ -34,14 +48,21 @@ function parseCount(text: string, field: CountField): number | null {
 // (which closing the sheet also does).
 export function PlanItemSheet({
   item,
+  dayItems,
   custom,
   onRemoved,
 }: {
   item: PlanItem
+  // The live items of the item's day, in order.
+  dayItems: readonly PlanItem[]
   custom: readonly Exercise[]
   onRemoved: () => void
 }) {
   const t = useTranslations('plans')
+  const tWorkout = useTranslations('workout')
+  const locale = useLocale()
+  const next = dayItems[dayItems.findIndex(({ id }) => id === item.id) + 1]
+  const linked = linkedWithNext(dayItems, item.id)
   const exercise = findLibraryEntry(item.exerciseId, custom)
   const defaultRestS = exercise?.defaultRestS ?? 0
   const [showingDetail, setShowingDetail] = useState(false)
@@ -106,6 +127,26 @@ export function PlanItemSheet({
           }}
         />
       )}
+      <OrderActions
+        labels={{ up: tWorkout('moveUp'), down: tWorkout('moveDown') }}
+        canMove={(direction) => moveItem(dayItems, item.id, direction).length > 0}
+        onMove={(direction) => {
+          void planStore.moveItem(item.id, direction)
+        }}
+        link={
+          next === undefined
+            ? null
+            : {
+                linked,
+                label: tWorkout(linked ? 'supersetSplit' : 'supersetWith', {
+                  name: exerciseName(findExercise(next.exerciseId, custom), locale),
+                }),
+                onToggle: () => {
+                  void planStore.linkWithNext(item.id, !linked)
+                },
+              }
+        }
+      />
       <div className="grid grid-cols-[auto_1fr] items-center gap-x-12 gap-y-8">
         {counter(t('sets'), item.targetSets, 1, 20, 'targetSets', (targetSets) => {
           save({ targetSets })

@@ -119,6 +119,8 @@ M1-07, part 2 (2026-11-14, PR `m1/07-superset-workout`): between two exercise ca
 
 M1-07, part 3 (2026-11-14, PR `m1/07-superset-plans`): the plan editor has the same toggle between the exercises of a day (`planStore.linkWithNext`) and the A1/A2 tags; a workout started from the day already copies the groups, and a workout saved as a day keeps them. M1-07 is done. Pending: bw's iPhone check (link two exercises in a workout and in a plan, do a few rounds, check the rest only opens after the second exercise).
 
+Reordering and superset blocks (2026-11-14, PRs `m1/reorder-data`, `m1/reorder-ui`), asked for by bw after M1-07: `moveItem` (`packages/shared`) moves an exercise one step, a standalone one past a whole superset, a member within its group, a group's edge member the whole group; `workoutSession.moveSlot` and `planStore.moveItem` write it. Each workout card's "⋯" (bw chose it over drag-to-reorder) opens its sheet: move up / down, superset with the next exercise or split, the workout note and remove (`features/workout/slot-actions.tsx`); the plan item sheet has the same row (`src/ui/order-actions.tsx`). The toggle between cards from M1-07 is gone. A superset is drawn as one block (`src/ui/superset-block.tsx`, `supersetBlocks`): an accent-wash panel titled "Superset A · alternate" with the round in progress in the workout ("Round 2/3"). Pending: bw's iPhone check.
+
 ## Follow-ups (noticed, not in scope yet)
 
 - In a superset only the last exercise's rest is used; the plan item sheet still offers a rest for the other members without saying so. Hide or explain it there if bw finds it confusing.
@@ -126,7 +128,7 @@ M1-07, part 3 (2026-11-14, PR `m1/07-superset-plans`): the plan editor has the s
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
-- Plans: days and exercises keep the order they were added in; there is no way to reorder them yet (M1-09 adds them at the end). Add reordering if bw needs it after using plans.
+- Plan days keep the order they were added in; exercises can be reordered (PR `m1/reorder-ui`), days cannot yet.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text); the tab bar's targets are 52 px rows. Consider a `--tap` size token when a third component needs one.
 
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.

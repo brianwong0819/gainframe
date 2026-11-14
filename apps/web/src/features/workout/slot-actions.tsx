@@ -1,20 +1,35 @@
 'use client'
 
-import type { WorkoutExercise } from '@gainframe/shared'
+import { linkedWithNext, moveItem, type WorkoutExercise } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 import { useId, useState } from 'react'
 
-import { repositories } from '@/db/client'
+import { repositories, workoutSession } from '@/db/client'
+import { OrderActions } from '@/ui/order-actions'
 import { Pressable } from '@/ui/pressable'
 
 const NOTE_MAX = 500
 
-// The note for one exercise in this workout (seat height, grip, how it felt),
-// and removing the exercise with its sets.
-export function SlotNote({ slot, onDone }: { slot: WorkoutExercise; onDone: () => void }) {
+// Everything about one exercise in this workout besides its sets: moving it up
+// or down (when a machine is taken), joining it with the next exercise into a
+// superset or splitting them, its note for this workout, and removing it.
+export function SlotActions({
+  slot,
+  slots,
+  nameOf,
+  onDone,
+}: {
+  slot: WorkoutExercise
+  // The workout's live slots in order.
+  slots: readonly WorkoutExercise[]
+  nameOf: (exerciseId: string) => string
+  onDone: () => void
+}) {
   const t = useTranslations('workout')
   const id = useId()
   const [note, setNote] = useState(slot.note ?? '')
+  const next = slots[slots.findIndex(({ id: other }) => other === slot.id) + 1]
+  const linked = linkedWithNext(slots, slot.id)
 
   return (
     <form
@@ -28,6 +43,26 @@ export function SlotNote({ slot, onDone }: { slot: WorkoutExercise; onDone: () =
         onDone()
       }}
     >
+      <OrderActions
+        labels={{ up: t('moveUp'), down: t('moveDown') }}
+        canMove={(direction) => moveItem(slots, slot.id, direction).length > 0}
+        onMove={(direction) => {
+          void workoutSession.moveSlot(slot.id, direction)
+        }}
+        link={
+          next === undefined
+            ? null
+            : {
+                linked,
+                label: t(linked ? 'supersetSplit' : 'supersetWith', {
+                  name: nameOf(next.exerciseId),
+                }),
+                onToggle: () => {
+                  void workoutSession.linkWithNext(slot.id, !linked)
+                },
+              }
+        }
+      />
       <div className="flex flex-col gap-8">
         <label htmlFor={id} className="text-label text-ink-3">
           {t('note')}
