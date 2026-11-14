@@ -27,9 +27,13 @@ export {
   type GroupedItem,
   linkedWithNext,
   linkWithNext,
+  moveItem,
+  type PositionChange,
   restSlotAfter,
   type RoundSet,
   setOrder,
+  type SupersetBlock,
+  supersetBlocks,
   supersetLabels,
   unlinkFromNext,
 } from './domain/superset.ts'

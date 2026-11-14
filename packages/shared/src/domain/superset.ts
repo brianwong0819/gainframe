@@ -51,6 +51,31 @@ export function supersetLabels(items: readonly GroupedItem[]): Map<string, strin
   return labels
 }
 
+export interface SupersetBlock<T> {
+  // The superset's letter ("A"); null for a standalone item.
+  letter: string | null
+  items: T[]
+}
+
+// The list as the screen draws it: each superset as one block of its members,
+// each standalone item as a block of its own, in order.
+export function supersetBlocks<T extends GroupedItem>(items: readonly T[]): SupersetBlock<T>[] {
+  const letters = new Map(
+    [...groups(items).keys()].map((group, index) => [
+      group,
+      String.fromCharCode(65 + (index % 26)),
+    ]),
+  )
+  const blocks: SupersetBlock<T>[] = []
+  for (const item of byPosition(items)) {
+    const letter = item.supersetGroup === null ? undefined : letters.get(item.supersetGroup)
+    const last = blocks.at(-1)
+    if (letter !== undefined && last?.letter === letter) last.items.push(item)
+    else blocks.push({ letter: letter ?? null, items: [item] })
+  }
+  return blocks
+}
+
 // The order to do the sets in: a standalone exercise's sets one after another,
 // a superset's sets round by round (A1 set 1, A2 set 1, A1 set 2, …), where a
 // member with fewer sets simply drops out of the later rounds. `slots` and each
@@ -151,4 +176,41 @@ export function linkedWithNext(items: readonly GroupedItem[], id: string): boole
   const next = ordered[index + 1]
   if (item === undefined || next === undefined || item.supersetGroup === null) return false
   return next.supersetGroup === item.supersetGroup
+}
+
+export interface PositionChange {
+  id: string
+  position: number
+}
+
+// Moves an item one step up (-1) or down (1) in its list, keeping supersets
+// together: a standalone item moves past a whole superset, a superset member
+// swaps with its neighbour in the group, and the first or last member moves the
+// whole group past its neighbour. Positions are renumbered from 0; returns only
+// the items whose position changes (none when the item cannot move that way).
+export function moveItem(
+  items: readonly GroupedItem[],
+  id: string,
+  direction: -1 | 1,
+): PositionChange[] {
+  const units = supersetBlocks(items).map((block) => [...block.items])
+  const index = units.findIndex((unit) => unit.some((item) => item.id === id))
+  const unit = units[index]
+  if (unit === undefined) return []
+  const member = unit.findIndex((item) => item.id === id)
+  const inside = unit[member + direction]
+  if (unit.length > 1 && inside !== undefined) {
+    unit[member + direction] = unit[member] ?? inside
+    unit[member] = inside
+  } else {
+    const other = units[index + direction]
+    if (other === undefined) return []
+    units[index + direction] = unit
+    units[index] = other
+  }
+  return units
+    .flat()
+    .map((item, position) => ({ id: item.id, position, before: item.position }))
+    .filter(({ position, before }) => position !== before)
+    .map(({ id: moved, position }) => ({ id: moved, position }))
 }

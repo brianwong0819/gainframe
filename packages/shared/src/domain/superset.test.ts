@@ -4,9 +4,11 @@ import {
   type GroupedItem,
   linkedWithNext,
   linkWithNext,
+  moveItem,
   restSlotAfter,
   type RoundSet,
   setOrder,
+  supersetBlocks,
   supersetLabels,
   unlinkFromNext,
 } from './superset.ts'
@@ -130,6 +132,59 @@ describe('linkedWithNext', () => {
       false,
       false,
       false,
+    ])
+  })
+})
+
+describe('moveItem', () => {
+  const order = (list: GroupedItem[], changes: { id: string; position: number }[]) => {
+    const position = new Map(list.map((item) => [item.id, item.position]))
+    for (const change of changes) position.set(change.id, change.position)
+    return list
+      .toSorted((a, b) => (position.get(a.id) ?? 0) - (position.get(b.id) ?? 0))
+      .map(({ id }) => id)
+  }
+
+  it('swaps a standalone item with its neighbour', () => {
+    const list = items(null, null, null)
+    expect(order(list, moveItem(list, 's2', -1))).toEqual(['s0', 's2', 's1'])
+    expect(moveItem(list, 's0', -1)).toEqual([])
+    expect(moveItem(list, 's2', 1)).toEqual([])
+  })
+
+  it('moves a standalone item past a whole superset', () => {
+    const list = items(null, 0, 0, null)
+    expect(order(list, moveItem(list, 's0', 1))).toEqual(['s1', 's2', 's0', 's3'])
+    expect(order(list, moveItem(list, 's3', -1))).toEqual(['s0', 's3', 's1', 's2'])
+  })
+
+  it('swaps members inside a superset and moves the group from its edges', () => {
+    const list = items(null, 0, 0)
+    expect(order(list, moveItem(list, 's2', -1))).toEqual(['s0', 's2', 's1'])
+    expect(order(list, moveItem(list, 's1', -1))).toEqual(['s1', 's2', 's0'])
+    expect(moveItem(list, 's2', 1)).toEqual([])
+  })
+
+  it('renumbers positions from 0 after gaps left by deleted items', () => {
+    const list = [
+      { id: 'a', position: 2, supersetGroup: null },
+      { id: 'b', position: 5, supersetGroup: null },
+    ]
+    expect(moveItem(list, 'b', -1)).toEqual([
+      { id: 'b', position: 0 },
+      { id: 'a', position: 1 },
+    ])
+  })
+})
+
+describe('supersetBlocks', () => {
+  it('draws each superset as one block and each standalone item as its own', () => {
+    const blocks = supersetBlocks(items(null, 3, 3, 7, 7, 0))
+    expect(blocks.map(({ letter, items: list }) => [letter, list.map(({ id }) => id)])).toEqual([
+      [null, ['s0']],
+      ['A', ['s1', 's2']],
+      ['B', ['s3', 's4']],
+      [null, ['s5']],
     ])
   })
 })
