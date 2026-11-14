@@ -28,3 +28,15 @@ export function formatWeight(kg: number, unit: WeightUnit): string {
 export function isBodyweight(equipment: Equipment): boolean {
   return equipment === 'bodyweight'
 }
+
+// A set's weight as the workout shows it: "62.5", "+10" for load added to a
+// bodyweight exercise, or `bodyweightLabel` for bodyweight alone.
+export function formatSetWeight(
+  kg: number,
+  unit: WeightUnit,
+  bodyweight: boolean,
+  bodyweightLabel: string,
+): string {
+  if (!bodyweight) return formatWeight(kg, unit)
+  return kg === 0 ? bodyweightLabel : `+${formatWeight(kg, unit)}`
+}

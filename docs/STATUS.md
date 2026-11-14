@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-08 Finish workout + summary, in three PRs: record and summary rules (done), summary screen, celebrations
+- **Current task:** M1-08 Finish workout + summary, in three PRs: record and summary rules (done), summary screen (done), celebrations
 - **Last updated:** 2026-11-14
 
 ## Where I stopped
@@ -126,6 +126,8 @@ Design review (2026-11-14, PR `m1/design-review-fixes`), asked for by bw: screen
 Set panel contrast (2026-11-14, PR `m1/set-panel-contrast`), from bw's iPhone check: the set panel shared the cards' surface colour and read as another card. It now has an accent ring and a shadow cast upward (`.set-panel` in `globals.css`), and its title is in the accent colour. "Delete set" now says it deletes the set from this workout only; removing a set or an exercise in a workout never changes the plan.
 
 M1-08 PR 1 (2026-11-14, `m1/08-records-domain`): `findPersonalRecords` now returns each record set with its kinds: `e1rm` (a higher estimated 1RM than any earlier counted set, which needs an earlier e1RM to beat) and `reps` (no earlier counted set at the same or a higher weight reached as many reps, so sets above `e1rmMaxReps` can be records). Bodyweight exercises, whose `weightKg` is the added load, only have rep records. `totalVolumeKg` takes `LoadRules` (which exercises are bodyweight, and the body weight, null until M4-02, so only the added load counts for now). `summarizeWorkout` (`domain/workout-summary.ts`) gives duration, volume, completed sets, record count and per-slot figures (sets, volume, top set, records); the summary screen and M1-10's workout detail both read it.
+
+M1-08 PR 2 (2026-11-14, `m1/08-workout-summary`): finishing a workout (also "finish and save as a plan day") opens `/workout/summary#<id>`: time, volume, sets and PRs as four tiles, then each exercise with its sets, volume, top set and each record set with a "New PR" tag and what it beat (estimated 1RM, or most reps at that weight or more). `loadWorkoutSummary` (`src/db/workout-summary.ts`) reads with direct Dexie calls only (L-026) and compares with live workouts that started earlier; `WorkoutSummaryView` is the part M1-10's workout detail reuses. The URL-fragment hook moved to `src/ui/use-id-from-hash.ts` for both pages, and the set-weight text ("+10", "BW") to `formatSetWeight`.
 
 ## Follow-ups (noticed, not in scope yet)
 
