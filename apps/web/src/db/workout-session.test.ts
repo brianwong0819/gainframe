@@ -281,6 +281,22 @@ describe('startFromPlanDay', () => {
   })
 })
 
+describe('moveSlot', () => {
+  it('moves an exercise and keeps a superset together', async () => {
+    const workout = await session.start(ZONE)
+    const bench = await session.addExercise(workout.id, BENCH)
+    const squat = await session.addExercise(workout.id, SQUAT)
+    const row = await session.addExercise(workout.id, '01960000-0000-7000-8000-000000000003')
+    await session.linkWithNext(bench.id, true)
+    const order = async () => (await session.loadActive())?.slots.map(({ slot }) => slot.id) ?? []
+
+    await session.moveSlot(row.id, -1)
+    expect(await order()).toEqual([row.id, bench.id, squat.id])
+    await session.moveSlot(squat.id, -1)
+    expect(await order()).toEqual([row.id, squat.id, bench.id])
+  })
+})
+
 describe('rest', () => {
   // The built-in barbell bench press, whose default rest is 180 s.
   const BUILT_IN_BENCH = '00000000-0000-7000-8000-000000000001'

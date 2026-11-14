@@ -4,6 +4,7 @@ import {
   bestWeightKg,
   fromKg,
   linkWithNext,
+  moveItem,
   nextSetValues,
   previousPerformance,
   restSeconds,
@@ -320,6 +321,19 @@ export function createWorkoutSession(
         const changes = linked ? linkWithNext(slots, slotId) : unlinkFromNext(slots, slotId)
         for (const { id, supersetGroup } of changes) {
           await repos.workoutExercises.update(id, { supersetGroup })
+        }
+      })
+    },
+
+    // Moves an exercise one step up (-1) or down (1), keeping supersets
+    // together (`moveItem`); the set panel then follows the new order.
+    async moveSlot(slotId: string, direction: -1 | 1): Promise<void> {
+      await db.transaction('rw', db.workoutExercises, db.outbox, async () => {
+        const slot = await repos.workoutExercises.get(slotId)
+        if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
+        const slots = await liveSlots(slot.workoutId)
+        for (const { id, position } of moveItem(slots, slotId, direction)) {
+          await repos.workoutExercises.update(id, { position })
         }
       })
     },

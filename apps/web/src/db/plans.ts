@@ -1,6 +1,7 @@
 import {
   domainConfig,
   linkWithNext,
+  moveItem,
   nextPlanDay,
   type Plan,
   type PlanDay,
@@ -60,6 +61,17 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
     const setting = await db.settings.get('activePlanId')
     const plan = setting && (await db.plans.get(setting.value))
     return plan?.deletedAt === null ? plan : undefined
+  }
+
+  // The live items of the day an item belongs to.
+  async function dayItemsOf(itemId: string): Promise<PlanItem[]> {
+    const item = await repos.planItems.get(itemId)
+    if (item === undefined) throw new Error(`No plan item ${itemId}`)
+    return db.planItems
+      .where('planDayId')
+      .equals(item.planDayId)
+      .filter((other) => other.deletedAt === null)
+      .toArray()
   }
 
   return {
@@ -151,16 +163,20 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
     // splits the superset between them; a workout from the day copies the groups.
     async linkWithNext(itemId: string, linked: boolean): Promise<void> {
       await db.transaction('rw', db.planItems, db.outbox, async () => {
-        const item = await repos.planItems.get(itemId)
-        if (item === undefined) throw new Error(`No plan item ${itemId}`)
-        const items = await db.planItems
-          .where('planDayId')
-          .equals(item.planDayId)
-          .filter((other) => other.deletedAt === null)
-          .toArray()
+        const items = await dayItemsOf(itemId)
         const changes = linked ? linkWithNext(items, itemId) : unlinkFromNext(items, itemId)
         for (const { id, supersetGroup } of changes) {
           await repos.planItems.update(id, { supersetGroup })
+        }
+      })
+    },
+
+    // Moves an exercise of a day one step up (-1) or down (1), keeping
+    // supersets together (`moveItem`).
+    async moveItem(itemId: string, direction: -1 | 1): Promise<void> {
+      await db.transaction('rw', db.planItems, db.outbox, async () => {
+        for (const { id, position } of moveItem(await dayItemsOf(itemId), itemId, direction)) {
+          await repos.planItems.update(id, { position })
         }
       })
     },

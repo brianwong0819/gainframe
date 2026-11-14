@@ -147,6 +147,16 @@ describe('plan store', () => {
     expect(await groups()).toEqual([null, null])
   })
 
+  it('moves an exercise within its day', async () => {
+    const plan = await plans.create('Full body', 'A')
+    const day = (await plans.load(plan.id))?.days[0]?.day
+    const bench = await plans.addItem(day?.id ?? '', BENCH)
+    await plans.addItem(day?.id ?? '', SQUAT)
+    await plans.moveItem(bench.id, 1)
+    const items = (await plans.load(plan.id))?.days[0]?.items
+    expect(items?.map((item) => item.exerciseId)).toEqual([SQUAT, BENCH])
+  })
+
   it('leaves deleted days and items out, and loads a deleted plan as null', async () => {
     const plan = await plans.create('Push Pull Legs', 'Push')
     const pull = await plans.addDay(plan.id, 'Pull')
