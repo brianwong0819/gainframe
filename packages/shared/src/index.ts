@@ -22,6 +22,17 @@ export {
   restState,
   type RestTimes,
 } from './domain/rest.ts'
+export {
+  type GroupChange,
+  type GroupedItem,
+  linkedWithNext,
+  linkWithNext,
+  restSlotAfter,
+  type RoundSet,
+  setOrder,
+  supersetLabels,
+  unlinkFromNext,
+} from './domain/superset.ts'
 export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,

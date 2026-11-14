@@ -336,6 +336,39 @@ describe('rest', () => {
     expect(await session.completeSet(sets[1]?.id ?? '')).toMatchObject({ restEndsAt: null })
   })
 
+  it('rests only after each full round of a superset, for the last member’s rest', async () => {
+    const BUILT_IN_SQUAT = '00000000-0000-7000-8000-000000000002'
+    const { workout, slot: a1 } = await workoutWithSets(BUILT_IN_BENCH, 3)
+    const a2 = await session.addExercise(workout.id, BUILT_IN_SQUAT)
+    await session.addSet(a2.id)
+    await session.addSet(a2.id)
+    await repos.workoutExercises.update(a2.id, { restS: 120 })
+    await session.linkWithNext(a1.id, true)
+    const state = await session.loadActive()
+    expect(state?.slots.map(({ slot }) => slot.supersetGroup)).toEqual([0, 0])
+    const [first, second] = state?.slots ?? []
+    const rests: (string | null)[] = []
+    for (let round = 0; round < 3; round += 1) {
+      for (const member of [first, second]) {
+        advance(60_000)
+        const set = member?.sets[round]
+        rests.push((await session.completeSet(set?.id ?? '')).restEndsAt)
+      }
+    }
+    expect(rests).toEqual([
+      null,
+      '2026-11-08T10:04:00.000Z',
+      null,
+      '2026-11-08T10:06:00.000Z',
+      null,
+      null,
+    ])
+
+    await session.linkWithNext(a1.id, false)
+    const split = await session.loadActive()
+    expect(split?.slots.map(({ slot }) => slot.supersetGroup)).toEqual([null, null])
+  })
+
   it('cancels the rest when the set is marked not done', async () => {
     const { sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
     await session.completeSet(sets[0]?.id ?? '')

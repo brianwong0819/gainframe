@@ -1,6 +1,6 @@
 'use client'
 
-import type { Exercise, Workout, WorkoutSet } from '@gainframe/shared'
+import { type Exercise, setOrder, type Workout, type WorkoutSet } from '@gainframe/shared'
 import { AnimatePresence } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -36,10 +36,14 @@ type SheetContent =
   | { kind: 'rest' }
 
 // The set the panel edits: the one the user tapped while it is still there and
-// not done, else the first set not done yet.
+// not done, else the first set not done yet in the order they are done in
+// (supersets alternate, M1-07).
 function selectedSet(state: ActiveWorkoutState, chosenId: string | null) {
-  const sets = state.slots.flatMap(({ slot, sets }) =>
-    sets.map((set, index) => ({ set, n: index + 1, exerciseId: slot.exerciseId })),
+  const sets = setOrder(
+    state.slots.map(({ slot, sets }) => ({
+      slot,
+      sets: sets.map((set, index) => ({ set, n: index + 1, exerciseId: slot.exerciseId })),
+    })),
   )
   return (
     sets.find(({ set }) => set.id === chosenId && set.completedAt === null) ??
