@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-07 Supersets (part 2 of 3)
+- **Current task:** none; M1-07 Supersets done (pending bw's iPhone check). Next: M1-08 Finish workout + summary, once bw says to continue
 - **Last updated:** 2026-11-14
 
 ## Where I stopped
@@ -117,7 +117,11 @@ M1-07, part 1 (2026-11-14, PR `m1/07-superset-rules`): `packages/shared/src/doma
 
 M1-07, part 2 (2026-11-14, PR `m1/07-superset-workout`): between two exercise cards of the workout, a "Superset" toggle (`src/ui/superset-link.tsx`, pressed while linked, labelled with both names for screen readers) joins them or splits the superset there; grouped cards and the set panel show "A1", "A2". `e2e/superset.spec.ts` runs the Verify: three rounds of bench press and squat open the rest only after each A2 set, never after an A1 set, and not after the last round. Pending: bw's iPhone check.
 
+M1-07, part 3 (2026-11-14, PR `m1/07-superset-plans`): the plan editor has the same toggle between the exercises of a day (`planStore.linkWithNext`) and the A1/A2 tags; a workout started from the day already copies the groups, and a workout saved as a day keeps them. M1-07 is done. Pending: bw's iPhone check (link two exercises in a workout and in a plan, do a few rounds, check the rest only opens after the second exercise).
+
 ## Follow-ups (noticed, not in scope yet)
+
+- In a superset only the last exercise's rest is used; the plan item sheet still offers a rest for the other members without saying so. Hide or explain it there if bw finds it confusing.
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
