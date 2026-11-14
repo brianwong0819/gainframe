@@ -16,6 +16,8 @@ interface SetPanelProps {
   n: number
   exerciseId: string
   exercise: ExerciseInfo
+  // The exercise's place in its superset ("A1"); null when it stands alone.
+  supersetLabel: string | null
   unit: WeightUnit
   onDetails: () => void
   // Completes the set; the caller also starts the rest after it.
@@ -32,6 +34,7 @@ export function SetPanel({
   n,
   exerciseId,
   exercise,
+  supersetLabel,
   unit,
   onDetails,
   onComplete,
@@ -50,6 +53,7 @@ export function SetPanel({
     <div className="set-panel flex flex-col gap-12 rounded-group bg-surface p-16">
       <div className="flex items-center justify-between gap-12">
         <p className="min-w-0 truncate text-label text-ink-2">
+          {supersetLabel !== null && `${supersetLabel} · `}
           {exerciseName(exercise, locale)} · {t('colSet')} {n}
           {set.kind !== 'working' && ` · ${tKind(set.kind)}`}
         </p>

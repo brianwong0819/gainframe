@@ -17,6 +17,8 @@
     "active": "Workout",
     "addExercise": "Add exercise",
     "addSet": "Add set",
+    "superset": "Superset",
+    "supersetPair": "Superset {first} with {second}",
     "noExercises": "Pick the first exercise from the library.",
     "finish": "Finish workout",
     "finishTitle": "Finish this workout?",
