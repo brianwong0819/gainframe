@@ -42,11 +42,18 @@ export {
   bestWeightKg,
   estimateOneRepMax,
   findPersonalRecords,
+  type LoadRules,
   nextSetValues,
   previousPerformance,
+  type RecordKind,
   type SetValues,
   totalVolumeKg,
 } from './domain/workout.ts'
+export {
+  type ExerciseSummary,
+  summarizeWorkout,
+  type WorkoutSummary,
+} from './domain/workout-summary.ts'
 export {
   type BuiltInExercise,
   builtInExerciseSchema,

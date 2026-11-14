@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-07 Supersets done (pending bw's iPhone check). Next: M1-08 Finish workout + summary, once bw says to continue
+- **Current task:** M1-08 Finish workout + summary, in three PRs: record and summary rules (done), summary screen, celebrations
 - **Last updated:** 2026-11-14
 
 ## Where I stopped
@@ -124,6 +124,8 @@ Reordering and superset blocks (2026-11-14, PRs `m1/reorder-data`, `m1/reorder-u
 Design review (2026-11-14, PR `m1/design-review-fixes`), asked for by bw: screenshots of Today, the Workout tab, the workout in progress, plans, the plan editor and item sheet, the library and Food at 390×844 checked against `docs/design-system.md` and `CLAUDE.md`: tokens only, every page has a back link and every sheet a close button, the exercise detail is the shared `ExerciseDetail`, no AI look. Fixed: an unchecked set showed a dot inside its circle (the tick's zero-length path with round caps), now faded out; the plan item sheet explains that in a superset only the last exercise's rest is used. No other inconsistency found.
 
 Set panel contrast (2026-11-14, PR `m1/set-panel-contrast`), from bw's iPhone check: the set panel shared the cards' surface colour and read as another card. It now has an accent ring and a shadow cast upward (`.set-panel` in `globals.css`), and its title is in the accent colour. "Delete set" now says it deletes the set from this workout only; removing a set or an exercise in a workout never changes the plan.
+
+M1-08 PR 1 (2026-11-14, `m1/08-records-domain`): `findPersonalRecords` now returns each record set with its kinds: `e1rm` (a higher estimated 1RM than any earlier counted set, which needs an earlier e1RM to beat) and `reps` (no earlier counted set at the same or a higher weight reached as many reps, so sets above `e1rmMaxReps` can be records). Bodyweight exercises, whose `weightKg` is the added load, only have rep records. `totalVolumeKg` takes `LoadRules` (which exercises are bodyweight, and the body weight, null until M4-02, so only the added load counts for now). `summarizeWorkout` (`domain/workout-summary.ts`) gives duration, volume, completed sets, record count and per-slot figures (sets, volume, top set, records); the summary screen and M1-10's workout detail both read it.
 
 ## Follow-ups (noticed, not in scope yet)
 
