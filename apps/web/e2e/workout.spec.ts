@@ -35,7 +35,7 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await warmup.click()
   await expect(warmup).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
-  await page.getByRole('main').getByRole('button', { name: '备注' }).click()
+  await page.getByRole('button', { name: '杠铃卧推 的选项' }).click()
   await page.getByRole('dialog').getByRole('textbox').fill('座椅第 4 格')
   await page.getByRole('dialog').getByRole('button', { name: '保存' }).click()
   // The card shows the note once it is read back from the database; leaving the

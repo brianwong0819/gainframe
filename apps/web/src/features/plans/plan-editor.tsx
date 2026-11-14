@@ -2,9 +2,9 @@
 
 import {
   type Exercise,
-  linkedWithNext,
   type PlanDay,
   type PlanItem,
+  supersetBlocks,
   supersetLabels,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
@@ -17,7 +17,7 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
-import { SupersetLink } from '@/ui/superset-link'
+import { SupersetBlock } from '@/ui/superset-block'
 
 import { exerciseName, formatRest, type LibraryEntry } from '../exercises/library'
 import { findExercise } from '../workout/exercise-info'
@@ -78,6 +78,36 @@ function Day({
   const { day, items } = state
   const labels = supersetLabels(items)
   const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
+  const row = (item: PlanItem) => (
+    <Pressable
+      key={item.id}
+      onClick={() => {
+        onOpenItem(item)
+      }}
+      className="flex w-full items-center justify-between gap-12 border-t border-line py-12 text-left first:border-t-0"
+    >
+      <span className="flex min-w-0 flex-col">
+        <span className="flex items-center gap-8 text-body text-ink">
+          {labels.has(item.id) && (
+            <span className="num shrink-0 rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
+              {labels.get(item.id)}
+            </span>
+          )}
+          {nameOf(item.exerciseId)}
+        </span>
+        <span className="text-label text-ink-3">
+          {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
+          {' · '}
+          {item.restS === null ? t('restDefault') : t('rest', { time: formatRest(item.restS) })}
+        </span>
+        {item.note !== null && <span className="truncate text-label text-ink-2">{item.note}</span>}
+      </span>
+      <span className="text-ink-3">
+        <Chevron direction="right" />
+      </span>
+    </Pressable>
+  )
+
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
       <NameField
@@ -90,55 +120,21 @@ function Day({
       />
       {items.length === 0 && <p className="text-body text-ink-2">{t('noItems')}</p>}
       {items.length > 0 && (
-        <ul>
-          {items.map((item, index) => (
-            <li key={item.id} className="border-t border-line first:border-t-0">
-              <Pressable
-                onClick={() => {
-                  onOpenItem(item)
-                }}
-                className="flex w-full items-center justify-between gap-12 py-12 text-left"
-              >
-                <span className="flex min-w-0 flex-col">
-                  <span className="flex items-center gap-8 text-body text-ink">
-                    {labels.has(item.id) && (
-                      <span className="num shrink-0 rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
-                        {labels.get(item.id)}
-                      </span>
-                    )}
-                    {nameOf(item.exerciseId)}
-                  </span>
-                  <span className="text-label text-ink-3">
-                    {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
-                    {' · '}
-                    {item.restS === null
-                      ? t('restDefault')
-                      : t('rest', { time: formatRest(item.restS) })}
-                  </span>
-                  {item.note !== null && (
-                    <span className="truncate text-label text-ink-2">{item.note}</span>
-                  )}
-                </span>
-                <span className="text-ink-3">
-                  <Chevron direction="right" />
-                </span>
-              </Pressable>
-              {index < items.length - 1 && (
-                <SupersetLink
-                  linked={linkedWithNext(items, item.id)}
-                  text={tWorkout('superset')}
-                  label={tWorkout('supersetPair', {
-                    first: nameOf(item.exerciseId),
-                    second: nameOf(items[index + 1]?.exerciseId ?? ''),
-                  })}
-                  onToggle={(linked) => {
-                    void planStore.linkWithNext(item.id, !linked)
-                  }}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col">
+          {supersetBlocks(items).map(({ letter, items: members }) =>
+            letter === null ? (
+              members.map(row)
+            ) : (
+              <div key={letter} className="py-8">
+                <SupersetBlock title={tWorkout('supersetTitle', { letter })}>
+                  <div className="flex flex-col rounded-ctl bg-surface px-8">
+                    {members.map(row)}
+                  </div>
+                </SupersetBlock>
+              </div>
+            ),
+          )}
+        </div>
       )}
       <div className="flex flex-wrap gap-8">
         <Pressable
@@ -268,6 +264,7 @@ export function PlanEditor({ state }: { state: PlanState }) {
           <PlanItemSheet
             key={sheetItem.id}
             item={sheetItem}
+            dayItems={days.find(({ day }) => day.id === sheetItem.planDayId)?.items ?? []}
             custom={custom}
             onRemoved={() => {
               setSheetOpen(false)

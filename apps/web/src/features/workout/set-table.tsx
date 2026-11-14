@@ -22,7 +22,8 @@ interface SetTableProps {
   onSelect: (set: WorkoutSet, n: number) => void
   onToggle: (set: WorkoutSet) => void
   onAddSet: () => void
-  onNote: () => void
+  // Opens the exercise's actions: move, superset, note, remove.
+  onActions: () => void
   // Opens the exercise's detail; null for an exercise that cannot be found.
   onInfo: (() => void) | null
   // The exercise's place in its superset ("A1"); null when it stands alone.
@@ -72,7 +73,7 @@ export function SetTable({
   onSelect,
   onToggle,
   onAddSet,
-  onNote,
+  onActions,
   onInfo,
   supersetLabel,
 }: SetTableProps) {
@@ -131,10 +132,15 @@ export function SetTable({
           )}
         </div>
         <Pressable
-          onClick={onNote}
-          className="shrink-0 rounded-full bg-sunk px-12 py-8 text-label font-semibold text-ink"
+          onClick={onActions}
+          aria-label={t('exerciseActions', { name: exerciseName(exercise, locale) })}
+          className="-m-8 shrink-0 rounded-full p-8 text-ink-2"
         >
-          {t('note')}
+          <svg viewBox="0 0 24 24" aria-hidden className="size-20 fill-current">
+            <circle cx="5" cy="12" r="1.75" />
+            <circle cx="12" cy="12" r="1.75" />
+            <circle cx="19" cy="12" r="1.75" />
+          </svg>
         </Pressable>
       </div>
       <div className={`${columns} text-label text-ink-3`} aria-hidden>
