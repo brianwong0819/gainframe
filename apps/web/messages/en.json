@@ -229,6 +229,8 @@
     "restLabel": "Rest between sets",
     "restLess": "15 s less rest",
     "restMore": "15 s more rest",
+    "supersetRestLast": "In a superset the rest comes after each round, and this is its length.",
+    "supersetRestOther": "In a superset this exercise has no rest after it; the round’s rest is set on the last exercise.",
     "restIsDefault": "Using the exercise's default rest",
     "useDefault": "Back to default {time}",
     "planNote": "Plan note",

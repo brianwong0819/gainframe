@@ -229,6 +229,8 @@
     "restLabel": "组间休息",
     "restLess": "休息减 15 秒",
     "restMore": "休息加 15 秒",
+    "supersetRestLast": "超级组每轮做完后才休息，用的就是这个时间。",
+    "supersetRestOther": "超级组里这个动作做完不休息，直接做下一个；每轮的休息看最后一个动作。",
     "restIsDefault": "用的是动作默认休息",
     "useDefault": "改回默认 {time}",
     "planNote": "计划备注",

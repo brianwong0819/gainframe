@@ -6,6 +6,7 @@ import {
   moveItem,
   type PlanItem,
   planItemSchema,
+  supersetBlocks,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useId, useState } from 'react'
@@ -63,6 +64,10 @@ export function PlanItemSheet({
   const locale = useLocale()
   const next = dayItems[dayItems.findIndex(({ id }) => id === item.id) + 1]
   const linked = linkedWithNext(dayItems, item.id)
+  // The item's superset; its rest applies only after a round (M1-07).
+  const superset = supersetBlocks(dayItems).find(
+    ({ letter, items }) => letter !== null && items.some(({ id }) => id === item.id),
+  )
   const exercise = findLibraryEntry(item.exerciseId, custom)
   const defaultRestS = exercise?.defaultRestS ?? 0
   const [showingDetail, setShowingDetail] = useState(false)
@@ -203,6 +208,11 @@ export function PlanItemSheet({
             </Pressable>
           )}
         </div>
+        {superset && (
+          <p className="text-label text-ink-2">
+            {t(superset.items.at(-1)?.id === item.id ? 'supersetRestLast' : 'supersetRestOther')}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-8">

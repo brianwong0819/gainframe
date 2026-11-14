@@ -33,7 +33,8 @@ interface SetTableProps {
 const columns = 'grid grid-cols-[2fr_3fr_3fr_3fr_auto] items-center gap-8'
 
 // The prototype's check: the accent disc pops in with `pop` and the tick draws
-// itself. Rows that load already done appear done, without the animation.
+// itself. The tick also fades, because a zero-length path with round caps
+// still draws a dot. Rows that load already done appear done, without the animation.
 function Check({ done }: { done: boolean }) {
   return (
     <span className="relative flex size-40 items-center justify-center rounded-full border border-line">
@@ -54,8 +55,8 @@ function Check({ done }: { done: boolean }) {
         <motion.path
           d="M6 12.5l4 4L18 8"
           initial={false}
-          animate={{ pathLength: done ? 1 : 0 }}
-          transition={pop}
+          animate={{ pathLength: done ? 1 : 0, opacity: done ? 1 : 0 }}
+          transition={{ pathLength: pop, opacity: fade }}
         />
       </svg>
     </span>
