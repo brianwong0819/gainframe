@@ -49,7 +49,7 @@
     "rpe": "RPE",
     "rpeNone": "不填",
     "rpeHint": "RPE 是主观用力程度：10 = 一次都做不了了，8 = 还能再做 2 次。",
-    "deleteSet": "删除这一组",
+    "deleteSet": "从这次训练删除这一组",
     "note": "备注",
     "notePlaceholder": "今天的状态、感觉…",
     "noteHint": "只记在这次训练里。每次都要看的，写在计划备注。",

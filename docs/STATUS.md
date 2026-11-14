@@ -123,6 +123,8 @@ Reordering and superset blocks (2026-11-14, PRs `m1/reorder-data`, `m1/reorder-u
 
 Design review (2026-11-14, PR `m1/design-review-fixes`), asked for by bw: screenshots of Today, the Workout tab, the workout in progress, plans, the plan editor and item sheet, the library and Food at 390×844 checked against `docs/design-system.md` and `CLAUDE.md`: tokens only, every page has a back link and every sheet a close button, the exercise detail is the shared `ExerciseDetail`, no AI look. Fixed: an unchecked set showed a dot inside its circle (the tick's zero-length path with round caps), now faded out; the plan item sheet explains that in a superset only the last exercise's rest is used. No other inconsistency found.
 
+Set panel contrast (2026-11-14, PR `m1/set-panel-contrast`), from bw's iPhone check: the set panel shared the cards' surface colour and read as another card. It now has an accent ring and a shadow cast upward (`.set-panel` in `globals.css`), and its title is in the accent colour. "Delete set" now says it deletes the set from this workout only; removing a set or an exercise in a workout never changes the plan.
+
 ## Follow-ups (noticed, not in scope yet)
 
 
