@@ -21,7 +21,8 @@ interface SetPanelProps {
   unit: WeightUnit
   onDetails: () => void
   // Completes the set; the caller also starts the rest after it.
-  onComplete: () => void
+  // The tapped button, where the celebration starts.
+  onComplete: (anchor: Element) => void
 }
 
 // The selected set's weight and reps, with big steppers and the complete
@@ -124,7 +125,9 @@ export function SetPanel({
         />
       </div>
       <Pressable
-        onClick={onComplete}
+        onClick={(event) => {
+          onComplete(event.currentTarget)
+        }}
         className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
       >
         {t('complete', { n })}

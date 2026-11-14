@@ -71,6 +71,8 @@ Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(ta
 
 Colours come from tokens. Never add a fourth tier or use them on ordinary buttons.
 
+Timing rules (`src/ui/celebration.ts`, one canvas over the page, `celebrationTiming` holds the numbers): a celebration starts at the tapped button at once, since the set panel moves on to the next set. A record adds plates and the "新纪录 / New PR" tag rising from the button (enters with `pop`, holds 1.1 s, fades with `fade`); the record row then shows "新纪录" in its "last time" column. An exercise's last set adds smaller plates without a tag. The rest sheet opens only after the celebration (0.5 s after chalk, 1.2 s after a record), while the rest already counts from the tap. The summary's ripple plays 0.3 s after it appears, only when reached by finishing the workout, never when opened again. Under Reduce Motion nothing is drawn and the rest sheet opens at once.
+
 ## Screens defined by the prototype
 
 Today (surplus gauge, protein ring, today's workout, weight 7-day average with target corridor, weekly AI summary) · Workout (set table, steppers, rest sheet that collapses to a pill) · Food + photo confirm (gram steppers, tap-to-correct names with AI alternatives, add oil/sauce, "remember this correction").

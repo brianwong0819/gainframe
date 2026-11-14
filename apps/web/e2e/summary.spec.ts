@@ -50,3 +50,47 @@ test('the summary totals the workout and lists a new record', async ({ page }) =
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByRole('button', { name: '开始训练' })).toBeVisible()
 })
+
+test.describe('with motion', () => {
+  // The suite runs with Reduce Motion, which turns celebrations off.
+  test.use({ reducedMotion: 'no-preference' })
+
+  test('a record set gets the plates and the "New PR" tag; a normal set only chalk', async ({
+    page,
+  }) => {
+    await benchWorkout(page, '80')
+    await page.getByRole('link', { name: '完成', exact: true }).click()
+    await page.getByRole('button', { name: '开始训练' }).click()
+    await page.getByRole('button', { name: '添加动作' }).click()
+    await page.getByRole('searchbox').fill('杠铃卧推')
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^杠铃卧推/ })
+      .click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await page.getByRole('button', { name: '加一组' }).click()
+    await expect(page.getByRole('button', { name: '组 2', exact: true })).toBeVisible()
+
+    // Last time's 80 × 5 again: chalk, no tag, and the rest sheet.
+    await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
+    await page
+      .getByRole('dialog', { name: '组间休息' })
+      .getByRole('button', { name: '开始下一组' })
+      .click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page.locator('.celebration-layer')).toHaveCount(1)
+    await expect(page.locator('.record-badge')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: '组 1', exact: true })).not.toContainText(
+      '新纪录',
+    )
+
+    // 85 × 5 beats it: the tag rises, and the row keeps "新纪录".
+    const weight = page.getByRole('textbox', { name: '第 2 组重量' })
+    await weight.fill('85')
+    await weight.press('Enter')
+    await expect(weight).toHaveValue('85')
+    await page.getByRole('main').getByRole('button', { name: '完成第 2 组' }).last().click()
+    await expect(page.locator('.record-badge')).toHaveText('新纪录')
+    await expect(page.getByRole('button', { name: '组 2', exact: true })).toContainText('新纪录')
+  })
+})

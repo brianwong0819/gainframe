@@ -23,18 +23,21 @@ import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
 // One exercise slot of the active workout, as the screen shows it: its live sets
-// in order, last time's completed sets of the same exercise, and the heaviest
-// weight of the exercise in earlier workouts (null if none).
+// in order, last time's completed sets of the same exercise, the heaviest
+// weight of the exercise in earlier workouts (null if none), and the completed
+// sets of earlier workouts, which a set must beat to be a record.
 export interface SlotState {
   slot: WorkoutExercise
   sets: WorkoutSet[]
   previous: WorkoutSet[]
   bestKg: number | null
+  earlier: WorkoutSet[]
 }
 
 interface ExerciseHistory {
   previous: WorkoutSet[]
   bestKg: number | null
+  earlier: WorkoutSet[]
 }
 
 export interface ActiveWorkoutState {
@@ -78,10 +81,12 @@ export function createWorkoutSession(
     const workouts = (await db.workouts.bulkGet(workoutIds))
       .filter((other) => other !== undefined)
       .filter((other) => other.id !== workout.id && other.startedAt < workout.startedAt)
-    const earlier = new Set(workouts.map((other) => other.id))
+    const earlierIds = new Set(workouts.map((other) => other.id))
+    const earlier = sets.filter((set) => earlierIds.has(set.workoutId) && set.completedAt !== null)
     return {
       previous: previousPerformance({ exerciseId, before: workout.startedAt, workouts, sets }),
-      bestKg: bestWeightKg(sets.filter((set) => earlier.has(set.workoutId))),
+      bestKg: bestWeightKg(earlier),
+      earlier,
     }
   }
 
@@ -169,6 +174,7 @@ export function createWorkoutSession(
               .toSorted((a, b) => a.position - b.position),
             previous: history.get(slot.exerciseId)?.previous ?? [],
             bestKg: history.get(slot.exerciseId)?.bestKg ?? null,
+            earlier: history.get(slot.exerciseId)?.earlier ?? [],
           })),
       }
     },
