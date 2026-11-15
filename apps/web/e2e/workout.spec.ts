@@ -74,14 +74,34 @@ test('leaving keeps the workout, and discarding deletes it', async ({ page }) =>
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(1)
 
   // Discarding asks twice, then returns to the tab with nothing in progress.
+  await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
+  await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  // The only set is done, so no rest follows.
+  await expect(page.getByRole('dialog')).toBeHidden()
   await page.getByRole('button', { name: '结束训练' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '放弃这次训练' }).click()
   await page
     .getByRole('dialog')
-    .getByRole('button', { name: /确认放弃/ })
+    .getByRole('button', { name: '确认放弃（删除已完成的 1 组）' })
     .click()
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByRole('button', { name: '开始训练' })).toBeVisible()
+})
+
+test('finishing a workout with no ticked set does not keep it', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('深蹲')
+  await page.getByRole('dialog').getByRole('button').filter({ hasText: '深蹲' }).first().click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await page.getByRole('button', { name: '结束训练' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toContainText('一组都没有打勾，结束后这次训练不会保存。')
+  await expect(dialog.getByRole('button', { name: '放弃这次训练' })).toHaveCount(0)
+  await dialog.getByRole('button', { name: '结束', exact: true }).click()
+  await expect(page).toHaveURL(/\/workout\/?$/)
+  await expect(page.getByRole('link', { name: /训练历史/ })).toContainText('还没有完成的训练')
 })
 
 test('an exercise switched to pounds is typed and shown in pounds', async ({ page }) => {

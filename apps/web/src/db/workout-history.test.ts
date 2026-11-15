@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createPlanStore, type PlanStore } from './plans'
 import { createRepositories, type Repositories } from './repositories'
 import { GainframeDb } from './schema'
-import { loadWorkoutHistory } from './workout-history'
+import { countHistory, loadWorkoutHistory } from './workout-history'
 import { createWorkoutSession, type WorkoutSession } from './workout-session'
 
 const BENCH = '00000000-0000-7000-8000-000000000001'
@@ -63,7 +63,17 @@ describe('loadWorkoutHistory', () => {
     const entries = await loadWorkoutHistory(db)
     expect(entries.map(({ workout }) => workout.id)).toEqual([fromPlan.id, empty.id])
     expect(entries.map(({ dayName }) => dayName)).toEqual(['Push', null])
+    expect(entries[0]?.planName).toBe('Split')
     expect(entries[0]?.summary.recordCount).toBe(1)
     expect(entries[1]?.summary.durationS).toBe(45 * 60)
+    expect(await countHistory(db)).toBe(2)
+  })
+
+  it('leaves out a finished workout with no completed set', async () => {
+    const workout = await session.start(ZONE)
+    await session.addExercise(workout.id, BENCH)
+    await session.finish(workout.id)
+    expect(await loadWorkoutHistory(db)).toEqual([])
+    expect(await countHistory(db)).toBe(0)
   })
 })

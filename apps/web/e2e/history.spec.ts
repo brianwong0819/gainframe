@@ -84,7 +84,9 @@ test('a finished workout is listed in history and opens to its summary', async (
   await expect(card).toHaveCount(1)
   await expect(card).toContainText('自由训练')
   await expect(card).toContainText('杠铃卧推 · 1 组')
-  await expect(card).toContainText('不到 1 分钟 · 1 组')
+  await expect(card).toContainText('胸')
+  await expect(card).toContainText('时长不到 1 分钟')
+  await expect(card).toContainText('组数1')
 
   await card.getByRole('link').click()
   await expect(page).toHaveURL(/\/workout\/past\/?#/)

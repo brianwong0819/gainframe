@@ -164,7 +164,7 @@ describe('summarizeHistory', () => {
     expect(entries[0]?.summary.volumeKg).toBe(80 * 4)
   })
 
-  it('leaves out deleted and unfinished workouts, and deleted sets', () => {
+  it('leaves out deleted, unfinished and empty workouts', () => {
     const [first, second, third] = workouts
     if (first === undefined || second === undefined || third === undefined) throw new Error()
     const entries = summarizeHistory({
@@ -175,7 +175,7 @@ describe('summarizeHistory', () => {
       ),
       load,
     })
-    expect(entries.map(({ workout }) => workout.id)).toEqual(['w2'])
-    expect(entries[0]?.summary.setsDone).toBe(0)
+    // w2's only set is deleted, so it has nothing to show.
+    expect(entries).toEqual([])
   })
 })

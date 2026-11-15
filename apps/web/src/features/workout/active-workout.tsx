@@ -343,7 +343,8 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
 }
 
 // Finishing keeps the workout; discarding deletes it with its sets, so it asks
-// twice.
+// twice. A workout with no completed set is not kept: finishing it deletes it,
+// so history never lists an empty workout.
 function FinishConfirm({
   workout,
   done,
@@ -368,10 +369,13 @@ function FinishConfirm({
   const summary = `/workout/summary#${workout.id}`
   return (
     <div className="flex flex-col gap-20">
-      <p className="text-body text-ink-2">{t('finishBody', { done })}</p>
+      <p className="text-body text-ink-2">
+        {done === 0 ? t('finishEmptyBody') : t('finishBody', { done })}
+      </p>
       <Pressable
         onClick={() => {
-          leave(workoutSession.finish(workout.id), summary)
+          if (done === 0) leave(repositories.workouts.remove(workout.id), '/workout')
+          else leave(workoutSession.finish(workout.id), summary)
         }}
         className="rounded-ctl bg-ink py-12 text-body font-semibold text-bg"
       >
@@ -395,15 +399,17 @@ function FinishConfirm({
           {t('finishAndSave')}
         </Pressable>
       )}
-      <Pressable
-        onClick={() => {
-          if (discarding) leave(repositories.workouts.remove(workout.id), '/workout')
-          else setDiscarding(true)
-        }}
-        className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
-      >
-        {discarding ? t('discardConfirm', { done }) : t('discard')}
-      </Pressable>
+      {done > 0 && (
+        <Pressable
+          onClick={() => {
+            if (discarding) leave(repositories.workouts.remove(workout.id), '/workout')
+            else setDiscarding(true)
+          }}
+          className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
+        >
+          {discarding ? t('discardConfirm', { done }) : t('discard')}
+        </Pressable>
+      )}
     </div>
   )
 }
