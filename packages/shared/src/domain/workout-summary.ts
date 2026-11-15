@@ -65,6 +65,53 @@ export function summarizeWorkout(input: {
   }
 }
 
+export interface WorkoutSummaryEntry {
+  workout: Workout
+  summary: WorkoutSummary
+}
+
+// The history list: each finished workout's summary, newest first. As on its
+// own summary, a workout's records count against the live workouts that
+// started before it, so the record counts match the detail screen.
+export function summarizeHistory(input: {
+  workouts: readonly Workout[]
+  slots: readonly WorkoutExercise[]
+  sets: readonly WorkoutSet[]
+  load: LoadRules
+}): WorkoutSummaryEntry[] {
+  const byWorkout = <T extends { workoutId: string }>(rows: readonly T[]) => {
+    const groups = new Map<string, T[]>()
+    for (const row of rows) {
+      const group = groups.get(row.workoutId)
+      if (group === undefined) groups.set(row.workoutId, [row])
+      else group.push(row)
+    }
+    return groups
+  }
+  const slots = byWorkout(input.slots)
+  const sets = byWorkout(input.sets.filter((set) => set.deletedAt === null))
+  const history: WorkoutSet[] = []
+  const entries: WorkoutSummaryEntry[] = []
+  const workouts = input.workouts
+    .filter((workout) => workout.deletedAt === null)
+    .toSorted((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt))
+  for (const workout of workouts) {
+    const own = sets.get(workout.id) ?? []
+    if (workout.endedAt !== null) {
+      const summary = summarizeWorkout({
+        workout,
+        slots: slots.get(workout.id) ?? [],
+        sets: own,
+        history,
+        load: input.load,
+      })
+      entries.push({ workout, summary })
+    }
+    history.push(...own.filter((set) => set.completedAt !== null))
+  }
+  return entries.reverse()
+}
+
 function topSet(sets: readonly WorkoutSet[]): WorkoutSet | null {
   return sets
     .filter((set) => set.kind === 'working' || set.kind === 'failure')

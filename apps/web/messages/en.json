@@ -84,7 +84,10 @@
     "restOpen": "Show the rest timer",
     "restStop": "Stop the sound and end the rest",
     "restAwayHint": "No sound plays while the phone is locked or in another app; you are reminded when you come back.",
-    "restLeft": "left"
+    "restLeft": "left",
+    "history": "History",
+    "historyCount": "{count, plural, one {# workout} other {# workouts}} done",
+    "historyNone": "No finished workouts yet"
   },
   "summary": {
     "title": "Workout done",
@@ -101,7 +104,18 @@
     "recordReps": "most reps at this weight or more",
     "none": "No sets were ticked, so nothing was recorded.",
     "missing": "This workout no longer exists.",
-    "done": "Done"
+    "done": "Done",
+    "underMinute": "< 1 min"
+  },
+  "history": {
+    "title": "History",
+    "none": "No finished workouts yet. A workout appears here once you finish it.",
+    "untitled": "Free workout",
+    "exerciseSets": "{name} · {sets, plural, one {# set} other {# sets}}",
+    "moreExercises": "{count, plural, one {# more exercise} other {# more exercises}}",
+    "stats": "{duration} · {sets, plural, one {# set} other {# sets}} · {volume} kg",
+    "records": "{count, plural, one {# PR} other {# PRs}}",
+    "when": "{date} · {time}"
   },
   "food": {
     "title": "Food",

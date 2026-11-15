@@ -4,6 +4,8 @@
     "/food",
     "/workout",
     "/workout/exercises",
+    "/workout/history",
+    "/workout/past",
     "/workout/plan",
     "/workout/plans",
     "/workout/session",

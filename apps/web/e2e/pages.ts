@@ -7,6 +7,8 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'exercises', path: '/workout/exercises', parent: '/workout' },
   { name: 'workout-session', path: '/workout/session', parent: '/workout' },
   { name: 'workout-summary', path: '/workout/summary', parent: '/workout' },
+  { name: 'history', path: '/workout/history', parent: '/workout' },
+  { name: 'past-workout', path: '/workout/past', parent: '/workout/history' },
   { name: 'plans', path: '/workout/plans', parent: '/workout' },
   { name: 'plan', path: '/workout/plan', parent: '/workout/plans' },
   { name: 'food', path: '/food' },

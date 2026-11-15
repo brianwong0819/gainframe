@@ -14,6 +14,7 @@ import { useLiveQuery } from '@/db/use-live-query'
 import type { WorkoutSummaryState } from '@/db/workout-summary'
 
 import { exerciseName } from '../exercises/library'
+import { useDurationText } from './duration'
 import { findExercise, formatSetWeight, formatWeight, isBodyweight } from './exercise-info'
 
 // Custom exercises including deleted ones, so names never go missing.
@@ -21,7 +22,7 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const loadWeightUnits = () => weightUnits.all()
 
 // What a workout added up to: the figures first, then each exercise with its
-// top set and records. Shown when a workout ends; history (M1-10) reuses it.
+// top set and records. Shown when a workout ends and in history.
 export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
   const t = useTranslations('summary')
   const tWorkout = useTranslations('workout')
@@ -31,13 +32,9 @@ export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
   const { summary } = state
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 })
 
-  const minutes = Math.round((summary.durationS ?? 0) / 60)
-  const duration =
-    minutes >= 60
-      ? t('hours', { hours: Math.floor(minutes / 60), minutes: minutes % 60 })
-      : t('minutes', { minutes })
+  const duration = useDurationText()
   const figures = [
-    { label: t('duration'), value: duration },
+    { label: t('duration'), value: duration(summary.durationS ?? 0) },
     { label: t('volume'), value: `${number.format(summary.volumeKg)} ${tWorkout('unit.kg')}` },
     { label: t('sets'), value: String(summary.setsDone) },
     { label: t('records'), value: String(summary.recordCount), anchor: true },

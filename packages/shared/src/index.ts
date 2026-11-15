@@ -51,8 +51,10 @@ export {
 } from './domain/workout.ts'
 export {
   type ExerciseSummary,
+  summarizeHistory,
   summarizeWorkout,
   type WorkoutSummary,
+  type WorkoutSummaryEntry,
 } from './domain/workout-summary.ts'
 export {
   type BuiltInExercise,

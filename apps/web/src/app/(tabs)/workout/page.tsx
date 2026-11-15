@@ -4,7 +4,7 @@ import { BUILT_IN_EXERCISES } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 
-import { planStore, workoutSession } from '@/db/client'
+import { db, planStore, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import { UpNextCard, useUpNext } from '@/features/plans/up-next-card'
 import { useActiveWorkout } from '@/features/workout/active-workout'
@@ -14,6 +14,8 @@ import { Pressable, PressableLink } from '@/ui/pressable'
 import { TabScreen } from '../tab-screen'
 
 const loadActivePlan = () => planStore.activePlan()
+const countFinished = () =>
+  db.workouts.filter((workout) => workout.deletedAt === null && workout.endedAt !== null).count()
 
 const linkCardClass = 'flex items-center justify-between gap-12 rounded-group bg-surface p-16'
 
@@ -25,6 +27,7 @@ export default function WorkoutPage() {
   const done = sets.filter((set) => set.completedAt !== null).length
   const activePlan = useLiveQuery(loadActivePlan)
   const upNext = useUpNext()
+  const finished = useLiveQuery(countFinished)
 
   // The cards wait for the workout in progress and the plan's next day to load:
   // the start card above them appears only then, and would push them down under
@@ -64,6 +67,19 @@ export default function WorkoutPage() {
           <span className="truncate text-label text-ink-3">
             {activePlan ? t('plansActive', { name: activePlan.name }) : t('plansNone')}
           </span>
+        </span>
+        <span className="text-ink-3">
+          <Chevron direction="right" />
+        </span>
+      </PressableLink>
+      <PressableLink href="/workout/history" className={linkCardClass}>
+        <span className="flex flex-col">
+          <span className="text-body text-ink">{t('history')}</span>
+          {finished !== undefined && (
+            <span className="text-label text-ink-3">
+              {finished > 0 ? t('historyCount', { count: finished }) : t('historyNone')}
+            </span>
+          )}
         </span>
         <span className="text-ink-3">
           <Chevron direction="right" />

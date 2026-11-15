@@ -28,6 +28,9 @@ export function loadRules(custom: readonly Exercise[]): LoadRules {
 export interface WorkoutSummaryState {
   workout: Workout
   summary: WorkoutSummary
+  // The plan day the workout followed, deleted days included so past workouts
+  // keep their name; null for a workout started empty.
+  dayName: string | null
 }
 
 // A workout's summary for the finish screen and history; null when the
@@ -63,5 +66,6 @@ export async function loadWorkoutSummary(
     history: others.filter((set) => earlier.has(set.workoutId)),
     load: loadRules(custom),
   })
-  return { workout, summary }
+  const day = workout.planDayId === null ? undefined : await db.planDays.get(workout.planDayId)
+  return { workout, summary, dayName: day?.name ?? null }
 }

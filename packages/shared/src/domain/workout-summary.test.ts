@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { summarizeWorkout } from './workout-summary.ts'
+import { summarizeHistory, summarizeWorkout } from './workout-summary.ts'
 
 const BENCH = '01960000-0000-7000-8000-000000000001'
 const DIP = '01960000-0000-7000-8000-000000000003'
@@ -128,5 +128,53 @@ describe('summarizeWorkout', () => {
   it('has no top set when only warm-ups were done', () => {
     const only = summarizeWorkout({ workout, slots, sets: [warmup], history, load })
     expect(only.exercises[0]?.topSet).toBeNull()
+  })
+})
+
+describe('summarizeHistory', () => {
+  // Three bench press workouts a day apart, each with one 80 kg set of
+  // `reps[i]` reps; the second is the only record.
+  const day = (n: number) => `2026-11-0${String(n)}T10:00:00.000Z`
+  const workouts = [1, 2, 3].map((n) => ({
+    ...workout,
+    id: `w${String(n)}`,
+    startedAt: day(n),
+    endedAt: day(n).replace('T10', 'T11'),
+  }))
+  const reps = [5, 6, 4]
+  const sets = workouts.map((other, index) =>
+    set({
+      workoutId: other.id,
+      workoutExerciseId: `s${other.id}`,
+      weightKg: 80,
+      reps: reps[index] ?? 0,
+      completedAt: other.startedAt.replace('T10:00', 'T10:30'),
+    }),
+  )
+  const slotsOf = workouts.map((other) => ({
+    ...slot(`s${other.id}`, BENCH, 0),
+    workoutId: other.id,
+  }))
+
+  it('lists finished workouts newest first, each against the ones before it', () => {
+    const entries = summarizeHistory({ workouts, slots: slotsOf, sets, load })
+    expect(entries.map(({ workout }) => workout.id)).toEqual(['w3', 'w2', 'w1'])
+    expect(entries.map(({ summary }) => summary.recordCount)).toEqual([0, 1, 0])
+    expect(entries[0]?.summary.volumeKg).toBe(80 * 4)
+  })
+
+  it('leaves out deleted and unfinished workouts, and deleted sets', () => {
+    const [first, second, third] = workouts
+    if (first === undefined || second === undefined || third === undefined) throw new Error()
+    const entries = summarizeHistory({
+      workouts: [{ ...first, deletedAt: day(4) }, second, { ...third, endedAt: null }],
+      slots: slotsOf,
+      sets: sets.map((other) =>
+        other.workoutId === 'w2' ? { ...other, deletedAt: day(4) } : other,
+      ),
+      load,
+    })
+    expect(entries.map(({ workout }) => workout.id)).toEqual(['w2'])
+    expect(entries[0]?.summary.setsDone).toBe(0)
   })
 })
