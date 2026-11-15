@@ -34,4 +34,7 @@ export const domainConfig = {
   // The rest timer: one tap on -15 s / +15 s, and the rest for an exercise
   // that cannot be found (its default rest is unknown).
   rest: { stepS: 15, fallbackS: 90 },
+  // A workout finished this long after its last completed set was most likely
+  // left open; its duration then ends at that set.
+  forgottenFinishS: 30 * 60,
 } as const

@@ -1,3 +1,4 @@
+import { domainConfig } from '../config.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
 import { findPersonalRecords, type LoadRules, type RecordKind, totalVolumeKg } from './workout.ts'
 
@@ -15,7 +16,8 @@ export interface ExerciseSummary {
 }
 
 export interface WorkoutSummary {
-  // Null while the workout has not ended.
+  // Null while the workout has not ended; see `durationS` for a workout left
+  // open long after its last set.
   durationS: number | null
   volumeKg: number
   setsDone: number
@@ -57,10 +59,7 @@ export function summarizeWorkout(input: {
     }
   })
   return {
-    durationS:
-      workout.endedAt === null
-        ? null
-        : Math.round((Date.parse(workout.endedAt) - Date.parse(workout.startedAt)) / 1000),
+    durationS: durationS(workout, done),
     volumeKg: exercises.reduce((sum, exercise) => sum + exercise.volumeKg, 0),
     setsDone: exercises.reduce((sum, exercise) => sum + exercise.setsDone, 0),
     recordCount: exercises.reduce((sum, exercise) => sum + exercise.records.length, 0),
@@ -114,6 +113,18 @@ export function summarizeHistory(input: {
     history.push(...own.filter((set) => set.completedAt !== null))
   }
   return entries.reverse()
+}
+
+// From the start to the finish; but a finish more than
+// `domainConfig.forgottenFinishS` after the last completed set means the
+// workout was left open, so it ends at that set instead.
+function durationS(workout: Workout, done: readonly WorkoutSet[]): number | null {
+  if (workout.endedAt === null) return null
+  const started = Date.parse(workout.startedAt)
+  const ended = Date.parse(workout.endedAt)
+  const lastSet = Math.max(...done.map((set) => Date.parse(set.completedAt ?? '')))
+  const end = ended - lastSet > domainConfig.forgottenFinishS * 1000 ? lastSet : ended
+  return Math.round((end - started) / 1000)
 }
 
 function topSet(sets: readonly WorkoutSet[]): WorkoutSet | null {
