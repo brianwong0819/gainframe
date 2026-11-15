@@ -91,7 +91,10 @@ describe('summarizeWorkout', () => {
   })
 
   it('reports the duration in seconds', () => {
-    expect(summary.durationS).toBe(62 * 60 + 30)
+    const late = set({ weightKg: 80, reps: 5, completedAt: '2026-11-05T11:00:00.000Z' })
+    expect(summarizeWorkout({ workout, slots, sets: [late], history, load }).durationS).toBe(
+      62 * 60 + 30,
+    )
   })
 
   it('totals volume without warm-ups and counts completed sets with them', () => {
@@ -124,6 +127,19 @@ describe('summarizeWorkout', () => {
     })
     expect(open.durationS).toBeNull()
     expect(open.exercises).toHaveLength(1)
+  })
+
+  it('ends the duration at the last set when the workout was left open', () => {
+    const left = { ...workout, endedAt: '2026-11-06T08:00:00.000Z' }
+    const last = set({ weightKg: 80, reps: 5, completedAt: '2026-11-05T10:50:00.000Z' })
+    expect(summarizeWorkout({ workout: left, slots, sets: [last], history, load }).durationS).toBe(
+      50 * 60,
+    )
+    // Finished within half an hour of the last set: the finish counts.
+    const onTime = { ...workout, endedAt: '2026-11-05T11:15:00.000Z' }
+    expect(
+      summarizeWorkout({ workout: onTime, slots, sets: [last], history, load }).durationS,
+    ).toBe(75 * 60)
   })
 
   it('has no top set when only warm-ups were done', () => {

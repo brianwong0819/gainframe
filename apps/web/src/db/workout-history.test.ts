@@ -38,7 +38,7 @@ async function finishWith(workoutId: string, reps: number) {
       completedAt: clock.toISOString(),
     })
   }
-  clock = new Date(clock.getTime() + 45 * 60_000)
+  clock = new Date(clock.getTime() + 20 * 60_000)
   await session.finish(workoutId)
   clock = new Date(clock.getTime() + 24 * 60 * 60_000)
 }
@@ -65,7 +65,7 @@ describe('loadWorkoutHistory', () => {
     expect(entries.map(({ dayName }) => dayName)).toEqual(['Push', null])
     expect(entries[0]?.planName).toBe('Split')
     expect(entries[0]?.summary.recordCount).toBe(1)
-    expect(entries[1]?.summary.durationS).toBe(45 * 60)
+    expect(entries[1]?.summary.durationS).toBe(20 * 60)
     expect(await countHistory(db)).toBe(2)
   })
 
