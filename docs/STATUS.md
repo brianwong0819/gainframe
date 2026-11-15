@@ -139,6 +139,8 @@ M1-10 PR 3 (2026-11-15, `m1/10-history-clarity`), from bw's first look on the iP
 
 M1-10 PR 4 (2026-11-15, `m1/10-forgotten-finish`), bw's choice after a 21-hour workout in history: a workout finished more than `domainConfig.forgottenFinishS` (30 min) after its last completed set was left open, so its duration ends at that set (`summarizeWorkout`). The stored `endedAt` is unchanged.
 
+CI minutes (2026-11-15, PR `m1/ci-minutes`, L-030): bw's included Actions compute for November ran out and every workflow stopped; bw made the repository public, where Actions is free, and branch protection now applies. The Device layout job now runs every e2e spec on iPhone SE and Galaxy S24 on a pull request (114 of 342 tests) and the full six-device matrix on `main`; a pull request that changes only `docs/` or Markdown skips it. Measured on this PR: Device layout 3 minutes instead of 10 (tests 1.6 minutes). Costs per job: "GitHub Actions minutes" in `docs/infra.md`.
+
 ## Follow-ups (noticed, not in scope yet)
 
 - `e2e/sheet.spec.ts` failed once on iPhone 17 Pro Max (WebKit) on #98, whose diff touches no sheet code: the first sampled frame of the exercise sheet was already at 462 px, above the half-viewport bound of 478 px. Its first-frame sampling may race the opening on a slow runner; look at it if it recurs.
