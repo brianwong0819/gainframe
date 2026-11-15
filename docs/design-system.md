@@ -111,7 +111,9 @@ Rules for bringing something in:
 
 ### Adopted patterns
 
-_None yet. Format: pattern — where we use it — source — credits entry._
+_Format: pattern — where we use it — source — credits entry._
+
+- Swipe a row left to reveal one action, a tap on an open row closes it — history set rows (`src/ui/swipe-row.tsx`) — iOS list swipe actions (Apple Human Interface Guidelines), reimplemented without code from the source — none needed.
 
 ## Checklist before a UI PR
 

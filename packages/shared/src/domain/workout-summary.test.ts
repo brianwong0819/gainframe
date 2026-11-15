@@ -103,6 +103,7 @@ describe('summarizeWorkout', () => {
     expect(summary.exercises.map(({ slot }) => slot.id)).toEqual([BENCH_SLOT, DIP_SLOT])
     const [bench, dip] = summary.exercises
     expect(bench?.setsDone).toBe(3)
+    expect(bench?.sets.map(({ id }) => id)).toEqual([warmup.id, record.id, second.id])
     expect(bench?.topSet?.id).toBe(record.id)
     expect(bench?.records).toEqual([{ set: record, kinds: ['e1rm', 'reps'] }])
     expect(dip?.volumeKg).toBe(0)

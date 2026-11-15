@@ -3,11 +3,13 @@
 import {
   estimateOneRepMax,
   type Exercise,
+  type ExerciseSummary,
   type RecordKind,
   type WeightUnit,
   type WorkoutSet,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
+import type { ReactNode } from 'react'
 
 import { db, weightUnits } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
@@ -22,8 +24,16 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const loadWeightUnits = () => weightUnits.all()
 
 // What a workout added up to: the figures first, then each exercise with its
-// top set and records. Shown when a workout ends and in history.
-export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
+// top set and records. Shown when a workout ends and in history, where
+// `setList` adds each exercise's sets below its records; `setText` formats a
+// set as the summary does ("80 kg × 5").
+export function WorkoutSummaryView({
+  state,
+  setList,
+}: {
+  state: WorkoutSummaryState
+  setList?: (exercise: ExerciseSummary, setText: (set: WorkoutSet) => string) => ReactNode
+}) {
   const t = useTranslations('summary')
   const tWorkout = useTranslations('workout')
   const locale = useLocale()
@@ -55,7 +65,8 @@ export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
       </dl>
       {exercises.length === 0 && <p className="text-body text-ink-2">{t('none')}</p>}
       <ul className="flex flex-col gap-8">
-        {exercises.map(({ slot, setsDone, volumeKg, topSet, records }) => {
+        {exercises.map((exerciseSummary) => {
+          const { slot, setsDone, volumeKg, topSet, records } = exerciseSummary
           const exercise = findExercise(slot.exerciseId, custom)
           const unit = units?.get(slot.exerciseId) ?? 'kg'
           const bodyweight = isBodyweight(exercise.equipment)
@@ -87,6 +98,7 @@ export function WorkoutSummaryView({ state }: { state: WorkoutSummaryState }) {
                   </span>
                 </div>
               ))}
+              {setList?.(exerciseSummary, setText)}
             </li>
           )
         })}

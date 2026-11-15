@@ -115,7 +115,13 @@
     "moreExercises": "还有 {count} 个动作",
     "stats": "{duration} · {sets} 组 · {volume} kg",
     "records": "{count} 个新纪录",
-    "when": "{date} · {time}"
+    "when": "{date} · {time}",
+    "editHint": "点一组可修改，左滑可删除。",
+    "editSet": "编辑第 {n} 组：{set}",
+    "setTitle": "第 {n} 组 · {name}",
+    "swipeDelete": "删除",
+    "deleteWorkout": "删除这次训练",
+    "deleteWorkoutConfirm": "确认删除（连同 {sets} 组记录）"
   },
   "food": {
     "title": "饮食",
