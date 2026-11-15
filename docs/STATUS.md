@@ -137,6 +137,8 @@ M1-10 PR 2 (2026-11-15, `m1/10-edit-past-sets`): the past workout lists every co
 
 M1-10 PR 3 (2026-11-15, `m1/10-history-clarity`), from bw's first look on the iPhone ("day 1, day 2" cards were hard to read): a history card names the plan with the day ("Push · Split · Sat, Nov 14 · 18:30"), tags the main muscle groups by completed sets (`mainMuscles`), lists each exercise once with the sets of all its slots (`exerciseLines`, `features/history/card-lines.ts`), and shows time, sets and volume as three labelled figures. A workout with no completed set is never kept: finishing it deletes it (the finish sheet says so and hides "Discard"), and history and the Workout tab count leave out existing ones (`summarizeHistory`, `countHistory`). `ExerciseInfo` now carries the primary muscle.
 
+M1-10 PR 4 (2026-11-15, `m1/10-forgotten-finish`), bw's choice after a 21-hour workout in history: a workout finished more than `domainConfig.forgottenFinishS` (30 min) after its last completed set was left open, so its duration ends at that set (`summarizeWorkout`). The stored `endedAt` is unchanged.
+
 ## Follow-ups (noticed, not in scope yet)
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
