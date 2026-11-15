@@ -84,7 +84,10 @@
     "restOpen": "展开休息计时",
     "restStop": "停止提示音，结束休息",
     "restAwayHint": "锁屏或切到别的 App 时不会响铃，回到这里才会提醒。",
-    "restLeft": "剩余"
+    "restLeft": "剩余",
+    "history": "训练历史",
+    "historyCount": "已完成 {count} 次训练",
+    "historyNone": "还没有完成的训练"
   },
   "summary": {
     "title": "训练完成",
@@ -101,7 +104,18 @@
     "recordReps": "同等或更重重量下次数最多",
     "none": "没有打勾的组，这次没有记录。",
     "missing": "这次训练已不存在。",
-    "done": "完成"
+    "done": "完成",
+    "underMinute": "不到 1 分钟"
+  },
+  "history": {
+    "title": "训练历史",
+    "none": "还没有完成的训练。结束一次训练后，它会出现在这里。",
+    "untitled": "自由训练",
+    "exerciseSets": "{name} · {sets} 组",
+    "moreExercises": "还有 {count} 个动作",
+    "stats": "{duration} · {sets} 组 · {volume} kg",
+    "records": "{count} 个新纪录",
+    "when": "{date} · {time}"
   },
   "food": {
     "title": "饮食",

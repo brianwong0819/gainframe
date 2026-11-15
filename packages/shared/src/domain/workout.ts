@@ -133,8 +133,11 @@ export function findPersonalRecords(
   isBodyweight: (exerciseId: string) => boolean,
 ): Map<string, RecordKind[]> {
   const earlier = new Map<string, WorkoutSet[]>()
+  // Appends in place: history summaries pass every earlier set of an exercise.
   const remember = (set: WorkoutSet) => {
-    earlier.set(set.exerciseId, [...(earlier.get(set.exerciseId) ?? []), set])
+    const sets = earlier.get(set.exerciseId)
+    if (sets === undefined) earlier.set(set.exerciseId, [set])
+    else sets.push(set)
   }
   history.filter(countsAsRecord).forEach(remember)
   const records = new Map<string, RecordKind[]>()
