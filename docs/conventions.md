@@ -37,7 +37,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows). Files end in `.int.test.ts` and run with `pnpm test:integration` (after `pnpm db:up`); `pnpm check` runs unit tests only.
 - Every test runs with `TZ=America/Los_Angeles` (set in `vitest.config.ts`, guarded by `packages/shared/src/time-zone.test.ts`), so a day derived from a UTC timestamp fails locally too.
 - **E2E (Playwright, iPhone viewport):** the critical flows listed in ROADMAP. Offline is simulated with `context.setOffline(true)`.
-- **Device layout (Playwright, `apps/web/e2e/layout.spec.ts`):** every page on six iPhone and Android sizes, light and dark, with simulated safe-area insets. Add each new page to its list. Details: "Device QA" in `docs/design-system.md`.
+- **Device layout (Playwright, `apps/web/e2e/layout.spec.ts`):** every page on six iPhone and Android sizes, light and dark, with simulated safe-area insets (pull requests run two of them; `main` runs all six). Add each new page to its list. Details: "Device QA" in `docs/design-system.md`.
 - Every Dexie schema version after v1 gets an upgrade test: open at the previous version with fixture rows, upgrade, assert the rows survive. Data on the phone cannot be repaired from the server.
 - Fixtures are explicit and small; no snapshot tests of large objects; no tests that depend on the current date (inject a clock).
 - A bug fix starts with a failing test that reproduces it.

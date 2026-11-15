@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Before adding a CI job, a device to the e2e matrix or a slow e2e spec, estimate its billed minutes per pull request and keep the full matrix on `main`; Actions minutes on the private repository are capped at USD 12 a month. ([L-030](#l-030--2026-11-15--ci--github-actions-stopped-running-when-the-months-included-minutes-ran-out))
 - To test a swipe or drag in e2e, dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit does not drag the way a finger does and ends with a click. ([L-029](#l-029--2026-11-15--test--the-swipe-test-passed-in-chromium-and-failed-on-every-iphone))
 - A button that writes (create, start, add) renders only once the data it acts on has loaded, so a prerendered page never shows a control that cannot respond yet; test such a flow with the JavaScript chunks delayed. ([L-028](#l-028--2026-11-13--ui--new-plan-sometimes-did-nothing))
 - In e2e tests, assert each value right after entering it (`toHaveValue`), enter text with `fill`, and check the page behind a sheet only after the sheet has closed; WebKit runs only in CI. ([L-027](#l-027--2026-11-09--test--a-plan-test-passed-in-chromium-and-failed-on-every-iphone))
@@ -51,6 +52,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-030 · 2026-11-15 · ci · GitHub Actions stopped running when the month's included minutes ran out
+- **What happened:** on 2026-11-15 every workflow (CI on #98, Terraform plan, the dev deploy) failed after three seconds with no log. bw found in Billing that the USD 12 of included Actions compute for November was used up; it resets on 2026-12-01.
+- **Root cause:** the repository is private, so Actions minutes are billed, and nobody tracked them. The Device layout job grew with every e2e spec and ran every spec on all six devices on each PR push and again on `main`: about 10 billed minutes a run, plus 4 for the other jobs, so each merged PR cost about 30 minutes before any fix-up push.
+- **Fix:** PR `m1/ci-minutes`: pull requests run the device tests on iPhone SE and Galaxy S24 only, `main` keeps the full matrix, and docs-only pull requests skip the tests while the required check still reports.
+- **Prevention:** "GitHub Actions minutes" in `docs/infra.md` records the per-job cost and the retro usage check; rule added under "Active rules".
+- **Status:** documented
 
 ### L-029 · 2026-11-15 · test · The swipe test passed in Chromium and failed on every iPhone
 - **What happened:** the Device layout job failed on #96 on all four WebKit iPhones: after the test dragged a history set row left with `page.mouse`, the set's edit sheet was open and covered the revealed "Delete" button. Pixel 7 and Galaxy S24 (Chromium) passed, as did the local Chromium run.

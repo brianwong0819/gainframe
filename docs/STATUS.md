@@ -137,6 +137,8 @@ M1-10 PR 2 (2026-11-15, `m1/10-edit-past-sets`): the past workout lists every co
 
 M1-10 PR 3 (2026-11-15, `m1/10-history-clarity`), from bw's first look on the iPhone ("day 1, day 2" cards were hard to read): a history card names the plan with the day ("Push · Split · Sat, Nov 14 · 18:30"), tags the main muscle groups by completed sets (`mainMuscles`), lists each exercise once with the sets of all its slots (`exerciseLines`, `features/history/card-lines.ts`), and shows time, sets and volume as three labelled figures. A workout with no completed set is never kept: finishing it deletes it (the finish sheet says so and hides "Discard"), and history and the Workout tab count leave out existing ones (`summarizeHistory`, `countHistory`). `ExerciseInfo` now carries the primary muscle.
 
+CI minutes (2026-11-15, PR `m1/ci-minutes`, L-030): bw's included Actions compute for November ran out, so no workflow runs until 2026-12-01 unless bw sets a spending limit. The Device layout job now runs every e2e spec on iPhone SE and Galaxy S24 on a pull request (114 of 342 tests) and the full six-device matrix on `main`; a pull request that changes only `docs/` or Markdown skips it. Expected per PR run: Device layout about 4 billed minutes instead of 10, 1 for a docs-only change. Costs per job: "GitHub Actions minutes" in `docs/infra.md`.
+
 ## Follow-ups (noticed, not in scope yet)
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.

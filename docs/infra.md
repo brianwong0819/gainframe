@@ -40,7 +40,7 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | PR, push to main | install, lint, typecheck, unit + integration tests (Postgres service), build; `terraform fmt -check` and `validate` for every stack |
+| `ci.yml` | PR, push to main | install, lint, typecheck, unit + integration tests (Postgres service), build; `terraform fmt -check` and `validate` for every stack; device layout e2e (two devices on a PR, all six on main, skipped for a docs-only PR) |
 | `plan.yml` | PR touching `infra/**`, `apps/api/**`, `packages/shared/**` or the lockfile | builds the API bundle, `terraform plan` for dev as `gainframe-ci-plan`, posts the plan as a PR comment (one comment, updated on each push; the account ID replaced) |
 | `deploy.yml` | CI succeeded on a push to main (`workflow_run`) | build with `RELEASE` = the commit SHA → `terraform apply` dev as `gainframe-ci-apply` → upload the site to S3 → invalidate CloudFront → smoke test; later: migrate the dev DB (M2-01), then prod after approval (M2-07) |
 
@@ -61,3 +61,4 @@ Actions are pinned to a full commit SHA. Workflow permissions default to `conten
 - Bedrock spend is capped by per-user daily limits in `ai_usage`.
 - Monitoring stays inside the free tier: up to 10 alarms and 10 custom metrics (metric filters create custom metrics), 1,000 SNS email notifications and 5 GB of log ingestion per month. No CloudWatch dashboards; saved queries are free.
 - Check the Billing console at each milestone retro and note the month-to-date in STATUS.
+- **GitHub Actions minutes.** The repository is private until it is published, so Actions is billed against bw's included compute (USD 12 a month, reset on the 1st). With no spending limit above zero, every workflow fails in seconds once it is used up, including the required checks and the dev deploy (L-030). Each job is billed in whole minutes. Measured on 2026-11-15: the Device layout job took 10 minutes on all six devices (336 e2e tests on one worker), Check and build 2, Terraform checks and Secret scan under 1 each, Deploy 3, Terraform plan 1. Keep the expensive matrix on `main`, and check usage under Settings → Billing at each milestone retro.
