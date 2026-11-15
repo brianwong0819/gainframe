@@ -29,6 +29,7 @@ describe('findExercise', () => {
       nameZh: null,
       nameEn: null,
       equipment: 'other',
+      muscle: null,
     })
   })
 })

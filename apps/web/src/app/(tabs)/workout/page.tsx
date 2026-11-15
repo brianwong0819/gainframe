@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import { db, planStore, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
+import { countHistory } from '@/db/workout-history'
 import { UpNextCard, useUpNext } from '@/features/plans/up-next-card'
 import { useActiveWorkout } from '@/features/workout/active-workout'
 import { Chevron } from '@/ui/chevron'
@@ -14,8 +15,7 @@ import { Pressable, PressableLink } from '@/ui/pressable'
 import { TabScreen } from '../tab-screen'
 
 const loadActivePlan = () => planStore.activePlan()
-const countFinished = () =>
-  db.workouts.filter((workout) => workout.deletedAt === null && workout.endedAt !== null).count()
+const countFinished = () => countHistory(db)
 
 const linkCardClass = 'flex items-center justify-between gap-12 rounded-group bg-surface p-16'
 

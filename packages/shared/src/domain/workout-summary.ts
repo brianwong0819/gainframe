@@ -73,7 +73,8 @@ export interface WorkoutSummaryEntry {
   summary: WorkoutSummary
 }
 
-// The history list: each finished workout's summary, newest first. As on its
+// The history list: each finished workout with at least one completed set,
+// newest first. As on its
 // own summary, a workout's records count against the live workouts that
 // started before it, so the record counts match the detail screen.
 export function summarizeHistory(input: {
@@ -108,7 +109,7 @@ export function summarizeHistory(input: {
         history,
         load: input.load,
       })
-      entries.push({ workout, summary })
+      if (summary.setsDone > 0) entries.push({ workout, summary })
     }
     history.push(...own.filter((set) => set.completedAt !== null))
   }

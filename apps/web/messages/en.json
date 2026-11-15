@@ -28,6 +28,7 @@
     "finish": "Finish workout",
     "finishTitle": "Finish this workout?",
     "finishBody": "{done, plural, one {# set} other {# sets}} done. Unticked sets do not count.",
+    "finishEmptyBody": "No set is ticked, so this workout will not be saved.",
     "finishConfirm": "Finish",
     "close": "Close",
     "pickerTitle": "Add exercise",

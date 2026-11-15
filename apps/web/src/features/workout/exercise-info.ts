@@ -3,16 +3,20 @@ import {
   type Equipment,
   type Exercise,
   displayWeight,
+  type MuscleGroup,
   type WeightUnit,
 } from '@gainframe/shared'
 
-export type ExerciseInfo = Pick<Exercise, 'nameZh' | 'nameEn' | 'equipment'>
+// `muscle` is null only for an exercise that cannot be found.
+export type ExerciseInfo = Pick<Exercise, 'nameZh' | 'nameEn' | 'equipment'> & {
+  muscle: MuscleGroup | null
+}
 
 const builtIns = new Map<string, ExerciseInfo>(
   BUILT_IN_EXERCISES.map((exercise) => [exercise.id, exercise]),
 )
 
-const unknown: ExerciseInfo = { nameZh: null, nameEn: null, equipment: 'other' }
+const unknown: ExerciseInfo = { nameZh: null, nameEn: null, equipment: 'other', muscle: null }
 
 // A built-in exercise, or one of the user's own. `custom` includes deleted
 // exercises, so a workout keeps the names of exercises deleted since.
