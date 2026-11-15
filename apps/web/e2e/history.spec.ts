@@ -1,8 +1,33 @@
-import { expect, type Page, test } from '@playwright/test'
+import { expect, type Locator, type Page, test } from '@playwright/test'
 
 // Finished workouts are listed in history and open to their summary (ROADMAP
 // M1-10). The test runs in Chinese, the language the export renders.
 test.use({ locale: 'zh-CN' })
+
+// Drags a row left with touch pointer events, as a finger would. Playwright's
+// mouse in emulated WebKit ends a drag with a click, which a finger does not.
+async function swipeLeft(row: Locator, distance: number) {
+  await row.evaluate((element, dx) => {
+    const box = element.getBoundingClientRect()
+    const y = box.top + box.height / 2
+    const startX = box.right - 20
+    const event = (type: string, x: number) =>
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: 'touch',
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+      })
+    element.dispatchEvent(event('pointerdown', startX))
+    for (let step = 1; step <= 10; step += 1) {
+      window.dispatchEvent(event('pointermove', startX - (dx * step) / 10))
+    }
+    window.dispatchEvent(event('pointerup', startX - dx))
+  }, distance)
+}
 
 // Finishes a workout of bench press with one 80 kg × 5 set per entry of
 // `sets`, then returns to the Workout tab.
@@ -93,14 +118,7 @@ test('a past set can be edited, swiped away, and the workout deleted', async ({ 
 
   // Swipe set 2 left and delete it.
   const row = page.getByRole('button', { name: '编辑第 2 组：80 kg × 5' })
-  const box = await row.boundingBox()
-  if (box === null) throw new Error('No row')
-  const y = box.y + box.height / 2
-  await page.mouse.move(box.x + box.width - 20, y)
-  await page.mouse.down()
-  await page.mouse.move(box.x + box.width - 80, y, { steps: 5 })
-  await page.mouse.move(box.x + box.width - 160, y, { steps: 5 })
-  await page.mouse.up()
+  await swipeLeft(row, 140)
   await page
     .getByRole('listitem')
     .filter({ has: row })
