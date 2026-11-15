@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-10 History, part 1 of 2 (list and detail); part 2 edits and deletes past sets
+- **Current task:** none; M1-10 History done (pending bw's iPhone check). Next: M1-11 Diagnostics and data export, once bw says to continue
 - **Last updated:** 2026-11-15
 
 ## Where I stopped
@@ -132,6 +132,8 @@ M1-08 PR 2 (2026-11-14, `m1/08-workout-summary`): finishing a workout (also "fin
 M1-08 PR 3 (2026-11-14, `m1/08-celebrations`): `src/ui/celebration.ts` draws the three tiers on one fixed canvas (adapted from the prototype's effect code): chalk at every completed set, plates and a rising "新纪录" tag for a record (predicted at the tap with `findPersonalRecords` over the slots' `earlier` sets, now loaded with each slot), smaller plates for an exercise's last set, and a ripple from the PR count when the summary opens after finishing. The rest sheet waits for the celebration; record rows show "新纪录" in the "last time" column. Off under Reduce Motion (the e2e default; `e2e/summary.spec.ts` turns motion on for its celebration test). Timing rules in "Celebrations" in `docs/design-system.md`. Pending: bw's iPhone check that the plates feel right and the rest sheet delay is not annoying.
 
 M1-10 PR 1 (2026-11-15, `m1/10-history-list`): `summarizeHistory` (`packages/shared`) summarises every finished live workout, newest first, each against the live workouts that started before it, so a card's record count matches its detail; `findPersonalRecords` now appends to its per-exercise lists in place, as history passes every earlier set. `/workout/history` (linked from the Workout tab with the count of finished workouts) lists them under a heading per month: plan day name or "Free workout", day and start time, each exercise with its set count (four, then "n more"), time, sets, volume and a PR tag. A card opens `/workout/past#<id>`, which shows `WorkoutSummaryView` under the day name and date. `loadWorkoutSummary` also returns the plan day name, deleted days included. Durations under a minute read "< 1 min" (`useDurationText`). Day and month headings format the stored `localDate` in UTC, so the device zone cannot shift the day (`features/history/dates.ts`).
+
+M1-10 PR 2 (2026-11-15, `m1/10-edit-past-sets`): the past workout lists every completed set under its exercise (`ExerciseSummary.sets`, through a `setList` slot of `WorkoutSummaryView`). A tap opens the set in a sheet with the same weight and reps steppers as the set panel (`SetFields`, extracted from `SetPanel`) and the kind, RPE and delete controls (`SetDetails`); a swipe to the left reveals "Delete" (`src/ui/swipe-row.tsx`, Motion drag on `transform`, snaps with `std`, `reducedFade` under Reduce Motion; the action is hidden from assistive technology because the sheet offers the same delete). Figures and records follow each change through the live query. "Delete this workout" asks for a second tap, then returns to history. M1-10 is done. Pending: bw's iPhone check that the swipe feels right and does not fight vertical scrolling.
 
 ## Follow-ups (noticed, not in scope yet)
 

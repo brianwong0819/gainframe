@@ -115,7 +115,13 @@
     "moreExercises": "{count, plural, one {# more exercise} other {# more exercises}}",
     "stats": "{duration} · {sets, plural, one {# set} other {# sets}} · {volume} kg",
     "records": "{count, plural, one {# PR} other {# PRs}}",
-    "when": "{date} · {time}"
+    "when": "{date} · {time}",
+    "editHint": "Tap a set to edit it; swipe it left to delete it.",
+    "editSet": "Edit set {n}: {set}",
+    "setTitle": "Set {n} · {name}",
+    "swipeDelete": "Delete",
+    "deleteWorkout": "Delete this workout",
+    "deleteWorkoutConfirm": "Confirm: delete it with its {sets, plural, one {# set} other {# sets}}"
   },
   "food": {
     "title": "Food",

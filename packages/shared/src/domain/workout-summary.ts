@@ -3,6 +3,8 @@ import { findPersonalRecords, type LoadRules, type RecordKind, totalVolumeKg } f
 
 export interface ExerciseSummary {
   slot: WorkoutExercise
+  // The completed sets, warm-ups included, in the order they were done.
+  sets: WorkoutSet[]
   setsDone: number
   volumeKg: number
   // The heaviest completed working or failure set, most reps first among equal
@@ -44,6 +46,7 @@ export function summarizeWorkout(input: {
       .toSorted((a, b) => Date.parse(a.completedAt ?? '') - Date.parse(b.completedAt ?? ''))
     return {
       slot,
+      sets,
       setsDone: sets.length,
       volumeKg: totalVolumeKg(sets, load),
       topSet: topSet(sets),

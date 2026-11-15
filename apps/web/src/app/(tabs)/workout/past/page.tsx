@@ -7,12 +7,13 @@ import { db } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import { loadWorkoutSummary } from '@/db/workout-summary'
 import { formatDay, formatTime } from '@/features/history/dates'
-import { WorkoutSummaryView } from '@/features/workout/workout-summary'
+import { PastWorkout } from '@/features/history/past-workout'
 import { BackLink } from '@/ui/back-link'
 import { useIdFromHash } from '@/ui/use-id-from-hash'
 
 // One finished workout from history, at /workout/past#<id>: the same summary
-// the finish screen shows, under the plan day and the date.
+// the finish screen shows, under the plan day and the date, with every set
+// open to editing (`PastWorkout`).
 export default function PastWorkoutPage() {
   const t = useTranslations('history')
   const tSummary = useTranslations('summary')
@@ -40,9 +41,12 @@ export default function PastWorkoutPage() {
               })}
             </p>
           )}
+          {state && state.summary.setsDone > 0 && (
+            <p className="text-label text-ink-3">{t('editHint')}</p>
+          )}
         </div>
       </header>
-      {workoutId !== undefined && state && <WorkoutSummaryView state={state} />}
+      {workoutId !== undefined && state && <PastWorkout state={state} />}
       {workoutId !== undefined && state === null && (
         <p className="text-body text-ink-2">{tSummary('missing')}</p>
       )}
