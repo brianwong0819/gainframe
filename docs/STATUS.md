@@ -141,6 +141,7 @@ M1-10 PR 4 (2026-11-15, `m1/10-forgotten-finish`), bw's choice after a 21-hour w
 
 ## Follow-ups (noticed, not in scope yet)
 
+- `e2e/sheet.spec.ts` failed once on iPhone 17 Pro Max (WebKit) on #98, whose diff touches no sheet code: the first sampled frame of the exercise sheet was already at 462 px, above the half-viewport bound of 478 px. Its first-frame sampling may race the opening on a slow runner; look at it if it recurs.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Suspected from the WebKit-only failure on #72 (the e2e test now uses `fill`); check on the iPhone and fix in the stepper if confirmed.
