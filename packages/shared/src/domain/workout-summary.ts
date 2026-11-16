@@ -186,6 +186,18 @@ function durationS(workout: Workout, done: readonly WorkoutSet[]): number | null
   return Math.round((end - started) / 1000)
 }
 
+// Each exercise's best set among `sets`, by exercise id: its heaviest working
+// or failure set, most reps first among equal weights. `sets` are completed
+// sets that are not deleted; an exercise with only warm-ups has no entry.
+export function bestSets(sets: readonly WorkoutSet[]): Map<string, WorkoutSet> {
+  const best = new Map<string, WorkoutSet>()
+  for (const [exerciseId, own] of Map.groupBy(sets, (set) => set.exerciseId)) {
+    const top = topSet(own)
+    if (top !== null) best.set(exerciseId, top)
+  }
+  return best
+}
+
 function topSet(sets: readonly WorkoutSet[]): WorkoutSet | null {
   return sets
     .filter((set) => set.kind === 'working' || set.kind === 'failure')

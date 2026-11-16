@@ -58,6 +58,7 @@ export {
   totalVolumeKg,
 } from './domain/workout.ts'
 export {
+  bestSets,
   compareSummaries,
   type ExerciseSummary,
   type RecentRecord,
