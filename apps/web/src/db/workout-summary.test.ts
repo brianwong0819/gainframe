@@ -47,6 +47,18 @@ async function benchWorkout(sets: readonly [number, number][]) {
   return workout
 }
 
+// A finished workout of the plan day with its first set done at `weightKg` × 5.
+async function dayWorkout(planDayId: string, weightKg: number) {
+  const workout = await session.startFromPlanDay(planDayId, ZONE)
+  const setId = (await session.loadActive())?.slots[0]?.sets[0]?.id
+  if (setId === undefined) throw new Error('No set')
+  advance(3)
+  await repos.workoutSets.update(setId, { weightKg, reps: 5, completedAt: clock.toISOString() })
+  await session.finish(workout.id)
+  advance(24 * 60)
+  return workout
+}
+
 describe('loadWorkoutSummary', () => {
   it('summarises a finished workout against the earlier ones', async () => {
     await benchWorkout([[80, 5]])
@@ -76,5 +88,33 @@ describe('loadWorkoutSummary', () => {
     const workout = await benchWorkout([[80, 5]])
     await repos.workouts.remove(workout.id)
     expect(await loadWorkoutSummary(db, workout.id)).toBeNull()
+  })
+
+  it('carries the last time the same plan day was done', async () => {
+    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const day = await repos.planDays.create({ planId: plan.id, name: 'Push', position: 0 })
+    await repos.planItems.create({
+      planId: plan.id,
+      planDayId: day.id,
+      exerciseId: BENCH,
+      position: 0,
+      supersetGroup: null,
+      targetSets: 1,
+      repsMin: 5,
+      repsMax: 8,
+      restS: null,
+      note: null,
+    })
+    const first = await dayWorkout(day.id, 80)
+    // A workout started empty is not the same day, even with the same exercise.
+    const empty = await benchWorkout([[90, 5]])
+    const second = await dayWorkout(day.id, 85)
+
+    expect((await loadWorkoutSummary(db, first.id))?.previous).toBeNull()
+    expect((await loadWorkoutSummary(db, empty.id))?.previous).toBeNull()
+    expect((await loadWorkoutSummary(db, second.id))?.previous?.volumeKg).toBe(80 * 5)
+
+    await repos.workouts.remove(first.id)
+    expect((await loadWorkoutSummary(db, second.id))?.previous).toBeNull()
   })
 })

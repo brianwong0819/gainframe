@@ -67,6 +67,40 @@ export function summarizeWorkout(input: {
   }
 }
 
+export interface SummaryComparison {
+  // The change in volume as a fraction of the earlier volume (0.25 = a quarter
+  // more); null when the earlier workout had none.
+  volumeChange: number | null
+  // By exercise: this workout's top-set weight minus the earlier one's, in kg,
+  // for the exercises both workouts have a top set of.
+  topWeightDeltaKg: Map<string, number>
+}
+
+// How a workout did against an earlier one, normally the last time the same
+// plan day was done.
+export function compareSummaries(
+  current: WorkoutSummary,
+  earlier: WorkoutSummary,
+): SummaryComparison {
+  const earlierTop = new Map(
+    earlier.exercises.flatMap(({ slot, topSet }) =>
+      topSet === null ? [] : [[slot.exerciseId, topSet.weightKg] as const],
+    ),
+  )
+  const topWeightDeltaKg = new Map<string, number>()
+  for (const { slot, topSet } of current.exercises) {
+    const before = earlierTop.get(slot.exerciseId)
+    if (topSet !== null && before !== undefined) {
+      topWeightDeltaKg.set(slot.exerciseId, topSet.weightKg - before)
+    }
+  }
+  return {
+    volumeChange:
+      earlier.volumeKg > 0 ? (current.volumeKg - earlier.volumeKg) / earlier.volumeKg : null,
+    topWeightDeltaKg,
+  }
+}
+
 export interface WorkoutSummaryEntry {
   workout: Workout
   summary: WorkoutSummary

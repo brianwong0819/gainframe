@@ -7,7 +7,7 @@ import { useState } from 'react'
 
 import { db, repositories, weightUnits } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
-import type { WorkoutSummaryState } from '@/db/workout-summary'
+import type { WorkoutSummaryDetail } from '@/db/workout-summary'
 import { ConfirmButton } from '@/ui/confirm-button'
 import { Sheet } from '@/ui/sheet'
 import { SwipeRow } from '@/ui/swipe-row'
@@ -31,7 +31,7 @@ interface Editing {
 // on a set opens it in a sheet (weight, reps, kind, RPE, delete); a swipe to
 // the left deletes it. Figures and records follow every change, because the
 // summary is a live query. Deleting the workout asks for a second tap.
-export function PastWorkout({ state }: { state: WorkoutSummaryState }) {
+export function PastWorkout({ state }: { state: WorkoutSummaryDetail }) {
   const t = useTranslations('history')
   const tWorkout = useTranslations('workout')
   const tKind = useTranslations('setKindShort')

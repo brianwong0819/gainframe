@@ -38,7 +38,7 @@ test('the summary totals the workout and lists a new record', async ({ page }) =
 
   await benchWorkout(page, '85')
   const figures = page.getByRole('definition')
-  await expect(figures.nth(1)).toHaveText('425 kg')
+  await expect(figures.nth(0)).toHaveText('425 kg')
   await expect(figures.nth(2)).toHaveText('1')
   await expect(figures.nth(3)).toHaveText('1')
   const exercise = page.getByRole('listitem').filter({ hasText: '杠铃卧推' })
@@ -49,6 +49,52 @@ test('the summary totals the workout and lists a new record', async ({ page }) =
   await page.getByRole('link', { name: '完成', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByRole('button', { name: '开始训练' })).toBeVisible()
+})
+
+test('a plan day done again is compared with its last time', async ({ page }) => {
+  await page.goto('/workout/plans')
+  await page.getByRole('button', { name: '新建计划' }).click()
+  const day = page.getByRole('textbox', { name: '第 1 天的名称' })
+  await day.fill('推')
+  await day.press('Enter')
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃卧推')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃卧推/ })
+    .click()
+  await page.getByRole('dialog').getByRole('button', { name: '加入「推」' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+
+  // The first set of the day at `weight` × 8, the low end of the plan's range.
+  const pushDay = async (weight: string) => {
+    await page.goto('/workout')
+    await page.getByRole('button', { name: '开始「推」' }).click()
+    const field = page.getByRole('textbox', { name: '第 1 组重量' })
+    await field.fill(weight)
+    await field.press('Enter')
+    await expect(field).toHaveValue(weight)
+    await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
+    await page
+      .getByRole('dialog', { name: '组间休息' })
+      .getByRole('button', { name: '开始下一组' })
+      .click()
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await page.getByRole('button', { name: '结束训练' }).first().click()
+    await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
+    await expect(page).toHaveURL(/\/workout\/summary\/?#/)
+  }
+
+  await pushDay('80')
+  const volume = page.getByRole('definition').first()
+  // The day's first time has nothing to compare with.
+  await expect(volume).toHaveText('640 kg')
+
+  await pushDay('100')
+  await expect(volume).toHaveText('800 kg+25% 比上次「推」')
+  await expect(page.getByRole('listitem').filter({ hasText: '杠铃卧推' })).toContainText(
+    '最重一组比上次 +20 kg',
+  )
 })
 
 test.describe('with motion', () => {
