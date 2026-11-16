@@ -11,20 +11,37 @@ test('the exercise sheet rises from the bottom without scrolling its dialog', as
   const row = page.locator('main li button').first()
   await row.waitFor()
 
+  // The first sample is taken by a MutationObserver the moment the panel is in
+  // an open dialog, before any frame of the animation: a sampler that waits
+  // for its first animation frame can start late on a slow runner and find the
+  // panel already past the middle of the screen (L-034).
   const frames = page.evaluate(
     () =>
       new Promise<{ scrollTop: number; top: number }[]>((resolve) => {
         const seen: { scrollTop: number; top: number }[] = []
-        const sample = () => {
-          const dialog = document.querySelector('.sheet-dialog')
+        const read = () => {
+          const dialog = document.querySelector<HTMLDialogElement>('.sheet-dialog')
           const panel = document.querySelector('.sheet-panel')
-          if (dialog && panel) {
-            seen.push({ scrollTop: dialog.scrollTop, top: panel.getBoundingClientRect().top })
-          }
+          if (!dialog?.open || !panel) return false
+          seen.push({ scrollTop: dialog.scrollTop, top: panel.getBoundingClientRect().top })
+          return true
+        }
+        const sample = () => {
+          read()
           if (seen.length < 20) requestAnimationFrame(sample)
           else resolve(seen)
         }
-        requestAnimationFrame(sample)
+        const observer = new MutationObserver(() => {
+          if (!read()) return
+          observer.disconnect()
+          requestAnimationFrame(sample)
+        })
+        observer.observe(document.body, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['open'],
+        })
       }),
   )
   await row.click()

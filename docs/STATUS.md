@@ -44,7 +44,6 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Follow-ups (noticed, not in scope yet)
 
-- `e2e/sheet.spec.ts` failed once on iPhone 17 Pro Max (WebKit) on #98, whose diff touches no sheet code: the first sampled frame of the exercise sheet was already above the half-viewport bound. Its first-frame sampling may race the opening on a slow runner; look at it if it recurs.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Check on the iPhone during M1-13 and fix in the stepper if confirmed.
 - The first time a plan day is done its sets start at 0 kg, and a weight entered on set 1 is not carried to the later untouched sets of the exercise, so each set is typed again (seen in the rest sheet's next-set preview). Decide with bw whether completing a set copies its weight to the following sets still at their starting value.

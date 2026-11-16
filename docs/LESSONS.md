@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-034 · 2026-11-16 · test · The sheet's per-frame test failed on a slow runner
+- **What happened:** CI's Device layout job failed on iPhone SE (WebKit) on a PR that touches no sheet code: the first sampled frame of the exercise sheet was at 324 px, above the half-viewport bound of 333.5 px. The same test had failed once before on iPhone 17 Pro Max (#98) and was left as a follow-up.
+- **Root cause:** the sampler waited for its first `requestAnimationFrame` after the tap. On a busy runner that frame comes late, after the spring has already moved the panel, so "the first sample" was not the start of the animation. The assertion was right; the measurement started at an arbitrary moment.
+- **Fix:** PR `m1/fix-sheet-test-race`: a `MutationObserver` takes the first sample the moment the panel is in an open dialog, before any animation frame; later samples still come one per frame. The test still fails when `overflow: clip` is removed from `.sheet-dialog` (checked).
+- **Prevention:** "Tests" in `docs/conventions.md`: a per-frame sample starts from the DOM change that begins the animation, not from the first frame after the action. A failure seen once on a diff that cannot cause it is investigated then, not parked until it recurs.
+- **Status:** documented
+
 ### L-033 · 2026-11-16 · test · The offline test failed on the iPhone with "WebKit encountered an internal error"
 - **What happened:** on #103 the new `e2e/offline.spec.ts` passed on Chromium and failed on iPhone SE in CI at the first navigation after `context.setOffline(true)`.
 - **Root cause:** Playwright's WebKit applies its offline emulation, and request routing too, before the service worker sees a navigation: a second attempt with `context.route(...).abort()` failed with "Blocked by Web Inspector". Chromium lets the worker answer both ways. WebKit runs only in CI, so neither showed locally.
