@@ -293,7 +293,7 @@
   "settings": {
     "title": "Settings",
     "diagnostics": "Diagnostics",
-    "diagnosticsHint": "Version, storage, backup and error log"
+    "diagnosticsHint": "Version, storage, backup, error log and clearing data"
   },
   "diagnostics": {
     "release": "Version",
@@ -311,7 +311,12 @@
     "backupHint": "Your data is stored only on this device for now. Export every workout, plan and custom exercise as a JSON file and keep it in Files or on a computer.",
     "backupCounts": "{workouts, plural, one {# workout} other {# workouts}} · {plans, plural, one {# plan} other {# plans}} · {exercises, plural, one {# custom exercise} other {# custom exercises}}",
     "export": "Export all data (JSON)",
-    "exportFailed": "Export failed. Please try again."
+    "exportFailed": "Export failed. Please try again.",
+    "clear": "Clear data",
+    "clearHint": "Deletes every workout, plan, custom exercise, setting and error record on this device, so the app starts as on its first launch. This cannot be undone, so export a backup first.",
+    "clearAll": "Clear all data",
+    "clearConfirm": "Tap again to clear",
+    "clearFailed": "Clearing failed. Please try again."
   },
   "update": {
     "title": "A new version is ready",

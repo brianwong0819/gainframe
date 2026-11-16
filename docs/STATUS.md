@@ -14,6 +14,8 @@ The M1 review and retro (2026-11-16, PRs `m1/review` and `m1/retro`) found no da
 
 Health check (2026-11-16, PR `m1/health-limit`, moved forward from M2-09 by bw because the repository is public): `GET /api/health` returns `{ "status": "ok" }` without touching the database; the deploy smoke test checks the database by invoking the function directly with `{ "check": "database" }`, which needs IAM. Locally, `pnpm --filter api dev` logs the database check at start-up.
 
+Clear data (2026-11-16, PR `m1/clear-data`, asked by bw for the field week): Diagnostics → "Clear all data" (two taps) empties every Dexie table and reopens the app at Today, so a reset no longer needs reinstalling the Home Screen app. It is shown in every build, not only with `GAINFRAME_DEV_PAGES`: a local-only app needs a way to erase its data, and the button sits on the developer-facing Diagnostics page. M2-05 revisits it for sync.
+
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M2-01.
 
 ## Field week checklist (pending iPhone checks)

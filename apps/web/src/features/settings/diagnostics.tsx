@@ -11,6 +11,7 @@ import { formatErrorReport } from '@/diagnostics/error-report'
 import { release } from '@/release'
 import { Pressable } from '@/ui/pressable'
 
+import { ClearData } from './clear-data'
 import { ExportData } from './export-data'
 
 const loadErrors = () => recentErrors(db)
@@ -28,8 +29,8 @@ function usePersisted(): boolean | null | undefined {
 }
 
 // What a developer needs from the phone without Web Inspector: the build, the
-// storage guarantee, a backup of the data and the errors recorded by
-// src/diagnostics.
+// storage guarantee, a backup of the data, the errors recorded by
+// src/diagnostics and a reset of the device's data.
 export function Diagnostics() {
   const t = useTranslations('diagnostics')
   const locale = useLocale()
@@ -139,6 +140,8 @@ export function Diagnostics() {
           </ol>
         )}
       </section>
+
+      <ClearData />
     </>
   )
 }

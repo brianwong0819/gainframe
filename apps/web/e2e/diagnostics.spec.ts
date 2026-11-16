@@ -105,3 +105,22 @@ test('downloads the export where there is no share sheet', async ({ page }) => {
   const data: unknown = JSON.parse(await readFile(path, 'utf8'))
   expect(data).toMatchObject({ format: 'gainframe-export', tables: { workouts: [] } })
 })
+
+// "Clear all data" resets the device without reinstalling the Home Screen app:
+// two taps, then the app reopens at Today with empty tables.
+test('clears all data after a second tap and reopens at Today', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
+
+  await page.goto('/settings/diagnostics')
+  await expect(page.getByTestId('export-counts')).toHaveText('1 次训练 · 0 个计划 · 0 个自定义动作')
+  await page.getByRole('button', { name: '清空全部数据' }).click()
+  await expect(page).toHaveURL(/\/settings\/diagnostics\/?$/)
+  await page.getByRole('button', { name: '再点一次确认清空' }).click()
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole('heading', { name: '今天' })).toBeVisible()
+
+  await page.goto('/settings/diagnostics')
+  await expect(page.getByTestId('export-counts')).toHaveText('0 次训练 · 0 个计划 · 0 个自定义动作')
+})
