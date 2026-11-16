@@ -347,7 +347,26 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           />
         )}
         {sheetExercise && <ExerciseDetail exercise={sheetExercise} />}
-        {restSheet && rest && <RestPanel workout={workout} rest={rest} />}
+        {restSheet && rest && (
+          <RestPanel
+            workout={workout}
+            rest={rest}
+            next={
+              selected
+                ? {
+                    set: selected.set,
+                    name: nameOf(selected.exerciseId),
+                    n: selected.n,
+                    of:
+                      state.slots.find(({ slot }) => slot.id === selected.slotId)?.sets.length ??
+                      selected.n,
+                    unit: unitOf(selected.exerciseId),
+                    bodyweight: isBodyweight(selected.exerciseId),
+                  }
+                : null
+            }
+          />
+        )}
         {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>

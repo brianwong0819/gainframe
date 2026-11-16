@@ -83,6 +83,7 @@
     "restOver": "休息结束",
     "newRecord": "新纪录",
     "restDone": "开始下一组",
+    "restNext": "下一组",
     "restLess": "少休息 {s} 秒",
     "restMore": "多休息 {s} 秒",
     "restOpen": "展开休息计时",

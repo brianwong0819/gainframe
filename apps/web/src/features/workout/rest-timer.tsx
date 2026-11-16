@@ -1,6 +1,13 @@
 'use client'
 
-import { domainConfig, type RestState, restState, type Workout } from '@gainframe/shared'
+import {
+  domainConfig,
+  type RestState,
+  restState,
+  type WeightUnit,
+  type Workout,
+  type WorkoutSet,
+} from '@gainframe/shared'
 import { motion, useReducedMotion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
@@ -10,6 +17,7 @@ import { fade, pop, reducedFade, soft } from '@/ui/motion'
 import { Pressable } from '@/ui/pressable'
 
 import { formatClock } from './clock'
+import { formatSetWeight } from './exercise-info'
 import { playRestCue } from './rest-cue'
 
 // How often the countdown redraws, and how the end-of-rest cue repeats when the
@@ -115,9 +123,29 @@ function Ring({ state, size }: { state: RestState; size: 'large' | 'small' }) {
   )
 }
 
-// The rest sheet's content: the ring with the time left, ±15 s, and "start the
-// next set", which ends the rest. Once over, it shows how long ago it ended.
-export function RestPanel({ workout, rest }: { workout: Workout; rest: RestView }) {
+// The set that follows the rest, so the next weight is known before the rest ends.
+export interface NextSet {
+  set: WorkoutSet
+  name: string
+  n: number
+  // How many sets the exercise has, for "set 2/3".
+  of: number
+  unit: WeightUnit
+  bodyweight: boolean
+}
+
+// The rest sheet's content: the ring with the time left, the set that comes
+// next, ±15 s, and "start the next set", which ends the rest. Once over, it
+// shows how long ago it ended.
+export function RestPanel({
+  workout,
+  rest,
+  next,
+}: {
+  workout: Workout
+  rest: RestView
+  next: NextSet | null
+}) {
   const t = useTranslations('workout')
   const { state } = rest
   const step = domainConfig.rest.stepS
@@ -138,6 +166,24 @@ export function RestPanel({ workout, rest }: { workout: Workout; rest: RestView 
         </div>
       </div>
       {rest.endedAway && <p className="text-center text-label text-ink-2">{t('restAwayHint')}</p>}
+      {next && (
+        <p className="flex w-full items-center justify-between gap-12 rounded-ctl bg-sunk px-16 py-12">
+          <span className="flex min-w-0 flex-col">
+            <span className="text-label text-ink-3">{t('restNext')}</span>
+            <span className="truncate text-body font-semibold text-ink">
+              {next.name} · {t('colSet')} {next.n}/{next.of}
+            </span>
+          </span>
+          <span className="num shrink-0 text-body text-ink">
+            {formatSetWeight(next.set.weightKg, next.unit, next.bodyweight, t('bodyweight'))}
+            {!(next.bodyweight && next.set.weightKg === 0) && (
+              <span className="text-label text-ink-3"> {t(`unit.${next.unit}`)}</span>
+            )}
+            {' × '}
+            {next.set.reps}
+          </span>
+        </p>
+      )}
       <div className="grid w-full grid-cols-[1fr_1fr_4fr] gap-8">
         <Pressable
           onClick={() => {
