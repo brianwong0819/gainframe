@@ -107,15 +107,15 @@ Done when: a meal is logged in under 30 seconds and the eval script reports mean
 
 - [ ] **M3-01 Food domain model**: meal and meal_item schemas, nutrition totals, `local_date`; Dexie and sync extended to both tables.
   Verify: tests pass; a manual meal syncs to a second device.
-- [ ] **M3-02 Manual entry + frequent foods**: add foods manually; one-tap add from frequent foods; swipe to delete.
-  Verify: a frequent-food meal takes ≤ 10 seconds.
-- [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle. Add the bucket origin (`connect-src`) and `blob:` (`img-src`) to the Content-Security-Policy.
-  Verify: the photo lands in S3; the lifecycle rule is visible; oversized files are rejected.
+- [ ] **M3-02 Food tab, manual entry + frequent foods**: the Food tab and manual screen from "Food logging" in [design-system.md](design-system.md): day card (protein to go, energy), one-tap frequent foods, own foods created from a nutrition label, swipe to delete, edit a meal. Frequent and recent foods are derived from past `meal_items`, not a separate table. Daily targets: two fields in Settings (protein g, energy kcal) stored in `profiles` (fixed protein mode, `kcal_target`), because the day card needs a target before M4-01 adds the calculated suggestions. The Today protein card (option C) with its gap-filling suggestion as a pure function in `packages/shared/src/domain`.
+  Verify: a frequent-food meal takes ≤ 10 seconds; fixture tests cover the suggestion rule (no frequent foods, gap smaller than any food, target met).
+- [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle. A photo taken offline is kept on the device (a device-only Dexie table, never synced) with its meal saved as waiting for an estimate; the upload and the estimate run when the app is next online, and the meal then asks for confirmation. Add the bucket origin (`connect-src`) and `blob:` (`img-src`) to the Content-Security-Policy.
+  Verify: the photo lands in S3; the lifecycle rule is visible; oversized files are rejected; a photo taken in airplane mode is estimated after the network returns.
 - [ ] **M3-04 AI service layer**: `apps/api/src/ai` with one interface and Bedrock, Anthropic and OpenAI providers; model IDs in config; Zod-validated structured output with one retry; timeouts; per-user daily caps in Postgres. One log line per call: feature, provider, model, prompt version, latency, tokens in/out and outcome (`ok`, `retried`, `invalid`, `timeout`, `capped`, `provider_error`); on invalid output only the Zod issue paths are logged.
   Verify: unit tests with a fake provider cover retry, timeout and cap, and assert each outcome's log line; one real Bedrock call succeeds on dev and its line is in CloudWatch.
 - [ ] **M3-05 Vision estimate endpoint**: `prompts/vision/v1.md`; relevant past corrections for this user sent as reference; returns items with grams, protein, kcal and alternative names.
   Verify: three test photos return JSON that passes schema validation.
-- [ ] **M3-06 Confirm screen**: scan animation, tap-to-correct names (alternatives first), gram steppers, oil/sauce prompt, meal type, "remember this correction"; saves both the AI's raw output and the final values.
+- [ ] **M3-06 Confirm screen**: the estimating and confirm screens and their four states from "Food logging" in [design-system.md](design-system.md): scan line, tap-to-correct names (alternatives first), gram steppers, the oil and sauce row, meal type, "remember this correction", the effect on today's protein before saving; saves both the AI's raw output and the final values.
   Verify: 👤 a real meal is logged in under 30 seconds; the Today screen updates.
 - [ ] **M3-07 Bring-your-own key**: Claude or OpenAI key in settings. ADR first (recommended: the key stays on the device and is sent per request over HTTPS; the server never stores or logs it).
   Verify: requests use the user's provider; the key never appears in logs.
@@ -123,6 +123,8 @@ Done when: a meal is logged in under 30 seconds and the eval script reports mean
   Verify: one run produces the v1 error figures for the README draft.
 - [ ] **M3-09 👤 Eval dataset**: the owner photographs packaged or weighed meals and records true protein and kcal; target 30–50.
   Verify: ≥ 30 labelled entries.
+- [ ] **M3-10 Text estimate**: "describe it in a sentence" on the manual screen (moved forward from the post-MVP list, 2026-11-16: it reuses the M3-05 endpoint, schema and confirm screen, costs less per call than a photo, and replaces a built-in food table that would need licensed data). `prompts/text-meal/v1.md`; the same daily cap as photos; `pnpm eval:vision` gains a text set of the same meals described in words.
+  Verify: three sentences in Chinese and three in English return items that pass schema validation; the eval reports protein and kcal error for the text set.
 
 ## M4 Goals, body weight and trends (weeks 11–12)
 
@@ -132,7 +134,7 @@ Done when: the first screen shows what is left for today and this week's weight 
   Verify: suggestions for the owner's height and weight match a hand calculation (formula in the tests).
 - [ ] **M4-02 Body weight and composition**: daily weigh-ins, 7-day average, weekly rate, target corridor. One `body_metrics` row per measurement: weight always; body fat %, skeletal muscle mass and fat mass optional, for users with a body composition scan (InBody or a smart scale); `source` (`manual` now; `scan` and `health` reserved for the version-2 imports below). Manual entry only. With two scans or more, show the change in fat-free mass and fat mass between them next to the weight change ("+2.0 kg since 1 Oct: +1.2 lean, +0.8 fat"), labelled with both dates and a note that readings depend on hydration and measuring conditions; never a daily composition trend, which home bioimpedance cannot support. Pure functions in `packages/shared/src/domain` (7-day average, weekly rate, composition change).
   Verify: fixture tests check averages, rate and composition change; the UI shows on target / too slow / too fast; a weight-only user sees no empty composition fields.
-- [ ] **M4-03 Today screen**: surplus gauge, protein ring, today's workout, weight card, all live.
+- [ ] **M4-03 Today screen**: surplus gauge, today's workout and weight card, all live, around the protein card built in M3-02.
   Verify: logging a meal rolls the numbers on Today to their new values.
 - [ ] **M4-04 Trend charts**: visx charts for weight (with body fat % and skeletal muscle mass as points at each scan, when present), per-exercise e1RM, weekly volume, protein and kcal history; scrubbing tooltip.
   Verify: scrubbing holds 60 fps on iPhone (Safari timeline).
@@ -203,4 +205,4 @@ Decided in [ADR-0006](adr/0006-strength-standing.md) (proposed until M8-01 start
 
 ---
 
-If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: M8 strength standing, training programmes, CSV import/export, text-based meal estimates. Version 2: body composition import from an InBody result sheet photo (through the M3 vision pipeline, every field confirmed by the user before saving) and Apple Health weight through an iOS Shortcut ([ADR-0004](adr/0004-pwa-over-native.md)), both writing `body_metrics` rows with their own `source`.
+If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: M8 strength standing, training programmes, CSV import/export. Version 2: body composition import from an InBody result sheet photo (through the M3 vision pipeline, every field confirmed by the user before saving) and Apple Health weight through an iOS Shortcut ([ADR-0004](adr/0004-pwa-over-native.md)), both writing `body_metrics` rows with their own `source`.
