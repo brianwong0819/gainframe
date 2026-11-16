@@ -15,6 +15,11 @@ output "api_function_url" {
   value       = module.api.function_url
 }
 
+output "api_function_name" {
+  description = "The deploy smoke test invokes it directly for the database check."
+  value       = module.api.function_name
+}
+
 output "api_log_group" {
   value = module.api.log_group
 }

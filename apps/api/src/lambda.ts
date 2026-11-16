@@ -1,9 +1,11 @@
 // AWS Lambda entry point, bundled by rolldown.config.ts. CloudFront forwards
-// `/api/*` to the function URL; the same Hono app runs locally in dev.ts.
+// `/api/*` to the function URL; the same Hono app runs locally in dev.ts. A
+// direct invocation with `{ "check": "database" }` runs the database check.
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
-import { handle } from '@hono/aws-lambda'
+import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 
 import { createApp } from './app.ts'
+import { checkDatabase, type DatabaseCheckEvent, isDatabaseCheckEvent } from './database-check.ts'
 import { createPool, pingDatabase } from './db/client.ts'
 import { loadLambdaEnv, readRelease } from './env.ts'
 import { createLogger } from './log.ts'
@@ -28,4 +30,9 @@ const log = createLogger({ release: readRelease(process.env) })
 const env = await loadLambdaEnv(process.env, getParameter)
 const pool = createPool(env.DATABASE_URL, log)
 
-export const handler = handle(createApp({ log, pingDatabase: () => pingDatabase(pool) }))
+const http = handle(createApp({ log }))
+
+export const handler = (event: LambdaEvent | DatabaseCheckEvent, context: LambdaContext) =>
+  isDatabaseCheckEvent(event)
+    ? checkDatabase(() => pingDatabase(pool), log.child({ requestId: context.awsRequestId }))
+    : http(event, context)

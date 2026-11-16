@@ -48,13 +48,13 @@ Deploy details:
 
 - **Release.** The commit SHA reaches the Lambda environment as `RELEASE` (the `release` Terraform variable; a local run reports `local`) and the web bundle as `NEXT_PUBLIC_RELEASE`, rendered as `<meta name="release">`.
 - **Site upload.** Hashed assets under `_next/static` are uploaded first with `Cache-Control: public, max-age=31536000, immutable`; everything else with `no-cache`, so browsers revalidate HTML. Old hashed assets are removed only after the invalidation has completed.
-- **Smoke test.** The page must carry the new release; one `/api/health` call's `x-request-id` must find its access line in the API log group within two minutes, with the same `release`.
+- **Smoke test.** The page must carry the new release; `/api/health` must return 200 and its `x-request-id` must find its access line in the API log group within two minutes, with the same `release`; a direct invocation of the function with `{ "check": "database" }` must report the database as connected (the public route never queries it).
 - **Account ID.** Workflows build role ARNs from the `AWS_ACCOUNT_ID` repository secret. GitHub masks it in logs; the plan comment replaces it explicitly, because comments are not masked.
 - **Plan role and SSM.** Refreshing an `aws_ssm_parameter` decrypts it, so `gainframe-ci-plan` has `kms:Decrypt` on the `aws/ssm` key, only through SSM and only for `/gainframe/*` parameters. Only collaborators can trigger it: fork pull requests get no OIDC token.
 
 Workflow scripts:
 
-- A command whose failure matters runs on its own, never inside a pipeline or a `$(...)` with other commands; a smoke test asserts the healthy result (200 and `database: connected`), not just a response (L-014).
+- A command whose failure matters runs on its own, never inside a pipeline or a `$(...)` with other commands; a smoke test asserts the healthy result (200, then `database: connected` from the direct check), not just a response (L-014).
 - AWS CLI results are parsed as JSON (`--output json` piped to `jq`); text output repeats values once per page (L-013).
 - An identity or permission change (trust policy, IAM policy, secret) is verified from its real caller, a workflow run, not by reading the resource (L-012).
 - Workflow logs are public. Terraform output, plan text and `GITHUB_ENV` values appear in them; only repository secrets are masked. Anything that must stay private is a secret, masked with `::add-mask::`, or not printed.

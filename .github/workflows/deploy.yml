@@ -89,6 +89,7 @@ jobs:
             echo "SITE_BUCKET=$(terraform output -raw site_bucket)"
             echo "DISTRIBUTION_ID=$(terraform output -raw distribution_id)"
             echo "LOG_GROUP=$(terraform output -raw api_log_group)"
+            echo "FUNCTION_NAME=$(terraform output -raw api_function_name)"
           } >> "${GITHUB_ENV}"
       - name: Upload the site
         # Hashed assets first, so the new HTML never references a missing file.
@@ -142,8 +143,22 @@ jobs:
           status=$(curl -sS -o "${RUNNER_TEMP}/health.json" -D "${RUNNER_TEMP}/health.headers" \
             -w '%{http_code}' "${SITE_URL}/api/health")
           cat "${RUNNER_TEMP}/health.json"; echo
-          if [ "${status}" != "200" ] || [ "$(jq -r '.database' "${RUNNER_TEMP}/health.json")" != "connected" ]; then
-            echo "::error::/api/health returned ${status}; the API cannot reach its database"
+          if [ "${status}" != "200" ] || [ "$(jq -r '.status' "${RUNNER_TEMP}/health.json")" != "ok" ]; then
+            echo "::error::/api/health returned ${status}"
+            exit 1
+          fi
+          # The public health route never queries the database; a direct
+          # invocation, which needs IAM, runs the database check.
+          aws lambda invoke --function-name "${FUNCTION_NAME}" --cli-binary-format raw-in-base64-out \
+            --payload '{"check":"database"}' --output json "${RUNNER_TEMP}/database.json" \
+            > "${RUNNER_TEMP}/invoke.json"
+          if [ "$(jq -r '.FunctionError // empty' "${RUNNER_TEMP}/invoke.json")" != "" ]; then
+            echo "::error::the database check invocation failed"
+            exit 1
+          fi
+          cat "${RUNNER_TEMP}/database.json"; echo
+          if [ "$(jq -r '.database' "${RUNNER_TEMP}/database.json")" != "connected" ]; then
+            echo "::error::the API cannot reach its database"
             exit 1
           fi
           request_id=$(tr -d '\r' < "${RUNNER_TEMP}/health.headers" \

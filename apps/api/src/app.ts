@@ -6,9 +6,9 @@ import { routePath } from 'hono/route'
 
 import type { AppEnv } from './context.ts'
 import { errorFields, type Logger } from './log.ts'
-import { type HealthDeps, healthRoutes } from './routes/health.ts'
+import { healthRoutes } from './routes/health.ts'
 
-export interface AppDeps extends HealthDeps {
+export interface AppDeps {
   log: Logger
 }
 
@@ -23,7 +23,7 @@ function lambdaRequestId(bindings: AppEnv['Bindings'] | undefined): string | und
 }
 
 // Dependencies are passed in so tests can run without a database and capture log lines.
-export function createApp({ log, ...deps }: AppDeps) {
+export function createApp({ log }: AppDeps) {
   const app = new Hono<AppEnv>()
 
   // Request ID and access log. Registered first, so it wraps every route,
@@ -60,7 +60,7 @@ export function createApp({ log, ...deps }: AppDeps) {
 
   // CloudFront forwards `/api/*` to the Lambda without stripping the prefix,
   // so every route is mounted under `/api`.
-  app.route('/api/health', healthRoutes(deps))
+  app.route('/api/health', healthRoutes())
 
   return app
 }
