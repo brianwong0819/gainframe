@@ -18,7 +18,10 @@ test('a workout logged offline is listed in history', async ({ context, page }) 
     .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
     .toBe(true)
 
-  await context.setOffline(true)
+  // Every request that reaches the network fails, as with no signal. Not
+  // `context.setOffline`: in WebKit it also fails navigations the service
+  // worker would answer ("WebKit encountered an internal error").
+  await context.route('**/*', (route) => route.abort('internetdisconnected'))
   await page.goto('/workout')
   await page.getByRole('button', { name: '开始训练' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
