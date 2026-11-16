@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import { SettingsLink } from '@/features/settings/settings-link'
+import { UpdatePrompt } from '@/pwa/update-prompt'
 
 import { TabScreen } from './tab-screen'
 
@@ -19,6 +20,7 @@ export default function TodayPage() {
   const t = useTranslations('today')
   return (
     <TabScreen title={t('title')} action={<SettingsLink />}>
+      <UpdatePrompt />
       <p className="text-body text-ink-2">{t('empty')}</p>
       {process.env.NEXT_PUBLIC_DEV_PAGES === '1' && (
         <nav aria-label="Dev pages" className="flex flex-col">

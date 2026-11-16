@@ -312,5 +312,10 @@
     "backupCounts": "{workouts, plural, one {# workout} other {# workouts}} · {plans, plural, one {# plan} other {# plans}} · {exercises, plural, one {# custom exercise} other {# custom exercises}}",
     "export": "Export all data (JSON)",
     "exportFailed": "Export failed. Please try again."
+  },
+  "update": {
+    "title": "A new version is ready",
+    "hint": "Updating reopens the app; your data stays.",
+    "apply": "Update"
   }
 }
