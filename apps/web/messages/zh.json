@@ -167,6 +167,9 @@
     "restLabel": "休息 {rest}",
     "empty": "没有找到“{query}”。",
     "createNamed": "新建“{query}”",
+    "done": "练过",
+    "best": "最好",
+    "emptyDone": "这个筛选下还没有练过的动作。",
     "close": "关闭"
   },
   "exerciseForm": {

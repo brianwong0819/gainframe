@@ -5,15 +5,20 @@ import {
   type Exercise,
   type MuscleGroup,
   muscleGroupSchema,
+  type WeightUnit,
+  type WorkoutSet,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+import { weightUnits } from '@/db/client'
+import { useLiveQuery } from '@/db/use-live-query'
 import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
 import { AddToPlan } from '../plans/add-to-plan'
+import { formatSetWeight, isBodyweight } from '../workout/exercise-info'
 import { ExerciseDetail } from './exercise-detail'
 import { ExerciseForm } from './exercise-form'
 import {
@@ -23,7 +28,10 @@ import {
   type LibraryEntry,
   libraryEntries,
 } from './library'
+import { useBestSets } from './use-best-sets'
 import { useCustomExercises } from './use-custom-exercises'
+
+const loadWeightUnits = () => weightUnits.all()
 
 const chipClass =
   'shrink-0 rounded-full border border-line px-16 py-8 text-label text-ink-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg'
@@ -51,14 +59,21 @@ function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
   }
 }
 
+// An exercise with its muscle, equipment and default rest and, once the user
+// has done it, their best set at the right.
 function EntryRow({
   entry,
+  best,
+  unit,
   onOpen,
 }: {
   entry: LibraryEntry
+  best: WorkoutSet | undefined
+  unit: WeightUnit
   onOpen: (entry: LibraryEntry) => void
 }) {
   const t = useTranslations('exercises')
+  const tWorkout = useTranslations('workout')
   const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
   const locale = useLocale()
@@ -74,15 +89,28 @@ function EntryRow({
           <span className="text-body text-ink">{exerciseName(entry, locale)}</span>
           <span className="text-label text-ink-3">
             {tMuscle(entry.muscle)} · {tEquipment(entry.equipment)}
+            {' · '}
+            {t('restLabel', { rest: formatRest(entry.defaultRestS) })}
             {entry.custom && ` · ${t('custom')}`}
           </span>
         </span>
-        <span
-          className="num shrink-0 text-label text-ink-2"
-          aria-label={t('restLabel', { rest: formatRest(entry.defaultRestS) })}
-        >
-          {formatRest(entry.defaultRestS)}
-        </span>
+        {best && (
+          <span className="shrink-0 text-label text-ink-3">
+            {t('best')}{' '}
+            <span className="num text-ink">
+              {formatSetWeight(
+                best.weightKg,
+                unit,
+                isBodyweight(entry.equipment),
+                tWorkout('bodyweight'),
+              )}
+              {!(isBodyweight(entry.equipment) && best.weightKg === 0) &&
+                ` ${tWorkout(`unit.${unit}`)}`}
+              {' × '}
+              {best.reps}
+            </span>
+          </span>
+        )}
       </Pressable>
     </li>
   )
@@ -96,11 +124,18 @@ export function ExerciseLibrary() {
   const custom = useCustomExercises()
   const [query, setQuery] = useState('')
   const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
+  const [doneOnly, setDoneOnly] = useState(false)
+  const best = useBestSets()
+  const units = useLiveQuery(loadWeightUnits)
   const locale = useLocale()
   const [content, setContent] = useState<SheetContent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const entries = libraryEntries(custom ?? [], muscle, query)
+  // The "done" filter is offered once an exercise has been done.
+  const hasDone = best !== undefined && best.size > 0
+  const entries = libraryEntries(custom ?? [], muscle, query).filter(
+    ({ id }) => !(doneOnly && hasDone) || best.has(id),
+  )
   const total = BUILT_IN_EXERCISES.length + (custom?.length ?? 0)
 
   function open(next: SheetContent) {
@@ -157,6 +192,17 @@ export function ExerciseLibrary() {
       />
 
       <div role="group" aria-label={t('filterLabel')} className="flex gap-8 overflow-x-auto">
+        {hasDone && (
+          <Pressable
+            aria-pressed={doneOnly}
+            onClick={() => {
+              setDoneOnly(!doneOnly)
+            }}
+            className={chipClass}
+          >
+            {t('done')}
+          </Pressable>
+        )}
         {[null, ...muscleGroupSchema.options].map((option) => (
           <Pressable
             key={option ?? 'all'}
@@ -178,6 +224,8 @@ export function ExerciseLibrary() {
               <EntryRow
                 key={entry.id}
                 entry={entry}
+                best={best?.get(entry.id)}
+                unit={units?.get(entry.id) ?? 'kg'}
                 onOpen={(entry) => {
                   open({ kind: 'detail', exercise: entry })
                 }}
@@ -186,7 +234,9 @@ export function ExerciseLibrary() {
           </ul>
         ) : (
           <div className="flex flex-col items-start gap-12 rounded-group bg-surface p-16">
-            <p className="text-body text-ink-2">{t('empty', { query: query.trim() })}</p>
+            <p className="text-body text-ink-2">
+              {query.trim() === '' ? t('emptyDone') : t('empty', { query: query.trim() })}
+            </p>
             {query.trim() !== '' && (
               <Pressable
                 onClick={() => {

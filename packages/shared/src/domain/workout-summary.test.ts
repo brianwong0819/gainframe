@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
 import {
+  bestSets,
   compareSummaries,
   recentRecords,
   summarizeHistory,
@@ -274,5 +275,22 @@ describe('compareSummaries', () => {
     const current = summarize([set({ weightKg: 82.5, reps: 5 })])
     expect([...compareSummaries(current, earlier).topWeightDeltaKg]).toEqual([[BENCH, 2.5]])
     expect(compareSummaries(earlier, current).topWeightDeltaKg.has(DIP)).toBe(false)
+  })
+})
+
+describe('bestSets', () => {
+  it('keeps the heaviest set of each exercise, most reps first at that weight', () => {
+    const best = bestSets([
+      set({ id: 'a', weightKg: 80, reps: 5 }),
+      set({ id: 'b', weightKg: 85, reps: 3 }),
+      set({ id: 'c', weightKg: 85, reps: 5 }),
+      set({ id: 'd', workoutExerciseId: DIP_SLOT, exerciseId: DIP, weightKg: 0, reps: 12 }),
+    ])
+    expect(best.get(BENCH)?.id).toBe('c')
+    expect(best.get(DIP)?.id).toBe('d')
+  })
+
+  it('has no entry for an exercise with only warm-ups', () => {
+    expect(bestSets([set({ weightKg: 40, reps: 10, kind: 'warmup' })]).has(BENCH)).toBe(false)
   })
 })

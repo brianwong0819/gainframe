@@ -167,6 +167,9 @@
     "restLabel": "Rest {rest}",
     "empty": "No exercise matches “{query}”.",
     "createNamed": "Create “{query}”",
+    "done": "Done",
+    "best": "Best",
+    "emptyDone": "No exercises done under this filter yet.",
     "close": "Close"
   },
   "exerciseForm": {
