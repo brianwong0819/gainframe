@@ -5,40 +5,23 @@ import { z } from 'zod'
 import { createApp } from './app.ts'
 import { createLogger } from './log.ts'
 
-const reachable = () => Promise.resolve()
-const unreachable = () => Promise.reject(new Error('connect ECONNREFUSED 127.0.0.1:5432'))
-
 const lineSchema = z.record(z.string(), z.unknown())
 
-function setup(pingDatabase = reachable) {
+function setup() {
   const lines: string[] = []
   const log = createLogger({ release: 'test-sha', write: (line) => lines.push(line) })
-  const app = createApp({ log, pingDatabase })
+  const app = createApp({ log })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, lines, logs }
 }
 
 describe('GET /api/health', () => {
-  it('reports the database as connected when it answers', async () => {
+  it('answers without touching the database, so public calls cannot keep it awake', async () => {
     const { app } = setup()
     const res = await app.request('/api/health')
 
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ status: 'ok', database: 'connected' })
-  })
-
-  it('returns 503 and logs one error line when the database is unreachable', async () => {
-    const { app, logs } = setup(unreachable)
-    const res = await app.request('/api/health')
-
-    expect(res.status).toBe(503)
-    expect(await res.json()).toEqual({ status: 'error', database: 'unreachable' })
-    const errors = logs().filter((line) => line.level === 'error')
-    expect(errors).toHaveLength(1)
-    expect(errors[0]).toMatchObject({
-      msg: 'database health check failed',
-      errorMessage: 'connect ECONNREFUSED 127.0.0.1:5432',
-    })
+    expect(await res.json()).toEqual({ status: 'ok' })
   })
 })
 

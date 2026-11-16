@@ -12,6 +12,8 @@ M0 and M1-01 to M1-12 are merged. The app runs offline on the device only: exerc
 
 The M1 review and retro (2026-11-16, PRs `m1/review` and `m1/retro`) found no data-loss or security defect in the code. Changes: the "ask twice" button is one shared `ConfirmButton` (plan editor and past workout), the device time zone is read in one place (`src/i18n/time-zone.ts`), the data model in `docs/architecture.md` lists the columns M1 added, this file was cut from a changelog to the current state, and lessons L-001 to L-033 were grouped and promoted (retro in `docs/LESSONS.md`).
 
+Health check (2026-11-16, PR `m1/health-limit`, moved forward from M2-09 by bw because the repository is public): `GET /api/health` returns `{ "status": "ok" }` without touching the database; the deploy smoke test checks the database by invoking the function directly with `{ "check": "database" }`, which needs IAM. Locally, `pnpm --filter api dev` logs the database check at start-up.
+
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M2-01.
 
 ## Field week checklist (pending iPhone checks)
@@ -45,4 +47,4 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 - `eslint-config-next` bundles plugins whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning; lint runs clean. Re-check on each Next upgrade.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`; move it there when the web app first consumes an API response.
 - The two search fields (library page, exercise picker) repeat the same input markup with different backgrounds. Extract a `SearchField` in `src/ui` if a third one appears (M3-02 frequent foods).
-- The dev site and function URLs appear in the dev deploy's public Actions logs (Terraform outputs). Nothing secret, but anyone can call `/api/health`, which queries Neon; see the health item in the M1 review.
+- The dev site and function URLs appear in the dev deploy's public Actions logs (Terraform outputs). Nothing secret; `/api/health` no longer queries the database, and every other API route will require a token (M2-03).

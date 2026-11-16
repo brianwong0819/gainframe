@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest'
 
-import { createApp } from '../app.ts'
+import { checkDatabase } from '../database-check.ts'
 import { parseEnv } from '../env.ts'
 import { createLogger } from '../log.ts'
 import { createPool, pingDatabase } from './client.ts'
@@ -17,11 +17,9 @@ describe('database client (real Postgres)', () => {
     await expect(pingDatabase(pool)).resolves.toBeUndefined()
   })
 
-  it('lets GET /api/health report the database as connected', async () => {
-    const app = createApp({ log, pingDatabase: () => pingDatabase(pool) })
-    const res = await app.request('/api/health')
-
-    expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ status: 'ok', database: 'connected' })
+  it('lets the database check report it as connected', async () => {
+    await expect(checkDatabase(() => pingDatabase(pool), log)).resolves.toEqual({
+      database: 'connected',
+    })
   })
 })

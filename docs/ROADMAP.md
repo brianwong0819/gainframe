@@ -98,7 +98,7 @@ Done when: signing in on a second device shows all data.
   Verify: merges update dev automatically; prod waits for approval, then serves.
 - [ ] **M2-08 Monitoring**: a CloudWatch metric filter on `"level":"error"` log lines with an email alarm (SNS), because Hono turns thrown errors into 500 responses and Lambda's own `Errors` metric never sees them; alarms on Lambda `Errors` (crashes, init failures, timeouts) and `Throttles`; `POST /api/client-errors` (auth required, Zod-validated, size-capped) ships the Diagnostics buffer and logs each entry as `source: web`; saved Logs Insights queries in Terraform (by request ID, errors in the last 24 h, slowest routes); `docs/debugging.md`, a short runbook from "something broke" to the log line; every log group has retention.
   Verify: a dev-only `/api/debug/throw` produces an error line with its request ID and an alarm email within minutes; an error thrown in the web app appears in CloudWatch with the same release SHA.
-- [ ] **M2-09 Security pass**: `/security-review`; limit `/api/health` before the repository and URL are public: the public check skips the database, and the database check needs a token only CI holds, so bots cannot keep the Neon compute awake ("Known gotchas" in architecture.md); optionally a Strix scan of dev (see [tooling.md](tooling.md)); findings become issues and get fixed.
+- [ ] **M2-09 Security pass**: `/security-review`; optionally a Strix scan of dev (see [tooling.md](tooling.md)); findings become issues and get fixed.
   Verify: no open high-severity findings.
 
 ## M3 Food logging + AI vision (weeks 8–10)
