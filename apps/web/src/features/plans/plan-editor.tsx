@@ -21,7 +21,9 @@ import { Sheet } from '@/ui/sheet'
 import { SupersetBlock } from '@/ui/superset-block'
 
 import { exerciseName, formatRest, type LibraryEntry } from '../exercises/library'
+import { useDurationText } from '../workout/duration'
 import { findExercise } from '../workout/exercise-info'
+import { estimateDayS, itemRestS } from './estimate'
 import { formatRepRange } from './item-edit'
 import { NameField } from './name-field'
 import { PlanExercisePicker } from './plan-exercise-picker'
@@ -31,7 +33,9 @@ import { PlanItemSheet } from './plan-item-sheet'
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 
 type SheetContent =
-  { kind: 'picker'; day: PlanDay; picked: LibraryEntry | null } | { kind: 'item'; itemId: string }
+  | { kind: 'picker'; day: PlanDay; picked: LibraryEntry | null }
+  | { kind: 'item'; itemId: string }
+  | { kind: 'day'; day: PlanDay }
 
 function Day({
   state,
@@ -39,16 +43,19 @@ function Day({
   custom,
   onAddExercise,
   onOpenItem,
+  onActions,
 }: {
   state: PlanDayState
   n: number
   custom: readonly Exercise[]
   onAddExercise: () => void
   onOpenItem: (item: PlanItem) => void
+  onActions: () => void
 }) {
   const t = useTranslations('plans')
   const tWorkout = useTranslations('workout')
   const locale = useLocale()
+  const duration = useDurationText()
   const { day, items } = state
   const labels = supersetLabels(items)
   const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
@@ -72,7 +79,7 @@ function Day({
         <span className="text-label text-ink-3">
           {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
           {' · '}
-          {item.restS === null ? t('restDefault') : t('rest', { time: formatRest(item.restS) })}
+          {t('rest', { time: formatRest(itemRestS(item, custom)) })}
         </span>
         {item.note !== null && <span className="truncate text-label text-ink-2">{item.note}</span>}
       </span>
@@ -84,15 +91,37 @@ function Day({
 
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
-      <NameField
-        value={day.name}
-        label={t('dayNameLabel', { n })}
-        onSave={(name) => {
-          void repositories.planDays.update(day.id, { name })
-        }}
-        className="-mx-8 px-8 py-4 text-input font-semibold"
-      />
-      {items.length === 0 && <p className="text-body text-ink-2">{t('noItems')}</p>}
+      <div className="flex items-start justify-between gap-12">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <NameField
+            value={day.name}
+            label={t('dayNameLabel', { n })}
+            onSave={(name) => {
+              void repositories.planDays.update(day.id, { name })
+            }}
+            className="-mx-8 px-8 py-4 text-input font-semibold"
+          />
+          <p className="text-label text-ink-3">
+            {items.length === 0
+              ? t('noItems')
+              : t('dayFigures', {
+                  count: items.length,
+                  duration: duration(estimateDayS(items, custom)),
+                })}
+          </p>
+        </div>
+        <Pressable
+          onClick={onActions}
+          aria-label={t('dayActions', { name: day.name })}
+          className="-m-8 shrink-0 rounded-full p-8 text-ink-2"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden className="size-20 fill-current">
+            <circle cx="5" cy="12" r="1.75" />
+            <circle cx="12" cy="12" r="1.75" />
+            <circle cx="19" cy="12" r="1.75" />
+          </svg>
+        </Pressable>
+      </div>
       {items.length > 0 && (
         <div className="flex flex-col">
           {supersetBlocks(items).map(({ letter, items: members }) =>
@@ -110,21 +139,12 @@ function Day({
           )}
         </div>
       )}
-      <div className="flex flex-wrap gap-8">
-        <Pressable
-          onClick={onAddExercise}
-          className="rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
-        >
-          {t('addExercise')}
-        </Pressable>
-        <ConfirmButton
-          label={t('deleteDay')}
-          confirmLabel={t('deleteDayConfirm', { name: day.name })}
-          onConfirm={() => {
-            void repositories.planDays.remove(day.id)
-          }}
-        />
-      </div>
+      <Pressable
+        onClick={onAddExercise}
+        className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
+      >
+        {t('addExercise')}
+      </Pressable>
     </section>
   )
 }
@@ -153,9 +173,11 @@ export function PlanEditor({ state }: { state: PlanState }) {
       ? sheet.picked
         ? exerciseName(sheet.picked, locale)
         : t('pickerTitle', { day: sheet.day.name })
-      : sheetItem
-        ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
-        : ''
+      : sheet?.kind === 'day'
+        ? sheet.day.name
+        : sheetItem
+          ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
+          : ''
 
   return (
     <>
@@ -190,6 +212,9 @@ export function PlanEditor({ state }: { state: PlanState }) {
           }}
           onOpenItem={(item) => {
             open({ kind: 'item', itemId: item.id })
+          }}
+          onActions={() => {
+            open({ kind: 'day', day: dayState.day })
           }}
         />
       ))}
@@ -231,6 +256,17 @@ export function PlanEditor({ state }: { state: PlanState }) {
             onAdd={({ id }) => {
               setSheetOpen(false)
               void planStore.addItem(sheet.day.id, id)
+            }}
+          />
+        )}
+        {sheet?.kind === 'day' && (
+          <ConfirmButton
+            key={sheet.day.id}
+            label={t('deleteDay')}
+            confirmLabel={t('deleteDayConfirm', { name: sheet.day.name })}
+            onConfirm={() => {
+              setSheetOpen(false)
+              void repositories.planDays.remove(sheet.day.id)
             }}
           />
         )}
