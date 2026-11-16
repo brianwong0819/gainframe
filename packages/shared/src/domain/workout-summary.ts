@@ -115,6 +115,31 @@ export function summarizeHistory(input: {
   return entries.reverse()
 }
 
+export interface RecentRecord {
+  set: WorkoutSet
+  workout: Workout
+}
+
+// The latest record set of each exercise, newest workout first, at most
+// `limit` of them. `entries` are newest first, as `summarizeHistory` returns
+// them; an exercise appears once, with its most recent record.
+export function recentRecords(
+  entries: readonly WorkoutSummaryEntry[],
+  limit: number,
+): RecentRecord[] {
+  const seen = new Set<string>()
+  const found: RecentRecord[] = []
+  for (const { workout, summary } of entries) {
+    for (const { slot, records } of summary.exercises) {
+      const latest = records.at(-1)
+      if (latest === undefined || seen.has(slot.exerciseId)) continue
+      seen.add(slot.exerciseId)
+      found.push({ set: latest.set, workout })
+    }
+  }
+  return found.slice(0, limit)
+}
+
 // From the start to the finish; but a finish more than
 // `domainConfig.forgottenFinishS` after the last completed set means the
 // workout was left open, so it ends at that set instead.

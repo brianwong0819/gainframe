@@ -7,7 +7,8 @@
   },
   "today": {
     "title": "Today",
-    "empty": "Nothing logged yet today."
+    "empty": "No finished workout yet. After your first one, this week and your latest records show here.",
+    "records": "Latest records"
   },
   "workout": {
     "title": "Workout",

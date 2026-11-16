@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { summarizeHistory, summarizeWorkout } from './workout-summary.ts'
+import { recentRecords, summarizeHistory, summarizeWorkout } from './workout-summary.ts'
 
 const BENCH = '01960000-0000-7000-8000-000000000001'
 const DIP = '01960000-0000-7000-8000-000000000003'
@@ -193,5 +193,54 @@ describe('summarizeHistory', () => {
     })
     // w2's only set is deleted, so it has nothing to show.
     expect(entries).toEqual([])
+  })
+})
+
+describe('recentRecords', () => {
+  const second: Workout = {
+    ...workout,
+    id: '01960000-0000-7000-8000-0000000000a3',
+    startedAt: '2026-11-07T10:00:00.000Z',
+    endedAt: '2026-11-07T11:00:00.000Z',
+    localDate: localDateSchema.parse('2026-11-07'),
+  }
+  const third: Workout = {
+    ...workout,
+    id: '01960000-0000-7000-8000-0000000000a4',
+    startedAt: '2026-11-09T10:00:00.000Z',
+    endedAt: '2026-11-09T11:00:00.000Z',
+    localDate: localDateSchema.parse('2026-11-09'),
+  }
+  const first = set({ weightKg: 85, reps: 5 })
+  const firstDips = set({ workoutExerciseId: DIP_SLOT, exerciseId: DIP, weightKg: 0, reps: 12 })
+  const better = set({ weightKg: 87.5, reps: 5, workoutId: second.id })
+  const best = set({ weightKg: 90, reps: 5, workoutId: second.id })
+  const dips = set({
+    workoutExerciseId: DIP_SLOT,
+    exerciseId: DIP,
+    weightKg: 0,
+    reps: 15,
+    workoutId: third.id,
+  })
+  const entries = summarizeHistory({
+    workouts: [workout, second, third],
+    slots: [
+      ...slots,
+      { ...slot(BENCH_SLOT, BENCH, 0), workoutId: second.id },
+      { ...slot(DIP_SLOT, DIP, 0), workoutId: third.id },
+    ],
+    sets: [first, firstDips, better, best, dips],
+    load,
+  })
+
+  it('lists each exercise once with its latest record, newest workout first', () => {
+    const records = recentRecords(entries, 5)
+    expect(records.map(({ set: { id } }) => id)).toEqual([dips.id, best.id])
+    expect(records.map(({ workout: { id } }) => id)).toEqual([third.id, second.id])
+  })
+
+  it('stops at the limit and is empty without records', () => {
+    expect(recentRecords(entries, 1)).toHaveLength(1)
+    expect(recentRecords([], 3)).toEqual([])
   })
 })

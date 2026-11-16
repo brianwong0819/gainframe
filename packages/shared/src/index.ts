@@ -58,6 +58,8 @@ export {
 } from './domain/workout.ts'
 export {
   type ExerciseSummary,
+  type RecentRecord,
+  recentRecords,
   summarizeHistory,
   summarizeWorkout,
   type WorkoutSummary,
