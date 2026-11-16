@@ -293,7 +293,7 @@
   "settings": {
     "title": "设置",
     "diagnostics": "诊断",
-    "diagnosticsHint": "版本、存储、备份和错误记录"
+    "diagnosticsHint": "版本、存储、备份、错误记录和清空数据"
   },
   "diagnostics": {
     "release": "版本",
@@ -311,7 +311,12 @@
     "backupHint": "数据目前只保存在这台设备上。导出一个包含全部训练、计划和自定义动作的 JSON 文件，存到「文件」App 或电脑里。",
     "backupCounts": "{workouts} 次训练 · {plans} 个计划 · {exercises} 个自定义动作",
     "export": "导出全部数据（JSON）",
-    "exportFailed": "导出失败，请再试一次。"
+    "exportFailed": "导出失败，请再试一次。",
+    "clear": "清空数据",
+    "clearHint": "删除这台设备上的全部训练、计划、自定义动作、设置和错误记录，App 会回到第一次打开的状态。删除后无法恢复，请先导出备份。",
+    "clearAll": "清空全部数据",
+    "clearConfirm": "再点一次确认清空",
+    "clearFailed": "清空失败，请再试一次。"
   },
   "update": {
     "title": "有新版本",
