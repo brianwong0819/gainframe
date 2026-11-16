@@ -10,6 +10,18 @@ Source of truth for how Gainframe looks and moves. The clickable reference is `d
 4. **Thumb zone.** Primary actions sit in the lower half of the screen.
 5. **Nothing generic.** No component-library default look, no purple gradients, no sparkle icons, no chat bubbles, no heavy shadows, no illustrations. AI output looks like normal data plus a small `AI` source tag.
 
+## Usability
+
+A screen that looks finished but is slow or unclear to use is not done. These rules apply to every screen and sheet, and the plan for a UI task states how it meets the first one.
+
+1. **Name the main job and count the taps.** Each screen has one job the user does most often (log a set, log a usual meal). The plan names it and the number of taps it takes; it is reachable with one thumb, and a job done daily takes no more than two taps from its tab.
+2. **Prefill, then confirm.** Offer the most likely value (last weight, the meal for this time of day, the portion logged last time) so the user confirms instead of typing. Typing is the fallback, never the only way.
+3. **Every action answers.** A tap changes something visible at once (press scale, a number that rolls, a row that appears). An action that removes data asks twice or offers Undo.
+4. **Every state is designed.** Empty, loading, error and offline versions of a screen are part of its design. Each says in one sentence what happened and offers the next step as a button; none is a dead end.
+5. **Plain words.** Labels use the words a gym-goer would say, with units on every number. No internal terms (sync, outbox, payload, model) outside Diagnostics; an estimate is called an estimate.
+6. **Never lose input.** Leaving a screen, closing a sheet by accident or relaunching the app keeps what was entered, or says clearly that it was discarded.
+7. **A way back everywhere.** Every page below a tab has a back link and every sheet a close button (see Navigation).
+
 ## Tokens
 
 Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src/styles/globals.css` replaces Tailwind's default theme with these tokens, so only token utilities exist: colours `bg-surface` / `text-ink-2` / `border-line`, spacing `p-16` / `gap-28` (the number is the pixel value), radii `rounded-ctl` / `rounded-group` / `rounded-media` / `rounded-sheet` / `rounded-full`, type `text-title` / `text-section` / `text-body` / `text-label`, numbers `num` (Martian Mono, tabular). A value outside the system has no class. Components use tokens only. `/dev/kitchen-sink` shows every token and preset; it is built for `next dev` and the dev deploy only.
@@ -160,6 +172,7 @@ _Format: pattern — where we use it — source — credits entry._
 
 ## Checklist before a UI PR
 
+- [ ] Usability: the main job and its tap count are stated in the PR; empty, loading, error and offline states are shown; no input is lost on leaving.
 - [ ] Only tokens; no raw hex/px/durations (`grep` the diff).
 - [ ] Light and dark screenshots at 390×844; the Device layout job passes.
 - [ ] Reduced-motion checked.

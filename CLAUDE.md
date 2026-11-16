@@ -68,6 +68,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 - Only design tokens (CSS variables) for colour, spacing, radius, type and motion. No raw hex, px spacing outside the scale, or ad-hoc durations/easings.
 - Only the three springs + press timing in `docs/design-system.md`. Animate only `transform` and `opacity`. Respect `prefers-reduced-motion`.
 - No "AI look": no purple gradients, sparkle icons, chat bubbles, glassy cards. AI output looks like regular data with a small source tag.
+- Every screen is designed for ease of use first: name its main job and count the taps to do it, and design the empty, loading, error and offline states with the screen, not after. Rules: "Usability" in `docs/design-system.md`.
 - Before building a screen, look at how the best apps and UI libraries solve it, and bring in what fits — rebuilt with our tokens and springs, licence checked and credited in `docs/design/credits.md`. Rules: "Learning from great UI" in `docs/design-system.md`.
 
 **AI features**: see `docs/ai.md`. In short: all model calls go through `apps/api/src/ai`; prompts are versioned files; outputs are Zod-validated; every prompt change runs its eval; per-user daily caps are enforced server-side.
