@@ -70,7 +70,7 @@ test('a workout logged offline is listed in history', async ({ page }) => {
     }
   }
 
-  await page.getByRole('button', { name: '结束训练' }).click()
+  await page.getByRole('button', { name: '结束训练' }).first().click()
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/summary\/?#/)
   await page.getByRole('link', { name: '完成', exact: true }).click()

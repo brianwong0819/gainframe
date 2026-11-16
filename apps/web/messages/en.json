@@ -91,7 +91,11 @@
     "restLeft": "left",
     "history": "History",
     "historyCount": "{count, plural, one {# workout} other {# workouts}} done",
-    "historyNone": "No finished workouts yet"
+    "historyNone": "No finished workouts yet",
+    "elapsed": "Elapsed",
+    "setsUnit": "sets",
+    "allDone": "{done, plural, one {# set} other {All # sets}} done",
+    "completeValues": "Complete"
   },
   "summary": {
     "title": "Workout done",

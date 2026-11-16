@@ -9,6 +9,7 @@ import { workoutSession } from '@/db/client'
 import { fade, pop, reducedFade, soft } from '@/ui/motion'
 import { Pressable } from '@/ui/pressable'
 
+import { formatClock } from './clock'
 import { playRestCue } from './rest-cue'
 
 // How often the countdown redraws, and how the end-of-rest cue repeats when the
@@ -26,10 +27,7 @@ export interface RestView {
   endedAway: boolean
 }
 
-function clock(ms: number): string {
-  const seconds = Math.max(0, Math.round(ms / 1000))
-  return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, '0')}`
-}
+const clock = (ms: number) => formatClock(Math.round(ms / 1000))
 
 // The workout's rest, recomputed from its stored end on every tick and on each
 // return to the page; null when no rest is running. Plays the cue when the

@@ -25,7 +25,7 @@ async function benchWorkout(page: Page, weight: string) {
   await expect(reps).toHaveValue('5')
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
-  await page.getByRole('button', { name: '结束训练' }).click()
+  await page.getByRole('button', { name: '结束训练' }).first().click()
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/summary\/?#/)
 }

@@ -6,6 +6,7 @@ import {
   setOrder,
   supersetBlocks,
   supersetLabels,
+  totalVolumeKg,
   type Workout,
   type WorkoutSet,
 } from '@gainframe/shared'
@@ -30,6 +31,7 @@ import { ExercisePicker } from './exercise-picker'
 import { markJustFinished } from './just-finished'
 import { allowScreenOff, keepScreenOn, prepareRestCue } from './rest-cue'
 import { RestPanel, RestPill, useRest } from './rest-timer'
+import { SessionHeader } from './session-header'
 import { SetDetails } from './set-details'
 import { SetPanel } from './set-panel'
 import { SetTable } from './set-table'
@@ -101,13 +103,11 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const slotRows = state.slots.map(({ slot }) => slot)
   const labels = supersetLabels(slotRows)
   const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
-  const done = state.slots.reduce(
-    (count, { sets }) => count + sets.filter((set) => set.completedAt !== null).length,
-    0,
-  )
+  const total = state.slots.reduce((count, { sets }) => count + sets.length, 0)
   // The records of this workout so far, and whether completing `set` now
   // would set one.
-  const isBodyweight = useMemo(() => loadRules(custom).isBodyweight, [custom])
+  const rules = useMemo(() => loadRules(custom), [custom])
+  const { isBodyweight } = rules
   const earlier = useMemo(
     () => [
       ...new Map(
@@ -117,6 +117,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     [state.slots],
   )
   const doneSets = state.slots.flatMap(({ sets }) => sets.filter((set) => set.completedAt !== null))
+  const done = doneSets.length
   const recordIds = new Set(findPersonalRecords(doneSets, earlier, isBodyweight).keys())
   const wouldBeRecord = (set: WorkoutSet) =>
     findPersonalRecords(
@@ -247,6 +248,14 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
 
   return (
     <>
+      <SessionHeader
+        workout={workout}
+        done={done}
+        total={total}
+        onFinish={() => {
+          open({ kind: 'finish' })
+        }}
+      />
       {state.slots.length === 0 && <p className="text-body text-ink-2">{t('noExercises')}</p>}
       {supersetBlocks(slotRows).map(({ letter, items }) => {
         const cards = items.map((slot) => slotCard(slot.id))
@@ -261,24 +270,14 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           </SupersetBlock>
         )
       })}
-      <div className="flex gap-8">
-        <Pressable
-          onClick={() => {
-            open({ kind: 'picker' })
-          }}
-          className="flex-1 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
-        >
-          {t('addExercise')}
-        </Pressable>
-        <Pressable
-          onClick={() => {
-            open({ kind: 'finish' })
-          }}
-          className="flex-1 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
-        >
-          {t('finish')}
-        </Pressable>
-      </div>
+      <Pressable
+        onClick={() => {
+          open({ kind: 'picker' })
+        }}
+        className="rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
+      >
+        {t('addExercise')}
+      </Pressable>
       <div className="workout-dock flex flex-col gap-8">
         <AnimatePresence>
           {rest && !(shown && restSheet) && (
@@ -297,6 +296,9 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             key={selected.set.id}
             set={selected.set}
             n={selected.n}
+            of={
+              state.slots.find(({ slot }) => slot.id === selected.slotId)?.sets.length ?? selected.n
+            }
             exerciseId={selected.exerciseId}
             exercise={findExercise(selected.exerciseId, custom)}
             supersetLabel={labels.get(selected.slotId) ?? null}
@@ -306,6 +308,16 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             }}
             onComplete={(anchor) => {
               toggleDone(selected.set, anchor)
+            }}
+          />
+        )}
+        {!selected && done > 0 && (
+          <DonePanel
+            done={done}
+            volumeKg={totalVolumeKg(doneSets, rules)}
+            records={recordIds.size}
+            onFinish={() => {
+              open({ kind: 'finish' })
             }}
           />
         )}
@@ -339,6 +351,47 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>
+  )
+}
+
+// Takes the set panel's place once every set is done: what the workout came
+// to, and the finish button in the thumb zone.
+function DonePanel({
+  done,
+  volumeKg,
+  records,
+  onFinish,
+}: {
+  done: number
+  volumeKg: number
+  records: number
+  onFinish: () => void
+}) {
+  const t = useTranslations('workout')
+  const tHistory = useTranslations('history')
+  const locale = useLocale()
+  const volume = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(volumeKg)
+  return (
+    <div className="dock-panel flex flex-col gap-12 rounded-group bg-surface p-16">
+      <div className="flex flex-col gap-4">
+        <p className="text-body font-semibold">{t('allDone', { done })}</p>
+        <p className="text-label text-ink-2">
+          <span className="num">{volume}</span> {t('unit.kg')}
+          {records > 0 && (
+            <span className="font-semibold text-accent">
+              {' · '}
+              {tHistory('records', { count: records })}
+            </span>
+          )}
+        </p>
+      </div>
+      <Pressable
+        onClick={onFinish}
+        className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
+      >
+        {t('finish')}
+      </Pressable>
+    </div>
   )
 }
 
