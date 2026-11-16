@@ -7,6 +7,7 @@ import { db } from '@/db/client'
 import { exportData, exportFileName } from '@/db/export'
 import { useLiveQuery } from '@/db/use-live-query'
 import { reportError } from '@/diagnostics/report'
+import { deviceTimeZone } from '@/i18n/time-zone'
 import { release } from '@/release'
 import { Pressable } from '@/ui/pressable'
 
@@ -42,7 +43,7 @@ export function ExportData() {
     const exportedAt = new Date().toISOString()
     const file = new File(
       [JSON.stringify({ ...data, exportedAt }, null, 2)],
-      exportFileName(exportedAt, Intl.DateTimeFormat().resolvedOptions().timeZone),
+      exportFileName(exportedAt, deviceTimeZone()),
       { type: 'application/json' },
     )
     setFailed(false)

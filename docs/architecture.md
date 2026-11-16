@@ -29,11 +29,11 @@ Region: `ap-southeast-1` for everything. Environments: `dev` (auto-deploy from `
 apps/
   web/                Next.js (output: 'export'), React, Tailwind, Motion, Dexie, Serwist, next-intl, visx
     src/app/          routes (client components; static only)
-    src/features/     one folder per feature: workout/, food/, today/, trends/, coach/, settings/
+    src/features/     one folder per feature: exercises/, plans/, workout/, history/, settings/ (later food/, today/, trends/, coach/)
     src/db/           Dexie schema + repositories (the only code that touches IndexedDB)
     src/sync/         sync engine (the only code that calls /api/sync)
     src/diagnostics/  client error log and Diagnostics data (the only code that records client errors)
-    src/ui/           design-system primitives (Pressable, Sheet, NumberRoll, Ring…)
+    src/ui/           design-system primitives and components used by two or more features (Pressable, Sheet, Stepper, ConfirmButton, SwipeRow…)
     src/styles/       tokens.css, globals
     src/pwa/          manifest colours, the mark, icon and splash rendering, launch screen, service worker registration
     src/sw/           the service worker (Serwist); its own tsconfig with the WebWorker lib
@@ -72,9 +72,9 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | profiles | sex, birth_year, height_cm (all nullable), phase (bulk/maintain/cut), protein_mode + value, kcal_target, default_rest_s, locale, timezone |
 | body_metrics | measured_at, local_date, weight_kg, body_fat_pct, skeletal_muscle_kg, fat_mass_kg (the last three nullable), source (manual/scan/health) |
 | exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are the constant `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` with fixed IDs) |
-| plans / plan_days / plan_items | name; plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s (no weight; which plan is active is a device setting, not a column) |
-| workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note |
-| workout_exercises | workout_id, exercise_id, position, superset_group, note, reps_min, reps_max, rest_s (one exercise slot in a workout, mirroring plan_items; a slot started from a plan copies the item's rep range and rest, all null for an exercise added by hand; the same exercise may take two slots) |
+| plans / plan_days / plan_items | name; plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s, note (no weight; which plan is active is a device setting, not a column) |
+| workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note, rest_started_at, rest_ends_at (the rest in progress, so a relaunch shows it) |
+| workout_exercises | workout_id, exercise_id, position, superset_group, note, plan_note (copied from the plan item), reps_min, reps_max, rest_s (one exercise slot in a workout, mirroring plan_items; a slot started from a plan copies the item's rep range and rest, all null for an exercise added by hand; the same exercise may take two slots) |
 | workout_sets | workout_exercise_id, workout_id, exercise_id (both copied from the slot at creation, never changed), position (within the slot), kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
 | meals / meal_items | eaten_at, local_date, meal_type, photo_key; name, grams, protein_g, kcal, source (ai/manual/frequent), ai_raw jsonb |
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |

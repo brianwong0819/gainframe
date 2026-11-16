@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { db, planStore, workoutSession } from '@/db/client'
+import { deviceTimeZone } from '@/i18n/time-zone'
 import type { UpNext } from '@/db/plans'
 import { useLiveQuery } from '@/db/use-live-query'
 import { Pressable } from '@/ui/pressable'
@@ -21,8 +22,6 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 export function useUpNext(): UpNext | null | undefined {
   return useLiveQuery(loadUpNext)
 }
-
-const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 // Today's day of the active plan with its exercises and the button to start it.
 // The user can pick another day of the plan instead, or start an empty workout.
@@ -40,7 +39,7 @@ export function UpNextCard({ upNext }: { upNext: UpNext }) {
     })
   }
   const startDay = (dayId: string) => {
-    start(workoutSession.startFromPlanDay(dayId, timeZone()))
+    start(workoutSession.startFromPlanDay(dayId, deviceTimeZone()))
   }
 
   return (
@@ -77,7 +76,7 @@ export function UpNextCard({ upNext }: { upNext: UpNext }) {
         )}
         <Pressable
           onClick={() => {
-            start(workoutSession.start(timeZone()))
+            start(workoutSession.start(deviceTimeZone()))
           }}
           className="rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
         >

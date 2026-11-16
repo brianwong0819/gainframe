@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { db, planStore, workoutSession } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import { countHistory } from '@/db/workout-history'
+import { deviceTimeZone } from '@/i18n/time-zone'
 import { UpNextCard, useUpNext } from '@/features/plans/up-next-card'
 import { useActiveWorkout } from '@/features/workout/active-workout'
 import { Chevron } from '@/ui/chevron'
@@ -52,7 +53,7 @@ export default function WorkoutPage() {
       {active === null && upNext === null && (
         <Pressable
           onClick={() => {
-            void workoutSession.start(Intl.DateTimeFormat().resolvedOptions().timeZone).then(() => {
+            void workoutSession.start(deviceTimeZone()).then(() => {
               router.push('/workout/session')
             })
           }}
