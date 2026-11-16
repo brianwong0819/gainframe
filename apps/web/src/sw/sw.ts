@@ -8,7 +8,9 @@ declare const self: ServiceWorkerGlobalScope & {
 // Precaches every file of the static export, so the app opens offline.
 // Nothing else is cached: API requests always go to the network.
 // No skipWaiting: a new release takes over once every window of the previous
-// one is closed, so an open page never mixes files from two releases.
+// one is closed, so an open page never mixes files from two releases, or when
+// the user taps "Update" (src/pwa/update.ts): Serwist then calls skipWaiting on
+// a `SKIP_WAITING` message.
 const serwist = new Serwist({ precacheEntries: self.__SW_MANIFEST })
 
 serwist.addEventListeners()

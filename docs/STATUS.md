@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-11 Diagnostics and data export (parts 1 and 2 of 3 done: Settings, Diagnostics and data export; next: the update prompt)
+- **Current task:** none; M1-11 Diagnostics and data export done (pending bw's iPhone check). Next: M1-12 End-to-end test, once bw says to continue
 - **Last updated:** 2026-11-16
 
 ## Where I stopped
@@ -144,6 +144,8 @@ CI minutes (2026-11-15, PR `m1/ci-minutes`, L-030): bw's included Actions comput
 M1-11 PR 1 (2026-11-16, `m1/11-settings-diagnostics`): a gear beside Today's title opens `/settings` (Today stays the selected tab), which now holds the language switch and links to `/settings/diagnostics`: the release, whether storage is persistent (`readPersisted`, with a hint when it is not), and the recorded errors, newest first, with "Copy", which puts a plain-text report (release, user agent, persistence, each error with its stack; `formatErrorReport`) on the clipboard. The release line left Today's dev links. The gear is Feather's icon (credited). `e2e/diagnostics.spec.ts` throws an error in the page and checks it is listed and copied.
 
 M1-11 PR 2 (2026-11-16, `m1/11-data-export`): Diagnostics has "Export all data (JSON)": `exportData` (`src/db/export.ts`) reads every data table in one transaction, soft-deleted rows and device settings included, outbox and error log left out, with `format`, `formatVersion`, `databaseVersion`, `release` and `exportedAt`; the file is `gainframe-<local date>.json`. The export is read ahead through a live query, so the tap hands the file to `navigator.share` (the iPhone share sheet, "Save to Files") while the tap still counts as a user gesture; without file sharing it downloads. The section shows how many workouts, plans and custom exercises it holds. There is no import yet: M2 sync restores data from the server.
+
+M1-11 PR 3 (2026-11-16, `m1/11-update-prompt`): Today shows "A new version is ready · Update" once a new release's service worker is installed and waiting (`appUpdate` in `src/pwa/update.ts`, fed by `<ServiceWorker>`; it also calls `registration.update()` on each return to the foreground). "Update" posts Serwist's `SKIP_WAITING` message and reloads once the new worker takes control, so closing the app twice is no longer needed. The prompt is hidden while a workout is in progress. Checked in Chromium against the built export: after changing `sw.js` the prompt appeared, the tap reloaded into the new worker with nothing left waiting, and with a workout open Today showed no prompt. M1-11 is done. Pending: bw's iPhone check (Settings → Diagnostics, copy, export to Files, and the prompt after the next deploy).
 
 ## Follow-ups (noticed, not in scope yet)
 

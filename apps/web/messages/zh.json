@@ -312,5 +312,10 @@
     "backupCounts": "{workouts} 次训练 · {plans} 个计划 · {exercises} 个自定义动作",
     "export": "导出全部数据（JSON）",
     "exportFailed": "导出失败，请再试一次。"
+  },
+  "update": {
+    "title": "有新版本",
+    "hint": "更新后会重新打开 App，数据不受影响。",
+    "apply": "更新"
   }
 }
