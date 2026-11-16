@@ -15,6 +15,7 @@ import { db, planStore, repositories } from '@/db/client'
 import type { PlanDayState, PlanState } from '@/db/plans'
 import { useLiveQuery } from '@/db/use-live-query'
 import { Chevron } from '@/ui/chevron'
+import { ConfirmButton } from '@/ui/confirm-button'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 import { SupersetBlock } from '@/ui/superset-block'
@@ -29,35 +30,8 @@ import { PlanItemSheet } from './plan-item-sheet'
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 
-const quietButtonClass =
-  'self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2'
-
 type SheetContent =
   { kind: 'picker'; day: PlanDay; picked: LibraryEntry | null } | { kind: 'item'; itemId: string }
-
-// A button that asks once more before it acts.
-function ConfirmButton({
-  label,
-  confirmLabel,
-  onConfirm,
-}: {
-  label: string
-  confirmLabel: string
-  onConfirm: () => void
-}) {
-  const [asking, setAsking] = useState(false)
-  return (
-    <Pressable
-      onClick={() => {
-        if (asking) onConfirm()
-        else setAsking(true)
-      }}
-      className={quietButtonClass}
-    >
-      {asking ? confirmLabel : label}
-    </Pressable>
-  )
-}
 
 function Day({
   state,

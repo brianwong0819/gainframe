@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { db, repositories, weightUnits } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import type { WorkoutSummaryState } from '@/db/workout-summary'
-import { Pressable } from '@/ui/pressable'
+import { ConfirmButton } from '@/ui/confirm-button'
 import { Sheet } from '@/ui/sheet'
 import { SwipeRow } from '@/ui/swipe-row'
 
@@ -42,7 +42,6 @@ export function PastWorkout({ state }: { state: WorkoutSummaryState }) {
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<Editing | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   const sets = state.summary.exercises.flatMap((exercise) => exercise.sets)
   // The sheet keeps its last set while it slides away; a deleted set closes it.
@@ -88,22 +87,15 @@ export function PastWorkout({ state }: { state: WorkoutSummaryState }) {
           </ol>
         )}
       />
-      <Pressable
-        onClick={() => {
-          if (!deleting) {
-            setDeleting(true)
-            return
-          }
+      <ConfirmButton
+        label={t('deleteWorkout')}
+        confirmLabel={t('deleteWorkoutConfirm', { sets: state.summary.setsDone })}
+        onConfirm={() => {
           void repositories.workouts.remove(state.workout.id).then(() => {
             router.push('/workout/history')
           })
         }}
-        className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
-      >
-        {deleting
-          ? t('deleteWorkoutConfirm', { sets: state.summary.setsDone })
-          : t('deleteWorkout')}
-      </Pressable>
+      />
       <Sheet
         open={shown}
         onClose={close}

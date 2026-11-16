@@ -8,12 +8,12 @@ import zh from '../../messages/zh.json'
 
 import { DEFAULT_LOCALE, type Locale } from './locale'
 import { localeSnapshot, subscribeLocale } from './locale-store'
+import { deviceTimeZone } from './time-zone'
 
 const messages = { zh, en } satisfies Record<Locale, typeof en>
 
 // The device's time zone for dates next-intl formats; the build renders UTC.
 const noSubscription = () => () => undefined
-const deviceTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 const buildTimeZone = () => 'UTC'
 
 /**
