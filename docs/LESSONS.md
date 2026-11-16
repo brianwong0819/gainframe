@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- Run `pnpm check` as the last command before each commit, after every file is written; Playwright runs do not lint the specs. ([L-031](#l-031--2026-11-16--process--a-pull-request-was-pushed-with-a-lint-error))
 - Before adding a CI job, a device to the e2e matrix or a slow e2e spec, estimate its billed minutes per pull request and keep the full matrix on `main`; Actions minutes on the private repository are capped at USD 12 a month. ([L-030](#l-030--2026-11-15--ci--github-actions-stopped-running-when-the-months-included-minutes-ran-out))
 - To test a swipe or drag in e2e, dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit does not drag the way a finger does and ends with a click. ([L-029](#l-029--2026-11-15--test--the-swipe-test-passed-in-chromium-and-failed-on-every-iphone))
 - A button that writes (create, start, add) renders only once the data it acts on has loaded, so a prerendered page never shows a control that cannot respond yet; test such a flow with the JavaScript chunks delayed. ([L-028](#l-028--2026-11-13--ui--new-plan-sometimes-did-nothing))
@@ -52,6 +53,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-031 · 2026-11-16 · process · A pull request was pushed with a lint error
+- **What happened:** the first push of #100 failed "Check and build": `e2e/diagnostics.spec.ts` read the recorded clipboard text as `any` (`@typescript-eslint/no-unsafe-*`). A second commit fixed it before review.
+- **Root cause:** `pnpm check` ran before the e2e spec was written; the spec was then run with Playwright only, which does not lint, and the branch was committed without checking again.
+- **Fix:** #100's second commit types the value read from the page (`Array.isArray` then `map(String)`).
+- **Prevention:** rule added under "Active rules".
+- **Status:** documented
 
 ### L-030 · 2026-11-15 · ci · GitHub Actions stopped running when the month's included minutes ran out
 - **What happened:** on 2026-11-15 every workflow (CI on #98, Terraform plan, the dev deploy) failed after three seconds with no log. bw found in Billing that the USD 12 of included Actions compute for November was used up; it resets on 2026-12-01.
