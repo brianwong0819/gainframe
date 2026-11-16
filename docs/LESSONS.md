@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
 
+- To test offline with a service worker in e2e, shut down a server the test owns; in WebKit, `context.setOffline` and `context.route` also block navigations the worker would answer. ([L-033](#l-033--2026-11-16--test--the-offline-test-failed-on-the-iphone-with-webkit-encountered-an-internal-error))
 - Run `pnpm check` as the last command before each commit, after every file is written; Playwright runs do not lint the specs. ([L-031](#l-031--2026-11-16--process--a-pull-request-was-pushed-with-a-lint-error))
 - Before adding a CI job, a device to the e2e matrix or a slow e2e spec, estimate its billed minutes per pull request and keep the full matrix on `main`; Actions minutes on the private repository are capped at USD 12 a month. ([L-030](#l-030--2026-11-15--ci--github-actions-stopped-running-when-the-months-included-minutes-ran-out))
 - To test a swipe or drag in e2e, dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit does not drag the way a finger does and ends with a click. ([L-029](#l-029--2026-11-15--test--the-swipe-test-passed-in-chromium-and-failed-on-every-iphone))
@@ -53,6 +54,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-033 · 2026-11-16 · test · The offline test failed on the iPhone with "WebKit encountered an internal error"
+- **What happened:** on #103 the new `e2e/offline.spec.ts` passed on Chromium and failed on iPhone SE in CI at the first navigation after `context.setOffline(true)`.
+- **Root cause:** Playwright's WebKit applies its offline emulation, and request routing too, before the service worker sees a navigation: a second attempt with `context.route(...).abort()` failed with "Blocked by Web Inspector". Chromium lets the worker answer both ways. WebKit runs only in CI, so neither showed locally.
+- **Fix:** #103 starts its own copy of the e2e server (`e2e/site-server.ts`) and shuts it down to go offline, so no browser-level emulation is involved.
+- **Prevention:** rule added under "Active rules"; with workers blocked the same spec fails at the first navigation (`ERR_CONNECTION_REFUSED`), which proves the network is gone.
+- **Status:** documented
 
 ### L-032 · 2026-11-16 · pwa · The update watcher threw on every page load in e2e
 - **What happened:** on #102 the Device layout job failed on both devices: Diagnostics listed "Cannot read properties of undefined (reading 'waiting')" instead of no errors.
