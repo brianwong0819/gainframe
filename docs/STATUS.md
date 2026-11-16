@@ -20,6 +20,8 @@ Design review (2026-11-16, asked by bw during the field week): every screen was 
 
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M2-01.
 
+Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
+
 ## Field week checklist (pending iPhone checks)
 
 Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a failure becomes an issue.
