@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** none; M1-11 Diagnostics and data export done (pending bw's iPhone check). Next: M1-12 End-to-end test, once bw says to continue
+- **Current task:** none; M1-12 End-to-end test done. Next: M1-13 Field week (bw logs every session for a week), after an M1 review of the code and plan
 - **Last updated:** 2026-11-16
 
 ## Where I stopped
@@ -146,6 +146,8 @@ M1-11 PR 1 (2026-11-16, `m1/11-settings-diagnostics`): a gear beside Today's tit
 M1-11 PR 2 (2026-11-16, `m1/11-data-export`): Diagnostics has "Export all data (JSON)": `exportData` (`src/db/export.ts`) reads every data table in one transaction, soft-deleted rows and device settings included, outbox and error log left out, with `format`, `formatVersion`, `databaseVersion`, `release` and `exportedAt`; the file is `gainframe-<local date>.json`. The export is read ahead through a live query, so the tap hands the file to `navigator.share` (the iPhone share sheet, "Save to Files") while the tap still counts as a user gesture; without file sharing it downloads. The section shows how many workouts, plans and custom exercises it holds. There is no import yet: M2 sync restores data from the server.
 
 M1-11 PR 3 (2026-11-16, `m1/11-update-prompt`): Today shows "A new version is ready · Update" once a new release's service worker is installed and waiting (`appUpdate` in `src/pwa/update.ts`, fed by `<ServiceWorker>`; it also calls `registration.update()` on each return to the foreground). "Update" posts Serwist's `SKIP_WAITING` message and reloads once the new worker takes control, so closing the app twice is no longer needed. The prompt is hidden while a workout is in progress. Checked in Chromium against the built export: after changing `sw.js` the prompt appeared, the tap reloaded into the new worker with nothing left waiting, and with a workout open Today showed no prompt. M1-11 is done. Pending: bw's iPhone check (Settings → Diagnostics, copy, export to Files, and the prompt after the next deploy).
+
+M1-12 (2026-11-16, `m1/12-e2e-workout-flow`): `e2e/offline.spec.ts` is the first test with the service worker allowed (the config blocks it for every other spec). It lets the worker install and take control, turns the network off, then starts a workout, logs three bench press sets, finishes, and finds the workout in history with three sets and 1,500 kg, also after a reload while still offline. Checked locally on Chromium (Galaxy S24, Pixel 7, `--repeat-each 5`): green; with the network off and the worker blocked the first navigation fails with `ERR_INTERNET_DISCONNECTED`, so the test does reach the precache; with `completeSet` changed to store no completion time it fails at the first set. Pull requests run it on iPhone SE and Galaxy S24, `main` on all six devices.
 
 ## Follow-ups (noticed, not in scope yet)
 
