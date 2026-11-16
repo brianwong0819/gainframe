@@ -91,7 +91,11 @@
     "restLeft": "剩余",
     "history": "训练历史",
     "historyCount": "已完成 {count} 次训练",
-    "historyNone": "还没有完成的训练"
+    "historyNone": "还没有完成的训练",
+    "elapsed": "训练时长",
+    "setsUnit": "组",
+    "allDone": "{done} 组全部完成",
+    "completeValues": "完成"
   },
   "summary": {
     "title": "训练完成",

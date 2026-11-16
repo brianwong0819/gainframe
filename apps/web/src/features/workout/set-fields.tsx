@@ -21,7 +21,8 @@ interface SetFieldsProps {
 // A set's weight and reps with big steppers, for the set panel of the workout
 // in progress and for editing a set in history. Every tap is written to the
 // device database. The weight is shown and typed in the exercise's unit;
-// tapping the weight label switches it between kg and lb for this exercise,
+// tapping the weight label, which names both units with the current one in ink,
+// switches it between kg and lb for this exercise,
 // and a weight in pounds shows its kg beneath.
 export function SetFields({ set, n, exerciseId, exercise, unit }: SetFieldsProps) {
   const t = useTranslations('workout')
@@ -39,14 +40,14 @@ export function SetFields({ set, n, exerciseId, exercise, unit }: SetFieldsProps
           void weightUnits.set(exerciseId, otherUnit)
         }}
         aria-label={t('unitSwitch', { unit: t(`unit.${otherUnit}`) })}
-        className="flex flex-col items-start gap-4 py-8 text-label"
+        className="flex flex-col items-start py-4 text-label"
       >
         <span className="text-ink-3">{bodyweight ? t('colLoad') : t('colWeight')}</span>
-        <span className="flex rounded-full bg-sunk p-4" aria-hidden>
+        <span className="flex gap-4" aria-hidden>
           {weightUnitSchema.options.map((option) => (
             <span
               key={option}
-              className={`rounded-full px-8 py-4 ${option === unit ? 'bg-ink font-semibold text-bg' : 'text-ink-3'}`}
+              className={option === unit ? 'font-semibold text-ink' : 'text-ink-3'}
             >
               {t(`unit.${option}`)}
             </span>
