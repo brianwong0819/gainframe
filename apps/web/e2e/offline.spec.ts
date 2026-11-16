@@ -1,15 +1,26 @@
 import { expect, test } from '@playwright/test'
 
+import { createSiteServer } from './site-server.ts'
+
 // The gym has no reliable signal, so the whole workout flow must work from the
 // service worker's precache (ROADMAP M1-12): start offline, log three sets,
 // finish, and find the workout in history. The test runs in Chinese, the
 // language the static export renders.
 test.use({ locale: 'zh-CN', serviceWorkers: 'allow' })
 
-test('a workout logged offline is listed in history', async ({ context, page }) => {
+test('a workout logged offline is listed in history', async ({ page }) => {
+  // A server of its own, which the test shuts down to go offline. Playwright's
+  // offline emulation and request routing in WebKit also fail navigations the
+  // service worker would answer (L-033).
+  const server = createSiteServer()
+  await new Promise<void>((resolve) => server.listen(0, resolve))
+  const address = server.address()
+  if (address === null || typeof address === 'string') throw new Error('no port')
+  const origin = `http://localhost:${String(address.port)}`
+
   // The first visit installs the service worker; it controls the page only
   // after a reload, because it does not claim open clients.
-  await page.goto('/')
+  await page.goto(`${origin}/`)
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
   })
@@ -18,11 +29,10 @@ test('a workout logged offline is listed in history', async ({ context, page }) 
     .poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null))
     .toBe(true)
 
-  // Every request that reaches the network fails, as with no signal. Not
-  // `context.setOffline`: in WebKit it also fails navigations the service
-  // worker would answer ("WebKit encountered an internal error").
-  await context.route('**/*', (route) => route.abort('internetdisconnected'))
-  await page.goto('/workout')
+  // No server: every request that reaches the network fails, as with no signal.
+  server.closeAllConnections()
+  await new Promise((resolve) => server.close(resolve))
+  await page.goto(`${origin}/workout`)
   await page.getByRole('button', { name: '开始训练' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await page.getByRole('button', { name: '添加动作' }).click()
