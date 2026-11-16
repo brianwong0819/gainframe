@@ -83,6 +83,7 @@
     "restOver": "Rest over",
     "newRecord": "New PR",
     "restDone": "Start next set",
+    "restNext": "Next",
     "restLess": "Rest {s} s less",
     "restMore": "Rest {s} s more",
     "restOpen": "Show the rest timer",

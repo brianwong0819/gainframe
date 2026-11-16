@@ -26,6 +26,8 @@ test('completing a set starts its rest, which survives a reload and ends on a ta
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
   const sheet = page.getByRole('dialog', { name: '组间休息' })
   await expect(sheet.getByRole('timer')).toHaveText(/^(3:00|2:5\d)$/)
+  // The sheet names the set that follows the rest.
+  await expect(sheet).toContainText('下一组杠铃卧推 · 组 2/2')
   await sheet.getByRole('button', { name: '多休息 15 秒' }).click()
   await expect(sheet.getByRole('timer')).toHaveText(/^3:(0[1-9]|1[0-5])$/)
 
