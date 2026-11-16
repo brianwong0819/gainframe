@@ -116,6 +116,9 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
   await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.getByRole('main').getByText('握距比肩宽一指')).toBeVisible()
+  // The day adds itself up, and the row shows the rest the exercise will get.
+  await expect(page.getByText('1 个动作 · 约 10 分钟')).toBeVisible()
+  await expect(page.getByRole('button', { name: /^杠铃卧推 3 组/ })).toContainText('休息 3:00')
   await page.getByRole('button', { name: '加一天' }).click()
   await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveValue('第 2 天')
 
@@ -150,6 +153,22 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await page.getByRole('link', { name: '完成', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/?$/)
   await expect(page.getByText('第 2/2 天 · 新计划')).toBeVisible()
+})
+
+test('a day is deleted from its menu, after a second tap', async ({ page }) => {
+  await page.goto('/workout/plans')
+  await page.getByRole('button', { name: '新建计划' }).click()
+  await page.getByRole('button', { name: '加一天' }).click()
+  await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toBeVisible()
+
+  await page.getByRole('button', { name: '「第 2 天」的更多操作' }).click()
+  const menu = page.getByRole('dialog', { name: '第 2 天' })
+  await menu.getByRole('button', { name: '删除这一天' }).click()
+  await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toBeVisible()
+  await menu.getByRole('button', { name: '确认删除「第 2 天」' }).click()
+  await expect(menu).toBeHidden()
+  await expect(page.getByRole('textbox', { name: '第 2 天的名称' })).toHaveCount(0)
+  await expect(page.getByRole('textbox', { name: '第 1 天的名称' })).toBeVisible()
 })
 
 test('an exercise is added to a plan day from its detail, and a workout saved as a day', async ({

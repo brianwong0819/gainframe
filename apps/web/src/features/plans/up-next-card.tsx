@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  estimateDurationS,
-  type Exercise,
-  restSeconds,
-  type WorkoutSummaryEntry,
-} from '@gainframe/shared'
+import type { Exercise, WorkoutSummaryEntry } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,10 +12,11 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
-import { exerciseName, findLibraryEntry } from '../exercises/library'
+import { exerciseName } from '../exercises/library'
 import { formatDay } from '../history/dates'
 import { useDurationText } from '../workout/duration'
 import { findExercise } from '../workout/exercise-info'
+import { estimateDayS } from './estimate'
 
 const loadUpNext = () => planStore.upNext()
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
@@ -29,9 +25,6 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 export function useUpNext(): UpNext | null | undefined {
   return useLiveQuery(loadUpNext)
 }
-
-// A planned day is estimated to the nearest five minutes.
-const ESTIMATE_STEP_S = 5 * 60
 
 // Today's day of the active plan with its exercises, a rough length, what the
 // day came to the last time it was done (`last`, null if never) and the button
@@ -47,15 +40,7 @@ export function UpNextCard({ upNext, last }: { upNext: UpNext; last: WorkoutSumm
   const [picking, setPicking] = useState(false)
   const { plan, day, n, days, items } = upNext
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
-  const estimateS = estimateDurationS(
-    items.map((item) => ({
-      sets: item.targetSets,
-      restS: restSeconds(
-        item.restS,
-        findLibraryEntry(item.exerciseId, custom)?.defaultRestS ?? null,
-      ),
-    })),
-  )
+  const estimateS = estimateDayS(items, custom)
 
   const start = (write: Promise<unknown>) => {
     void write.then(() => {
@@ -73,13 +58,7 @@ export function UpNextCard({ upNext, last }: { upNext: UpNext; last: WorkoutSumm
           {t('upNext', { n, count: days.length, plan: plan.name })}
         </p>
         {estimateS > 0 && (
-          <p className="shrink-0">
-            {t('estimate', {
-              duration: duration(
-                Math.max(1, Math.round(estimateS / ESTIMATE_STEP_S)) * ESTIMATE_STEP_S,
-              ),
-            })}
-          </p>
+          <p className="shrink-0">{t('estimate', { duration: duration(estimateS) })}</p>
         )}
       </div>
       <h2 className="text-section">{day.name}</h2>
