@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { recentRecords, summarizeHistory, summarizeWorkout } from './workout-summary.ts'
+import {
+  compareSummaries,
+  recentRecords,
+  summarizeHistory,
+  summarizeWorkout,
+} from './workout-summary.ts'
 
 const BENCH = '01960000-0000-7000-8000-000000000001'
 const DIP = '01960000-0000-7000-8000-000000000003'
@@ -242,5 +247,32 @@ describe('recentRecords', () => {
   it('stops at the limit and is empty without records', () => {
     expect(recentRecords(entries, 1)).toHaveLength(1)
     expect(recentRecords([], 3)).toEqual([])
+  })
+})
+
+describe('compareSummaries', () => {
+  const summarize = (sets: WorkoutSet[]) =>
+    summarizeWorkout({ workout, slots, sets, history: [], load })
+  const earlier = summarize([
+    set({ weightKg: 80, reps: 5 }),
+    set({ workoutExerciseId: DIP_SLOT, exerciseId: DIP, weightKg: 0, reps: 10 }),
+  ])
+
+  it('reports the change in volume as a fraction of the earlier volume', () => {
+    const current = summarize([set({ weightKg: 100, reps: 5 })])
+    expect(compareSummaries(current, earlier).volumeChange).toBeCloseTo(0.25)
+    const lighter = summarize([set({ weightKg: 60, reps: 5 })])
+    expect(compareSummaries(lighter, earlier).volumeChange).toBeCloseTo(-0.25)
+  })
+
+  it('has no volume change against a workout without volume', () => {
+    const warmups = summarize([set({ weightKg: 40, reps: 10, kind: 'warmup' })])
+    expect(compareSummaries(earlier, warmups).volumeChange).toBeNull()
+  })
+
+  it('compares top sets only for exercises both workouts did', () => {
+    const current = summarize([set({ weightKg: 82.5, reps: 5 })])
+    expect([...compareSummaries(current, earlier).topWeightDeltaKg]).toEqual([[BENCH, 2.5]])
+    expect(compareSummaries(earlier, current).topWeightDeltaKg.has(DIP)).toBe(false)
   })
 })

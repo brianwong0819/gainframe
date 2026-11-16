@@ -34,13 +34,39 @@ export interface WorkoutSummaryState {
   dayName: string | null
 }
 
+// A workout's summary with the summary of the last time the same plan day was
+// done before it; `previous` is null for a workout started empty and for a
+// day's first time.
+export interface WorkoutSummaryDetail extends WorkoutSummaryState {
+  previous: WorkoutSummary | null
+}
+
+// The latest finished workout of the same plan day that started before
+// `workout`, summarised without records (it is only compared with).
+async function previousOfDay(
+  db: GainframeDb,
+  workout: Workout,
+  load: LoadRules,
+): Promise<WorkoutSummary | null> {
+  if (workout.planDayId === null) return null
+  const sameDay = await db.workouts.where('planDayId').equals(workout.planDayId).toArray()
+  const previous = sameDay
+    .filter((other) => live(other) && other.endedAt !== null)
+    .filter((other) => other.startedAt < workout.startedAt)
+    .toSorted((a, b) => b.startedAt.localeCompare(a.startedAt))[0]
+  if (previous === undefined) return null
+  const slots = await db.workoutExercises.where('workoutId').equals(previous.id).toArray()
+  const sets = await db.workoutSets.where('workoutId').equals(previous.id).toArray()
+  return summarizeWorkout({ workout: previous, slots, sets, history: [], load })
+}
+
 // A workout's summary for the finish screen and history; null when the
 // workout does not exist or was deleted. Every read is a direct Dexie call, so
 // a live query observes all of them (L-026).
 export async function loadWorkoutSummary(
   db: GainframeDb,
   workoutId: string,
-): Promise<WorkoutSummaryState | null> {
+): Promise<WorkoutSummaryDetail | null> {
   const workout = await db.workouts.get(workoutId)
   if (workout === undefined || !live(workout)) return null
   const slots = await db.workoutExercises.where('workoutId').equals(workoutId).toArray()
@@ -60,14 +86,21 @@ export async function loadWorkoutSummary(
       other !== undefined && live(other) && other.startedAt < workout.startedAt ? [other.id] : [],
     ),
   )
+  const load = loadRules(custom)
   const summary = summarizeWorkout({
     workout,
     slots,
     sets,
     history: others.filter((set) => earlier.has(set.workoutId)),
-    load: loadRules(custom),
+    load,
   })
   const day = workout.planDayId === null ? undefined : await db.planDays.get(workout.planDayId)
   const plan = day === undefined ? undefined : await db.plans.get(day.planId)
-  return { workout, summary, planName: plan?.name ?? null, dayName: day?.name ?? null }
+  return {
+    workout,
+    summary,
+    planName: plan?.name ?? null,
+    dayName: day?.name ?? null,
+    previous: await previousOfDay(db, workout, load),
+  }
 }

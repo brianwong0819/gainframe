@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  compareSummaries,
   estimateOneRepMax,
   type Exercise,
   type ExerciseSummary,
@@ -13,7 +14,7 @@ import type { ReactNode } from 'react'
 
 import { db, weightUnits } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
-import type { WorkoutSummaryState } from '@/db/workout-summary'
+import type { WorkoutSummaryDetail } from '@/db/workout-summary'
 
 import { exerciseName } from '../exercises/library'
 import { useDurationText } from './duration'
@@ -23,15 +24,16 @@ import { findExercise, formatSetWeight, formatWeight, isBodyweight } from './exe
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 const loadWeightUnits = () => weightUnits.all()
 
-// What a workout added up to: the figures first, then each exercise with its
-// top set and records. Shown when a workout ends and in history, where
+// What a workout added up to: volume first, compared with the last time the
+// same plan day was done, then each exercise with its top set and records.
+// Shown when a workout ends and in history, where
 // `setList` adds each exercise's sets below its records; `setText` formats a
 // set as the summary does ("80 kg × 5").
 export function WorkoutSummaryView({
   state,
   setList,
 }: {
-  state: WorkoutSummaryState
+  state: WorkoutSummaryDetail
   setList?: (exercise: ExerciseSummary, setText: (set: WorkoutSet) => string) => ReactNode
 }) {
   const t = useTranslations('summary')
@@ -39,13 +41,19 @@ export function WorkoutSummaryView({
   const locale = useLocale()
   const custom = useLiveQuery(allCustomExercises) ?? []
   const units = useLiveQuery(loadWeightUnits)
-  const { summary } = state
+  const { summary, previous, dayName } = state
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 })
+  const percent = new Intl.NumberFormat(locale, {
+    style: 'percent',
+    maximumFractionDigits: 1,
+    signDisplay: 'exceptZero',
+  })
+  const comparison = previous === null ? null : compareSummaries(summary, previous)
+  const volumeChange = comparison?.volumeChange ?? null
 
   const duration = useDurationText()
   const figures = [
     { label: t('duration'), value: duration(summary.durationS ?? 0) },
-    { label: t('volume'), value: `${number.format(summary.volumeKg)} ${tWorkout('unit.kg')}` },
     { label: t('sets'), value: String(summary.setsDone) },
     { label: t('records'), value: String(summary.recordCount), anchor: true },
   ]
@@ -53,11 +61,32 @@ export function WorkoutSummaryView({
   const exercises = summary.exercises.filter(({ setsDone }) => setsDone > 0)
   return (
     <>
-      <dl className="grid grid-cols-2 gap-8">
+      <dl className="flex flex-wrap gap-x-28 gap-y-16 rounded-group bg-surface p-16">
+        <div className="flex w-full flex-col gap-4">
+          <dt className="text-label text-ink-3">{t('volume')}</dt>
+          <dd className="flex flex-wrap items-baseline gap-8">
+            <span>
+              <span className="num text-title text-ink">{number.format(summary.volumeKg)}</span>
+              <span className="text-label text-ink-3"> {tWorkout('unit.kg')}</span>
+            </span>
+            {volumeChange !== null && (
+              <span
+                className={
+                  volumeChange > 0
+                    ? 'rounded-full bg-accent px-8 text-label font-semibold text-accent-ink'
+                    : 'text-label text-ink-2'
+                }
+              >
+                <span className="num">{percent.format(volumeChange)}</span>{' '}
+                {dayName === null ? t('vsLast') : t('vsLastDay', { day: dayName })}
+              </span>
+            )}
+          </dd>
+        </div>
         {figures.map(({ label, value, anchor }) => (
-          <div key={label} className="flex flex-col gap-4 rounded-group bg-surface p-16">
+          <div key={label} className="flex flex-col gap-4">
             <dt className="text-label text-ink-3">{label}</dt>
-            <dd className="num text-section text-ink" data-celebration-anchor={anchor}>
+            <dd className="num text-body font-semibold text-ink" data-celebration-anchor={anchor}>
               {value}
             </dd>
           </div>
@@ -76,15 +105,26 @@ export function WorkoutSummaryView({
             const withUnit = bodyweight && set.weightKg === 0 ? weight : `${weight} ${unitLabel}`
             return `${withUnit} × ${String(set.reps)}`
           }
+          const topDeltaKg = comparison?.topWeightDeltaKg.get(slot.exerciseId) ?? 0
           return (
             <li key={slot.id} className="flex flex-col gap-8 rounded-group bg-surface p-16">
               <div className="flex flex-col gap-4">
-                <h2 className="text-body font-semibold text-ink">
-                  {exerciseName(exercise, locale)}
-                </h2>
+                <div className="flex items-baseline justify-between gap-8">
+                  <h2 className="text-body font-semibold text-ink">
+                    {exerciseName(exercise, locale)}
+                  </h2>
+                  {topSet && (
+                    <p className="shrink-0 text-label text-ink-3">
+                      {t('top')} <span className="num text-body text-ink">{setText(topSet)}</span>
+                    </p>
+                  )}
+                </div>
                 <p className="text-label text-ink-3">
                   {t('exerciseLine', { sets: setsDone, volume: number.format(volumeKg) })}
-                  {topSet && ` · ${t('top', { set: setText(topSet) })}`}
+                  {topDeltaKg !== 0 &&
+                    ` · ${t('topDelta', {
+                      delta: `${topDeltaKg > 0 ? '+' : '−'}${formatWeight(Math.abs(topDeltaKg), unit)} ${unitLabel}`,
+                    })}`}
                 </p>
               </div>
               {records.map(({ set, kinds }) => (

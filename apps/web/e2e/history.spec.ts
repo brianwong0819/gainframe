@@ -93,7 +93,7 @@ test('a finished workout is listed in history and opens to its summary', async (
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('自由训练')
   await expect(page.getByRole('definition').nth(2)).toHaveText('1')
   await expect(page.getByRole('listitem').filter({ hasText: '杠铃卧推' })).toContainText(
-    '最重一组 80 kg',
+    '最重 80 kg × 5',
   )
 
   await page.getByRole('link', { name: '训练历史' }).click()
@@ -105,7 +105,7 @@ test('a past set can be edited, swiped away, and the workout deleted', async ({ 
   await page.getByRole('link', { name: /训练历史/ }).click()
   await page.getByRole('main').getByRole('listitem').getByRole('link').click()
   const figures = page.getByRole('definition')
-  await expect(figures.nth(1)).toHaveText('800 kg')
+  await expect(figures.nth(0)).toHaveText('800 kg')
 
   // Edit: 6 reps on set 1. The sheet saves every change.
   await page.getByRole('button', { name: '编辑第 1 组：80 kg × 5' }).click()
@@ -116,7 +116,7 @@ test('a past set can be edited, swiped away, and the workout deleted', async ({ 
   await expect(reps).toHaveValue('6')
   await sheet.getByRole('button', { name: '关闭' }).click()
   await expect(sheet).toBeHidden()
-  await expect(figures.nth(1)).toHaveText('880 kg')
+  await expect(figures.nth(0)).toHaveText('880 kg')
 
   // Swipe set 2 left and delete it.
   const row = page.getByRole('button', { name: '编辑第 2 组：80 kg × 5' })
@@ -128,7 +128,7 @@ test('a past set can be edited, swiped away, and the workout deleted', async ({ 
     .getByText('删除', { exact: true })
     .click()
   await expect(row).toBeHidden()
-  await expect(figures.nth(1)).toHaveText('480 kg')
+  await expect(figures.nth(0)).toHaveText('480 kg')
   await expect(figures.nth(2)).toHaveText('1')
 
   // Delete the workout: the first tap asks, the second deletes.
