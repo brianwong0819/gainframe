@@ -1,6 +1,11 @@
 'use client'
 
-import type { Exercise } from '@gainframe/shared'
+import {
+  estimateDurationS,
+  type Exercise,
+  restSeconds,
+  type WorkoutSummaryEntry,
+} from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -12,7 +17,9 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
-import { exerciseName } from '../exercises/library'
+import { exerciseName, findLibraryEntry } from '../exercises/library'
+import { formatDay } from '../history/dates'
+import { useDurationText } from '../workout/duration'
 import { findExercise } from '../workout/exercise-info'
 
 const loadUpNext = () => planStore.upNext()
@@ -23,15 +30,32 @@ export function useUpNext(): UpNext | null | undefined {
   return useLiveQuery(loadUpNext)
 }
 
-// Today's day of the active plan with its exercises and the button to start it.
-// The user can pick another day of the plan instead, or start an empty workout.
-export function UpNextCard({ upNext }: { upNext: UpNext }) {
+// A planned day is estimated to the nearest five minutes.
+const ESTIMATE_STEP_S = 5 * 60
+
+// Today's day of the active plan with its exercises, a rough length, what the
+// day came to the last time it was done (`last`, null if never) and the button
+// to start it. The user can pick another day of the plan instead, or start an
+// empty workout.
+export function UpNextCard({ upNext, last }: { upNext: UpNext; last: WorkoutSummaryEntry | null }) {
   const t = useTranslations('plans')
+  const tWorkout = useTranslations('workout')
+  const duration = useDurationText()
   const locale = useLocale()
   const router = useRouter()
   const custom = useLiveQuery(allCustomExercises) ?? []
   const [picking, setPicking] = useState(false)
   const { plan, day, n, days, items } = upNext
+  const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
+  const estimateS = estimateDurationS(
+    items.map((item) => ({
+      sets: item.targetSets,
+      restS: restSeconds(
+        item.restS,
+        findLibraryEntry(item.exerciseId, custom)?.defaultRestS ?? null,
+      ),
+    })),
+  )
 
   const start = (write: Promise<unknown>) => {
     void write.then(() => {
@@ -44,9 +68,20 @@ export function UpNextCard({ upNext }: { upNext: UpNext }) {
 
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
-      <p className="text-label text-ink-3">
-        {t('upNext', { n, count: days.length, plan: plan.name })}
-      </p>
+      <div className="flex items-baseline justify-between gap-12 text-label text-ink-3">
+        <p className="min-w-0 truncate">
+          {t('upNext', { n, count: days.length, plan: plan.name })}
+        </p>
+        {estimateS > 0 && (
+          <p className="shrink-0">
+            {t('estimate', {
+              duration: duration(
+                Math.max(1, Math.round(estimateS / ESTIMATE_STEP_S)) * ESTIMATE_STEP_S,
+              ),
+            })}
+          </p>
+        )}
+      </div>
       <h2 className="text-section">{day.name}</h2>
       <p className="text-label text-ink-2">
         {items.length === 0
@@ -55,6 +90,19 @@ export function UpNextCard({ upNext }: { upNext: UpNext }) {
               .map((item) => exerciseName(findExercise(item.exerciseId, custom), locale))
               .join(' · ')}
       </p>
+      {last && (
+        <p className="flex items-baseline justify-between gap-12 rounded-ctl bg-bg px-12 py-8 text-label text-ink-3">
+          <span className="min-w-0 truncate">
+            {t('lastTime', { date: formatDay(last.workout.localDate, locale) })}
+          </span>
+          <span className="shrink-0 text-ink-2">
+            {duration(last.summary.durationS ?? 0)}
+            {' · '}
+            <span className="num">{number.format(last.summary.volumeKg)}</span>{' '}
+            {tWorkout('unit.kg')}
+          </span>
+        </p>
+      )}
       <Pressable
         onClick={() => {
           startDay(day.id)

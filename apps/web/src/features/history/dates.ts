@@ -29,3 +29,8 @@ export function formatTime(instant: string, locale: string): string {
     new Date(instant),
   )
 }
+
+// A weekday for a column of days: one letter when narrow ("M"), else in full.
+export function formatWeekday(date: LocalDate, locale: string, width: 'narrow' | 'long'): string {
+  return new Intl.DateTimeFormat(locale, { weekday: width, timeZone: 'UTC' }).format(asDay(date))
+}
