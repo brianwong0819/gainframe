@@ -3,7 +3,7 @@
 The handover note between sessions. Keep it short and current; update it in every PR and before ending any session mid-task.
 
 - **Milestone:** M1 Workout logging
-- **Current task:** M1-11 Diagnostics and data export (part 1 of 3 done: Settings and Diagnostics; next: data export, then the update prompt)
+- **Current task:** M1-11 Diagnostics and data export (parts 1 and 2 of 3 done: Settings, Diagnostics and data export; next: the update prompt)
 - **Last updated:** 2026-11-16
 
 ## Where I stopped
@@ -142,6 +142,8 @@ M1-10 PR 4 (2026-11-15, `m1/10-forgotten-finish`), bw's choice after a 21-hour w
 CI minutes (2026-11-15, PR `m1/ci-minutes`, L-030): bw's included Actions compute for November ran out and every workflow stopped; bw made the repository public, where Actions is free, and branch protection now applies. The Device layout job now runs every e2e spec on iPhone SE and Galaxy S24 on a pull request (114 of 342 tests) and the full six-device matrix on `main`; a pull request that changes only `docs/` or Markdown skips it. Measured on this PR: Device layout 3 minutes instead of 10 (tests 1.6 minutes). Costs per job: "GitHub Actions minutes" in `docs/infra.md`.
 
 M1-11 PR 1 (2026-11-16, `m1/11-settings-diagnostics`): a gear beside Today's title opens `/settings` (Today stays the selected tab), which now holds the language switch and links to `/settings/diagnostics`: the release, whether storage is persistent (`readPersisted`, with a hint when it is not), and the recorded errors, newest first, with "Copy", which puts a plain-text report (release, user agent, persistence, each error with its stack; `formatErrorReport`) on the clipboard. The release line left Today's dev links. The gear is Feather's icon (credited). `e2e/diagnostics.spec.ts` throws an error in the page and checks it is listed and copied.
+
+M1-11 PR 2 (2026-11-16, `m1/11-data-export`): Diagnostics has "Export all data (JSON)": `exportData` (`src/db/export.ts`) reads every data table in one transaction, soft-deleted rows and device settings included, outbox and error log left out, with `format`, `formatVersion`, `databaseVersion`, `release` and `exportedAt`; the file is `gainframe-<local date>.json`. The export is read ahead through a live query, so the tap hands the file to `navigator.share` (the iPhone share sheet, "Save to Files") while the tap still counts as a user gesture; without file sharing it downloads. The section shows how many workouts, plans and custom exercises it holds. There is no import yet: M2 sync restores data from the server.
 
 ## Follow-ups (noticed, not in scope yet)
 

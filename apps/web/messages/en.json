@@ -293,7 +293,7 @@
   "settings": {
     "title": "Settings",
     "diagnostics": "Diagnostics",
-    "diagnosticsHint": "Version, storage and error log"
+    "diagnosticsHint": "Version, storage, backup and error log"
   },
   "diagnostics": {
     "release": "Version",
@@ -306,6 +306,11 @@
     "copy": "Copy",
     "copied": "Copied",
     "copyFailed": "Copy failed",
-    "noErrors": "No errors recorded."
+    "noErrors": "No errors recorded.",
+    "backup": "Backup",
+    "backupHint": "Your data is stored only on this device for now. Export every workout, plan and custom exercise as a JSON file and keep it in Files or on a computer.",
+    "backupCounts": "{workouts, plural, one {# workout} other {# workouts}} · {plans, plural, one {# plan} other {# plans}} · {exercises, plural, one {# custom exercise} other {# custom exercises}}",
+    "export": "Export all data (JSON)",
+    "exportFailed": "Export failed. Please try again."
   }
 }

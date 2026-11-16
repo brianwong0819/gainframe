@@ -293,7 +293,7 @@
   "settings": {
     "title": "设置",
     "diagnostics": "诊断",
-    "diagnosticsHint": "版本、存储和错误记录"
+    "diagnosticsHint": "版本、存储、备份和错误记录"
   },
   "diagnostics": {
     "release": "版本",
@@ -306,6 +306,11 @@
     "copy": "复制",
     "copied": "已复制",
     "copyFailed": "复制失败",
-    "noErrors": "没有错误记录。"
+    "noErrors": "没有错误记录。",
+    "backup": "备份",
+    "backupHint": "数据目前只保存在这台设备上。导出一个包含全部训练、计划和自定义动作的 JSON 文件，存到「文件」App 或电脑里。",
+    "backupCounts": "{workouts} 次训练 · {plans} 个计划 · {exercises} 个自定义动作",
+    "export": "导出全部数据（JSON）",
+    "exportFailed": "导出失败，请再试一次。"
   }
 }
