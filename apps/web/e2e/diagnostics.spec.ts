@@ -36,13 +36,14 @@ test('an error thrown in the app is listed in Diagnostics and copied', async ({ 
 
   await page.getByRole('button', { name: '复制' }).click()
   await expect(page.getByRole('button', { name: '已复制' })).toBeVisible()
-  const copied = await page.evaluate(() =>
-    Reflect.get(window, '__copied') instanceof Array ? Reflect.get(window, '__copied') : [],
-  )
+  const copied = await page.evaluate(() => {
+    const recorded: unknown = Reflect.get(window, '__copied')
+    return Array.isArray(recorded) ? recorded.map(String) : []
+  })
   expect(copied).toHaveLength(1)
-  expect(String(copied[0])).toContain('Release: local')
-  expect(String(copied[0])).toContain('error /settings/diagnostics (release local)')
-  expect(String(copied[0])).toContain('Diagnostics e2e failure')
+  expect(copied[0]).toContain('Release: local')
+  expect(copied[0]).toContain('error /settings/diagnostics (release local)')
+  expect(copied[0]).toContain('Diagnostics e2e failure')
 })
 
 test('the language setting lives in Settings', async ({ page }) => {
