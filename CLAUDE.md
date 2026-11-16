@@ -19,7 +19,7 @@ All repository content — code, comments, commit messages, branch names, PR tit
 
 **Token budget.** One task per session; `/clear` after the PR. Read only the files the task needs; search instead of reading large files (`docs/design/prototype.html`, lockfiles, build output). Do not spawn subagents unless a wide search or an independent review needs one. If a task needs a stronger model (architecture, a bug that survived two attempts, security), say so instead of burning attempts.
 
-Use the **context7** MCP (or official docs) before writing code against any library API you are not certain about for the exact version in `package.json`. Do not write from memory for Next.js, Tailwind, Motion, Dexie, Serwist, Drizzle, Hono, Zod, next-intl, visx, the AWS SDK or Terraform providers — their APIs changed recently.
+Use the **context7** MCP (or official docs) before writing code against any library API you are not certain about for the exact version in `package.json`. Do not write from memory for Next.js, Tailwind, Motion, Dexie, Serwist, Drizzle, Hono, Zod, next-intl, visx, the AWS SDK or Terraform providers — their APIs changed recently. For Next.js, the docs for the installed version ship in `apps/web/node_modules/next/dist/docs/` (see `apps/web/AGENTS.md`). The same goes for platforms and vendor consoles (iOS Safari, AWS, Neon, GitHub): find their current documented behaviour and cite it before planning against it (L-004, L-016).
 
 ## The work loop (use `/start-task` and `/finish-task`)
 
@@ -27,7 +27,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 2. **Plan first.** Before editing, post a short plan to bw: files you will touch, approach, how it will be verified, anything ambiguous. For tasks over ~1 hour or with any design choice, wait for bw's OK.
 3. **Small diffs.** Aim for < 400 changed lines excluding lockfiles and generated files. If a task grows beyond that, stop and propose splitting it in ROADMAP.
 4. **Stay in scope.** Noticed something else broken or ugly? Add it to "Follow-ups" in `docs/STATUS.md`. Do not fix it in this PR.
-5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own **Verify** step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark.
+5. **Verify for real.** Run `pnpm check` (lint + typecheck + test) and the task's own **Verify** step. Paste the actual command output in your summary. Never say "should work". UI changes: include a screenshot at iPhone viewport (390×844), light and dark. `pnpm check` is the last command before each commit, after every file is written (L-031). The cloud container runs only Chromium, and the iPhone runs WebKit: a UI change is not done until CI's Device layout job is green on the WebKit devices (nine lessons, L-015 to L-033, were failures seen only in WebKit or on the iPhone; e2e rules in `docs/conventions.md`).
 6. **Self-review** the full diff (`git diff main...`) before asking bw to review; run `/code-review`. Remove anything that is not needed for this task.
 7. **Hand over.** PR description follows `.github/pull_request_template.md`. Separately, walk the owner through the change in chat: how it works, why, and the alternatives considered. Tick the task in ROADMAP and update STATUS in the same PR.
 8. **Look ahead.** Before handing over, re-read the remaining tasks of the milestone and any later task this change affects; fix the plan in the same PR when it no longer fits. Halfway through each milestone, review the whole repository and plan (code, docs, CI, open follow-ups) instead of waiting for the retro, and record the review in STATUS.
@@ -90,6 +90,7 @@ When bw corrects you, treat it as a lesson: record it, and say in the reply whic
 - Requirement unclear or conflicts with a doc → ask bw; do not guess and build.
 - You discover the plan in ROADMAP is wrong → propose the change; do not quietly do something else.
 - Before ending a session mid-task, write where you stopped and the next step into `docs/STATUS.md`.
+- A visual glitch: measure it first (a screen recording from bw, or a per-frame sample in e2e) and keep the measurement as a test; never ship a fix for a guessed cause (L-023).
 
 ## Commands
 
@@ -110,3 +111,4 @@ A Claude Code hook (`.claude/hooks/format.mjs`) runs Prettier and ESLint on ever
 
 - bw develops on **Windows** (no Mac), tests on an **iPhone** PWA. Scripts in `package.json` must be cross-platform (no bash-only syntax; use Node scripts). Line endings are LF via `.gitattributes`.
 - AWS region `ap-southeast-1` (Singapore) for everything, including Bedrock and Neon.
+- **Steps written for bw** run in PowerShell on Windows: start each command block with `cd` to an absolute path (`cd C:\dev\gainframe`), quote arguments that contain `=` or `.` after a leading `-` (`"-out=x.tfplan"`), check each prerequisite first (`<tool> --version`) and give the fallback when it or a download fails, and say what to mask before asking for a screenshot or terminal output. On the iPhone the installed app has no address bar and opens at `/`: reach a page through an in-app link (L-001, L-005, L-010, L-011, L-017).

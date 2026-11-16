@@ -4,37 +4,26 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 ## Active rules
 
-Short, imperative rules distilled from the lessons below. Each one links to the lesson that created it. At each milestone retro, rules that have proved themselves get promoted into `CLAUDE.md` or a `docs/*` file (and removed from here); rules that turned out wrong get deleted.
+Rules from recent lessons that have not yet moved into `CLAUDE.md`, a `docs/*` file or an automated check. Each links to the lesson that created it. At each milestone retro, rules that have proved themselves move into the matching doc (and leave this list); rules that turned out wrong are deleted.
 
-- To test offline with a service worker in e2e, shut down a server the test owns; in WebKit, `context.setOffline` and `context.route` also block navigations the worker would answer. ([L-033](#l-033--2026-11-16--test--the-offline-test-failed-on-the-iphone-with-webkit-encountered-an-internal-error))
-- Run `pnpm check` as the last command before each commit, after every file is written; Playwright runs do not lint the specs. ([L-031](#l-031--2026-11-16--process--a-pull-request-was-pushed-with-a-lint-error))
-- Before adding a CI job, a device to the e2e matrix or a slow e2e spec, estimate its billed minutes per pull request and keep the full matrix on `main`; Actions minutes on the private repository are capped at USD 12 a month. ([L-030](#l-030--2026-11-15--ci--github-actions-stopped-running-when-the-months-included-minutes-ran-out))
-- To test a swipe or drag in e2e, dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit does not drag the way a finger does and ends with a click. ([L-029](#l-029--2026-11-15--test--the-swipe-test-passed-in-chromium-and-failed-on-every-iphone))
-- A button that writes (create, start, add) renders only once the data it acts on has loaded, so a prerendered page never shows a control that cannot respond yet; test such a flow with the JavaScript chunks delayed. ([L-028](#l-028--2026-11-13--ui--new-plan-sometimes-did-nothing))
-- In e2e tests, assert each value right after entering it (`toHaveValue`), enter text with `fill`, and check the page behind a sheet only after the sheet has closed; WebKit runs only in CI. ([L-027](#l-027--2026-11-09--test--a-plan-test-passed-in-chromium-and-failed-on-every-iphone))
-- A query read through `useLiveQuery` calls Dexie directly; it never awaits one of our own async helpers (a repository's `get`, another loader) before its last read, and an e2e test checks the screen updates after a write. ([L-026](#l-026--2026-11-09--ui--the-plan-editor-did-not-show-new-days))
-- Every page below a tab has a back link and every sheet a close button; list a new page in `e2e/pages.ts` with its `parent`. A screen with only a forward action ("Finish") is a trap. ([L-025](#l-025--2026-11-09--ui--the-workout-in-progress-had-no-way-back))
-- In an e2e test, after a write, wait for the UI to show the stored value (read back from Dexie) before navigating or reloading; run a new e2e test with `--repeat-each` locally before pushing. ([L-024](#l-024--2026-11-09--test--the-workout-e2e-test-failed-once-in-ci))
-- Before fixing a visual glitch, measure it frame by frame (a screen recording or a rAF sample) and keep that measurement as a test; do not ship a fix for a guessed cause. ([L-023](#l-023--2026-11-09--ui--the-sheet-kept-flashing-because-its-dialog-scrolled))
-- Focus with `focus({ preventScroll: true })`; WebKit otherwise scrolls the element into view (lint-guarded). ([L-020](#l-020--2026-11-09--ui--the-sheet-flashed-open-vanished-and-then-slid-in))
-- A sheet or dialog never focuses a text field on opening, locks the page behind it, and has a visible close control; check it on the iPhone, not only in desktop Chromium. ([L-019](#l-019--2026-11-09--ui--the-first-bottom-sheet-raised-the-keyboard-and-let-the-page-scroll-behind-it))
-- Under Reduce Motion, a change of screen swaps at once; never cross-fade two screens of text. ([L-018](#l-018--2026-11-09--motion--reduce-motion-tab-switches-overlapped-the-text-of-two-screens))
-- Steps for bw on the iPhone describe the home-screen app as it is: no address bar, opens at `/`; reach a page through an in-app link. ([L-017](#l-017--2026-11-07--pwa--test-steps-told-bw-to-type-a-url-into-the-installed-app))
-- Before fixing how a platform draws the app (iOS, Android, browser chrome), find its current documented behaviour and cite it in the PR. ([L-016](#l-016--2026-11-06--pwa--the-status-bar-blur-still-covered-the-title-after-l-015))
-- Pad screens by the safe-area inset plus a gutter ("Screen edges" in `docs/design-system.md`), and verify safe-area layout on the iPhone; desktop browsers report zero insets. ([L-015](#l-015--2026-11-06--pwa--the-page-title-sat-under-the-ios-status-bar-blur))
-- At the end of every task, check the later ROADMAP tasks it affects; halfway through each milestone, review the whole repository and plan. ([L-009](#l-009--2026-11-02--process--plan-and-code-problems-surfaced-in-a-batch))
-- Name every branch `m<milestone>/<nn>-<slug>` (or `m<milestone>/<slug>` for work outside a numbered task), even when a session suggests another name. ([L-008](#l-008--2026-11-02--process--a-pr-shipped-from-an-auto-generated-branch-name))
-- Refer to an ADR by number only once it exists; for a planned ADR, name its topic. ([L-007](#l-007--2026-11-02--process--two-documents-claimed-adr-0001))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
-- Verify a claim with the command that proves it (`git status`, `pnpm check`, `--version`) and quote its output; a file listing is not proof. ([L-002](#l-002--2026-10-30--process--reported-a-repo-move-as-correct-when-git-was-missing))
-- Before planning steps against a vendor console or account model (AWS, Neon, GitHub), read the vendor's current docs for that exact flow; do not plan from memory. ([L-004](#l-004--2026-11-02--infra--m0-03-was-planned-against-the-old-aws-account-model))
-- When asking bw for a screenshot or terminal output, say first what to mask (passwords, account IDs, tokens). ([L-005](#l-005--2026-11-02--process--a-password-appeared-in-a-shared-screenshot))
-- Quote every PowerShell argument that contains `=` or `.` after a leading `-` (`terraform plan "-out=x.tfplan"`); bw runs commands in PowerShell, not bash. ([L-010](#l-010--2026-11-03--infra--a-terraform-flag-broke-in-powershell))
-- Every command block written for bw starts with `cd` to an absolute path (`cd C:\dev\gainframe`), and every download step names its fallback when the network fails. ([L-011](#l-011--2026-11-03--infra--the-dev-first-apply-steps-failed-on-bws-machine))
-- Verify an identity or permission change (trust policy, IAM policy, secret) by exercising it from the real caller, such as a workflow run, not by reading the resource. ([L-012](#l-012--2026-11-04--infra--the-ci-roles-trust-policies-never-matched-githubs-oidc-subject))
-- In workflow scripts, run a command whose failure matters on its own, not inside a pipeline or `$(...)` with other commands; smoke tests assert the healthy result, not just a response. ([L-014](#l-014--2026-11-06--ci--the-smoke-test-passed-while-the-api-could-not-reach-its-database))
-- In scripts, parse AWS CLI results as JSON (`--output json` piped to `jq`); text output repeats values once per page. ([L-013](#l-013--2026-11-04--ci--the-first-deploys-smoke-test-failed-on-cli-output))
-- Setup/how-to docs check each prerequisite first (`<tool> --version`) and give the fallback if it is missing. ([L-001](#l-001--2026-10-30--tooling--setup-guide-assumed-winget-exists))
+
+Promoted at the M1 retro (2026-11-16), so read them where they now live:
+
+| Area | Lessons | Now in |
+|---|---|---|
+| WebKit and the iPhone: a UI change is done only when CI's WebKit devices are green | L-015, L-016, L-019, L-020, L-023, L-027, L-028, L-029, L-033 | `CLAUDE.md` work loop step 5 |
+| e2e tests: wait for stored values, `fill`, sheets, touch swipes, offline by stopping the server, `--repeat-each` | L-024, L-027, L-029, L-033 | "Tests" in `docs/conventions.md` |
+| Prerendered buttons that write wait for their data; `useLiveQuery` reads Dexie directly | L-026, L-028 | "React" in `docs/conventions.md` |
+| Sheets, back links, Reduce Motion, focus ring, safe areas | L-015, L-018 to L-021, L-023, L-025 | `docs/design-system.md` (Navigation, Sheets, Motion, Screen edges; L-020, L-025 lint- and test-guarded) |
+| Measure a visual glitch before fixing it | L-023 | "When things go wrong" in `CLAUDE.md` |
+| Read current vendor and platform docs before planning | L-004, L-016 | `CLAUDE.md`, after the context7 rule |
+| Steps written for bw (PowerShell, `cd`, prerequisites, masking, home-screen app) | L-001, L-005, L-010, L-011, L-017 | "Environment notes" in `CLAUDE.md` |
+| Workflow scripts, AWS CLI output, verifying IAM from the real caller, public logs | L-012, L-013, L-014 | "Workflows" in `docs/infra.md` |
+| `pnpm check` last before each commit; verify with the command that proves it | L-002, L-031 | `CLAUDE.md` work loop step 5 |
+| Look ahead and mid-milestone review; branch names | L-008, L-009 | `CLAUDE.md` work loop, "Git" in `docs/conventions.md` |
+| Actions minutes | L-030 | "Cost watch" in `docs/infra.md` (the repository is public, so the USD 12 cap no longer applies) |
+| Deploy only the latest `main` commit | L-022 | guarded in `deploy.yml` |
 
 ## How to write a lesson
 
@@ -297,3 +286,13 @@ At the end of each milestone, append a short retro here:
 - Rules removed or rewritten: …
 - What slowed us down most / what to try next milestone: …
 ```
+
+### Retro M0 and M1 · 2026-11-16
+M0 had no retro of its own, so this one covers both milestones.
+- **Lessons:** L-001 to L-014 (M0), L-015 to L-033 (M1). Nine of the M1 lessons share one root cause: the cloud container runs Chromium only, so failures in WebKit or on the iPhone surfaced in CI or in bw's hands. The rest group into e2e timing, steps written for bw, workflow scripts and process.
+- **Promoted to rules:** WebKit-green before a UI change is done, `pnpm check` last before a commit, measure a glitch before fixing it, read current vendor docs (`CLAUDE.md`); e2e and hydration rules (`docs/conventions.md`); workflow script rules and public logs (`docs/infra.md`); steps for bw (`CLAUDE.md` environment notes). "Active rules" went from 28 entries to one, plus a table of where the others live.
+- **Removed or rewritten:** the Actions minutes rule (the USD 12 cap applied only while the repository was private); the ADR numbering rule (L-007, one-off, no ADR has been mis-numbered since); `docs/conventions.md` no longer says e2e goes offline with `context.setOffline` (contradicted L-033); `docs/STATUS.md` was a 50 KB changelog read at the start of every session and now holds only the current state, with a line budget in its header and in `/finish-task`.
+- **Guards added:** none new in this retro; L-020 (lint), L-022, L-025, L-026, L-032 (tests) were already guarded. Candidate: a WebKit run in the cloud container would turn most of the WebKit lessons into local failures, but the container's Playwright ships Chromium only and must not be reinstalled.
+- **Dependencies (`pnpm outdated -r`):** only patch and minor updates (Next 16.4.6, Motion 14.14, Playwright 1.65, Vitest 5.1, Prettier 3.10, rolldown 1.3, next-intl 4.15). TypeScript 7 waits for `typescript-eslint` support; `@types/node` stays on 24 to match the Node 24 runtime. Proposed: one bump PR at the start of M2.
+- **Cost:** AWS month-to-date is checked by bw in the Billing console (the cloud container has no AWS credentials). Actions: November's included minutes ran out on 2026-11-15 (L-030); free since the repository went public.
+- **What slowed us down most:** WebKit-only e2e failures (each one cost a CI round trip and often a second fix) and a STATUS file that grew with every PR. Next milestone: read WebKit results before handing over, keep STATUS short.
