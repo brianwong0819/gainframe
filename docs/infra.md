@@ -52,6 +52,13 @@ Deploy details:
 - **Account ID.** Workflows build role ARNs from the `AWS_ACCOUNT_ID` repository secret. GitHub masks it in logs; the plan comment replaces it explicitly, because comments are not masked.
 - **Plan role and SSM.** Refreshing an `aws_ssm_parameter` decrypts it, so `gainframe-ci-plan` has `kms:Decrypt` on the `aws/ssm` key, only through SSM and only for `/gainframe/*` parameters. Only collaborators can trigger it: fork pull requests get no OIDC token.
 
+Workflow scripts:
+
+- A command whose failure matters runs on its own, never inside a pipeline or a `$(...)` with other commands; a smoke test asserts the healthy result (200 and `database: connected`), not just a response (L-014).
+- AWS CLI results are parsed as JSON (`--output json` piped to `jq`); text output repeats values once per page (L-013).
+- An identity or permission change (trust policy, IAM policy, secret) is verified from its real caller, a workflow run, not by reading the resource (L-012).
+- Workflow logs are public. Terraform output, plan text and `GITHUB_ENV` values appear in them; only repository secrets are masked. Anything that must stay private is a secret, masked with `::add-mask::`, or not printed.
+
 Actions are pinned to a full commit SHA. Workflow permissions default to `contents: read`; jobs add only what they need (`id-token: write` for OIDC, `pull-requests: write` for plan comments).
 
 ## Cost watch
