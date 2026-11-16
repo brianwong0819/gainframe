@@ -13,11 +13,12 @@ export function ServiceWorker() {
     const container = navigator.serviceWorker
     // A failed registration is left as an unhandled rejection on purpose: the
     // global handler in src/diagnostics (M1-03) records it.
-    void container
-      .register('/sw.js', { scope: '/', updateViaCache: 'none' })
-      .then((registration) => {
-        appUpdate.watch(registration, () => container.controller !== null, document)
-      })
+    void container.register('/sw.js', { scope: '/', updateViaCache: 'none' })
+    // `ready` resolves once a worker is active, with the same registration;
+    // it never resolves where workers are blocked (the e2e configuration).
+    void container.ready.then((registration) => {
+      appUpdate.watch(registration, () => container.controller !== null, document)
+    })
   }, [])
   return null
 }

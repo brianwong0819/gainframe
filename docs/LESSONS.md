@@ -54,6 +54,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-032 · 2026-11-16 · pwa · The update watcher threw on every page load in e2e
+- **What happened:** on #102 the Device layout job failed on both devices: Diagnostics listed "Cannot read properties of undefined (reading 'waiting')" instead of no errors.
+- **Root cause:** `<ServiceWorker>` passed the value `navigator.serviceWorker.register()` resolved with straight to the update watcher. With service workers blocked (the e2e configuration), Playwright resolves `register()` without a registration. The manual check ran with workers enabled, so it did not show.
+- **Fix:** #102 watches the registration from `navigator.serviceWorker.ready`, which resolves only once a worker is active and never where workers are blocked.
+- **Prevention:** `e2e/diagnostics.spec.ts` expects no recorded error after opening the app, so any error thrown on load fails it on every device.
+- **Status:** guarded
+
 ### L-031 · 2026-11-16 · process · A pull request was pushed with a lint error
 - **What happened:** the first push of #100 failed "Check and build": `e2e/diagnostics.spec.ts` read the recorded clipboard text as `any` (`@typescript-eslint/no-unsafe-*`). A second commit fixed it before review.
 - **Root cause:** `pnpm check` ran before the e2e spec was written; the spec was then run with Playwright only, which does not lint, and the branch was committed without checking again.
