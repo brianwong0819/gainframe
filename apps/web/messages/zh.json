@@ -73,7 +73,6 @@
     "discard": "放弃这次训练",
     "discardConfirm": "确认放弃（删除已完成的 {done} 组）",
     "plans": "训练计划",
-    "plansActive": "当前：{name}",
     "plansNone": "还没有计划",
     "target": "目标 {reps} 次",
     "best": "最高 {weight}",
@@ -95,7 +94,8 @@
     "elapsed": "训练时长",
     "setsUnit": "组",
     "allDone": "{done} 组全部完成",
-    "completeValues": "完成"
+    "completeValues": "完成",
+    "nextSet": "下一组：{name} · 组 {n}"
   },
   "summary": {
     "title": "训练完成",
@@ -292,7 +292,9 @@
     "addToPlan": "加入计划",
     "noPlansToAdd": "还没有训练计划。先在「训练 → 训练计划」建一个。",
     "add": "加入",
-    "added": "已加入"
+    "added": "已加入",
+    "estimate": "约 {duration}",
+    "lastTime": "上次 {date}"
   },
   "settings": {
     "title": "设置",
@@ -326,5 +328,10 @@
     "title": "有新版本",
     "hint": "更新后会重新打开 App，数据不受影响。",
     "apply": "更新"
+  },
+  "week": {
+    "title": "本周",
+    "figures": "<num>{workouts}</num> 次 · <num>{sets}</num> 组",
+    "trained": "{day}，已训练"
   }
 }

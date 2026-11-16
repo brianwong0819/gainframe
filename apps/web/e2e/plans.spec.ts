@@ -122,6 +122,8 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await page.getByRole('link', { name: '训练计划' }).click()
   await page.getByRole('link', { name: '训练', exact: true }).first().click()
   await expect(page.getByText('第 1/2 天 · 新计划')).toBeVisible()
+  // Three sets of 45 s with the bench press's 3:00 rest, to the nearest five minutes.
+  await expect(page.getByText('约 10 分钟')).toBeVisible()
   await page.getByRole('button', { name: '开始「推」' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await expect(page.getByText('目标 8–12 次')).toBeVisible()

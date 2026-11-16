@@ -37,6 +37,13 @@ export {
   supersetLabels,
   unlinkFromNext,
 } from './domain/superset.ts'
+export {
+  estimateDurationS,
+  lastOfPlanDay,
+  summarizeWeek,
+  type WeekSummary,
+  weekDates,
+} from './domain/week.ts'
 export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,

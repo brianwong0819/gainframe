@@ -73,7 +73,6 @@
     "discard": "Discard workout",
     "discardConfirm": "Confirm: delete it and its {done, plural, one {# done set} other {# done sets}}",
     "plans": "Plans",
-    "plansActive": "Current: {name}",
     "plansNone": "No plan yet",
     "target": "target {reps} reps",
     "best": "best {weight}",
@@ -95,7 +94,8 @@
     "elapsed": "Elapsed",
     "setsUnit": "sets",
     "allDone": "{done, plural, one {# set} other {All # sets}} done",
-    "completeValues": "Complete"
+    "completeValues": "Complete",
+    "nextSet": "Next: {name} · set {n}"
   },
   "summary": {
     "title": "Workout done",
@@ -292,7 +292,9 @@
     "addToPlan": "Add to plan",
     "noPlansToAdd": "No plans yet. Make one under Workout → Plans.",
     "add": "Add",
-    "added": "Added"
+    "added": "Added",
+    "estimate": "about {duration}",
+    "lastTime": "Last time {date}"
   },
   "settings": {
     "title": "Settings",
@@ -326,5 +328,10 @@
     "title": "A new version is ready",
     "hint": "Updating reopens the app; your data stays.",
     "apply": "Update"
+  },
+  "week": {
+    "title": "This week",
+    "figures": "<num>{workouts}</num> {workouts, plural, one {workout} other {workouts}} · <num>{sets}</num> {sets, plural, one {set} other {sets}}",
+    "trained": "{day}, trained"
   }
 }

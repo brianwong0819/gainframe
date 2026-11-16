@@ -171,3 +171,45 @@ test('the header counts the sets, and the finish prompt replaces the panel', asy
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/summary\/?#.+$/)
 })
+
+test('the Workout tab shows the workout in progress, then the week it counts for', async ({
+  page,
+}) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃卧推')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃卧推/ })
+    .click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await page.getByRole('button', { name: '加一组' }).click()
+  await page.getByRole('button', { name: '组 1', exact: true }).click()
+  const panel = page.locator('.set-panel')
+  await panel.getByRole('button', { name: '完成第 1 组' }).click()
+  await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  const rest = page.getByRole('dialog', { name: '组间休息' })
+  await rest.getByRole('button', { name: '开始下一组' }).click()
+  await expect(rest).toBeHidden()
+
+  await page.getByRole('link', { name: '训练', exact: true }).first().click()
+  const card = page.getByRole('link', { name: /继续训练/ })
+  await expect(card).toContainText('下一组：杠铃卧推 · 组 2')
+  await expect(card).toContainText('1/2 组')
+  await expect(card.getByRole('timer')).toHaveText(/^\d+:\d{2}$/)
+  // Nothing is finished yet, so there is no week to show.
+  await expect(page.getByRole('heading', { name: '本周' })).toBeHidden()
+
+  await card.click()
+  await panel.getByRole('button', { name: '完成第 2 组' }).click()
+  await expect(page.getByRole('button', { name: '取消完成第 2 组' })).toBeVisible()
+  await page.getByRole('button', { name: '结束训练' }).first().click()
+  await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
+  await expect(page).toHaveURL(/\/workout\/summary\/?#.+$/)
+  await page.getByRole('link', { name: '训练', exact: true }).first().click()
+
+  const week = page.locator('section').filter({ has: page.getByRole('heading', { name: '本周' }) })
+  await expect(week).toContainText('1 次 · 2 组')
+  await expect(week.getByRole('listitem', { name: /，已训练$/ })).toHaveCount(1)
+})

@@ -37,4 +37,6 @@ export const domainConfig = {
   // A workout finished this long after its last completed set was most likely
   // left open; its duration then ends at that set.
   forgottenFinishS: 30 * 60,
+  // The time one set takes, for the estimated length of a planned day.
+  setWorkS: 45,
 } as const
