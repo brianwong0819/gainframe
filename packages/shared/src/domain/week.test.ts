@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout } from '../schemas/workout.ts'
-import { estimateDurationS, lastOfPlanDay, summarizeWeek, weekDates } from './week.ts'
+import {
+  estimateDurationS,
+  lastOfPlanDay,
+  summarizeWeek,
+  totalWorkouts,
+  weekDates,
+} from './week.ts'
 import type { WorkoutSummaryEntry } from './workout-summary.ts'
 
 const date = (text: string) => localDateSchema.parse(text)
@@ -87,6 +93,14 @@ describe('summarizeWeek', () => {
       setsDone: 0,
       volumeKg: 0,
     })
+  })
+})
+
+describe('totalWorkouts', () => {
+  it('adds up workouts, sets and volume, and is zero for none', () => {
+    const entries = [entry(1, '2026-11-15', PUSH, 12, 2400), entry(2, '2026-11-16', null, 4, 500)]
+    expect(totalWorkouts(entries)).toEqual({ workouts: 2, setsDone: 16, volumeKg: 2900 })
+    expect(totalWorkouts([])).toEqual({ workouts: 0, setsDone: 0, volumeKg: 0 })
   })
 })
 

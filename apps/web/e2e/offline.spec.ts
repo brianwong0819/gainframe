@@ -80,12 +80,11 @@ test('a workout logged offline is listed in history', async ({ page }) => {
   await expect(page).toHaveURL(/\/workout\/history\/?$/)
   const card = page.getByRole('main').getByRole('listitem')
   await expect(card).toHaveCount(1)
-  await expect(card).toContainText('杠铃卧推 · 3 组')
-  await expect(card).toContainText('组数3')
+  await expect(card).toContainText('杠铃卧推')
   // 60 × 8 + 62.5 × 8 + 65 × 8
-  await expect(card).toContainText('1,500 kg')
+  await expect(card).toContainText('3 组 · 1,500 kg')
 
   // A cold start while still offline shows the same history from the device.
   await page.reload()
-  await expect(page.getByRole('main').getByRole('listitem')).toContainText('杠铃卧推 · 3 组')
+  await expect(page.getByRole('main').getByRole('listitem')).toContainText('3 组 · 1,500 kg')
 })

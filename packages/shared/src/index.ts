@@ -41,6 +41,7 @@ export {
   estimateDurationS,
   lastOfPlanDay,
   summarizeWeek,
+  totalWorkouts,
   type WeekSummary,
   weekDates,
 } from './domain/week.ts'

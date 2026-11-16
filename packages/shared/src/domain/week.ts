@@ -17,14 +17,26 @@ export function weekDates(today: LocalDate): LocalDate[] {
   )
 }
 
-export interface WeekSummary {
+export interface WorkoutTotals {
+  workouts: number
+  setsDone: number
+  volumeKg: number
+}
+
+// What a list of finished workouts adds up to: a week, or a month of history.
+export function totalWorkouts(entries: readonly WorkoutSummaryEntry[]): WorkoutTotals {
+  return {
+    workouts: entries.length,
+    setsDone: entries.reduce((sum, { summary }) => sum + summary.setsDone, 0),
+    volumeKg: entries.reduce((sum, { summary }) => sum + summary.volumeKg, 0),
+  }
+}
+
+export interface WeekSummary extends WorkoutTotals {
   // Monday to Sunday.
   dates: LocalDate[]
   // The dates of the week with a finished workout.
   trained: LocalDate[]
-  workouts: number
-  setsDone: number
-  volumeKg: number
 }
 
 // What the finished workouts of `today`'s week add up to. A workout counts for
@@ -38,9 +50,7 @@ export function summarizeWeek(
   return {
     dates,
     trained: dates.filter((date) => inWeek.some(({ workout }) => workout.localDate === date)),
-    workouts: inWeek.length,
-    setsDone: inWeek.reduce((sum, { summary }) => sum + summary.setsDone, 0),
-    volumeKg: inWeek.reduce((sum, { summary }) => sum + summary.volumeKg, 0),
+    ...totalWorkouts(inWeek),
   }
 }
 
