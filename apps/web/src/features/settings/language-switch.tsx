@@ -6,7 +6,7 @@ import { chooseLocale } from '@/i18n/locale-store'
 import { LOCALES } from '@/i18n/locale'
 import { Pressable } from '@/ui/pressable'
 
-// The language setting, on Today until Settings exists (M1-11).
+// The language setting, in Settings.
 export function LanguageSwitch() {
   const t = useTranslations('language')
   const locale = useLocale()

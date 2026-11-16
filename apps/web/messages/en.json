@@ -60,7 +60,10 @@
     "saveNote": "Save",
     "removeExercise": "Remove from this workout",
     "weightLabel": "Weight, set {n}",
-    "unit": { "kg": "kg", "lb": "lb" },
+    "unit": {
+      "kg": "kg",
+      "lb": "lb"
+    },
     "unitSwitch": "Show and enter this exercise’s weight in {unit}",
     "inKg": "≈ {weight} kg",
     "repsLabel": "Reps, set {n}",
@@ -286,5 +289,23 @@
     "noPlansToAdd": "No plans yet. Make one under Workout → Plans.",
     "add": "Add",
     "added": "Added"
+  },
+  "settings": {
+    "title": "Settings",
+    "diagnostics": "Diagnostics",
+    "diagnosticsHint": "Version, storage and error log"
+  },
+  "diagnostics": {
+    "release": "Version",
+    "persisted": "Storage on this device",
+    "persistedYes": "Persistent",
+    "persistedNo": "Not persistent",
+    "persistedUnknown": "Unknown",
+    "persistedNoHint": "The system may clear data on this device when space runs low. Opening the app from the Home Screen asks again.",
+    "errors": "Recent errors ({count})",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
+    "noErrors": "No errors recorded."
   }
 }

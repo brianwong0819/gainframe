@@ -12,6 +12,8 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'plans', path: '/workout/plans', parent: '/workout' },
   { name: 'plan', path: '/workout/plan', parent: '/workout/plans' },
   { name: 'food', path: '/food' },
+  { name: 'settings', path: '/settings', parent: '/' },
+  { name: 'diagnostics', path: '/settings/diagnostics', parent: '/settings' },
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
   { name: 'rest-timer', path: '/dev/rest-timer' },
   { name: 'database', path: '/dev/database' },

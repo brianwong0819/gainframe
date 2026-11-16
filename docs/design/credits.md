@@ -5,3 +5,4 @@ Sources of UI patterns, components or effects we adapted. Required for anything 
 | What we built | Source (URL) | Licence | Notes |
 |---|---|---|---|
 | Number font (self-hosted latin subset, `apps/web/src/styles/fonts/`) | Martian Mono, https://github.com/evilmartians/mono | SIL OFL 1.1 (`OFL.txt` alongside) | woff2 from Google Fonts |
+| Settings gear icon (`apps/web/src/features/settings/settings-link.tsx`) | Feather "settings", https://github.com/feathericons/feather | MIT | Path copied; stroke width matches the tab icons |
