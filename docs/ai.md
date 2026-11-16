@@ -1,6 +1,6 @@
 # AI features
 
-Three uses only: estimate food from a photo; write the weekly report and plateau analysis; answer fitness questions using the user's own data. **Rules find problems; AI explains them.** No model training.
+Three uses only: estimate food from a photo or a one-sentence description; write the weekly report and plateau analysis; answer fitness questions using the user's own data. **Rules find problems; AI explains them.** No model training.
 
 ## Rules
 
@@ -32,7 +32,7 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 
 | Command | Data | Metric |
 |---|---|---|
-| `pnpm eval:vision` | 30–50 labelled food photos (private S3 / local, not in git) + labels JSON | mean absolute error for protein g and kcal, per prompt version |
+| `pnpm eval:vision` | 30–50 labelled food photos (private S3 / local, not in git) + labels JSON; from M3-10 also the same meals described in a sentence | mean absolute error for protein g and kcal, per prompt version, photo and text reported separately |
 | `pnpm eval:guard` | ≥ 50 in-scope and out-of-scope questions | accuracy, false-refusal rate |
 | `pnpm eval:summary` | fixed stats snapshots | every number in the text matches the snapshot (rule assertions) |
 | `pnpm eval:coach` | fixed user data + questions | correct tool chosen, refusals correct, cites real numbers |

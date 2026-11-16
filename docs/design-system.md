@@ -61,6 +61,49 @@ Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(ta
 
 **Rest timer.** Completing a set with sets still to do opens the rest sheet (`features/workout/rest-timer.tsx`): a ring that empties with `soft` as the rest runs out, the time left in the display size, −15 / +15 and "开始下一组 / Start next set", which ends the rest. Closing or dragging the sheet down collapses it to a pill centred above the set panel (`.workout-dock`, which keeps both above the tab bar); the pill enters with `pop` and reopens the sheet. When the rest is over the pill turns `--accent`, reads "休息结束 +0:42" and a tap stops the cue and ends the rest. A rest that ended while the app was hidden shows a one-line note that a locked phone gives no alert (ADR-0005).
 
+## Food logging
+
+Designed ahead of M3 (2026-11-16); the reference is the design canvas at https://claude.ai/artifact/Ly4iif3XkkrvymEdLj4TX4 (ten artboards: the seven screens below and three Today card options, of which bw chose C). Where the canvas and the older prototype disagree on food screens, the canvas wins. Sample data uses local dishes (chicken rice, mixed rice), which is also what the eval set should contain.
+
+**The question each screen answers.** Food tab: how much protein is still missing today? Confirm: is this meal right? Protein is always shown before energy, because protein is the number a user who is trying to gain acts on meal by meal; the energy surplus is judged over the day.
+
+**Food tab (`/food`).** Top to bottom:
+
+1. Header with the date and previous / next day buttons (next is disabled on today).
+2. The day card: "还差 42 g / 42 g to go" in the display number, eaten / target beside the label, a bar with one `--accent` segment per meal on a `--sunk` track, then energy eaten / target on one line. When the target is met the number is the amount eaten in `--accent` with "今天达标 / Target met". `--short` is not used during the day; a gap is not a failure until the day is over.
+3. Three entry points in one row, in the thumb zone: Photo (the only `--accent` button on the screen), Frequent and Manual.
+4. Frequent foods as one row of pills that scrolls sideways; a tap logs one portion at once (meal type from the time of day) and shows the confirmation toast with Undo. This is the path that meets the M3-02 target of 10 seconds.
+5. Today's meals, newest first: time and meal type, a title (the first item, or the dish name the model gave), the item names on one line, energy and protein (`--accent`) at the right, and the `AI` source tag on estimated meals. A tap opens the meal in the confirm screen for editing; a swipe left deletes it (`src/ui/swipe-row.tsx`).
+
+**Photo flow.** The Photo button opens the system picker (camera or library) from a file input; no custom camera. The chosen photo appears at once on the estimating screen with a scan line (one `--accent` line moving with `transform`; hidden under Reduce Motion), skeleton rows where the result will be, the meal type control already usable, a line saying the wait is usually 3 to 8 seconds and that the photo is deleted after 30 days, and "不等了，手动输入 / Enter it by hand" at the bottom. The result replaces the skeletons in place; the screen does not change.
+
+**Confirm screen.** Back link, title, "重拍 / Retake". The photo (cropped to a band, with the `AI` tag and the item count), the meal type segmented control, then protein and energy totals in the large number size, and one line: "记入后今天蛋白质 142 / 140 g，达标" (or "还差 n g"), so the effect on the day is known before saving. Items are one group:
+
+- Each row: the name as a button with a pencil mark, protein and energy for the row, and a gram stepper (`src/ui/stepper.tsx`, steps of 10 g, typing allowed). A row that used a remembered correction says so in one `--ink-2` line.
+- "油和酱 / Oil and sauce" is always the last row, with a three-way control (少 / 正常 / 多) and the energy it adds. The model cannot see oil; asking is more honest than guessing silently, and it is the largest error in cooked dishes.
+- "+ 添加食物 / Add food" opens the manual screen.
+
+The save button ("记入晚餐 / Log dinner") is docked at the bottom. Saving returns to the Food tab, the new row enters with `std`, the day card's numbers roll, and a toast offers Undo; reaching the protein target plays the existing Ripple tier once.
+
+**Correcting a name.** A tap on a name opens a sheet: what the model saw, its alternative names as pills with their protein for the same weight (the first tap target, since the right answer is usually among them), a text field for anything else, the "记住这次纠正 / Remember this correction" switch (on by default) and Save. The sheet has the standard close button.
+
+**Manual screen (`/food/add`).** A search field over the user's own foods, a row "写一句话来记 / Describe it in a sentence" with the `AI` tag, then Frequent and Recent lists. Each row has a plus button; after the first tap it shows a minus button and the count, so several foods and several portions are chosen before saving. The dock holds "新建食物 / New food" and the save button, which reads "先选食物" until something is chosen and then names the meal, the item count and the protein. A new food is a sheet with four fields (name, grams per portion, protein and energy per portion) and the hint to copy them from the nutrition label once; it is saved by being logged, so it appears under Frequent afterwards. A sentence is estimated by the same endpoint as a photo and lands on the same confirm screen, without a photo band.
+
+**States.** Each replaces the skeleton rows on the estimating screen, with a title, one sentence and two buttons, in ordinary `--ink` text (none is the user's failure, so none uses `--short`):
+
+| State | Message | Actions |
+|---|---|---|
+| Offline when the photo is taken | The meal is saved as "待估算 / Waiting for estimate" with the photo kept on the device; it is estimated when the app is next online and then asks for confirmation | Enter by hand |
+| Estimate failed or took over 20 s | The photo is kept | Retry, enter by hand |
+| No food recognised | Advice on framing and light | Retake, enter by hand |
+| Daily cap reached | The count and when it resets | Frequent, enter by hand |
+
+A meal waiting for its estimate counts as zero in the day's totals and says so in its row; it never shows invented numbers.
+
+**Today card (option C).** The Food tab's day card, followed, when protein is short and the user has frequent foods, by "用你常吃的补上 / Fill it with your usual", up to two of the user's frequent foods chosen by a rule to cover the gap with the fewest items, each with its protein, its energy and a plus button that logs it, and a line with their sum. When a workout was finished today the heading names it ("今天练了腿") and carries the "训练联动 / From training" tag. The suggestion is a pure function in `packages/shared/src/domain`; no model call is involved. With no frequent foods yet the card ends after the bar and offers the Photo button instead.
+
+**Wording.** Estimates are called estimates everywhere ("AI 估算"), never "识别结果" or "accurate". No streaks, scores or praise for eating; the only celebration is the protein target.
+
 ## Celebrations (three tiers, only at meaningful moments)
 
 | Tier | When | Effect |
@@ -75,7 +118,7 @@ Timing rules (`src/ui/celebration.ts`, one canvas over the page, `celebrationTim
 
 ## Screens defined by the prototype
 
-Today (surplus gauge, protein ring, today's workout, weight 7-day average with target corridor, weekly AI summary) · Workout (set table, steppers, rest sheet that collapses to a pill) · Food + photo confirm (gram steppers, tap-to-correct names with AI alternatives, add oil/sauce, "remember this correction").
+Today (surplus gauge, today's workout, weight 7-day average with target corridor, weekly AI summary) · Workout (set table, steppers, rest sheet that collapses to a pill). The prototype's protein ring and food screens are superseded by "Food logging" above.
 
 ## Screen edges
 
