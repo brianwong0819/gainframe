@@ -51,7 +51,8 @@ export function TabBar() {
   const pathname = usePathname().replace(/(.)\/$/, '$1')
   const active = tabs.findIndex((tab) =>
     tab.href === '/'
-      ? pathname === '/'
+      ? // Settings opens from Today, so Today stays selected there.
+        pathname === '/' || pathname === '/settings' || pathname.startsWith('/settings/')
       : pathname === tab.href || pathname.startsWith(`${tab.href}/`),
   )
 

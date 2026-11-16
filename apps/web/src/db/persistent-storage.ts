@@ -8,3 +8,16 @@ export async function requestPersistentStorage(
   if (await storage.persisted()) return true
   return storage.persist()
 }
+
+/** Whether storage is persistent, for Diagnostics; null when the browser cannot say. */
+export async function readPersisted(
+  storage: Pick<StorageManager, 'persisted'> | undefined,
+): Promise<boolean | null> {
+  if (storage === undefined) return null
+  try {
+    return await storage.persisted()
+  } catch {
+    // Some browsers reject in private mode; the answer is then unknown.
+    return null
+  }
+}

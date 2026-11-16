@@ -3,9 +3,8 @@
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-import { release } from '@/release'
+import { SettingsLink } from '@/features/settings/settings-link'
 
-import { LanguageSwitch } from './language-switch'
 import { TabScreen } from './tab-screen'
 
 // Dev builds only; English because these are developer tools outside the i18n
@@ -19,9 +18,8 @@ const devPages = [
 export default function TodayPage() {
   const t = useTranslations('today')
   return (
-    <TabScreen title={t('title')}>
+    <TabScreen title={t('title')} action={<SettingsLink />}>
       <p className="text-body text-ink-2">{t('empty')}</p>
-      <LanguageSwitch />
       {process.env.NEXT_PUBLIC_DEV_PAGES === '1' && (
         <nav aria-label="Dev pages" className="flex flex-col">
           {devPages.map((page) => (
@@ -29,9 +27,6 @@ export default function TodayPage() {
               {page.label}
             </Link>
           ))}
-          {/* Which build is running, for checking a deploy on the phone. Moves
-              to the diagnostics page in M1-11. */}
-          <p className="num py-12 text-label text-ink-3">Release {release.slice(0, 7)}</p>
         </nav>
       )}
     </TabScreen>

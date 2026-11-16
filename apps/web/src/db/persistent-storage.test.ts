@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { requestPersistentStorage } from './persistent-storage'
+import { readPersisted, requestPersistentStorage } from './persistent-storage'
 
 function storage(persisted: boolean, grant: boolean) {
   return {
@@ -24,5 +24,17 @@ describe('requestPersistentStorage', () => {
 
   it('returns false where the Storage API is missing', async () => {
     expect(await requestPersistentStorage(undefined)).toBe(false)
+  })
+})
+
+describe('readPersisted', () => {
+  it('returns the browser answer', async () => {
+    expect(await readPersisted(storage(false, false))).toBe(false)
+    expect(await readPersisted(storage(true, false))).toBe(true)
+  })
+
+  it('returns null without the Storage API or when the query fails', async () => {
+    expect(await readPersisted(undefined)).toBeNull()
+    expect(await readPersisted({ persisted: () => Promise.reject(new Error('denied')) })).toBeNull()
   })
 })

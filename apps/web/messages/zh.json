@@ -60,7 +60,10 @@
     "saveNote": "保存",
     "removeExercise": "从这次训练移除这个动作",
     "weightLabel": "第 {n} 组重量",
-    "unit": { "kg": "kg", "lb": "lb" },
+    "unit": {
+      "kg": "kg",
+      "lb": "lb"
+    },
     "unitSwitch": "这个动作改用 {unit} 显示和输入重量",
     "inKg": "≈ {weight} kg",
     "repsLabel": "第 {n} 组次数",
@@ -286,5 +289,23 @@
     "noPlansToAdd": "还没有训练计划。先在「训练 → 训练计划」建一个。",
     "add": "加入",
     "added": "已加入"
+  },
+  "settings": {
+    "title": "设置",
+    "diagnostics": "诊断",
+    "diagnosticsHint": "版本、存储和错误记录"
+  },
+  "diagnostics": {
+    "release": "版本",
+    "persisted": "本机存储",
+    "persistedYes": "已持久保存",
+    "persistedNo": "未持久保存",
+    "persistedUnknown": "无法确认",
+    "persistedNoHint": "空间不足时系统可能清除本机数据。从主屏幕打开 App 会再次申请。",
+    "errors": "最近错误（{count}）",
+    "copy": "复制",
+    "copied": "已复制",
+    "copyFailed": "复制失败",
+    "noErrors": "没有错误记录。"
   }
 }

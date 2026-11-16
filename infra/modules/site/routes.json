@@ -2,6 +2,8 @@
   "pages": [
     "/",
     "/food",
+    "/settings",
+    "/settings/diagnostics",
     "/workout",
     "/workout/exercises",
     "/workout/history",
