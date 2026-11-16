@@ -11,6 +11,8 @@ import { formatErrorReport } from '@/diagnostics/error-report'
 import { release } from '@/release'
 import { Pressable } from '@/ui/pressable'
 
+import { ExportData } from './export-data'
+
 const loadErrors = () => recentErrors(db)
 
 // How long "Copied" shows on the button before it reads "Copy" again.
@@ -26,7 +28,8 @@ function usePersisted(): boolean | null | undefined {
 }
 
 // What a developer needs from the phone without Web Inspector: the build, the
-// storage guarantee and the errors recorded by src/diagnostics.
+// storage guarantee, a backup of the data and the errors recorded by
+// src/diagnostics.
 export function Diagnostics() {
   const t = useTranslations('diagnostics')
   const locale = useLocale()
@@ -104,6 +107,8 @@ export function Diagnostics() {
           {persisted === false && <p className="text-label text-ink-3">{t('persistedNoHint')}</p>}
         </div>
       </dl>
+
+      <ExportData />
 
       <section className="flex flex-col gap-12">
         <div className="flex items-center justify-between gap-12">
