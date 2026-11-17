@@ -205,7 +205,7 @@ export function SetTable({
         onClick={onAddSet}
         className="self-start rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink"
       >
-        {t('addSet')}
+        {t(supersetLabel === null ? 'addSet' : 'addRound')}
       </Pressable>
     </section>
   )

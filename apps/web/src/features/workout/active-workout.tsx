@@ -6,6 +6,7 @@ import {
   setOrder,
   supersetBlocks,
   supersetLabels,
+  supersetValue,
   totalVolumeKg,
   type Workout,
   type WorkoutSet,
@@ -25,7 +26,8 @@ import { Sheet } from '@/ui/sheet'
 import { SupersetBlock } from '@/ui/superset-block'
 
 import { ExerciseDetail } from '../exercises/exercise-detail'
-import { exerciseName, findLibraryEntry } from '../exercises/library'
+import { exerciseName, findLibraryEntry, formatRest } from '../exercises/library'
+import { itemRestS } from '../plans/estimate'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
 import { markJustFinished } from './just-finished'
@@ -36,6 +38,7 @@ import { SetDetails } from './set-details'
 import { SetPanel } from './set-panel'
 import { SetTable } from './set-table'
 import { SlotActions } from './slot-actions'
+import { SupersetRestSheet } from './superset-rest-sheet'
 
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
@@ -49,6 +52,8 @@ type SheetContent =
   | { kind: 'actions'; slotId: string }
   | { kind: 'exercise'; exerciseId: string }
   | { kind: 'rest' }
+  // A superset's rest, found through one of its members.
+  | { kind: 'superset'; slotId: string }
 
 // The set the panel edits: the one the user tapped while it is still there and
 // not done, else the first set not done yet in the order they are done in
@@ -184,6 +189,12 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     sheet?.kind === 'actions'
       ? state.slots.find(({ slot }) => slot.id === sheet.slotId)?.slot
       : undefined
+  const sheetSuperset =
+    sheet?.kind === 'superset'
+      ? supersetBlocks(slotRows).find(
+          ({ letter, items }) => letter !== null && items.some(({ id }) => id === sheet.slotId),
+        )
+      : undefined
   const sheetExercise =
     sheet?.kind === 'exercise' ? findLibraryEntry(sheet.exerciseId, custom) : undefined
   const title = {
@@ -193,6 +204,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     set: sheet?.kind === 'set' ? `${t('colSet')} ${String(sheet.n)}` : '',
     actions: sheetSlot ? nameOf(sheetSlot.exerciseId) : '',
     rest: t('restTitle'),
+    superset: t('supersetSheetTitle', { letter: sheetSuperset?.letter ?? '' }),
   }
 
   // One exercise's card.
@@ -264,7 +276,13 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
           <SupersetBlock
             key={letter}
             title={t('supersetTitle', { letter })}
-            detail={roundOf(items.map(({ id }) => id))}
+            detail={t('supersetDetail', {
+              round: roundOf(items.map(({ id }) => id)),
+              time: formatRest(supersetValue(items, (slot) => itemRestS(slot, custom))),
+            })}
+            onEdit={() => {
+              if (items[0]) open({ kind: 'superset', slotId: items[0].id })
+            }}
           >
             {cards}
           </SupersetBlock>
@@ -337,6 +355,16 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             slots={slotRows}
             nameOf={nameOf}
             onDone={close}
+            onLinked={() => {
+              setSheet({ kind: 'superset', slotId: sheetSlot.id })
+            }}
+          />
+        )}
+        {sheetSuperset && (
+          <SupersetRestSheet
+            members={sheetSuperset.items}
+            names={sheetSuperset.items.map(({ exerciseId }) => nameOf(exerciseId))}
+            custom={custom}
           />
         )}
         {sheet?.kind === 'picker' && (

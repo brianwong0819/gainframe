@@ -9,6 +9,7 @@ import {
   restSlotAfter,
   setsTakingWeight,
   sharedValueChanges,
+  supersetMembers,
   stepToGrid,
   toKg,
   toLocalDate,
@@ -251,12 +252,21 @@ export function createWorkoutSession(
       })
     },
 
-    // Appends a set to an exercise slot, prefilled.
+    // Appends a set to an exercise slot, prefilled. In a superset it appends a
+    // round, a set to every member, so the members keep the same number of
+    // sets; returns the first member's new set, where the round starts.
     async addSet(slotId: string): Promise<WorkoutSet> {
       return db.transaction('rw', writeTables, async () => {
         const slot = await repos.workoutExercises.get(slotId)
         if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
-        return createSet(slot, await getWorkout(slot.workoutId))
+        const workout = await getWorkout(slot.workoutId)
+        const added: WorkoutSet[] = []
+        for (const member of supersetMembers(await liveSlots(workout.id), slotId)) {
+          added.push(await createSet(member, workout))
+        }
+        const [first] = added
+        if (first === undefined) throw new Error(`No live exercise slot ${slotId}`)
+        return first
       })
     },
 
@@ -321,9 +331,10 @@ export function createWorkoutSession(
     // Joins an exercise with the one after it into a superset, or splits the
     // superset between them.
     // A new superset starts with the longest rest of its members, which keep
-    // it if they are split again.
+    // it if they are split again, and a member with fewer sets gets sets added
+    // until every member has as many as the one with the most.
     async linkWithNext(slotId: string, linked: boolean): Promise<void> {
-      await db.transaction('rw', db.workoutExercises, db.outbox, db.exercises, async () => {
+      await db.transaction('rw', [...writeTables, db.exercises], async () => {
         const slot = await repos.workoutExercises.get(slotId)
         if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
         const slots = await liveSlots(slot.workoutId)
@@ -335,6 +346,30 @@ export function createWorkoutSession(
         const rests = sharedValueChanges(await liveSlots(slot.workoutId), restOf, (s) => s.restS)
         for (const { id, value } of rests) {
           await repos.workoutExercises.update(id, { restS: value })
+        }
+        if (!linked) return
+        const workout = await getWorkout(slot.workoutId)
+        const members = supersetMembers(await liveSlots(workout.id), slotId)
+        const counts = new Map<string, number>()
+        for (const member of members)
+          counts.set(member.id, (await slotSets(member.id)).filter(live).length)
+        const rounds = Math.max(...counts.values())
+        for (const member of members) {
+          for (let n = counts.get(member.id) ?? rounds; n < rounds; n += 1) {
+            await createSet(member, workout)
+          }
+        }
+      })
+    },
+
+    // Sets the rest of a slot's superset, taken after each round, on every
+    // member; on the slot alone when it stands alone.
+    async setSupersetRest(slotId: string, restS: number): Promise<void> {
+      await db.transaction('rw', db.workoutExercises, db.outbox, async () => {
+        const slot = await repos.workoutExercises.get(slotId)
+        if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
+        for (const { id } of supersetMembers(await liveSlots(slot.workoutId), slotId)) {
+          await repos.workoutExercises.update(id, { restS })
         }
       })
     },

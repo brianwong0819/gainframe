@@ -24,23 +24,25 @@ test('three rounds of A1/A2 rest only at the end of each round', async ({ page }
       .last()
   const bench = card('杠铃卧推')
   const squat = card('杠铃深蹲')
-  for (const card of [bench, squat]) {
-    await card.getByRole('button', { name: '加一组' }).click()
-    await card.getByRole('button', { name: '加一组' }).click()
-    await expect(card.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
-  }
+  await bench.getByRole('button', { name: '加一组' }).click()
+  await bench.getByRole('button', { name: '加一组' }).click()
+  await expect(bench.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
 
-  // Joined from the bench press's options, the two show as one block.
+  // Joined from the bench press's options, the two show as one block with as
+  // many sets each, and the sheet turns to the superset's one rest, starting
+  // from the longer of the two (the bench press's 3:00).
   await page.getByRole('button', { name: '杠铃卧推 的选项' }).click()
-  const join = page.getByRole('dialog').getByRole('button', { name: '和「杠铃深蹲」组成超级组' })
-  await join.click()
-  await expect(
-    page.getByRole('dialog').getByRole('button', { name: '和「杠铃深蹲」拆开' }),
-  ).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('dialog').getByRole('button', { name: '关闭' }).click()
-  await expect(page.getByRole('dialog')).toBeHidden()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('button', { name: '和「杠铃深蹲」组成超级组' }).click()
+  await expect(dialog.getByRole('heading', { name: '超级组 A' })).toBeVisible()
+  await expect(dialog.locator('output')).toHaveText('3:00')
+  await dialog.getByRole('button', { name: '少休息 15 秒' }).click()
+  await expect(dialog.locator('output')).toHaveText('2:45')
+  await dialog.getByRole('button', { name: '关闭' }).click()
+  await expect(dialog).toBeHidden()
   const block = page.getByRole('region', { name: '超级组 A · 轮流做' })
-  await expect(block).toContainText('第 1/3 轮')
+  await expect(block.getByRole('button', { name: /第 1\/3 轮 · 休息 2:45/ })).toBeVisible()
+  await expect(squat.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
   await expect(bench.getByText('A1', { exact: true })).toBeVisible()
   await expect(squat.getByText('A2', { exact: true })).toBeVisible()
 
@@ -76,6 +78,11 @@ test('three rounds of A1/A2 rest only at the end of each round', async ({ page }
   }
 
   await expect(block).toContainText('第 3/3 轮')
+
+  // A superset grows by a round: one more set for each exercise.
+  await squat.getByRole('button', { name: '加一轮' }).click()
+  await expect(block).toContainText('第 4/4 轮')
+  await expect(bench.getByRole('button', { name: '完成第 4 组' })).toBeVisible()
 
   // Splitting the pair makes both exercises standalone again.
   await page.getByRole('button', { name: '杠铃卧推 的选项' }).click()
