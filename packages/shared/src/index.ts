@@ -54,6 +54,7 @@ export {
   nextSetValues,
   previousPerformance,
   type RecordKind,
+  setsTakingWeight,
   type SetValues,
   totalVolumeKg,
 } from './domain/workout.ts'

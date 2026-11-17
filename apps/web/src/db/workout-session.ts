@@ -9,6 +9,7 @@ import {
   previousPerformance,
   restSeconds,
   restSlotAfter,
+  setsTakingWeight,
   stepToGrid,
   toKg,
   toLocalDate,
@@ -303,6 +304,11 @@ export function createWorkoutSession(
         const sets = (await db.workoutSets.where('workoutId').equals(workout.id).toArray()).filter(
           (other) => live(other) && ids.has(other.workoutExerciseId),
         )
+        // A plan day's later sets of a new exercise take this set's weight.
+        const sameSlot = sets.filter((other) => other.workoutExerciseId === set.workoutExerciseId)
+        for (const { id } of setsTakingWeight(set, sameSlot)) {
+          await repos.workoutSets.update(id, { weightKg: set.weightKg })
+        }
         const toDo = sets.some((other) => other.completedAt === null)
         const restSlotId = toDo
           ? restSlotAfter(slots, sets, set.workoutExerciseId, set.position)

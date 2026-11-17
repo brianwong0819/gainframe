@@ -139,6 +139,10 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await expect(detail).toBeHidden()
   await expect(page.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
 
+  const firstWeight = page.getByRole('textbox', { name: '第 1 组重量' })
+  await firstWeight.fill('60')
+  await firstWeight.press('Enter')
+  await expect(firstWeight).toHaveValue('60')
   await page.getByRole('main').getByRole('button', { name: '完成第 1 组' }).last().click()
   // Two sets are still to do, so the rest sheet opens; "start next set" ends the rest.
   await page
@@ -147,6 +151,8 @@ test("the Workout tab offers the current plan's next day and starts it", async (
     .click()
   await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  // The exercise was never done, so the next set takes the weight just entered.
+  await expect(page.getByRole('textbox', { name: '第 2 组重量' })).toHaveValue('60')
   await page.getByRole('button', { name: '结束训练' }).first().click()
   await page.getByRole('dialog').getByRole('button', { name: '结束', exact: true }).click()
   await expect(page).toHaveURL(/\/workout\/summary\/?#/)

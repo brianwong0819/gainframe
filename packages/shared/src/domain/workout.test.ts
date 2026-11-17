@@ -8,6 +8,7 @@ import {
   findPersonalRecords,
   nextSetValues,
   previousPerformance,
+  setsTakingWeight,
   totalVolumeKg,
 } from './workout.ts'
 
@@ -353,5 +354,28 @@ describe('bestWeightKg', () => {
   it('has no best weight without a counted set', () => {
     expect(bestWeightKg([])).toBeNull()
     expect(bestWeightKg([set({ weightKg: 40, reps: 10, kind: 'warmup' })])).toBeNull()
+  })
+})
+
+describe('setsTakingWeight', () => {
+  const done = set({ weightKg: 70, reps: 8, position: 1 })
+  const open = (position: number, weightKg: number) =>
+    set({ weightKg, reps: 8, position, completedAt: null })
+
+  it('takes the later sets that are not done and have no weight yet', () => {
+    const later = open(2, 0)
+    const typed = open(3, 60)
+    const finished = set({ weightKg: 0, reps: 8, position: 4 })
+    expect(setsTakingWeight(done, [done, later, typed, finished])).toEqual([later])
+  })
+
+  it('leaves earlier sets alone', () => {
+    const third = set({ weightKg: 70, reps: 8, position: 3 })
+    expect(setsTakingWeight(third, [open(1, 0), open(2, 0), third])).toEqual([])
+  })
+
+  it('carries nothing from a set without weight', () => {
+    const bodyweight = set({ weightKg: 0, reps: 10, position: 1 })
+    expect(setsTakingWeight(bodyweight, [bodyweight, open(2, 0)])).toEqual([])
   })
 })
