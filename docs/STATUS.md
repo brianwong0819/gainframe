@@ -4,7 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M1 Workout logging (code complete)
 - **Current task:** M1-13 Field week (bw logs every session for a week)
-- **Last updated:** 2026-11-16
+- **Last updated:** 2026-11-17
 
 ## Now
 
@@ -21,6 +21,8 @@ Design review (2026-11-16, asked by bw during the field week): every screen was 
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M2-01.
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
+
+Sign-in and backup design (2026-11-17, PR `m2/sign-in-sync-design`, documents only): the M2 screens were designed ahead of the milestone; the specification is "Accounts and backup" in `docs/design-system.md`. Four options are marked "proposed" there and wait for bw: sign-in stays optional, email uses managed login, the status is one quiet icon, and unsent changes warn instead of blocking. ROADMAP changes: M2-02, M2-05 and M2-06 point at the specification, and M2-10 (account deletion) is proposed.
 
 ## Field week checklist (pending iPhone checks)
 

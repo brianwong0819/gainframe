@@ -128,6 +128,40 @@ A meal waiting for its estimate counts as zero in the day's totals and says so i
 
 **Wording.** Estimates are called estimates everywhere ("AI 估算"), never "识别结果" or "accurate". No streaks, scores or praise for eating; the only celebration is the protein target.
 
+## Accounts and backup
+
+Designed ahead of M2 (2026-11-17); the reference is the design canvas at https://claude.ai/artifact/SKxZkgdarw9cfk5AffeB7q (a clickable prototype in light and dark, and one artboard per state). The options marked "proposed" wait for bw's choice; the rest follows from [ADR-0003](adr/0003-data-model-and-sync.md).
+
+**Wording.** The user-facing word is "备份 / backup", never "同步 / sync", "outbox" or "queue" (Usability rule 5). Diagnostics may use the internal terms. Sample copy: "已备份", "正在备份 3 条改动", "现在离线", "备份没成功", "需要重新登录".
+
+**Signing in is optional (proposed).** The app keeps working without an account, as in M1. Three entry points lead to the same sign-in page: the account row that leads Settings, a one-line card at the end of Today once the device holds a finished workout ("12 次训练只存在这台手机", a "登录" button and a dismiss button; dismissed for good), and the first use of a feature that needs the server (the photo estimate in M3), which explains why before sending the user there.
+
+**Sign-in page (`/settings/sign-in`).** Back link to Settings. One card states what is at stake in numbers: the workouts and plans that exist only on this device, and one sentence on what an account changes. The actions sit in the thumb zone: "用 Google 继续 / Continue with Google" (ink-filled, with the Google mark on a white disc, as Google's branding rules require), "用邮箱继续 / Continue with email" (`--sunk`), and the line "不登录也能一直用". No `--accent` on this page: signing in is not progress toward a training goal.
+
+- Google goes straight to Google: the authorize request carries `identity_provider=Google`, which bypasses managed login ([authorize endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html)).
+- Email opens Cognito's managed login page (proposed, option A), which provides sign-up, email verification and password reset. Its colours and logo are set to the tokens; its layout cannot be changed. Option B, an in-app form, needs three more screens (sign-up, verification code, reset) and puts password handling in our code. A passwordless email code is not proposed: it requires an Amazon SES email configuration ([user pool email settings](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html)), a new AWS resource.
+- Main job: sign in. Two taps from Today (the card's button, then Google) plus Google's own account chooser.
+
+**First sign-in (M2-06).** After the redirect back, a screen names the account and shows the upload as a number that rolls ("8 / 12 次训练") over a `soft` bar, with "先去用 App / Use the app now": the upload continues in the background and never blocks. When it finishes the screen states what the account now holds (workouts, plans, custom exercises) and one sentence saying later changes are backed up automatically. On a device with nothing local the same screen reports the download instead.
+
+**Backup status (proposed, option A: quiet).** One cloud icon beside the settings gear in Today's header, shown only when signed in. It opens the backup sheet.
+
+| State | Icon | Sheet title and sentence | Action |
+|---|---|---|---|
+| Backed up | cloud with a tick, `--ink-2` | "已备份": changes are backed up automatically | Back up now |
+| Backing up | cloud with an arrow, `--ink` | "正在备份 n 条改动": keep using the app | none |
+| Offline | cloud with a stroke, `--ink-2`, and the count of waiting changes beside it | "现在离线": n changes are kept on this device and are backed up when a connection returns | none |
+| Failed, retrying | cloud with an exclamation mark, `--ink` | "备份没成功": n changes are still on this device; the app retries | Retry now |
+| Needs the user (sign-in expired, app too old for the server) | the same, plus a card that leads Today | "需要重新登录" / "需要更新 App" | Sign in again / Update |
+
+The sheet lists the account, the last successful backup and the number of changes waiting. Offline is ordinary at a gym: it never uses `--short`, never interrupts and has no banner. Only a state that needs the user puts a card on Today, outlined in `--ink`. A failure that has been retried for a day is treated as needing the user. Option B, a status line under Today's date, is drawn on the canvas for comparison; it is always visible and nearly always says the same thing.
+
+**Account page (`/settings/account`).** Back link to Settings. The email and the sign-in method; a backup card with the same title, sentence, last backup time and action as the sheet; "退出登录 / Sign out"; and "删除账号和全部记录 / Delete account and all records", which asks twice (`ConfirmButton`) and states that nothing can be restored.
+
+**Sign out.** A sheet with the standard close button. With nothing waiting: the device's records are removed, they are in the account and return on the next sign-in; one button. With changes waiting (proposed): the title is the count ("还有 3 条改动没备份"), the sentence names what they are, the main button is "先备份再退出" (dimmed with a line of explanation while offline), and "仍然退出，丢掉 3 条" asks twice. Signing out is never refused, because a refusal while backup is broken leaves no way out (Usability rule 4).
+
+**Clear all data (Diagnostics).** Three versions of the existing card. Signed out: unchanged, with the advice to export first. Signed in with everything backed up: "只清空这台手机", stating what stays in the account and that it is downloaded again. Signed in with changes waiting: the same count, main button and two-tap override as sign out. Diagnostics also shows the outbox size and the last successful sync in the internal terms.
+
 ## Celebrations (three tiers, only at meaningful moments)
 
 | Tier | When | Effect |
