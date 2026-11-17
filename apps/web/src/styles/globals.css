@@ -196,13 +196,20 @@
   }
 
   /* Bottom sheet (src/ui/sheet.tsx): a full-screen transparent dialog holding a
-   * scrim and a panel, so both can animate; the native backdrop stays unused. */
+   * scrim and a panel, so both can animate; the native backdrop stays unused.
+   * iOS lays the keyboard over the page without shrinking the layout viewport,
+   * so the dialog follows the visual viewport instead (--sheet-top,
+   * --sheet-height, set by sheet.tsx): the panel then sits on the keyboard,
+   * not under it. --sheet-below is the height hidden below the visual
+   * viewport; the home indicator's inset is not needed where the keyboard
+   * covers it. */
   .sheet-dialog {
+    --sheet-safe-bottom: max(0px, calc(var(--safe-bottom) - var(--sheet-below, 0px)));
     position: fixed;
-    inset: 0;
+    inset: var(--sheet-top, 0) 0 auto;
     width: 100%;
     max-width: none;
-    height: 100%;
+    height: var(--sheet-height, 100%);
     max-height: none;
     margin: 0;
     padding: 0;
@@ -246,24 +253,32 @@
   }
 
   .sheet-panel {
+    --sheet-max-height: calc(100% - var(--safe-top) - var(--space-40));
     position: absolute;
     inset: auto 0 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-16);
-    max-height: calc(100% - var(--safe-top) - var(--space-40));
+    max-height: var(--sheet-max-height);
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: var(--space-8) max(var(--space-20), var(--safe-right))
-      calc(var(--safe-bottom) + var(--space-20)) max(var(--space-20), var(--safe-left));
+      calc(var(--sheet-safe-bottom) + var(--space-20)) max(var(--space-20), var(--safe-left));
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     background: var(--surface);
+  }
+
+  /* A sheet whose content changes length as the user types (a search) keeps
+   * its full height, so its top does not jump and its list stays above the
+   * keyboard. */
+  .sheet-panel-full {
+    height: var(--sheet-max-height);
   }
 
   /* An action kept in reach at the bottom of a scrolling sheet. It covers the
    * panel's bottom padding too, so content never shows below it. */
   .sheet-footer {
-    --sheet-footer-pad: calc(var(--safe-bottom) + var(--space-20));
+    --sheet-footer-pad: calc(var(--sheet-safe-bottom) + var(--space-20));
     position: sticky;
     bottom: calc(-1 * var(--sheet-footer-pad));
     margin-bottom: calc(-1 * var(--sheet-footer-pad));
