@@ -273,6 +273,26 @@ describe('startFromPlanDay', () => {
     expect(state?.slots[1]?.bestKg).toBeNull()
   })
 
+  it("carries a completed set's weight to the later sets that have none yet", async () => {
+    const day = await pushDay()
+    const first = await session.startFromPlanDay(day.id, ZONE)
+    const [one, two, three] = (await session.loadActive())?.slots[0]?.sets ?? []
+    if (one === undefined || two === undefined || three === undefined) throw new Error('No sets')
+    await repos.workoutSets.update(one.id, { weightKg: 70 })
+    await session.completeSet(one.id)
+    const weights = async () =>
+      (await session.loadActive())?.slots[0]?.sets.map((set) => set.weightKg)
+    expect(await weights()).toEqual([70, 70, 70])
+
+    // A lighter second set leaves the third as it is: it has a weight now.
+    await repos.workoutSets.update(two.id, { weightKg: 65 })
+    await session.completeSet(two.id)
+    expect(await weights()).toEqual([70, 65, 70])
+    // The other exercise of the day is untouched.
+    expect((await session.loadActive())?.slots[1]?.sets.map((set) => set.weightKg)).toEqual([0, 0])
+    await session.finish(first.id)
+  })
+
   it('resumes the workout in progress instead', async () => {
     const day = await pushDay()
     const active = await session.start(ZONE)

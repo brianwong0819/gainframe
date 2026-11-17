@@ -46,7 +46,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Check on the iPhone during M1-13 and fix in the stepper if confirmed.
-- The first time a plan day is done its sets start at 0 kg, and a weight entered on set 1 is not carried to the later untouched sets of the exercise, so each set is typed again (seen in the rest sheet's next-set preview). Decide with bw whether completing a set copies its weight to the following sets still at their starting value.
+- `next build` (16.4.4) reports that the installed Next.js has a known security advisory; one local build stopped on it (`SecurityFatalError`) and the next run continued with a warning. The app is a static export, so no Next server runs in production, but the patch release should be taken in the dependency bump planned for the start of M2, or sooner if CI starts failing on it.
 - Plan days keep the order they were added in; exercises can be reordered, days cannot yet.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when a third component needs one.
 - `theme-color` and the splash screens follow the system colour scheme, not a theme forced with `data-theme`; revisit if Settings adds a theme switch.

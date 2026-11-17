@@ -115,6 +115,20 @@ export function nextSetValues(
   return { kind: source.kind, weightKg: source.weightKg, reps: source.reps }
 }
 
+// The sets that take the weight of a set just completed: the later sets of its
+// slot that are not done and still at `domainConfig.firstSet.weightKg`, the
+// weight a set starts at when the exercise was never done. A plan day lays
+// out all its sets before any weight is known, so without this each set of a
+// new exercise is typed again. A set that already has a weight, from last time
+// or typed by the user, is never changed. `slotSets` are the slot's live sets.
+export function setsTakingWeight(done: WorkoutSet, slotSets: readonly WorkoutSet[]): WorkoutSet[] {
+  const unset = domainConfig.firstSet.weightKg
+  if (done.weightKg === unset) return []
+  return slotSets.filter(
+    (set) => set.position > done.position && set.completedAt === null && set.weightKg === unset,
+  )
+}
+
 // e1rm: a higher estimated 1RM than any earlier set. reps: more reps than any
 // earlier set at the same or a higher weight, which also covers sets above
 // `domainConfig.e1rmMaxReps` (for a bodyweight exercise, the added load is the
