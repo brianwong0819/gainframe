@@ -128,6 +128,37 @@ A meal waiting for its estimate counts as zero in the day's totals and says so i
 
 **Wording.** Estimates are called estimates everywhere ("AI 估算"), never "识别结果" or "accurate". No streaks, scores or praise for eating; the only celebration is the protein target.
 
+## Progress charts
+
+Designed ahead of M4 (2026-11-17); the reference is the design canvas at https://claude.ai/artifact/RCf9ZXeSkKPwyCNzpLSwvd (thirteen artboards: the entry from Today in two options, the Progress page, its first-days state, the weight, exercise and volume pages, the weigh-in sheet, and dark versions). Where the canvas and the older prototype disagree on charts, the canvas wins. bw chose the recommended option of each choice (2026-11-17): the Progress page below Today, estimated 1RM and working sets as the default measures.
+
+**The question the charts answer.** Am I gaining at the planned rate, and am I getting stronger? Every chart leads with the current figure and what it means in words ("in the target range", "3 weeks without a record"); the drawing supports the sentence, not the other way round.
+
+**Where they live (no fourth tab).** `/progress` is a page below Today with the standard back link. It is reached in one tap from the weight card on Today and from a "Progress" row under it. Its four cards (weight, strength, volume, protein) each show the current figure, one line of context and a small chart, and open `/progress/weight`, `/progress/exercise#<id>` and `/progress/volume`. The exercise detail sheet (`ExerciseDetail`) links to the same exercise page. The alternative, a fourth tab, gives one-tap access from anywhere but shrinks every tab and spends a tab on a screen read about once a week.
+
+**Rules for every chart.**
+
+- One y-axis, three hairline grid lines with their values at the right, dates beneath; grid lines are solid and `--line`.
+- The data line is `--ink`, 2 px. `--accent` marks only what moves toward the goal: the target range (`--accent-wash`), the latest point when it is on target, records, the week in progress, a muscle group that reached the weekly guideline. `--short` appears only with words beside it (too slow, no record for 3 weeks). Text is never coloured outside a tag.
+- Two or more series get a one-line legend under the chart. A list under each chart repeats its figures, so nothing is readable only by touching the chart.
+- Reading a point: a horizontal drag (or a tap) moves a hairline that snaps to the nearest point, and the figures in the card header change to that point; there is no floating tooltip, which a thumb would cover. The chart area sets `touch-action: pan-y`, so the page still scrolls vertically. Lifting the finger returns the header to the latest figure. On bar charts a tap selects a bar and the selection stays.
+- Motion: the line draws once with `soft` (`stroke-dashoffset`) when its card first appears; a change of range or measure fades with `fade`; header numbers roll; the hairline follows the finger with no spring. Under Reduce Motion nothing draws progressively.
+- Charts read from Dexie like every screen, so there is no loading or offline state. The states to design are "not enough data yet" (below).
+
+**Weight (`/progress/weight`).** A range control (4 weeks, 12 weeks, all), then one card: the 7-day average as the large number, the weekly rate with the target rate beside it, and a tag ("在目标范围 / On target" in `--accent`, "偏慢 / Too slow" in `--short`, "偏快 / Too fast" as plain text). The chart draws each weigh-in as a small `--ink-3` dot, the 7-day average as the line, and the target range as a wedge from the average at the start of the visible range, widening at the minimum and maximum target rates. Below it: one card that compares the last two weeks with the food log ("average surplus +310 kcal a day, protein target met 11 of 14 days"), which names the likely cause when the rate is too slow and links to the food history; the weekly averages as a list; and, with two scans or more, the change in weight, fat-free mass and fat mass between them (M4-02; never a daily composition line). "记今天体重 / Log today's weight" is docked at the bottom.
+
+**Weigh-in sheet.** Opened from the weight card on Today or the weight page: a stepper in steps of 0.1 kg prefilled with the last weigh-in, a row that opens the optional body-fat and muscle-mass fields, and a save button that names the value ("记下 62.4 kg"). Logging the day's weight takes two taps from Today.
+
+**Exercise (`/progress/exercise#<id>`).** A control switches between estimated 1RM (the default: it rises when reps go up at the same weight, which is how most progress happens) and the heaviest set. Each workout contributes its best set as one point, placed by date; a record is a filled `--accent` point, other workouts are hollow. The header shows the latest value, the set it comes from ("70 kg × 6") and the change over the range. For a bodyweight exercise the measure is the most reps. When the plateau rule (M5-04) holds, the span since the last record is shaded `--sunk`, the tag reads "3 周没涨 / No record for 3 weeks", and a card lists what happened in the same span: the best set, the change in body weight against the target rate, the average surplus and the days the protein target was met. The model's suggestion (M5-05) follows in the same card as ordinary text with the `AI` tag. Below: heaviest weight, most reps and workout count, then the recent workouts as a list.
+
+**Volume (`/progress/volume`).** One bar per week for twelve weeks, Monday to Sunday; the week in progress is `--accent` and says that it is not over; a hairline marks the average of the last eight full weeks. The measure is the number of working sets (the default) or volume in kg: sets per week is the figure a lifter can act on, while kg is dominated by leg exercises. A tap on a bar selects that week, and the card below shows its sets per muscle group as horizontal bars against a vertical line at ten sets, `--accent` once a group reaches it. A set counts toward the exercise's primary muscle only; warm-up sets are not counted.
+
+**Protein on the Progress page.** The last fourteen days as columns against the target line, `--accent` on the days that met it, with the count ("9 of 14 days") as the large number and the average daily surplus beneath. Its detail page is designed with M4-07.
+
+**Not enough data.** Each card of the Progress page has its own first-days version instead of an empty chart: weight shows the dots logged so far and how many more days the 7-day average needs, strength says that an exercise needs two workouts, volume shows the first week's bar, protein offers to log a meal. Each has one button to the screen that produces the data.
+
+**Numbers behind the drawings.** The target range uses 0.25% to 0.5% of body weight a week (Iraki et al. 2019, off-season recommendations for bodybuilders), and the guideline of ten weekly sets per muscle group comes from Schoenfeld, Ogborn and Krieger 2017 (dose-response meta-analysis). Both are checked against the sources when implemented and live in config with the other thresholds; the functions that compute the range, the weekly sets per muscle and each workout's best set are pure functions in `packages/shared/src/domain`.
+
 ## Celebrations (three tiers, only at meaningful moments)
 
 | Tier | When | Effect |
