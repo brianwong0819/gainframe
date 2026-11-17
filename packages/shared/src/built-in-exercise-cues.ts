@@ -932,6 +932,194 @@ export const BUILT_IN_EXERCISE_CUES: readonly ExerciseCues[] = [
       'Lower slowly',
     ],
   },
+  {
+    zh: ['双脚站在杠的略前方，与肩同宽', '蹲到大腿至少与地面平行', '膝盖和脚尖方向一致'],
+    en: [
+      'Stand with the feet slightly ahead of the bar, shoulder-width',
+      'Squat until the thighs are at least parallel',
+      'Keep the knees tracking over the toes',
+    ],
+  },
+  {
+    zh: ['站在六角杠中间，握住两侧把手', '背部平直，腿和髋一起发力站起', '下放时沿原路线控制'],
+    en: [
+      'Stand in the centre and grip the side handles',
+      'With a flat back, drive the legs and hips together',
+      'Lower along the same path under control',
+    ],
+  },
+  {
+    zh: ['背贴靠垫，肩顶住肩垫', '尽量蹲深，膝盖可以超过脚尖', '起身到膝盖接近伸直即可'],
+    en: [
+      'Back against the pad, shoulders under the pads',
+      'Sink as deep as you can; the knees may pass the toes',
+      'Stop just short of locking the knees',
+    ],
+  },
+  {
+    zh: ['腰带系在髋部，站在平台上', '上身直立往下蹲', '用腿发力站起，背不用出力'],
+    en: [
+      'Strap the belt around the hips and stand on the platform',
+      'Squat straight down with an upright torso',
+      'Stand up with the legs; the back stays out of it',
+    ],
+  },
+  {
+    zh: ['每步向前跨出，后膝接近地面', '前脚整个脚掌发力站起', '上身保持直立'],
+    en: [
+      'Step forward until the back knee nearly touches the floor',
+      'Drive up through the whole front foot',
+      'Keep the torso upright',
+    ],
+  },
+  {
+    zh: ['箱子或凳子约膝盖高', '用前腿发力站上去，后脚不要蹬地', '下来时控制速度'],
+    en: [
+      'Use a box or bench about knee height',
+      'Drive up with the front leg, not a push off the back foot',
+      'Step down under control',
+    ],
+  },
+  {
+    zh: ['双脚与肩同宽，脚尖微朝外', '臀部向后下坐，胸口挺起', '蹲到大腿与地面平行后站起'],
+    en: [
+      'Feet shoulder-width, toes slightly out',
+      'Sit the hips back and down with the chest up',
+      'Reach parallel, then stand',
+    ],
+  },
+  {
+    zh: ['扶住固定物，脚跟抬起', '膝盖向前，膝到头保持一条直线向后倒', '用大腿前侧发力回到站立'],
+    en: [
+      'Hold a support and rise onto the toes',
+      'Push the knees forward, leaning back in a line from knee to head',
+      'Return with the quads',
+    ],
+  },
+  {
+    zh: ['站在箱前，摆臂起跳', '双脚同时轻落在箱上，膝盖微屈', '走下来，不要跳下'],
+    en: [
+      'Stand in front of the box and swing the arms to jump',
+      'Land softly with both feet and bent knees',
+      'Step down rather than jumping off',
+    ],
+  },
+  {
+    zh: ['膝盖几乎伸直，只微屈', '屈髋下放，杠贴近腿', '背部保持平直，腿后侧有拉伸感就起身'],
+    en: [
+      'Keep the knees almost straight',
+      'Hinge at the hips with the bar close to the legs',
+      'Keep the back flat; stand once the hamstrings stretch',
+    ],
+  },
+  {
+    zh: ['支撑腿膝盖微屈', '屈髋上身前倾，另一条腿向后抬', '髋部保持水平，不要翻转'],
+    en: [
+      'Keep a soft bend in the standing knee',
+      'Hinge forward as the free leg reaches back',
+      'Keep the hips square; do not let them open',
+    ],
+  },
+  {
+    zh: ['杠铃放在上背，膝盖微屈', '屈髋上身前倾到接近水平', '背部全程平直'],
+    en: [
+      'Bar on the upper back, knees soft',
+      'Hinge until the torso is near parallel',
+      'Keep the back flat throughout',
+    ],
+  },
+  {
+    zh: ['挡垫在脚跟上方', '单腿向上弯举，髋部贴住靠垫', '慢慢放下'],
+    en: [
+      'Set the pad just above the heel',
+      'Curl one leg with the hips against the pad',
+      'Lower slowly',
+    ],
+  },
+  {
+    zh: ['跪姿，脚跟被固定住', '膝到头保持一条直线，慢慢向前倒', '尽量控制下放，最后用手撑地推回'],
+    en: [
+      'Kneel with the heels anchored',
+      'Lean forward slowly in a straight line from knee to head',
+      'Resist as long as you can, then catch and push back',
+    ],
+  },
+  {
+    zh: [
+      '双脚固定在 GHD 上，膝盖在垫子后方',
+      '上身从水平开始，用腿后侧把身体拉起',
+      '起身到身体竖直',
+    ],
+    en: [
+      'Lock the feet in the GHD with the knees behind the pad',
+      'From horizontal, curl the body up with the hamstrings',
+      'Finish upright',
+    ],
+  },
+  {
+    zh: ['宽站距，脚尖朝外，双手在腿内侧握杠', '膝盖向外推，胸口挺起', '腿和髋一起发力站直'],
+    en: [
+      'Wide stance, toes out, hands inside the legs',
+      'Push the knees out and keep the chest up',
+      'Drive the legs and hips together to stand',
+    ],
+  },
+  {
+    zh: ['上背靠垫，挡带压在髋部', '用臀部向上推到身体呈直线', '顶端夹紧臀部停一秒'],
+    en: [
+      'Upper back on the pad, belt across the hips',
+      'Drive up with the glutes until the body is straight',
+      'Squeeze and hold for a second at the top',
+    ],
+  },
+  {
+    zh: ['上背靠凳，杠放在髋部并垫上护垫', '下巴微收，用臀部推起', '顶端小腿垂直于地面'],
+    en: [
+      'Upper back on a bench, padded bar over the hips',
+      'Tuck the chin and drive up with the glutes',
+      'Shins vertical at the top',
+    ],
+  },
+  {
+    zh: ['仰卧地面，杠铃放在髋部', '脚跟发力把髋推起', '顶端夹紧臀部，不要挺腰'],
+    en: [
+      'Lie on the floor with the bar over the hips',
+      'Drive through the heels to lift the hips',
+      'Squeeze the glutes at the top; do not arch the back',
+    ],
+  },
+  {
+    zh: ['胸贴靠垫，一只脚踩在踏板上', '用臀部把腿向后推', '顶端停一下，慢慢回放'],
+    en: [
+      'Chest on the pad, one foot on the plate',
+      'Push the leg back with the glute',
+      'Pause at the top and return slowly',
+    ],
+  },
+  {
+    zh: ['俯卧在台上，髋部在边缘', '双腿伸直向后抬到与身体成一直线', '控制下放，不要甩'],
+    en: [
+      'Lie face down with the hips at the edge',
+      'Raise the straight legs until level with the body',
+      'Lower under control without swinging',
+    ],
+  },
+  {
+    zh: ['前脚掌踩在踏板下缘', '腿伸直，只动脚踝', '底部充分拉伸，顶端停一秒'],
+    en: [
+      'Put the balls of the feet on the bottom edge of the plate',
+      'Legs straight; move only at the ankles',
+      'Stretch fully at the bottom and hold the top for a second',
+    ],
+  },
+  {
+    zh: ['单脚前掌踩在台阶上，同侧手拿哑铃', '脚跟下放到充分拉伸', '踮到最高停一秒'],
+    en: [
+      'Stand on one forefoot on a step, dumbbell in the same hand',
+      'Drop the heel into a full stretch',
+      'Rise as high as you can and hold for a second',
+    ],
+  },
 ]
 
 // The cues of a built-in exercise; undefined for any other ID.
