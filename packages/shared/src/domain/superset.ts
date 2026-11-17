@@ -100,6 +100,43 @@ export function setOrder<S>(slots: readonly { slot: GroupedItem; sets: readonly 
   return order
 }
 
+// The members of an item's superset in order, itself included; just the item
+// when it stands alone.
+export function supersetMembers<T extends GroupedItem>(items: readonly T[], id: string): T[] {
+  const item = items.find((other) => other.id === id)
+  return item === undefined ? [] : membersOf(items, item)
+}
+
+export interface ValueChange {
+  id: string
+  value: number
+}
+
+// A superset has one rest, taken after each round, and in a plan one number of
+// rounds; each is the largest of its members' values, so joining exercises
+// never shortens a workout. `valueOf` gives a member's value (for a rest, its
+// own or its exercise's default).
+export function supersetValue<T extends GroupedItem>(
+  members: readonly T[],
+  valueOf: (item: T) => number,
+): number {
+  return Math.max(0, ...members.map(valueOf))
+}
+
+// The changes that give every member of each superset the superset's value
+// (`supersetValue`), so the members always agree. `storedOf` is the value the
+// item stores; returns only the items whose stored value differs.
+export function sharedValueChanges<T extends GroupedItem>(
+  items: readonly T[],
+  valueOf: (item: T) => number,
+  storedOf: (item: T) => number | null,
+): ValueChange[] {
+  return [...groups(items).values()].flatMap((members) => {
+    const value = supersetValue(members, valueOf)
+    return members.filter((item) => storedOf(item) !== value).map(({ id }) => ({ id, value }))
+  })
+}
+
 // The slot whose rest follows a set just completed, or null when the set does
 // not end its round. A standalone set ends its own round. A superset's round
 // ends once no member has a set still to do in this round or an earlier one

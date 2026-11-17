@@ -372,7 +372,7 @@ describe('rest', () => {
     expect(await session.completeSet(sets[1]?.id ?? '')).toMatchObject({ restEndsAt: null })
   })
 
-  it('rests only after each full round of a superset, for the last member’s rest', async () => {
+  it('rests only after each full round of a superset, for its one rest', async () => {
     const BUILT_IN_SQUAT = '00000000-0000-7000-8000-000000000002'
     const { workout, slot: a1 } = await workoutWithSets(BUILT_IN_BENCH, 3)
     const a2 = await session.addExercise(workout.id, BUILT_IN_SQUAT)
@@ -382,6 +382,8 @@ describe('rest', () => {
     await session.linkWithNext(a1.id, true)
     const state = await session.loadActive()
     expect(state?.slots.map(({ slot }) => slot.supersetGroup)).toEqual([0, 0])
+    // The bench's default 180 s is longer than the squat's 120 s.
+    expect(state?.slots.map(({ slot }) => slot.restS)).toEqual([180, 180])
     const [first, second] = state?.slots ?? []
     const rests: (string | null)[] = []
     for (let round = 0; round < 3; round += 1) {
@@ -393,9 +395,9 @@ describe('rest', () => {
     }
     expect(rests).toEqual([
       null,
-      '2026-11-08T10:04:00.000Z',
+      '2026-11-08T10:05:00.000Z',
       null,
-      '2026-11-08T10:06:00.000Z',
+      '2026-11-08T10:07:00.000Z',
       null,
       null,
     ])
