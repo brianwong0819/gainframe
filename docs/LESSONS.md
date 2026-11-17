@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-035 · 2026-11-17 · ui · The exercise picker's results were under the iPhone keyboard
+- **What happened:** bw, on the iPhone: in the plan editor's "添加到「…」" sheet, a search that left two results shrank the sheet to the bottom of the screen, under the keyboard, so a result could be tapped only after closing the keyboard. The workout's picker shares the sheet and had the same defect.
+- **Root cause:** the sheet was sized to the layout viewport (`position: fixed; inset: 0`). iOS Safari shows the keyboard over the page and shrinks only the visual viewport, so a panel anchored to the bottom sits under the keyboard. The sheet rules covered focus and scrolling on opening (L-019, L-020) but not the keyboard; Chromium in the container and Playwright's WebKit show no on-screen keyboard, so no test saw it.
+- **Fix:** PR `m1/fix-sheet-keyboard`: `Sheet` sets `--sheet-top`, `--sheet-height` and `--sheet-below` from `window.visualViewport` while open, and the picker sheets keep their full height (`fullHeight`).
+- **Prevention:** "Sheets" in `docs/design-system.md` states the rule; `e2e/sheet.spec.ts` shortens the visual viewport and checks the panel and the last result end above it, and that the panel height does not change while the search narrows (fails without the fix, checked).
+- **Status:** guarded
+
 ### L-034 · 2026-11-16 · test · The sheet's per-frame test failed on a slow runner
 - **What happened:** CI's Device layout job failed on iPhone SE (WebKit) on a PR that touches no sheet code: the first sampled frame of the exercise sheet was at 324 px, above the half-viewport bound of 333.5 px. The same test had failed once before on iPhone 17 Pro Max (#98) and was left as a follow-up.
 - **Root cause:** the sampler waited for its first `requestAnimationFrame` after the tap. On a busy runner that frame comes late, after the spring has already moved the panel, so "the first sample" was not the start of the animation. The assertion was right; the measurement started at an arbitrary moment.
