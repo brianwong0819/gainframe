@@ -520,6 +520,242 @@ export const BUILT_IN_EXERCISE_CUES: readonly ExerciseCues[] = [
       'Let the arms stay loose; the bell floats to chest height',
     ],
   },
+  {
+    zh: ['凳子下斜 15–30 度，双脚勾住挡垫', '杠铃下放到胸部下缘', '肩胛骨全程后收贴紧凳面'],
+    en: [
+      'Set the bench to a 15–30 degree decline and hook the feet',
+      'Lower the bar to the bottom of the chest',
+      'Keep the shoulder blades pinned throughout',
+    ],
+  },
+  {
+    zh: ['先把哑铃放在大腿上再一起躺下', '哑铃下放到下胸两侧，手肘约 45 度', '推起时向中间靠拢'],
+    en: [
+      'Rest the dumbbells on the thighs before lying back',
+      'Lower them beside the lower chest, elbows at about 45 degrees',
+      'Press up and slightly in',
+    ],
+  },
+  {
+    zh: [
+      '摆好凳子，让杠落在胸口中下部',
+      '肩胛骨后收下沉，上背贴紧凳面',
+      '起杠前先看好安全挂钩的位置',
+    ],
+    en: [
+      'Place the bench so the bar meets the lower chest',
+      'Pull the shoulder blades back and down into the bench',
+      'Know where the safety hooks are before unracking',
+    ],
+  },
+  {
+    zh: ['凳子调到 30–45 度，杠落在锁骨下方', '肩胛骨保持收紧，不要耸肩', '轻触上胸后推起'],
+    en: [
+      'Set the bench to 30–45 degrees so the bar meets below the collarbones',
+      'Keep the shoulder blades set; do not shrug',
+      'Touch the upper chest lightly, then press',
+    ],
+  },
+  {
+    zh: ['调座椅让把手对准上胸', '背和头贴紧靠背', '推出时不要耸肩，回放时控制速度'],
+    en: [
+      'Set the seat so the handles line up with the upper chest',
+      'Keep the back and head against the pad',
+      'Press without shrugging; control the return',
+    ],
+  },
+  {
+    zh: ['凳子调到 30 度左右', '手肘微屈并保持不变，像抱大树', '下放到胸部有拉伸感即可，不要过低'],
+    en: [
+      'Set the bench to about 30 degrees',
+      'Keep a fixed slight bend in the elbows, as if hugging a tree',
+      'Lower until the chest stretches, not further',
+    ],
+  },
+  {
+    zh: ['滑轮放到最低，身体微前倾', '双手从下往上合拢到下巴高度', '手肘角度全程不变'],
+    en: [
+      'Set the pulleys low and lean slightly forward',
+      'Sweep the hands up and together to chin height',
+      'Keep the elbow angle fixed',
+    ],
+  },
+  {
+    zh: ['滑轮放到高位，前后脚站稳', '双手从上往下合拢到腹前', '合拢时稍停，夹紧胸部'],
+    en: [
+      'Set the pulleys high and stand in a split stance',
+      'Bring the hands down and together in front of the hips',
+      'Pause and squeeze at the end',
+    ],
+  },
+  {
+    zh: ['双脚放在凳上，手略宽于肩', '身体从头到脚保持一条直线', '下放到胸口接近地面'],
+    en: [
+      'Feet on a bench, hands slightly wider than the shoulders',
+      'Keep a straight line from head to heels',
+      'Lower until the chest nearly touches the floor',
+    ],
+  },
+  {
+    zh: [
+      '上背横躺在凳上，双手托住一个哑铃',
+      '手肘微屈，把哑铃沿弧线放到头后',
+      '感到拉伸后把哑铃拉回胸口上方',
+    ],
+    en: [
+      'Lie across a bench, holding one dumbbell over the chest',
+      'With soft elbows, arc it back behind the head',
+      'Pull it back over the chest once you feel the stretch',
+    ],
+  },
+  {
+    zh: ['凳子调到接近垂直，杠从下巴前方经过', '核心收紧，下背不要过度反弓', '推到手臂接近伸直'],
+    en: [
+      'Set the bench nearly upright so the bar passes in front of the chin',
+      'Brace the core; do not over-arch the lower back',
+      'Press until the arms are nearly straight',
+    ],
+  },
+  {
+    zh: ['调座椅让肩关节对准机器转轴', '用手肘外侧推动挡垫向上', '抬到与肩同高，慢慢放下'],
+    en: [
+      'Align the shoulder joint with the machine pivot',
+      'Lead with the elbows against the pads',
+      'Raise to shoulder height and lower slowly',
+    ],
+  },
+  {
+    zh: ['面向靠垫坐，把手与肩同高', '手臂微屈向后打开', '用后肩发力，不要耸肩'],
+    en: [
+      'Sit facing the pad with the handles at shoulder height',
+      'Open the arms back with a slight bend',
+      'Drive with the rear delts; do not shrug',
+    ],
+  },
+  {
+    zh: [
+      '两侧滑轮调到肩高，左右手交叉握住拉索',
+      '手臂微屈向两侧拉开',
+      '回放时控制，不要让配重片相碰',
+    ],
+    en: [
+      'Set both pulleys at shoulder height and cross the cables',
+      'Pull the arms out to the sides with a slight bend',
+      'Return under control without letting the stack touch',
+    ],
+  },
+  {
+    zh: ['握距略宽于肩，杠铃贴近身体', '用手肘带动向上拉', '拉到下胸即可，肩不舒服就降低高度'],
+    en: [
+      'Grip slightly wider than the shoulders and keep the bar close',
+      'Lead with the elbows',
+      'Stop at the lower chest; go lower if the shoulders complain',
+    ],
+  },
+  {
+    zh: ['双手握住杠铃片两侧', '手臂微屈抬到眼睛高度', '不要后仰借力'],
+    en: [
+      'Hold a plate at the sides with both hands',
+      'Raise it to eye level with soft elbows',
+      'Do not lean back to swing it',
+    ],
+  },
+  {
+    zh: ['杠铃一端固定，另一端握在肩前', '向前上方推出，核心收紧', '上身不要扭转'],
+    en: [
+      'Anchor one end of the bar and hold the other at the shoulder',
+      'Press up and forward with the core braced',
+      'Keep the torso from twisting',
+    ],
+  },
+  {
+    zh: ['臀部抬高，身体呈倒 V 字', '头向双手前方下放', '推起时臀部保持高位'],
+    en: [
+      'Raise the hips into an upside-down V',
+      'Lower the head toward a point in front of the hands',
+      'Press back up, keeping the hips high',
+    ],
+  },
+  {
+    zh: ['面向墙倒立，双手略宽于肩', '头下放到轻触地面或垫子', '收紧核心和臀部，避免塌腰'],
+    en: [
+      'Kick up against a wall with the hands slightly wider than the shoulders',
+      'Lower the head to touch the floor or a mat',
+      'Squeeze the core and glutes so the back does not sag',
+    ],
+  },
+  {
+    zh: ['杠铃架在肩前，膝盖微屈下沉', '腿快速蹬直，顺势把杠铃推起', '在头顶锁住，头稍向前'],
+    en: [
+      'Rack the bar on the shoulders and dip at the knees',
+      'Drive through the legs and press the bar up',
+      'Lock out overhead with the head slightly through',
+    ],
+  },
+  {
+    zh: ['壶铃放在肩前，手腕伸直', '向上推出时前臂保持垂直', '另一只手握拳，全身绷紧'],
+    en: [
+      'Rack the bell at the shoulder with a straight wrist',
+      'Press up with the forearm vertical',
+      'Make a fist with the free hand and stay tight',
+    ],
+  },
+  {
+    zh: ['反手握住单手把', '大臂贴紧身体不动', '下压到手臂伸直，慢慢回放'],
+    en: [
+      'Take a single handle with an underhand grip',
+      'Pin the upper arm to the side',
+      'Extend fully, then return slowly',
+    ],
+  },
+  {
+    zh: ['俯身让上身接近水平，大臂贴住身体', '只动小臂，向后伸直', '顶端停一下，夹紧三头'],
+    en: [
+      'Hinge until the torso is nearly flat, upper arm by the side',
+      'Move only the forearm, extending it back',
+      'Pause and squeeze at the top',
+    ],
+  },
+  {
+    zh: ['双手撑在凳边，手指朝前', '身体贴近凳子下放到大臂约水平', '肩膀不舒服就减小幅度'],
+    en: [
+      'Hands on the bench edge, fingers forward',
+      'Lower close to the bench until the upper arms are about level',
+      'Shorten the range if the shoulders complain',
+    ],
+  },
+  {
+    zh: ['双手在胸下拼成菱形', '手肘贴近身体向后弯', '身体保持一条直线'],
+    en: [
+      'Form a diamond with the hands under the chest',
+      'Keep the elbows close as they bend back',
+      'Hold a straight line from head to heels',
+    ],
+  },
+  {
+    zh: ['坐稳后握住两侧把手', '向下推到手臂伸直', '回放到大臂约水平，肩膀不要前顶'],
+    en: [
+      'Sit tall and take the side handles',
+      'Press down until the arms are straight',
+      'Return until the upper arms are about level, shoulders back',
+    ],
+  },
+  {
+    zh: ['大臂平放在垫上，手肘对准转轴', '只动小臂向下伸直', '回放时控制速度'],
+    en: [
+      'Rest the upper arms on the pad with the elbows at the pivot',
+      'Extend using only the forearms',
+      'Control the return',
+    ],
+  },
+  {
+    zh: ['仰卧，双手各握一个哑铃举在肩上方', '大臂不动，哑铃下放到头两侧', '用三头把哑铃伸直推回'],
+    en: [
+      'Lie back with the dumbbells over the shoulders',
+      'Keep the upper arms still and lower the bells beside the head',
+      'Extend back up with the triceps',
+    ],
+  },
 ]
 
 // The cues of a built-in exercise; undefined for any other ID.

@@ -26,6 +26,8 @@ Sign-in and backup design (2026-11-17, PR `m2/sign-in-sync-design`, documents on
 
 Progress charts design (2026-11-17, PR `m4/charts-design`, documents only): the M4 chart screens were designed ahead of the milestone; the specification is "Progress charts" in `docs/design-system.md`. ROADMAP changes: M4-04 is split into M4-04 (Progress page and weight chart), M4-06 (strength chart) and M4-07 (volume and protein charts), because one task could not stay under 400 lines. bw chose the recommended options: a Progress page below Today instead of a fourth tab, estimated 1RM as the default strength measure and working sets as the default volume measure.
 
+Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows from 64 to about 155 strength exercises in four data PRs (push; pull; legs; core, full body, kettlebell and bands), each with names, aliases, muscles, equipment, rest and form cues. The library now groups built-in exercises by primary muscle, since new IDs can only be appended, and a test forbids a name or alias shared by two exercises. Left out on purpose: assisted pull-up and dip machines (the logged weight is assistance, so records would run backwards), the hip adduction machine (no adductor muscle group yet), and timed or cardio exercises. bw chose to add timed and cardio logging (duration, distance, level; energy estimated from MET values, shown but not added to the daily target) before M2; it gets its own ROADMAP task, after which the cardio machines and timed holds join the library.
+
 ## Field week checklist (pending iPhone checks)
 
 Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a failure becomes an issue.

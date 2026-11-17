@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { Exercise } from '@gainframe/shared'
+import { BUILT_IN_EXERCISES, muscleGroupSchema } from '@gainframe/shared'
 
 import {
   draftToExercise,
@@ -55,6 +56,13 @@ describe('libraryEntries', () => {
       'Landmine row',
     ])
     expect(libraryEntries([], 'chest', '').every((entry) => entry.muscle === 'chest')).toBe(true)
+  })
+
+  it('groups the built-in exercises by muscle in the filter order', () => {
+    const order = muscleGroupSchema.options
+    const muscles = libraryEntries([], null, '').map((entry) => order.indexOf(entry.muscle))
+    expect(muscles).toEqual([...muscles].sort((a, b) => a - b))
+    expect(muscles).toHaveLength(BUILT_IN_EXERCISES.length)
   })
 })
 
