@@ -1120,6 +1120,158 @@ export const BUILT_IN_EXERCISE_CUES: readonly ExerciseCues[] = [
       'Rise as high as you can and hold for a second',
     ],
   },
+  {
+    zh: ['仰卧屈膝，手放在耳侧或胸前', '用腹部把肩胛骨卷离地面', '不要用手拉脖子'],
+    en: [
+      'Lie with the knees bent, hands by the ears or on the chest',
+      'Curl the shoulder blades off the floor with the abs',
+      'Do not pull on the neck',
+    ],
+  },
+  {
+    zh: ['仰卧屈膝，双脚踩稳', '从卷腹开始，一节一节坐起', '下放时慢，不要直接倒下'],
+    en: [
+      'Lie with the knees bent and feet planted',
+      'Curl up one segment at a time',
+      'Lower slowly instead of dropping back',
+    ],
+  },
+  {
+    zh: ['仰卧，双手放在臀下或身侧', '腿伸直抬到与地面垂直', '下放时下背贴地'],
+    en: [
+      'Lie flat, hands under the hips or at the sides',
+      'Raise the straight legs to vertical',
+      'Keep the lower back down as they lower',
+    ],
+  },
+  {
+    zh: ['悬挂在单杠上，身体不要晃', '屈膝把膝盖抬向胸口', '骨盆向上卷，慢慢放下'],
+    en: [
+      'Hang from the bar without swinging',
+      'Bring the knees toward the chest',
+      'Curl the pelvis up, then lower slowly',
+    ],
+  },
+  {
+    zh: ['前臂撑在扶手上，背贴靠垫', '把膝盖或伸直的腿抬到髋部高度', '不要摆动借力'],
+    en: [
+      'Forearms on the pads, back against the rest',
+      'Raise the knees or straight legs to hip height',
+      'Do not swing',
+    ],
+  },
+  {
+    zh: ['调好座椅，握住把手', '用腹部把身体向下卷', '不要用手臂拉'],
+    en: [
+      'Set the seat and take the handles',
+      'Curl down with the abs',
+      'Do not pull with the arms',
+    ],
+  },
+  {
+    zh: ['坐姿上身后倾，脚可以抬起', '双手（可拿重物）向两侧转动', '转的是上身，不只是手臂'],
+    en: [
+      'Sit and lean back, feet down or raised',
+      'Rotate the hands from side to side, holding a weight if you like',
+      'Turn the torso, not just the arms',
+    ],
+  },
+  {
+    zh: ['仰卧，手臂朝上，屈膝 90 度抬起', '对侧手脚同时慢慢伸出', '下背始终贴住地面'],
+    en: [
+      'Lie on your back, arms up, knees bent at 90 degrees',
+      'Slowly extend the opposite arm and leg',
+      'Keep the lower back on the floor',
+    ],
+  },
+  {
+    zh: ['侧对滑轮，双手把把手握在胸前', '向前推直，身体不要被拉转', '停两秒再收回'],
+    en: [
+      'Stand side-on to the pulley with the handle at the chest',
+      'Press straight out without letting the cable turn you',
+      'Hold for two seconds, then return',
+    ],
+  },
+  {
+    zh: ['滑轮放高位，侧身站稳', '双手斜向下拉过身体', '用躯干转动，手臂保持伸直'],
+    en: [
+      'Set the pulley high and stand side-on',
+      'Pull diagonally down across the body',
+      'Rotate through the torso with the arms straight',
+    ],
+  },
+  {
+    zh: ['杠铃从地面拉起，过膝后快速伸髋', '耸肩拉杠，身体钻到杠下', '用肩前接住杠，半蹲站稳'],
+    en: [
+      'Pull from the floor and extend the hips hard past the knees',
+      'Shrug and pull yourself under the bar',
+      'Catch it on the front of the shoulders in a quarter squat',
+    ],
+  },
+  {
+    zh: [
+      '仰卧单手把壶铃举直，眼睛看着它',
+      '分步起身：撑肘、撑手、抬髋、跪姿、站起',
+      '手臂全程垂直，再按原步骤躺回',
+    ],
+    en: [
+      'Lie down pressing the bell straight up, eyes on it',
+      'Rise in steps: elbow, hand, hips, kneel, stand',
+      'Keep the arm vertical and reverse the steps',
+    ],
+  },
+  {
+    zh: ['像摇摆一样屈髋发力', '壶铃贴近身体向上，手顺势穿过把手', '在头顶锁住，手臂伸直'],
+    en: [
+      'Hinge and drive as in a swing',
+      'Keep the bell close and punch the hand through at the top',
+      'Lock out overhead with a straight arm',
+    ],
+  },
+  {
+    zh: ['屈髋把壶铃上搏到肩前', '稳住后向上推出', '下放回肩前，再回到两腿之间'],
+    en: [
+      'Hinge and clean the bell to the rack position',
+      'Settle, then press it overhead',
+      'Lower to the rack, then back between the legs',
+    ],
+  },
+  {
+    zh: ['下蹲双手撑地，双脚向后跳成俯卧撑姿势', '做一个俯卧撑后收腿', '起身跳起，双手过头'],
+    en: [
+      'Squat, hands down, and jump the feet back to a plank',
+      'Do a push-up, then jump the feet in',
+      'Stand and jump with the hands overhead',
+    ],
+  },
+  {
+    zh: ['双手握弹力带，手臂在胸前伸直', '向两侧拉开到胸口', '夹紧肩胛骨，慢慢回放'],
+    en: [
+      'Hold the band at chest height with straight arms',
+      'Pull it apart to the chest',
+      'Squeeze the shoulder blades, then return slowly',
+    ],
+  },
+  {
+    zh: ['弹力带套在膝盖上方或脚踝', '半蹲姿势向侧面小步走', '膝盖保持向外，不要内扣'],
+    en: [
+      'Loop the band above the knees or at the ankles',
+      'Step sideways in a half squat',
+      'Keep the knees pushed out',
+    ],
+  },
+  {
+    zh: ['双脚踩住弹力带中间', '大臂贴住身体向上弯举', '下放时控制，不要被弹回'],
+    en: [
+      'Stand on the middle of the band',
+      'Curl with the upper arms by the sides',
+      'Control the way down instead of letting it snap back',
+    ],
+  },
+  {
+    zh: ['弹力带挂在高处', '大臂贴住身体，向下伸直', '慢慢回放'],
+    en: ['Anchor the band overhead', 'Pin the upper arms and extend down', 'Return slowly'],
+  },
 ]
 
 // The cues of a built-in exercise; undefined for any other ID.
