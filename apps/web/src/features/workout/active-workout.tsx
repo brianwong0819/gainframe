@@ -344,6 +344,10 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
               setSheetOpen(false)
               void workoutSession.addExercise(workout.id, id)
             }}
+            onCreated={({ id }) => {
+              setSheetOpen(false)
+              void workoutSession.addExercise(workout.id, id)
+            }}
           />
         )}
         {sheetExercise && <ExerciseDetail exercise={sheetExercise} />}

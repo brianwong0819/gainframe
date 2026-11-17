@@ -93,6 +93,23 @@ export function pickMuscle(selection: MuscleSelection, tapped: MuscleGroup): Mus
 }
 
 // Form values to repository input: names are trimmed, and a blank name is null.
+const han = /\p{Script=Han}/u
+
+// The form's starting values for a new exercise named after a search: a name
+// with Chinese characters fills the Chinese name, anything else the English
+// one.
+export function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
+  const trimmed = name.trim()
+  return {
+    nameZh: han.test(trimmed) ? trimmed : '',
+    nameEn: han.test(trimmed) ? '' : trimmed,
+    muscle,
+    secondaryMuscles: [],
+    equipment: 'barbell',
+    defaultRestS: 90,
+  }
+}
+
 export function draftToExercise(draft: ExerciseDraft & { muscle: MuscleGroup }): NewRow<Exercise> {
   const name = (value: string) => (value.trim() === '' ? null : value.trim())
   return {
