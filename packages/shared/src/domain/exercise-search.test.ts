@@ -30,7 +30,7 @@ describe('searchExercises', () => {
 
   it('matches every word of a query in any order', () => {
     const names = searchExercises(BUILT_IN_EXERCISES, 'curl hammer').map((e) => e.nameEn)
-    expect(names).toEqual(['Hammer curl'])
+    expect(names).toEqual(['Hammer curl', 'Rope hammer curl'])
   })
 
   it('searches custom exercises, which have no aliases and may lack a name', () => {

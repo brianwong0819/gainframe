@@ -756,6 +756,182 @@ export const BUILT_IN_EXERCISE_CUES: readonly ExerciseCues[] = [
       'Extend back up with the triceps',
     ],
   },
+  {
+    zh: ['用 V 把或窄握把，大腿压紧挡垫', '身体稍后仰，把手柄拉到上胸', '回到顶端时让背部充分伸展'],
+    en: [
+      'Use a V-handle and lock the thighs under the pad',
+      'Lean back slightly and pull to the upper chest',
+      'Let the lats stretch fully at the top',
+    ],
+  },
+  {
+    zh: ['反手握杠，与肩同宽', '手肘向下贴近身体拉', '拉到锁骨下方，回放时控制'],
+    en: [
+      'Take an underhand, shoulder-width grip',
+      'Drive the elbows down close to the body',
+      'Pull to below the collarbones; control the return',
+    ],
+  },
+  {
+    zh: ['单手握把，身体稍向这一侧倾', '手肘向下向后拉到身侧', '回到顶端时让背部伸展'],
+    en: [
+      'Hold one handle and lean slightly to that side',
+      'Drive the elbow down and back to the hip',
+      'Let the lat stretch at the top',
+    ],
+  },
+  {
+    zh: ['调好座椅，大腿压紧挡垫', '手肘向下拉到身侧', '回放时慢，让背部伸展'],
+    en: [
+      'Set the seat and lock the thighs under the pad',
+      'Drive the elbows down to the sides',
+      'Return slowly into a full stretch',
+    ],
+  },
+  {
+    zh: ['胸贴靠垫，手臂向前上方伸直握把', '手肘向下向后拉', '拉到底时夹紧肩胛骨'],
+    en: [
+      'Chest on the pad, reaching up and forward to the handles',
+      'Pull the elbows down and back',
+      'Squeeze the shoulder blades at the end',
+    ],
+  },
+  {
+    zh: ['上身接近水平，每次从地面拉起', '把杠铃快速拉到下胸', '背部保持平直，每次放回地面'],
+    en: [
+      'Torso near parallel; start every rep from the floor',
+      'Row the bar explosively to the lower chest',
+      'Keep the back flat and return the bar to the floor',
+    ],
+  },
+  {
+    zh: ['屈髋俯身，背部平直', '两个哑铃一起拉向髋部', '顶端夹紧背部再慢放'],
+    en: [
+      'Hinge forward with a flat back',
+      'Row both dumbbells toward the hips',
+      'Squeeze at the top, then lower slowly',
+    ],
+  },
+  {
+    zh: ['上斜凳约 30 度，胸口贴住靠垫', '用手肘向后拉，不要用身体借力', '底部让手臂完全伸直'],
+    en: [
+      'Lie chest-down on a bench at about 30 degrees',
+      'Row with the elbows; do not heave the torso',
+      'Let the arms hang straight at the bottom',
+    ],
+  },
+  {
+    zh: ['单手握把，身体正对滑轮', '手肘贴身向后拉到腰侧', '回放时让肩向前伸展'],
+    en: [
+      'Hold one handle facing the pulley',
+      'Pull the elbow back to the waist',
+      'Let the shoulder reach forward on the return',
+    ],
+  },
+  {
+    zh: ['杠铃放在膝盖附近高度的保护杆上', '背部平直，髋部向前站直', '顶端站直即可，不要后仰'],
+    en: [
+      'Set the bar on the pins around knee height',
+      'Keep the back flat and drive the hips through',
+      'Stand tall at the top without leaning back',
+    ],
+  },
+  {
+    zh: ['杠放在腰高，身体在杠下伸直', '把胸口拉向杠', '身体保持一条直线，脚越远越难'],
+    en: [
+      'Hang under a waist-high bar with the body straight',
+      'Pull the chest to the bar',
+      'Stay in a straight line; walk the feet out to make it harder',
+    ],
+  },
+  {
+    zh: ['哑铃垂在身体两侧', '肩膀直上直下，不要绕圈', '顶端停一秒'],
+    en: [
+      'Hold the dumbbells at the sides',
+      'Shrug straight up and down; do not roll',
+      'Hold the top for a second',
+    ],
+  },
+  {
+    zh: ['调好座椅，靠垫在上背', '用下背和臀部向后伸展', '回到起点时慢，不要甩'],
+    en: [
+      'Set the seat with the pad on the upper back',
+      'Extend back with the lower back and glutes',
+      'Return slowly; do not swing',
+    ],
+  },
+  {
+    zh: ['握在曲杆的斜握位，手腕更舒服', '大臂贴住身体不动', '下放到手臂伸直'],
+    en: [
+      'Grip the angled part of the bar to ease the wrists',
+      'Keep the upper arms pinned to the sides',
+      'Lower until the arms are straight',
+    ],
+  },
+  {
+    zh: ['坐姿，大臂内侧靠住大腿', '只动小臂向上弯举', '顶端稍停，慢慢下放'],
+    en: [
+      'Sit and brace the upper arm against the inner thigh',
+      'Curl with the forearm only',
+      'Pause at the top and lower slowly',
+    ],
+  },
+  {
+    zh: ['腋下贴紧牧师凳上缘', '下放到手臂接近伸直', '底部不要放松弹起'],
+    en: [
+      'Tuck the armpit tight to the top of the pad',
+      'Lower until the arm is nearly straight',
+      'Do not bounce out of the bottom',
+    ],
+  },
+  {
+    zh: ['手肘对准机器转轴，大臂贴垫', '向上弯举到顶端夹紧', '慢慢放回到手臂伸直'],
+    en: [
+      'Align the elbows with the pivot, upper arms on the pad',
+      'Curl up and squeeze at the top',
+      'Lower slowly to straight arms',
+    ],
+  },
+  {
+    zh: ['用绳索把手，掌心相对', '大臂贴住身体向上弯举', '顶端把绳子向两侧稍分开'],
+    en: [
+      'Use the rope with the palms facing each other',
+      'Curl with the upper arms by the sides',
+      'Spread the rope slightly at the top',
+    ],
+  },
+  {
+    zh: ['胸口趴在上斜凳上，手臂垂直向下', '向上弯举，大臂不动', '顶端用力夹紧'],
+    en: [
+      'Lie chest-down on an incline bench, arms hanging straight',
+      'Curl up without moving the upper arms',
+      'Squeeze hard at the top',
+    ],
+  },
+  {
+    zh: ['背对低位滑轮，向前跨一步', '从手臂在身后伸直的位置开始', '大臂不动，向前弯举'],
+    en: [
+      'Face away from a low pulley and step forward',
+      'Start with the arm stretched behind the body',
+      'Curl forward without moving the upper arm',
+    ],
+  },
+  {
+    zh: ['正手握杠（掌心向下），与肩同宽', '大臂贴住身体向上弯举', '手腕保持伸直'],
+    en: [
+      'Take an overhand, shoulder-width grip',
+      'Curl with the upper arms by the sides',
+      'Keep the wrists straight',
+    ],
+  },
+  {
+    zh: ['前臂放在凳上，掌心向下', '只动手腕向上抬起', '慢慢放下'],
+    en: [
+      'Rest the forearms on a bench, palms down',
+      'Raise the hands with the wrists only',
+      'Lower slowly',
+    ],
+  },
 ]
 
 // The cues of a built-in exercise; undefined for any other ID.
