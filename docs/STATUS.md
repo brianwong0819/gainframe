@@ -26,7 +26,7 @@ Sign-in and backup design (2026-11-17, PR `m2/sign-in-sync-design`, documents on
 
 Progress charts design (2026-11-17, PR `m4/charts-design`, documents only): the M4 chart screens were designed ahead of the milestone; the specification is "Progress charts" in `docs/design-system.md`. ROADMAP changes: M4-04 is split into M4-04 (Progress page and weight chart), M4-06 (strength chart) and M4-07 (volume and protein charts), because one task could not stay under 400 lines. bw chose the recommended options: a Progress page below Today instead of a fourth tab, estimated 1RM as the default strength measure and working sets as the default volume measure.
 
-Superset settings (2026-11-17, asked by bw during the field week): a superset's rounds and rest belong to the superset, not to each exercise. In the plan editor its heading shows "4 轮 · 休息 1:30" and opens a sheet for both; joining two exercises opens that sheet; a member's sheet keeps only its rep range and note. Existing supersets take the longest rest and the most sets of their members (Dexie version 9). PR 1 of 2 (`m1/superset-plan`); PR 2 brings the same sheet to the workout and turns a superset's "add set" into "add round".
+Superset settings (2026-11-17, asked by bw during the field week): a superset's rounds and rest belong to the superset, not to each exercise. In the plan editor its heading shows "4 轮 · 休息 1:30" and opens a sheet for both; joining two exercises opens that sheet; a member's sheet keeps only its rep range and note. Existing supersets take the longest rest and the most sets of their members (Dexie version 9). In a workout the heading shows the round and the rest and opens the rest; joining opens it and gives every member as many sets as the one with the most; a superset's "加一组" becomes "加一轮", a set for each member (PRs `m1/superset-plan` and `m1/superset-workout`).
 
 ## Field week checklist (pending iPhone checks)
 
@@ -38,7 +38,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 - Workout: a set logged one-handed in 5 s or less; the stepper's typed digits replace the value instead of being appended (see Follow-ups).
 - Plans: make a plan, start its next day from the Workout tab, finish, see the following day offered; add an exercise from its detail.
 - Rest timer: the cue and the blue pill on screen; the overdue rest after locking the phone and coming back.
-- Supersets: link two exercises in a workout and in a plan; the rest opens only after the last exercise of each round.
+- Supersets: link two exercises in a workout and in a plan; the superset sheet opens to set rounds and rest; the rest opens only after the last exercise of each round; "加一轮" adds a set to each exercise.
 - Finish: the plates and the "新纪录" tag feel right; the rest sheet's wait after a celebration is not annoying.
 - History: the swipe to delete does not fight vertical scrolling; editing a past set updates its figures.
 - Design review: the workout header and finish prompt, the Workout and Today tabs, the summary's comparison with last time, the compact history, the rest sheet's next set, the plan editor's pencil and day menu, and the library's best sets all read well and nothing is cut off.

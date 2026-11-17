@@ -407,6 +407,24 @@ describe('rest', () => {
     expect(split?.slots.map(({ slot }) => slot.supersetGroup)).toEqual([null, null])
   })
 
+  it('keeps a superset’s members at the same number of sets, and one rest', async () => {
+    const BUILT_IN_SQUAT = '00000000-0000-7000-8000-000000000002'
+    const { workout, slot: a1 } = await workoutWithSets(BUILT_IN_BENCH, 3)
+    const a2 = await session.addExercise(workout.id, BUILT_IN_SQUAT)
+    const counts = async () =>
+      (await session.loadActive())?.slots.map(({ sets }) => sets.length) ?? []
+
+    await session.linkWithNext(a1.id, true)
+    expect(await counts()).toEqual([3, 3])
+    const round = await session.addSet(a2.id)
+    expect(round.workoutExerciseId).toBe(a1.id)
+    expect(await counts()).toEqual([4, 4])
+
+    await session.setSupersetRest(a2.id, 75)
+    const rests = (await session.loadActive())?.slots.map(({ slot }) => slot.restS)
+    expect(rests).toEqual([75, 75])
+  })
+
   it('cancels the rest when the set is marked not done', async () => {
     const { sets } = await workoutWithSets(BUILT_IN_BENCH, 2)
     await session.completeSet(sets[0]?.id ?? '')

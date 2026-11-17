@@ -18,12 +18,15 @@ export function SlotActions({
   slots,
   nameOf,
   onDone,
+  onLinked,
 }: {
   slot: WorkoutExercise
   // The workout's live slots in order.
   slots: readonly WorkoutExercise[]
   nameOf: (exerciseId: string) => string
   onDone: () => void
+  // Joining opens the new superset's rest.
+  onLinked: () => void
 }) {
   const t = useTranslations('workout')
   const id = useId()
@@ -58,7 +61,9 @@ export function SlotActions({
                   name: nameOf(next.exerciseId),
                 }),
                 onToggle: () => {
-                  void workoutSession.linkWithNext(slot.id, !linked)
+                  void workoutSession.linkWithNext(slot.id, !linked).then(() => {
+                    if (!linked) onLinked()
+                  })
                 },
               }
         }
