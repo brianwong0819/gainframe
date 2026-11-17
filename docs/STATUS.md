@@ -22,7 +22,7 @@ Next: M1-13. Problems found during the week become issues with the copied Diagno
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
 
-Progress charts design (2026-11-17, PR `m4/charts-design`, documents only): the M4 chart screens were designed ahead of the milestone; the specification is "Progress charts" in `docs/design-system.md`. ROADMAP changes: M4-04 is split into M4-04 (Progress page and weight chart), M4-06 (strength chart) and M4-07 (volume and protein charts), because one task could not stay under 400 lines. Three choices wait for bw: the entry (a page below Today, or a fourth tab), the default strength measure (estimated 1RM, or heaviest set) and the default volume measure (sets, or kg).
+Progress charts design (2026-11-17, PR `m4/charts-design`, documents only): the M4 chart screens were designed ahead of the milestone; the specification is "Progress charts" in `docs/design-system.md`. ROADMAP changes: M4-04 is split into M4-04 (Progress page and weight chart), M4-06 (strength chart) and M4-07 (volume and protein charts), because one task could not stay under 400 lines. bw chose the recommended options: a Progress page below Today instead of a fourth tab, estimated 1RM as the default strength measure and working sets as the default volume measure.
 
 ## Field week checklist (pending iPhone checks)
 
