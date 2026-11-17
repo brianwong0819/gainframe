@@ -22,6 +22,22 @@ describe('BUILT_IN_EXERCISES', () => {
     expect(en.size).toBe(BUILT_IN_EXERCISES.length)
   })
 
+  it('never repeats a search term: no name or alias belongs to two exercises', () => {
+    const owners = new Map<string, string>()
+    for (const exercise of BUILT_IN_EXERCISES) {
+      const terms = [exercise.nameZh, exercise.nameEn, ...exercise.aliases].map((term) =>
+        term
+          .normalize('NFKC')
+          .toLowerCase()
+          .replace(/[\p{P}\p{Z}\s]/gu, ''),
+      )
+      for (const term of new Set(terms)) {
+        expect(owners.get(term), term).toBeUndefined()
+        owners.set(term, exercise.id)
+      }
+    }
+  })
+
   it('rests compound exercises at least as long as isolation exercises', () => {
     const rests = (mechanic: string) =>
       BUILT_IN_EXERCISES.filter((exercise) => exercise.mechanic === mechanic).map(

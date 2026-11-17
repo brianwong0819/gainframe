@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-036 · 2026-11-17 · test · Adding built-in exercises broke two e2e tests
+- **What happened:** on the first exercise library PR, CI's Device layout job failed twice: the picker test that creates a missing exercise named it 地雷管推举, which became a built-in exercise, so the library showed two matches; the keyboard test searched 哑铃飞鸟, which now also matched 上斜哑铃飞鸟, so its last result sat below the keyboard on iPhone SE.
+- **Root cause:** both tests depended on the catalog's content (which names exist, how many match a query) without saying so. `pnpm check` cannot see e2e specs, and the PR was pushed before running them.
+- **Fix:** the missing exercise is 地雷管划船, and the keyboard test searches 前平举, which matches two exercises again, the case its comment describes.
+- **Prevention:** rule in "Tests" in `docs/conventions.md`: a spec that needs a missing exercise or a fixed number of search results says so in a comment, and a change to the built-in catalog runs the specs that search it (`grep -l searchbox e2e`) before pushing.
+- **Status:** documented
+
 ### L-035 · 2026-11-17 · ui · The exercise picker's results were under the iPhone keyboard
 - **What happened:** bw, on the iPhone: in the plan editor's "添加到「…」" sheet, a search that left two results shrank the sheet to the bottom of the screen, under the keyboard, so a result could be tapped only after closing the keyboard. The workout's picker shares the sheet and had the same defect.
 - **Root cause:** the sheet was sized to the layout viewport (`position: fixed; inset: 0`). iOS Safari shows the keyboard over the page and shrinks only the visual viewport, so a panel anchored to the bottom sits under the keyboard. The sheet rules covered focus and scrolling on opening (L-019, L-020) but not the keyboard; Chromium in the container and Playwright's WebKit show no on-screen keyboard, so no test saw it.
