@@ -27,6 +27,7 @@ import {
   formatRest,
   type LibraryEntry,
   libraryEntries,
+  newDraft,
 } from './library'
 import { useBestSets } from './use-best-sets'
 import { useCustomExercises } from './use-custom-exercises'
@@ -36,8 +37,6 @@ const loadWeightUnits = () => weightUnits.all()
 const chipClass =
   'shrink-0 rounded-full border border-line px-16 py-8 text-label text-ink-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg'
 
-const han = /\p{Script=Han}/u
-
 interface Editing {
   exercise: Exercise | null
   initial: ExerciseDraft
@@ -46,18 +45,6 @@ interface Editing {
 // What the sheet shows: the detail of an exercise, or the form for a new or
 // custom one.
 type SheetContent = ({ kind: 'form' } & Editing) | { kind: 'detail'; exercise: LibraryEntry }
-
-function newDraft(name: string, muscle: MuscleGroup | null): ExerciseDraft {
-  const trimmed = name.trim()
-  return {
-    nameZh: han.test(trimmed) ? trimmed : '',
-    nameEn: han.test(trimmed) ? '' : trimmed,
-    muscle,
-    secondaryMuscles: [],
-    equipment: 'barbell',
-    defaultRestS: 90,
-  }
-}
 
 // An exercise with its muscle, equipment and default rest and, once the user
 // has done it, their best set at the right.

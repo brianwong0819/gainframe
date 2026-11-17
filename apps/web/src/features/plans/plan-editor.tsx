@@ -276,6 +276,7 @@ export function PlanEditor({ state }: { state: PlanState }) {
         }}
         closeLabel={t('close')}
         title={sheetTitle}
+        fullHeight={sheet?.kind === 'picker'}
       >
         {sheet?.kind === 'picker' && (
           <PlanExercisePicker

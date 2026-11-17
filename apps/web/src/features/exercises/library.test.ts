@@ -9,6 +9,7 @@ import {
   formatRest,
   libraryEntries,
   type MuscleSelection,
+  newDraft,
   pickMuscle,
 } from './library'
 
@@ -87,6 +88,17 @@ describe('draftToExercise', () => {
     })
     expect(values.nameZh).toBeNull()
     expect(values.nameEn).toBe('Landmine press')
+  })
+})
+
+describe('newDraft', () => {
+  it('puts a Chinese search in the Chinese name and any other in the English one', () => {
+    expect(newDraft(' 史密斯深蹲 ', null)).toMatchObject({ nameZh: '史密斯深蹲', nameEn: '' })
+    expect(newDraft('Smith squat', 'quads')).toMatchObject({
+      nameZh: '',
+      nameEn: 'Smith squat',
+      muscle: 'quads',
+    })
   })
 })
 

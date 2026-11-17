@@ -345,6 +345,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         onClose={close}
         closeLabel={t('close')}
         title={sheet ? title[sheet.kind] : ''}
+        fullHeight={sheet?.kind === 'picker'}
       >
         {sheetSet && <SetDetails set={sheetSet} onDeleted={close} />}
         {sheetSlot && (
@@ -369,6 +370,10 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         {sheet?.kind === 'picker' && (
           <ExercisePicker
             onPick={({ id }) => {
+              setSheetOpen(false)
+              void workoutSession.addExercise(workout.id, id)
+            }}
+            onCreated={({ id }) => {
               setSheetOpen(false)
               void workoutSession.addExercise(workout.id, id)
             }}
