@@ -1,16 +1,18 @@
 import { Dexie, type DexieOptions, type EntityTable, type Table, type Transaction } from 'dexie'
 
-import type {
-  ClientError,
-  Exercise,
-  Plan,
-  PlanDay,
-  PlanItem,
-  Workout,
-  WorkoutExercise,
-  WorkoutSet,
+import {
+  type ClientError,
+  type Exercise,
+  type Plan,
+  type PlanDay,
+  type PlanItem,
+  sharedValueChanges,
+  type Workout,
+  type WorkoutExercise,
+  type WorkoutSet,
 } from '@gainframe/shared'
 
+import { restResolver } from './exercise-rest'
 import { newId } from './id'
 import { nextUpdatedAt } from './repositories'
 
@@ -160,6 +162,8 @@ export class GainframeDb extends Dexie {
             workout.restEndsAt ??= null
           }),
       )
+    // A superset has one rest and, in a plan, one number of rounds.
+    this.version(9).stores({}).upgrade(shareSupersetValues)
   }
 }
 
@@ -218,6 +222,51 @@ export async function moveSetsIntoSlots(tx: Transaction): Promise<void> {
       delete moved.supersetGroup
       await setTable.put(moved)
       await tx.table('outbox').add({ table: 'workoutSets', rowId: set.id })
+    }
+  }
+}
+
+// Version 8 lets the members of a superset differ; the workout took the last
+// member's rest. Version 9 gives every member of each superset the longest
+// rest of its members, and in a plan the most sets, which a workout already
+// did in rounds. Changed rows get outbox entries, since sync must push them.
+export async function shareSupersetValues(tx: Transaction): Promise<void> {
+  const now = new Date()
+  const restOf = await restResolver(tx.table<Exercise, string>('exercises'))
+  const live = (row: { deletedAt: string | null }) => row.deletedAt === null
+  const restOfRow = (row: { restS: number | null }) => row.restS
+
+  const items = await tx.table<PlanItem, string>('planItems').filter(live).toArray()
+  for (const day of Map.groupBy(items, (item) => item.planDayId).values()) {
+    const changes = new Map<string, Partial<PlanItem>>()
+    for (const { id, value } of sharedValueChanges(day, restOf, restOfRow)) {
+      changes.set(id, { restS: value })
+    }
+    const sets = (item: PlanItem) => item.targetSets
+    for (const { id, value } of sharedValueChanges(day, sets, sets)) {
+      changes.set(id, { ...changes.get(id), targetSets: value })
+    }
+    for (const item of day) {
+      const change = changes.get(item.id)
+      if (change === undefined) continue
+      await tx.table('planItems').update(item.id, {
+        ...change,
+        updatedAt: nextUpdatedAt(item.updatedAt, now),
+      })
+      await tx.table('outbox').add({ table: 'planItems', rowId: item.id })
+    }
+  }
+
+  const slots = await tx.table<WorkoutExercise, string>('workoutExercises').filter(live).toArray()
+  for (const workout of Map.groupBy(slots, (slot) => slot.workoutId).values()) {
+    for (const { id, value } of sharedValueChanges(workout, restOf, restOfRow)) {
+      const slot = workout.find((other) => other.id === id)
+      if (slot === undefined) continue
+      await tx.table('workoutExercises').update(id, {
+        restS: value,
+        updatedAt: nextUpdatedAt(slot.updatedAt, now),
+      })
+      await tx.table('outbox').add({ table: 'workoutExercises', rowId: id })
     }
   }
 }

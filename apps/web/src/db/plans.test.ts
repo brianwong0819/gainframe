@@ -147,6 +147,37 @@ describe('plan store', () => {
     expect(await groups()).toEqual([null, null])
   })
 
+  it('gives a new superset one rest and one number of rounds, and changes them together', async () => {
+    const plan = await plans.create('Full body', 'A')
+    const day = (await plans.load(plan.id))?.days[0]?.day
+    const bench = await plans.addItem(day?.id ?? '', BENCH)
+    const squat = await plans.addItem(day?.id ?? '', SQUAT)
+    await repos.planItems.update(bench.id, { restS: 60, targetSets: 5 })
+    await repos.planItems.update(squat.id, { restS: 90 })
+    const values = async () =>
+      (await plans.load(plan.id))?.days[0]?.items.map(({ restS, targetSets }) => [
+        restS,
+        targetSets,
+      ])
+
+    await plans.linkWithNext(bench.id, true)
+    expect(await values()).toEqual([
+      [90, 5],
+      [90, 5],
+    ])
+    await plans.updateSuperset(squat.id, { restS: 120, targetSets: 4 })
+    expect(await values()).toEqual([
+      [120, 4],
+      [120, 4],
+    ])
+    await plans.linkWithNext(bench.id, false)
+    await plans.updateSuperset(squat.id, { restS: 45 })
+    expect(await values()).toEqual([
+      [120, 4],
+      [45, 4],
+    ])
+  })
+
   it('moves an exercise within its day', async () => {
     const plan = await plans.create('Full body', 'A')
     const day = (await plans.load(plan.id))?.days[0]?.day

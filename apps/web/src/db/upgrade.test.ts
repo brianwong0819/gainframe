@@ -41,7 +41,7 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(8)
+    expect(current.verno).toBe(9)
     current.close()
   })
 
@@ -70,7 +70,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(8)
+    expect(v3.verno).toBe(9)
     v3.close()
   })
 
@@ -174,7 +174,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(8)
+    expect(v5.verno).toBe(9)
     v5.close()
   })
 
@@ -223,7 +223,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(8)
+    expect(v6.verno).toBe(9)
     v6.close()
   })
 
@@ -288,7 +288,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(8)
+    expect(v7.verno).toBe(9)
     v7.close()
   })
 
@@ -337,7 +337,95 @@ describe('Dexie schema upgrades', () => {
       restEndsAt: null,
     })
     expect(await v8.outbox.count()).toBe(0)
-    expect(v8.verno).toBe(8)
+    expect(v8.verno).toBe(9)
     v8.close()
+  })
+
+  it('gives each version 8 superset one rest and one number of rounds in version 9', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v8 = new Dexie('upgrade', options)
+    v8.version(1).stores(STORES_V1)
+    v8.version(2).stores({ errors: '++seq' })
+    v8.version(3).stores({})
+    v8.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v8.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    v8.version(6).stores({})
+    v8.version(7).stores({})
+    v8.version(8).stores({})
+    const row = {
+      userId: null,
+      createdAt: '2026-11-17T10:00:00.000Z',
+      updatedAt: '2026-11-17T10:00:00.000Z',
+      deletedAt: null,
+    }
+    // Built-in exercise 1 rests 180 s by default, exercise 2 120 s.
+    const item = (n: number, values: Record<string, unknown>) => ({
+      ...row,
+      id: `01960000-0000-7000-8000-00000000000${String(n)}`,
+      planId: '01960000-0000-7000-8000-0000000000a1',
+      planDayId: '01960000-0000-7000-8000-0000000000a2',
+      exerciseId: '00000000-0000-7000-8000-000000000002',
+      position: n,
+      supersetGroup: 0,
+      targetSets: 3,
+      repsMin: 8,
+      repsMax: 12,
+      restS: 90,
+      note: null,
+      ...values,
+    })
+    const first = item(1, { exerciseId: '00000000-0000-7000-8000-000000000001', restS: null })
+    const second = item(2, { targetSets: 4 })
+    const alone = item(3, { supersetGroup: null, targetSets: 2, restS: 60 })
+    const slot = (n: number, restS: number | null) => ({
+      ...row,
+      id: `01960000-0000-7000-8000-00000000001${String(n)}`,
+      workoutId: '01960000-0000-7000-8000-0000000000a3',
+      exerciseId: '00000000-0000-7000-8000-000000000002',
+      position: n,
+      supersetGroup: 0,
+      note: null,
+      repsMin: null,
+      repsMax: null,
+      restS,
+      planNote: null,
+    })
+    await v8.table('planItems').bulkAdd([first, second, alone])
+    await v8.table('workoutExercises').bulkAdd([slot(1, 90), slot(2, null)])
+    v8.close()
+
+    const v9 = new GainframeDb('upgrade', options)
+    // A changed row keeps every value but the shared ones and a later updatedAt.
+    const expectChanged = (stored: { updatedAt: string } | undefined, expected: object) => {
+      const { updatedAt, ...rest } = { ...row, ...expected }
+      expect(stored).toMatchObject(rest)
+      expect(stored?.updatedAt).not.toBe(updatedAt)
+    }
+    expectChanged(await v9.planItems.get(first.id), { ...first, restS: 180, targetSets: 4 })
+    expectChanged(await v9.planItems.get(second.id), { ...second, restS: 180 })
+    expect(await v9.planItems.get(alone.id)).toEqual(alone)
+    expectChanged(await v9.workoutExercises.get(slot(1, 0).id), slot(1, 120))
+    expectChanged(await v9.workoutExercises.get(slot(2, 0).id), slot(2, 120))
+    expect((await v9.outbox.toArray()).map(({ rowId }) => rowId)).toEqual([
+      first.id,
+      second.id,
+      slot(1, 0).id,
+      slot(2, 0).id,
+    ])
+    expect(v9.verno).toBe(9)
+    v9.close()
   })
 })

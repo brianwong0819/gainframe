@@ -8,8 +8,11 @@ import {
   restSlotAfter,
   type RoundSet,
   setOrder,
+  sharedValueChanges,
   supersetBlocks,
   supersetLabels,
+  supersetMembers,
+  supersetValue,
   unlinkFromNext,
 } from './superset.ts'
 
@@ -186,5 +189,34 @@ describe('supersetBlocks', () => {
       ['B', ['s3', 's4']],
       [null, ['s5']],
     ])
+  })
+})
+
+describe('superset values', () => {
+  const withRest = (...rests: (number | null)[]) =>
+    items(0, 0, null, 1, 1, 1).map((item, index) => ({ ...item, restS: rests[index] ?? null }))
+  // A null rest stands for an exercise default of 60 s.
+  const restOf = ({ restS }: { restS: number | null }) => restS ?? 60
+  const stored = ({ restS }: { restS: number | null }) => restS
+
+  it('lists the members of an item’s superset, or just the item', () => {
+    const list = withRest()
+    expect(supersetMembers(list, 's4').map(({ id }) => id)).toEqual(['s3', 's4', 's5'])
+    expect(supersetMembers(list, 's2').map(({ id }) => id)).toEqual(['s2'])
+    expect(supersetMembers(list, 'gone')).toEqual([])
+  })
+
+  it('takes the largest value of the members, defaults included', () => {
+    expect(supersetValue(withRest(90, 120), restOf)).toBe(120)
+    expect(supersetValue(withRest(30, null), restOf)).toBe(60)
+  })
+
+  it('gives every member of each superset its value and leaves the rest alone', () => {
+    expect(sharedValueChanges(withRest(90, 120, 45, null, 75, 30), restOf, stored)).toEqual([
+      { id: 's0', value: 120 },
+      { id: 's3', value: 75 },
+      { id: 's5', value: 75 },
+    ])
+    expect(sharedValueChanges(withRest(90, 90, 45, 60, 60, 60), restOf, stored)).toEqual([])
   })
 })

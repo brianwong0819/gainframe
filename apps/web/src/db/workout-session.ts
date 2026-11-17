@@ -1,15 +1,14 @@
 import {
   adjustRestEnd,
-  BUILT_IN_EXERCISES,
   bestWeightKg,
   fromKg,
   linkWithNext,
   moveItem,
   nextSetValues,
   previousPerformance,
-  restSeconds,
   restSlotAfter,
   setsTakingWeight,
+  sharedValueChanges,
   stepToGrid,
   toKg,
   toLocalDate,
@@ -20,6 +19,7 @@ import {
   type WorkoutSet,
 } from '@gainframe/shared'
 
+import { restResolver } from './exercise-rest'
 import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
@@ -47,8 +47,6 @@ export interface ActiveWorkoutState {
 }
 
 const live = (row: { deletedAt: string | null }) => row.deletedAt === null
-
-const builtInRest = new Map(BUILT_IN_EXERCISES.map(({ id, defaultRestS }) => [id, defaultRestS]))
 
 const noRest = { restStartedAt: null, restEndsAt: null } as const
 
@@ -130,10 +128,7 @@ export function createWorkoutSession(
 
   // The rest after a set of `slot`, in seconds (0 for none).
   async function restAfter(slot: WorkoutExercise): Promise<number> {
-    const custom = builtInRest.has(slot.exerciseId)
-      ? undefined
-      : await db.exercises.get(slot.exerciseId)
-    return restSeconds(slot.restS, builtInRest.get(slot.exerciseId) ?? custom?.defaultRestS ?? null)
+    return (await restResolver(db.exercises))(slot)
   }
 
   async function liveSlots(workoutId: string): Promise<WorkoutExercise[]> {
@@ -325,14 +320,21 @@ export function createWorkoutSession(
 
     // Joins an exercise with the one after it into a superset, or splits the
     // superset between them.
+    // A new superset starts with the longest rest of its members, which keep
+    // it if they are split again.
     async linkWithNext(slotId: string, linked: boolean): Promise<void> {
-      await db.transaction('rw', db.workoutExercises, db.outbox, async () => {
+      await db.transaction('rw', db.workoutExercises, db.outbox, db.exercises, async () => {
         const slot = await repos.workoutExercises.get(slotId)
         if (slot === undefined) throw new Error(`No exercise slot ${slotId}`)
         const slots = await liveSlots(slot.workoutId)
         const changes = linked ? linkWithNext(slots, slotId) : unlinkFromNext(slots, slotId)
         for (const { id, supersetGroup } of changes) {
           await repos.workoutExercises.update(id, { supersetGroup })
+        }
+        const restOf = await restResolver(db.exercises)
+        const rests = sharedValueChanges(await liveSlots(slot.workoutId), restOf, (s) => s.restS)
+        for (const { id, value } of rests) {
+          await repos.workoutExercises.update(id, { restS: value })
         }
       })
     },
