@@ -327,6 +327,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         onClose={close}
         closeLabel={t('close')}
         title={sheet ? title[sheet.kind] : ''}
+        fullHeight={sheet?.kind === 'picker'}
       >
         {sheetSet && <SetDetails set={sheetSet} onDeleted={close} />}
         {sheetSlot && (

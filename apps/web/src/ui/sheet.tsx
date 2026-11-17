@@ -12,6 +12,9 @@ interface SheetProps {
   title: string
   closeLabel: string
   children: ReactNode
+  // Keeps the panel at its full height whatever its content, for a list that
+  // a search shortens.
+  fullHeight?: boolean
 }
 
 // A downward drag past this distance (px) or speed (px/s) closes the sheet.
@@ -29,7 +32,14 @@ const DISMISS_VELOCITY = 600
  * still sits below the screen at that moment, and WebKit would scroll it into
  * view for one frame before the entry animation starts.
  */
-export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  closeLabel,
+  children,
+  fullHeight = false,
+}: SheetProps) {
   const drag = useDragControls()
   const dialog = useRef<HTMLDialogElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -41,6 +51,30 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
     if (open && element && !element.open) {
       element.showModal()
       panel.current?.focus({ preventScroll: true })
+    }
+  }, [open])
+
+  // iOS shows the keyboard over the page without resizing the layout
+  // viewport, so a dialog sized to it keeps the panel under the keyboard. While
+  // the sheet is open the dialog follows the visual viewport, which the
+  // keyboard does shrink. The values stay after closing, so the panel does not
+  // jump during its exit; the next opening measures again.
+  useEffect(() => {
+    const element = dialog.current
+    const viewport = window.visualViewport
+    if (!open || !element || !viewport) return
+    const follow = () => {
+      const below = document.documentElement.clientHeight - viewport.offsetTop - viewport.height
+      element.style.setProperty('--sheet-top', `${String(viewport.offsetTop)}px`)
+      element.style.setProperty('--sheet-height', `${String(viewport.height)}px`)
+      element.style.setProperty('--sheet-below', `${String(Math.max(0, below))}px`)
+    }
+    follow()
+    viewport.addEventListener('resize', follow)
+    viewport.addEventListener('scroll', follow)
+    return () => {
+      viewport.removeEventListener('resize', follow)
+      viewport.removeEventListener('scroll', follow)
     }
   }, [open])
 
@@ -72,7 +106,7 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
         {open && (
           <motion.div
             key="panel"
-            className="sheet-panel"
+            className={fullHeight ? 'sheet-panel sheet-panel-full' : 'sheet-panel'}
             initial={hidden}
             animate={shown}
             exit={hidden}
