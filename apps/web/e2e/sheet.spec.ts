@@ -71,7 +71,8 @@ test('the exercise picker keeps its height and stays above the keyboard', async 
   await expect(panel).toHaveCSS('transform', 'none')
   const before = await panel.boundingBox()
 
-  await page.getByRole('searchbox').fill('哑铃飞鸟')
+  // Two built-in exercises match (L-036).
+  await page.getByRole('searchbox').fill('前平举')
   const results = page.getByRole('dialog').getByRole('listitem')
   await expect(results).not.toHaveCount(0)
   expect(await panel.boundingBox()).toEqual(before)

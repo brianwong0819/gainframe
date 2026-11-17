@@ -294,20 +294,21 @@ test('an exercise missing from the library is created from the picker and added 
   await page.getByRole('button', { name: '新建计划' }).click()
   await page.getByRole('button', { name: '添加动作' }).click()
   const dialog = page.getByRole('dialog')
-  await page.getByRole('searchbox').fill('地雷管推举')
-  await dialog.getByRole('button', { name: '新建“地雷管推举”' }).click()
+  // Not a built-in exercise (L-036).
+  await page.getByRole('searchbox').fill('地雷管划船')
+  await dialog.getByRole('button', { name: '新建“地雷管划船”' }).click()
 
   // The form is named after the search; back keeps the search.
-  await expect(dialog.getByRole('textbox', { name: '中文名称' })).toHaveValue('地雷管推举')
+  await expect(dialog.getByRole('textbox', { name: '中文名称' })).toHaveValue('地雷管划船')
   await dialog.getByRole('button', { name: '返回动作列表' }).click()
-  await expect(page.getByRole('searchbox')).toHaveValue('地雷管推举')
-  await dialog.getByRole('button', { name: '新建“地雷管推举”' }).click()
-  await dialog.getByRole('button', { name: '肩', exact: true }).click()
+  await expect(page.getByRole('searchbox')).toHaveValue('地雷管划船')
+  await dialog.getByRole('button', { name: '新建“地雷管划船”' }).click()
+  await dialog.getByRole('button', { name: '背', exact: true }).click()
   await dialog.getByRole('button', { name: '保存' }).click()
 
   await expect(dialog).toBeHidden()
   // Shown once read back from the database (L-024).
-  await expect(page.getByRole('main').getByText('地雷管推举')).toBeVisible()
+  await expect(page.getByRole('main').getByText('地雷管划船')).toBeVisible()
   await page.goto('/workout/exercises')
-  await expect(page.getByRole('main').getByRole('button', { name: /^地雷管推举/ })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('button', { name: /^地雷管划船/ })).toBeVisible()
 })
