@@ -4,7 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M1 Workout logging (code complete)
 - **Current task:** M1-13 Field week (bw logs every session for a week)
-- **Last updated:** 2026-11-16
+- **Last updated:** 2026-11-17
 
 ## Now
 
@@ -21,6 +21,8 @@ Design review (2026-11-16, asked by bw during the field week): every screen was 
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M2-01.
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
+
+Progress charts design (2026-11-17, PR `m4/charts-design`, documents only): the M4 chart screens were designed ahead of the milestone; the specification is "Progress charts" in `docs/design-system.md`. ROADMAP changes: M4-04 is split into M4-04 (Progress page and weight chart), M4-06 (strength chart) and M4-07 (volume and protein charts), because one task could not stay under 400 lines. Three choices wait for bw: the entry (a page below Today, or a fourth tab), the default strength measure (estimated 1RM, or heaviest set) and the default volume measure (sets, or kg).
 
 ## Field week checklist (pending iPhone checks)
 
