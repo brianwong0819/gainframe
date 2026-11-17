@@ -114,7 +114,7 @@ export function ExerciseForm({
 }: {
   editing: Exercise | null
   initial: ExerciseDraft
-  onDone: () => void
+  onDone: (exercise: Exercise) => void
 }) {
   const t = useTranslations('exerciseForm')
   const tEquipment = useTranslations('equipment')
@@ -140,9 +140,11 @@ export function ExerciseForm({
     if (noName || values === null) return
     setSaving(true)
     try {
-      if (editing) await repositories.exercises.update(editing.id, values)
-      else await repositories.exercises.create(values)
-      onDone()
+      onDone(
+        editing
+          ? await repositories.exercises.update(editing.id, values)
+          : await repositories.exercises.create(values),
+      )
     } finally {
       setSaving(false)
     }

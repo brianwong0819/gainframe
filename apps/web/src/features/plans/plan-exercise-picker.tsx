@@ -13,7 +13,8 @@ import { ExercisePicker } from '../workout/exercise-picker'
 // Adding an exercise to a plan day: the library list, and on a tap the same
 // detail as the library (muscle map, cues) with a button that adds it. The list
 // stays mounted while the detail shows, so its search survives "back", and its
-// scroll position is restored.
+// scroll position is restored. An exercise created from the list is added at
+// once: its detail would only repeat what was just entered.
 export function PlanExercisePicker({
   day,
   picked,
@@ -46,6 +47,7 @@ export function PlanExercisePicker({
             listScrollTop.current = panel()?.scrollTop ?? 0
             onPick(exercise)
           }}
+          onCreated={onAdd}
         />
       </div>
       {picked && (
