@@ -32,10 +32,14 @@ export {
   restSlotAfter,
   type RoundSet,
   setOrder,
+  sharedValueChanges,
   type SupersetBlock,
   supersetBlocks,
   supersetLabels,
+  supersetMembers,
+  supersetValue,
   unlinkFromNext,
+  type ValueChange,
 } from './domain/superset.ts'
 export {
   estimateDurationS,

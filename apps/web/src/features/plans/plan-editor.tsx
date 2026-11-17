@@ -6,6 +6,7 @@ import {
   type PlanItem,
   supersetBlocks,
   supersetLabels,
+  supersetValue,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -28,6 +29,7 @@ import { formatRepRange } from './item-edit'
 import { NameField } from './name-field'
 import { PlanExercisePicker } from './plan-exercise-picker'
 import { PlanItemSheet } from './plan-item-sheet'
+import { SupersetSheet } from './superset-sheet'
 
 // Custom exercises including deleted ones, so names never go missing.
 const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
@@ -35,6 +37,8 @@ const allCustomExercises = (): Promise<Exercise[]> => db.exercises.toArray()
 type SheetContent =
   | { kind: 'picker'; day: PlanDay; picked: LibraryEntry | null }
   | { kind: 'item'; itemId: string }
+  // A superset's rounds and rest, found through one of its members.
+  | { kind: 'superset'; itemId: string }
   | { kind: 'day'; day: PlanDay }
 
 function Day({
@@ -43,6 +47,7 @@ function Day({
   custom,
   onAddExercise,
   onOpenItem,
+  onOpenSuperset,
   onActions,
 }: {
   state: PlanDayState
@@ -50,6 +55,7 @@ function Day({
   custom: readonly Exercise[]
   onAddExercise: () => void
   onOpenItem: (item: PlanItem) => void
+  onOpenSuperset: (item: PlanItem) => void
   onActions: () => void
 }) {
   const t = useTranslations('plans')
@@ -77,9 +83,15 @@ function Day({
           {nameOf(item.exerciseId)}
         </span>
         <span className="text-label text-ink-3">
-          {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
-          {' · '}
-          {t('rest', { time: formatRest(itemRestS(item, custom)) })}
+          {labels.has(item.id) ? (
+            t('memberSummary', { reps: formatRepRange(item) })
+          ) : (
+            <>
+              {t('itemSummary', { sets: item.targetSets, reps: formatRepRange(item) })}
+              {' · '}
+              {t('rest', { time: formatRest(itemRestS(item, custom)) })}
+            </>
+          )}
         </span>
         {item.note !== null && <span className="truncate text-label text-ink-2">{item.note}</span>}
       </span>
@@ -129,7 +141,16 @@ function Day({
               members.map(row)
             ) : (
               <div key={letter} className="py-8">
-                <SupersetBlock title={tWorkout('supersetTitle', { letter })}>
+                <SupersetBlock
+                  title={tWorkout('supersetTitle', { letter })}
+                  detail={t('supersetSummary', {
+                    rounds: supersetValue(members, ({ targetSets }) => targetSets),
+                    time: formatRest(supersetValue(members, (item) => itemRestS(item, custom))),
+                  })}
+                  onEdit={() => {
+                    if (members[0]) onOpenSuperset(members[0])
+                  }}
+                >
                   <div className="flex flex-col rounded-ctl bg-surface px-8">
                     {members.map(row)}
                   </div>
@@ -168,6 +189,14 @@ export function PlanEditor({ state }: { state: PlanState }) {
     sheet?.kind === 'item'
       ? days.flatMap(({ items }) => items).find((item) => item.id === sheet.itemId)
       : undefined
+  const supersetBlock =
+    sheet?.kind === 'superset'
+      ? days
+          .flatMap(({ items }) => supersetBlocks(items))
+          .find(
+            ({ letter, items }) => letter !== null && items.some(({ id }) => id === sheet.itemId),
+          )
+      : undefined
   const sheetTitle =
     sheet?.kind === 'picker'
       ? sheet.picked
@@ -175,9 +204,11 @@ export function PlanEditor({ state }: { state: PlanState }) {
         : t('pickerTitle', { day: sheet.day.name })
       : sheet?.kind === 'day'
         ? sheet.day.name
-        : sheetItem
-          ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
-          : ''
+        : sheet?.kind === 'superset'
+          ? t('supersetSheetTitle', { letter: supersetBlock?.letter ?? '' })
+          : sheetItem
+            ? exerciseName(findExercise(sheetItem.exerciseId, custom), locale)
+            : ''
 
   return (
     <>
@@ -212,6 +243,9 @@ export function PlanEditor({ state }: { state: PlanState }) {
           }}
           onOpenItem={(item) => {
             open({ kind: 'item', itemId: item.id })
+          }}
+          onOpenSuperset={(item) => {
+            open({ kind: 'superset', itemId: item.id })
           }}
           onActions={() => {
             open({ kind: 'day', day: dayState.day })
@@ -279,6 +313,18 @@ export function PlanEditor({ state }: { state: PlanState }) {
             onRemoved={() => {
               setSheetOpen(false)
             }}
+            onOpenSuperset={() => {
+              setSheet({ kind: 'superset', itemId: sheetItem.id })
+            }}
+          />
+        )}
+        {supersetBlock && (
+          <SupersetSheet
+            members={supersetBlock.items}
+            names={supersetBlock.items.map(({ exerciseId }) =>
+              exerciseName(findExercise(exerciseId, custom), locale),
+            )}
+            custom={custom}
           />
         )}
       </Sheet>

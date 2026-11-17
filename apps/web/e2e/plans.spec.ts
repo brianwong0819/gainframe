@@ -256,16 +256,28 @@ test('a superset linked in the plan carries into its workout', async ({ page }) 
   // Each write shows in the sheet once read back from the database (L-024).
   await expect(dialog.getByRole('button', { name: '上移' })).toBeDisabled()
   await dialog.getByRole('button', { name: '和「杠铃卧推」组成超级组' }).click()
-  await expect(dialog.getByRole('button', { name: '和「杠铃卧推」拆开' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
-  await expect(dialog.getByText(/每轮的休息看最后一个动作/)).toBeVisible()
+  // Joining opens the superset's own rounds and rest, starting from the longer
+  // rest of the two (the bench press's 3:00).
+  await expect(dialog.getByRole('heading', { name: '超级组 A' })).toBeVisible()
+  await expect(
+    dialog.getByText('一轮 = 杠铃深蹲 → 杠铃卧推 各做一组', { exact: false }),
+  ).toBeVisible()
+  await expect(dialog.locator('output')).toHaveText('3:00')
+  await dialog.getByRole('button', { name: '轮数加一' }).click()
+  await dialog.getByRole('button', { name: '休息减 15 秒' }).click()
+  await expect(dialog.locator('output')).toHaveText('2:45')
   await dialog.getByRole('button', { name: '关闭' }).click()
   await expect(dialog).toBeHidden()
-  await expect(page.getByRole('region', { name: '超级组 A · 轮流做' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /^A1 杠铃深蹲/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /^A2 杠铃卧推/ })).toBeVisible()
+  const block = page.getByRole('region', { name: '超级组 A · 轮流做' })
+  await expect(block.getByRole('button', { name: /4 轮 · 休息 2:45/ })).toBeVisible()
+  // A member keeps only its own rep range; its sets and rest are the superset's.
+  await block.getByRole('button', { name: /^A1 杠铃深蹲/ }).click()
+  await expect(dialog.getByRole('button', { name: '组数加一' })).toBeHidden()
+  await dialog.getByRole('button', { name: /轮数和休息由超级组 A 设定/ }).click()
+  await expect(dialog.getByRole('heading', { name: '超级组 A' })).toBeVisible()
+  await dialog.getByRole('button', { name: '关闭' }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByRole('button', { name: /^A2 杠铃卧推/ })).not.toContainText('休息')
 
   await page.getByRole('link', { name: '训练计划' }).click()
   await page.getByRole('link', { name: '训练', exact: true }).first().click()

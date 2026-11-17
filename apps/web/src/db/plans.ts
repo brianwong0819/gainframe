@@ -7,9 +7,12 @@ import {
   type PlanDay,
   type PlanItem,
   planItemsFromWorkout,
+  sharedValueChanges,
+  supersetMembers,
   unlinkFromNext,
 } from '@gainframe/shared'
 
+import { restResolver } from './exercise-rest'
 import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
@@ -161,12 +164,36 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
 
     // Joins an exercise of a day with the one after it into a superset, or
     // splits the superset between them; a workout from the day copies the groups.
+    // A new superset starts with the longest rest and the most sets of its
+    // members, which keep them if they are split again.
     async linkWithNext(itemId: string, linked: boolean): Promise<void> {
-      await db.transaction('rw', db.planItems, db.outbox, async () => {
+      await db.transaction('rw', db.planItems, db.outbox, db.exercises, async () => {
         const items = await dayItemsOf(itemId)
         const changes = linked ? linkWithNext(items, itemId) : unlinkFromNext(items, itemId)
         for (const { id, supersetGroup } of changes) {
           await repos.planItems.update(id, { supersetGroup })
+        }
+        const restOf = await restResolver(db.exercises)
+        const after = await dayItemsOf(itemId)
+        for (const { id, value } of sharedValueChanges(after, restOf, (item) => item.restS)) {
+          await repos.planItems.update(id, { restS: value })
+        }
+        const sets = (item: PlanItem) => item.targetSets
+        for (const { id, value } of sharedValueChanges(after, sets, sets)) {
+          await repos.planItems.update(id, { targetSets: value })
+        }
+      })
+    },
+
+    // Sets a superset's rest, taken after each round, or its number of rounds
+    // on every member; on the item alone when it stands alone.
+    async updateSuperset(
+      itemId: string,
+      changes: Partial<Pick<PlanItem, 'restS' | 'targetSets'>>,
+    ): Promise<void> {
+      await db.transaction('rw', db.planItems, db.outbox, async () => {
+        for (const { id } of supersetMembers(await dayItemsOf(itemId), itemId)) {
+          await repos.planItems.update(id, changes)
         }
       })
     },
