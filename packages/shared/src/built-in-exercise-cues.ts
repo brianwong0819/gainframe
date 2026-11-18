@@ -1272,6 +1272,18 @@ export const BUILT_IN_EXERCISE_CUES: readonly ExerciseCues[] = [
     zh: ['弹力带挂在高处', '大臂贴住身体，向下伸直', '慢慢回放'],
     en: ['Anchor the band overhead', 'Pin the upper arms and extend down', 'Return slowly'],
   },
+  {
+    zh: [
+      '仰卧屈膝，双手放在身侧或抓住头后的凳子',
+      '用腹部把骨盆卷起，膝盖靠向胸口',
+      '慢慢放下，下背贴地',
+    ],
+    en: [
+      'Lie with the knees bent, hands at the sides or holding the bench behind you',
+      'Curl the pelvis up with the abs, bringing the knees toward the chest',
+      'Lower slowly, keeping the lower back down',
+    ],
+  },
 ]
 
 // The cues of a built-in exercise; undefined for any other ID.
