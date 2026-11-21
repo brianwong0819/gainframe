@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-037 · 2026-11-21 · workout · The rest cue was sometimes silent on the iPhone
+- **What happened:** during the field week bw found that the rest timer sometimes ended without a sound.
+- **Root cause:** `playRestCue` played only when the audio context was `running` and otherwise returned silently. iOS interrupts the context while the app is hidden and resumes it about 50 ms after the app is shown again (ADR-0005's measurement), but the rest timer asks for the cue in the render that follows `visibilitychange`, before that. A rest that ended while bw was in another app therefore came back silent, and the return cue plays only once. Another app's sound interrupting the context on screen had the same effect. The ADR measured the resume delay; the code did not account for it.
+- **Fix:** `m1/rest-cue-resume`: a cue asked for while the context is not running resumes it and plays when it runs again, unless that takes longer than a second.
+- **Prevention:** `rest-cue.test.ts` covers the cue with an interrupted context that resumes late, too late and never.
+- **Status:** guarded
+
 ### L-036 · 2026-11-17 · test · Adding built-in exercises broke two e2e tests
 - **What happened:** on the first exercise library PR, CI's Device layout job failed twice: the picker test that creates a missing exercise named it 地雷管推举, which became a built-in exercise, so the library showed two matches; the keyboard test searched 哑铃飞鸟, which now also matched 上斜哑铃飞鸟, so its last result sat below the keyboard on iPhone SE.
 - **Root cause:** both tests depended on the catalog's content (which names exist, how many match a query) without saying so. `pnpm check` cannot see e2e specs, and the PR was pushed before running them.
