@@ -3,6 +3,10 @@
 // completes a set; the cue itself plays later from a timer while the page is
 // visible. Nothing is scheduled on the audio clock in advance: that clock
 // stops while iOS hides the page and would play a stale cue on return.
+// iOS also interrupts the audio context while the page is hidden and resumes
+// it only after the page is shown again (about 50 ms, ADR-0005), and another
+// app's sound can interrupt it while the page is visible, so a cue asked for
+// then waits for the context to resume.
 
 // The Audio Session API (Safari 16.4+) is not in TypeScript's DOM library yet.
 // https://w3c.github.io/audio-session/
@@ -22,6 +26,9 @@ const BEEPS_HZ = [880, 1100, 1320]
 const BEEP_S = 0.22
 const BEEP_GAP_S = 0.3
 const GAIN = 0.7
+// How long a cue waits for an interrupted context; later than that it would
+// no longer mark the end of the rest.
+export const RESUME_WAIT_MS = 1000
 
 let context: AudioContext | null = null
 let wakeLock: WakeLockSentinel | null = null
@@ -47,7 +54,23 @@ export function prepareRestCue(): void {
 
 export function playRestCue(): void {
   const audio = context
-  if (audio?.state !== 'running') return
+  if (audio === null || audio.state === 'closed') return
+  if (audio.state === 'running') {
+    beep(audio)
+    return
+  }
+  const askedAt = Date.now()
+  audio.resume().then(
+    () => {
+      if (audio.state === 'running' && Date.now() - askedAt <= RESUME_WAIT_MS) beep(audio)
+    },
+    () => {
+      // Still interrupted (a call, another app's audio); the rest shows on screen.
+    },
+  )
+}
+
+function beep(audio: AudioContext): void {
   const start = audio.currentTime + 0.01
   BEEPS_HZ.forEach((hz, index) => {
     const at = start + index * BEEP_GAP_S
