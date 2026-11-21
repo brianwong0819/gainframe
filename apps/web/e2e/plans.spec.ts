@@ -130,6 +130,8 @@ test("the Workout tab offers the current plan's next day and starts it", async (
   await page.getByRole('button', { name: '开始「推」' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await expect(page.getByText('目标 8–12 次')).toBeVisible()
+  // The set panel repeats the range under the reps label, so it stays in sight.
+  await expect(page.locator('.set-panel').getByText('目标 8–12')).toBeVisible()
   await expect(page.getByText('计划 · 握距比肩宽一指')).toBeVisible()
   // The ⓘ beside the name opens the exercise's detail.
   await page.getByRole('button', { name: '杠铃卧推 的动作详情' }).click()

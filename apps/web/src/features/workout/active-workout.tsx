@@ -28,6 +28,7 @@ import { SupersetBlock } from '@/ui/superset-block'
 import { ExerciseDetail } from '../exercises/exercise-detail'
 import { exerciseName, findLibraryEntry, formatRest } from '../exercises/library'
 import { itemRestS } from '../plans/estimate'
+import { formatRepRange } from '../plans/item-edit'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
 import { markJustFinished } from './just-finished'
@@ -92,6 +93,11 @@ function useScreenOn() {
   }, [])
 }
 
+// The plan's rep range for a slot ("12–15"); null for a slot without one.
+function slotRepRange({ repsMin, repsMax }: { repsMin: number | null; repsMax: number | null }) {
+  return repsMin === null || repsMax === null ? null : formatRepRange({ repsMin, repsMax })
+}
+
 export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const t = useTranslations('workout')
   const locale = useLocale()
@@ -105,6 +111,8 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const rest = useRest(workout)
   useScreenOn()
   const selected = selectedSet(state, chosenId)
+  const selectedSlot = state.slots.find(({ slot }) => slot.id === selected?.slotId)?.slot
+  const selectedRange = selectedSlot ? slotRepRange(selectedSlot) : null
   const slotRows = state.slots.map(({ slot }) => slot)
   const labels = supersetLabels(slotRows)
   const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
@@ -321,6 +329,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             exercise={findExercise(selected.exerciseId, custom)}
             supersetLabel={labels.get(selected.slotId) ?? null}
             unit={unitOf(selected.exerciseId)}
+            repRange={selectedRange}
             onDetails={() => {
               open({ kind: 'set', setId: selected.set.id, n: selected.n })
             }}

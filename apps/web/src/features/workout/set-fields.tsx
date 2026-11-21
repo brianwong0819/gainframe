@@ -16,6 +16,8 @@ interface SetFieldsProps {
   exerciseId: string
   exercise: ExerciseInfo
   unit: WeightUnit
+  // The plan's rep range ("12–15"), shown under the reps label; null without one.
+  repRange?: string | null
 }
 
 // A set's weight and reps with big steppers, for the set panel of the workout
@@ -24,7 +26,7 @@ interface SetFieldsProps {
 // tapping the weight label, which names both units with the current one in ink,
 // switches it between kg and lb for this exercise,
 // and a weight in pounds shows its kg beneath.
-export function SetFields({ set, n, exerciseId, exercise, unit }: SetFieldsProps) {
+export function SetFields({ set, n, exerciseId, exercise, unit, repRange = null }: SetFieldsProps) {
   const t = useTranslations('workout')
   const step = (unit === 'kg' ? domainConfig.weightStepKg : domainConfig.weightStepLb)[
     exercise.equipment
@@ -75,7 +77,10 @@ export function SetFields({ set, n, exerciseId, exercise, unit }: SetFieldsProps
           {t('inKg', { weight: formatWeight(set.weightKg, 'kg') })}
         </p>
       )}
-      <span className="text-label text-ink-3">{t('colReps')}</span>
+      <span className="flex flex-col items-start py-4 text-label text-ink-3">
+        {t('colReps')}
+        {repRange !== null && <span className="num">{t('targetShort', { reps: repRange })}</span>}
+      </span>
       <Stepper
         value={String(set.reps)}
         editValue={String(set.reps)}

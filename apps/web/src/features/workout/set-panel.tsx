@@ -19,6 +19,8 @@ interface SetPanelProps {
   // The exercise's place in its superset ("A1"); null when it stands alone.
   supersetLabel: string | null
   unit: WeightUnit
+  // The plan's rep range for this exercise; null when it has none.
+  repRange: string | null
   onDetails: () => void
   // Completes the set; the caller also starts the rest after it.
   // The tapped button, where the celebration starts.
@@ -35,6 +37,7 @@ export function SetPanel({
   exercise,
   supersetLabel,
   unit,
+  repRange,
   onDetails,
   onComplete,
 }: SetPanelProps) {
@@ -63,7 +66,14 @@ export function SetPanel({
           {t('details')}
         </Pressable>
       </div>
-      <SetFields set={set} n={n} exerciseId={exerciseId} exercise={exercise} unit={unit} />
+      <SetFields
+        set={set}
+        n={n}
+        exerciseId={exerciseId}
+        exercise={exercise}
+        unit={unit}
+        repRange={repRange}
+      />
       <Pressable
         onClick={(event) => {
           onComplete(event.currentTarget)
