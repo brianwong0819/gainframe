@@ -165,6 +165,33 @@ export function restSlotAfter(
   return members.at(-1)?.id ?? null
 }
 
+// The earliest round that still has a set to do, from 1, when it comes before
+// the round of the set about to be completed; null otherwise. A standalone
+// exercise's rounds are its sets. Completing a set of a later round skips the
+// order the panel follows, so it is most likely a mis-tap, and it would also
+// replace the rest that is running.
+export function earlierRoundToDo(
+  slots: readonly GroupedItem[],
+  sets: readonly RoundSet[],
+  slotId: string,
+  setPosition: number,
+): number | null {
+  const slot = slots.find(({ id }) => id === slotId)
+  if (slot === undefined) return null
+  const memberIds = new Set(membersOf(slots, slot).map(({ id }) => id))
+  const roundOf = (workoutExerciseId: string, position: number) =>
+    sets.filter(
+      (other) => other.workoutExerciseId === workoutExerciseId && other.position < position,
+    ).length
+  const round = roundOf(slotId, setPosition)
+  const earliest = Math.min(
+    ...sets
+      .filter((set) => memberIds.has(set.workoutExerciseId) && set.completedAt === null)
+      .map((set) => roundOf(set.workoutExerciseId, set.position)),
+  )
+  return earliest < round ? earliest + 1 : null
+}
+
 function unusedGroup(items: readonly GroupedItem[]): number {
   return items.reduce((max, item) => Math.max(max, (item.supersetGroup ?? -1) + 1), 0)
 }

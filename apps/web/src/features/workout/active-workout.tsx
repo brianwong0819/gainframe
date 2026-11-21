@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  earlierRoundToDo,
   type Exercise,
   findPersonalRecords,
   setOrder,
@@ -55,6 +56,15 @@ type SheetContent =
   | { kind: 'rest' }
   // A superset's rest, found through one of its members.
   | { kind: 'superset'; slotId: string }
+  // A check tapped on a set of a later round than the one in progress.
+  | {
+      kind: 'ahead'
+      setId: string
+      anchor: Element
+      round: number
+      next: number
+      superset: boolean
+    }
 
 // The set the panel edits: the one the user tapped while it is still there and
 // not done, else the first set not done yet in the order they are done in
@@ -183,6 +193,33 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
       }, waitS * 1000)
     })
   }
+  // A check on a set of a later round than the one in progress is most likely
+  // a mis-tap that would also end the running rest, so it asks first; the set
+  // the panel shows was chosen on purpose and never asks.
+  function tapCheck(set: WorkoutSet, anchor: Element) {
+    const round =
+      set.completedAt !== null || set.id === selected?.set.id
+        ? null
+        : earlierRoundToDo(
+            slotRows,
+            state.slots.flatMap(({ sets }) => sets),
+            set.workoutExerciseId,
+            set.position,
+          )
+    if (round === null) {
+      toggleDone(set, anchor)
+      return
+    }
+    const sets = state.slots.find(({ slot }) => slot.id === set.workoutExerciseId)?.sets ?? []
+    open({
+      kind: 'ahead',
+      setId: set.id,
+      anchor,
+      round,
+      next: sets.findIndex(({ id }) => id === set.id) + 1,
+      superset: labels.has(set.workoutExerciseId),
+    })
+  }
   // The rest sheet closes by itself when the rest ends; closed while the rest
   // runs, it collapses to the pill.
   const restSheet = sheet?.kind === 'rest'
@@ -213,6 +250,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     actions: sheetSlot ? nameOf(sheetSlot.exerciseId) : '',
     rest: t('restTitle'),
     superset: t('supersetSheetTitle', { letter: sheetSuperset?.letter ?? '' }),
+    ahead: t('aheadTitle'),
   }
 
   // One exercise's card.
@@ -242,7 +280,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         }
         supersetLabel={labels.get(slotId) ?? null}
         recordIds={recordIds}
-        onToggle={toggleDone}
+        onToggle={tapCheck}
         onAddSet={() => {
           void workoutSession.addSet(slotId).then((set) => {
             setChosenId(set.id)
@@ -409,6 +447,24 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             }
           />
         )}
+        {sheet?.kind === 'ahead' && (
+          <AheadConfirm
+            body={
+              sheet.superset
+                ? t('aheadRound', { round: sheet.round, next: sheet.next })
+                : t('aheadSet', { n: sheet.round })
+            }
+            resting={rest !== null}
+            onConfirm={() => {
+              close()
+              const live = state.slots
+                .flatMap(({ sets }) => sets)
+                .find(({ id }) => id === sheet.setId)
+              if (live?.completedAt === null) toggleDone(live, sheet.anchor)
+            }}
+            onCancel={close}
+          />
+        )}
         {sheet?.kind === 'finish' && <FinishConfirm workout={workout} done={done} onDone={close} />}
       </Sheet>
     </>
@@ -451,6 +507,42 @@ function DonePanel({
         className="rounded-ctl bg-accent py-12 text-body font-semibold text-accent-ink"
       >
         {t('finish')}
+      </Pressable>
+    </div>
+  )
+}
+
+// Asks before completing a set ahead of the round in progress. Cancelling
+// writes nothing, so a running rest carries on.
+function AheadConfirm({
+  body,
+  resting,
+  onConfirm,
+  onCancel,
+}: {
+  body: string
+  resting: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const t = useTranslations('workout')
+  return (
+    <div className="flex flex-col gap-20">
+      <div className="flex flex-col gap-8 text-body text-ink-2">
+        <p>{body}</p>
+        {resting && <p>{t('aheadRest')}</p>}
+      </div>
+      <Pressable
+        onClick={onCancel}
+        className="rounded-ctl bg-ink py-12 text-body font-semibold text-bg"
+      >
+        {t('aheadCancel')}
+      </Pressable>
+      <Pressable
+        onClick={onConfirm}
+        className="rounded-ctl bg-sunk py-12 text-body font-semibold text-ink"
+      >
+        {t('aheadConfirm')}
       </Pressable>
     </div>
   )

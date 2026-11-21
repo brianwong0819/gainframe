@@ -92,6 +92,76 @@ test('three rounds of A1/A2 rest only at the end of each round', async ({ page }
   await expect(bench.getByText('A1', { exact: true })).toBeHidden()
 })
 
+// A check two rounds ahead is most likely a mis-tap and would end the running
+// rest, so it asks first; cancelling leaves the rest running.
+test('a set of a later round asks before it is completed', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await addExercise(page, '杠铃卧推', /^杠铃卧推/)
+  await addExercise(page, '杠铃深蹲', /^杠铃深蹲/)
+  const card = (name: string) =>
+    page
+      .locator('section')
+      .filter({ has: page.getByRole('heading', { name }) })
+      .last()
+  const bench = card('杠铃卧推')
+  const squat = card('杠铃深蹲')
+  await bench.getByRole('button', { name: '加一组' }).click()
+  await bench.getByRole('button', { name: '加一组' }).click()
+  await expect(bench.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
+  await page.getByRole('button', { name: '杠铃卧推 的选项' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('button', { name: '和「杠铃深蹲」组成超级组' }).click()
+  await dialog.getByRole('button', { name: '关闭' }).click()
+  await expect(dialog).toBeHidden()
+
+  // Round 1 from the table's checks, in order: no question, and the rest starts.
+  await bench.getByRole('button', { name: '完成第 1 组' }).click()
+  await expect(bench.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  await squat.getByRole('button', { name: '完成第 1 组' }).click()
+  const rest = page.getByRole('dialog', { name: '组间休息' })
+  await expect(rest).toBeVisible()
+  await rest.getByRole('button', { name: '关闭' }).click()
+  const pill = page.getByRole('button', { name: '展开休息计时' })
+  await expect(pill).toBeVisible()
+
+  // Round 3 while round 2 is in progress asks; cancelling changes nothing.
+  await squat.getByRole('button', { name: '完成第 3 组' }).click()
+  const ahead = page.getByRole('dialog', { name: '还没轮到这一组' })
+  await expect(ahead).toContainText('第 2 轮还没做完，这一组属于第 3 轮。')
+  await ahead.getByRole('button', { name: '取消' }).click()
+  await expect(ahead).toBeHidden()
+  await expect(squat.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
+  await expect(pill).toBeVisible()
+
+  // Confirming completes it.
+  await squat.getByRole('button', { name: '完成第 3 组' }).click()
+  await ahead.getByRole('button', { name: '仍然完成' }).click()
+  await expect(squat.getByRole('button', { name: '取消完成第 3 组' })).toBeVisible()
+})
+
+test('a standalone exercise asks before a set is skipped', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await addExercise(page, '杠铃卧推', /^杠铃卧推/)
+  await page.getByRole('button', { name: '加一组' }).click()
+  await page.getByRole('button', { name: '加一组' }).click()
+  await page.getByRole('button', { name: '组 1', exact: true }).click()
+
+  await page.getByRole('button', { name: '完成第 3 组' }).click()
+  const ahead = page.getByRole('dialog', { name: '还没轮到这一组' })
+  await expect(ahead).toContainText('第 1 组还没完成。')
+  await ahead.getByRole('button', { name: '取消' }).click()
+  await expect(ahead).toBeHidden()
+  await expect(page.getByRole('button', { name: '完成第 3 组' })).toBeVisible()
+
+  // The set the panel shows was chosen on purpose, so its check never asks.
+  await page.getByRole('button', { name: '组 3', exact: true }).click()
+  await page.locator('ol').getByRole('button', { name: '完成第 3 组' }).click()
+  await expect(page.getByRole('button', { name: '取消完成第 3 组' })).toBeVisible()
+  await expect(ahead).toBeHidden()
+})
+
 test('moving an exercise up changes the order the panel follows', async ({ page }) => {
   await page.goto('/workout')
   await page.getByRole('button', { name: '开始训练' }).click()
