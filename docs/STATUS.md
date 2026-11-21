@@ -30,6 +30,8 @@ Superset settings (2026-11-17, asked by bw during the field week): a superset's 
 
 Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows from 64 to 157 strength exercises in four data PRs (push; pull; legs; core, full body, kettlebell and bands), each with names, aliases, muscles, equipment, rest and form cues. The library now groups built-in exercises by primary muscle, since new IDs can only be appended, and a test forbids a name or alias shared by two exercises. Left out on purpose: assisted pull-up and dip machines (the logged weight is assistance, so records would run backwards), the hip adduction machine (no adductor muscle group yet), and timed or cardio exercises. bw chose to add timed and cardio logging (duration, distance, level; energy estimated from MET values, shown but not added to the daily target) before M2; it is ROADMAP task M1-14, after which the cardio machines and timed holds join the library.
 
+Ticking ahead (2026-11-21, asked by bw during the field week): a check on a set of a later round than the one in progress, in a superset or a standalone exercise, asks before completing it, because it is usually a mis-tap and would end the running rest; cancelling keeps the rest (PR `m1/confirm-tick-ahead`, "Ticking ahead" in `docs/design-system.md`).
+
 ## Field week checklist (pending iPhone checks)
 
 Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a failure becomes an issue.

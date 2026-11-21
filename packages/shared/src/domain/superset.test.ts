@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  earlierRoundToDo,
   type GroupedItem,
   linkedWithNext,
   linkWithNext,
@@ -82,6 +83,34 @@ describe('restSlotAfter', () => {
 
   it('rests after every set of a standalone exercise', () => {
     expect(restSlotAfter(slots, sets('s2', 3, 1), 's2', 0)).toBe('s2')
+  })
+})
+
+describe('earlierRoundToDo', () => {
+  const slots = items(0, 0, null)
+
+  it('names the round in progress when a superset set belongs to a later one', () => {
+    const roundOne = [...sets('s0', 3, 1), ...sets('s1', 3), ...sets('s2', 3)]
+    expect(earlierRoundToDo(slots, roundOne, 's0', 1)).toBe(1)
+    expect(earlierRoundToDo(slots, roundOne, 's1', 2)).toBe(1)
+  })
+
+  it('accepts any set of the round in progress, in either member', () => {
+    const roundOne = [...sets('s0', 3), ...sets('s1', 3), ...sets('s2', 3)]
+    expect(earlierRoundToDo(slots, roundOne, 's1', 0)).toBeNull()
+    const roundTwo = [...sets('s0', 3, 1), ...sets('s1', 3, 1), ...sets('s2', 3)]
+    expect(earlierRoundToDo(slots, roundTwo, 's0', 1)).toBeNull()
+  })
+
+  it('treats a standalone exercise’s sets as its rounds', () => {
+    const third = [...sets('s0', 3), ...sets('s1', 3), ...sets('s2', 3, 1)]
+    expect(earlierRoundToDo(slots, third, 's2', 2)).toBe(2)
+    expect(earlierRoundToDo(slots, third, 's2', 1)).toBeNull()
+  })
+
+  it('ignores the sets of other exercises', () => {
+    const others = [...sets('s0', 3), ...sets('s1', 3), ...sets('s2', 3, 1)]
+    expect(earlierRoundToDo(slots, others, 's2', 1)).toBeNull()
   })
 })
 

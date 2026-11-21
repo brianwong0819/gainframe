@@ -23,6 +23,7 @@ export {
   type RestTimes,
 } from './domain/rest.ts'
 export {
+  earlierRoundToDo,
   type GroupChange,
   type GroupedItem,
   linkedWithNext,
