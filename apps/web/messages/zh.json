@@ -81,6 +81,7 @@
     "plans": "训练计划",
     "plansNone": "还没有计划",
     "target": "目标 {reps} 次",
+    "targetShort": "目标 {reps}",
     "best": "最高 {weight}",
     "finishAndSave": "结束，并存成计划的新一天",
     "rest": "休息",

@@ -81,6 +81,7 @@
     "plans": "Plans",
     "plansNone": "No plan yet",
     "target": "target {reps} reps",
+    "targetShort": "goal {reps}",
     "best": "best {weight}",
     "finishAndSave": "Finish and save as a new plan day",
     "rest": "Rest",
