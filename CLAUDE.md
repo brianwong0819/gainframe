@@ -42,7 +42,7 @@ Use the **context7** MCP (or official docs) before writing code against any libr
 **Code quality**
 - TypeScript strict. No `any`, no `as` casts to silence errors, no `@ts-ignore`/`@ts-expect-error`, no `eslint-disable` — unless with a one-line comment explaining why and bw agrees in review.
 - No dead code, commented-out code, unused exports, leftover `console.log`, placeholder `TODO`s. A `TODO` must reference an issue: `// TODO(#12): …`.
-- No speculative abstraction: no generic "manager/helper/utils" layers, no config options nobody uses, no interfaces with one implementation (exception: the AI provider interface, which has three).
+- No speculative abstraction: no generic "manager/helper/utils" layers, no config options nobody uses, no interfaces with one implementation (exception: the AI provider interface, whose second implementation is the test fake).
 - Do not weaken a test, delete a test, or loosen a type to make something pass. Fix the cause or report it.
 - Validate every boundary with Zod: API inputs, AI outputs, sync payloads, env vars. Types come from schemas in `packages/shared` — never re-declare them by hand.
 - Domain logic (1RM, volume, targets, averages, plateau/nudge rules) is pure functions in `packages/shared/src/domain` with unit tests. Thresholds live in config, not inline.

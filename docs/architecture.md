@@ -15,7 +15,7 @@ CloudFront (one domain)
   └─ /api/*  → Lambda Function URL (Hono, Node.js, zip)
                  ├─ Cognito JWT verification
                  ├─ Neon Postgres (Drizzle over the `pg` driver)
-                 ├─ AI service layer → Bedrock (Claude) | Anthropic | OpenAI
+                 ├─ AI service layer → Bedrock (Claude)
                  └─ Web Push
 EventBridge Scheduler → Lambda (weekly report, plateau check, one-off rest-timer push)
 SSM Parameter Store (secrets) · CloudWatch (logs, alarms) · AWS Budgets
