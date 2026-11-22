@@ -7,6 +7,7 @@ import {
   type PlanDay,
   type PlanItem,
   sharedValueChanges,
+  type SyncedTableName,
   type Workout,
   type WorkoutExercise,
   type WorkoutSet,
@@ -16,12 +17,8 @@ import { restResolver } from './exercise-rest'
 import { newId } from './id'
 import { nextUpdatedAt } from './repositories'
 
-// Tables whose rows sync to the server (ADR-0003). Built-in exercises are a
-// constant in @gainframe/shared, not rows.
-export type SyncedTableName =
-  'exercises' | 'plans' | 'planDays' | 'planItems' | 'workouts' | 'workoutExercises' | 'workoutSets'
-
-// One pending change. The sync engine (M2-05) reads entries in `seq` order and
+// One pending change to a synced table (ADR-0003; Dexie uses the table names
+// of the sync protocol). The sync engine (M2-05) reads entries in `seq` order and
 // pushes each row's current values, so an entry names the row, not the change.
 export interface OutboxEntry {
   seq: number
@@ -39,11 +36,15 @@ export interface ErrorLogEntry extends ClientError {
 // rows means two devices can never both mark a plan active.
 // `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
 // it is not kg (db/weight-units.ts). `authSession` is the signed-in session as
-// JSON (db/auth-session.ts, ADR-0007).
+// JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the
+// account it belongs to, `lastSyncAt` the end of the last successful backup
+// (db/sync.ts).
 export type DeviceSetting =
   | { key: 'activePlanId'; value: string }
   | { key: `weightUnit:${string}`; value: string }
   | { key: 'authSession'; value: string }
+  | { key: 'syncCursor'; value: string }
+  | { key: 'lastSyncAt'; value: string }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.

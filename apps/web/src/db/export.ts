@@ -5,7 +5,7 @@ import type { GainframeDb } from './schema'
 // Every table a backup needs: the synced rows, soft-deleted ones included so
 // the file is a faithful copy, and the device settings (current plan, weight
 // units) but not the signed-in session, whose tokens must not leave the app
-// in a file. The outbox is sync bookkeeping and the error log has its own copy
+// in a file. The outbox and the sync settings are sync bookkeeping and the error log has its own copy
 // button, so both are left out.
 const EXPORTED_TABLES = [
   'exercises',
@@ -17,6 +17,8 @@ const EXPORTED_TABLES = [
   'workoutSets',
   'settings',
 ] as const
+
+const NOT_EXPORTED = new Set(['authSession', 'syncCursor', 'lastSyncAt'])
 
 export const EXPORT_FORMAT = 'gainframe-export'
 export const EXPORT_FORMAT_VERSION = 1
@@ -37,7 +39,7 @@ export async function exportData(db: GainframeDb, release: string, exportedAt: s
       workouts: await db.workouts.toArray(),
       workoutExercises: await db.workoutExercises.toArray(),
       workoutSets: await db.workoutSets.toArray(),
-      settings: await db.settings.filter((setting) => setting.key !== 'authSession').toArray(),
+      settings: await db.settings.filter((setting) => !NOT_EXPORTED.has(setting.key)).toArray(),
     },
   }))
 }

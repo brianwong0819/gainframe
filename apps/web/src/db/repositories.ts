@@ -6,13 +6,14 @@ import {
   planDaySchema,
   planItemSchema,
   planSchema,
+  type SyncedTableName,
   workoutExerciseSchema,
   workoutSchema,
   workoutSetSchema,
 } from '@gainframe/shared'
 
 import { newId } from './id'
-import type { GainframeDb, SyncedTableName } from './schema'
+import type { GainframeDb } from './schema'
 
 interface SyncedRow {
   id: string
