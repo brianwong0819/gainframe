@@ -47,6 +47,7 @@ let failWith: Error | undefined
 let online: boolean
 let timers: number[]
 let rejected: RejectedRow[]
+let unexpected: unknown[]
 
 // A server that applies every pushed row unless told otherwise and answers
 // pulls with the queued pages, then with nothing.
@@ -73,6 +74,7 @@ function engine() {
     isOnline: () => online,
     onRejected: (rows) => rejected.push(...rows),
     onUnreadable: () => undefined,
+    onUnexpected: (error) => unexpected.push(error),
     now: () => NOW,
     setTimer: (_run, ms) => {
       timers.push(ms)
@@ -90,6 +92,7 @@ beforeEach(async () => {
   online = true
   timers = []
   rejected = []
+  unexpected = []
   await saveSession(db, session)
 })
 
@@ -171,11 +174,21 @@ describe('sync engine', () => {
     await sync.run()
     expect(sync.getStatus()).toEqual({ phase: 'failed', failingSince: NOW.toISOString() })
     expect(timers).toEqual([5000, 10000])
+    // The API client records error statuses itself.
+    expect(unexpected).toEqual([])
 
     online = false
     failWith = new TypeError('Load failed')
     await sync.run()
     expect(sync.getStatus().phase).toBe('offline')
+    expect(unexpected).toEqual([])
+  })
+
+  it('reports a failure online that the API client did not record', async () => {
+    const error = new Error('push answered a different row count')
+    failWith = error
+    await engine().run()
+    expect(unexpected).toEqual([error])
   })
 
   it('caps the retry delay', () => {

@@ -7,12 +7,12 @@ import {
   SYNC_VERSION,
   SYNC_VERSION_HEADER,
   type SyncedTableName,
+  TOKEN_HEADER,
 } from '@gainframe/shared'
 import type { MiddlewareHandler } from 'hono'
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { createApp } from '../app.ts'
-import { TOKEN_HEADER } from '../auth.ts'
 import type { AppEnv } from '../context.ts'
 import { createDatabase, createPool } from '../db/client.ts'
 import { parseDatabaseUrl } from '../env.ts'

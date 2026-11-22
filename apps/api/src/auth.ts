@@ -1,13 +1,10 @@
+import { TOKEN_HEADER, tokenFromHeader } from '@gainframe/shared'
 import { decode, verifyWithJwks } from 'hono/jwt'
 import type { MiddlewareHandler } from 'hono'
 import { z } from 'zod'
 
 import type { AppEnv } from './context.ts'
 import { errorBody } from './error-body.ts'
-
-// The token travels in `x-gainframe-token`, because CloudFront overwrites
-// `Authorization` when it signs the request to the function URL (ADR-0002).
-export const TOKEN_HEADER = 'x-gainframe-token'
 
 export interface AuthConfig {
   // https://cognito-idp.<region>.amazonaws.com/<user pool ID>
@@ -66,11 +63,6 @@ function claimsSchema(clientId: string) {
   })
 }
 
-function bearerToken(header: string | undefined): string | null {
-  const match = /^Bearer (\S+)$/.exec(header ?? '')
-  return match?.[1] ?? null
-}
-
 /**
  * Accepts only a valid Cognito access token for the web app and sets
  * `userId` to its `sub`. Every other request gets 401; the token is never logged.
@@ -81,7 +73,7 @@ export function requireUser(
 ): MiddlewareHandler<AppEnv> {
   const claims = claimsSchema(config.clientId)
   return async (c, next) => {
-    const token = bearerToken(c.req.header(TOKEN_HEADER))
+    const token = tokenFromHeader(c.req.header(TOKEN_HEADER))
     const userId = token === null ? null : await verifiedUserId(token)
     if (userId === null) {
       return c.json(errorBody('unauthorized', 'Sign-in required', c.var.requestId), 401)

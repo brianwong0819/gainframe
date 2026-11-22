@@ -1,11 +1,10 @@
-import { apiErrorSchema } from '@gainframe/shared'
+import { apiErrorSchema, TOKEN_HEADER } from '@gainframe/shared'
 import type { MiddlewareHandler } from 'hono'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
 import { createApp } from './app.ts'
-import { TOKEN_HEADER } from './auth.ts'
 import type { AppEnv } from './context.ts'
 import { errorBody } from './error-body.ts'
 import { createLogger } from './log.ts'

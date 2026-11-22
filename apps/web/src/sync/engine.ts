@@ -46,6 +46,10 @@ interface SyncEngineOptions {
   // Rows the server refused for good, and pulled rows this app cannot read.
   onRejected: (rows: RejectedRow[]) => void
   onUnreadable: (rows: PulledRow[]) => void
+  // A run that failed online without an error status from the API (a response
+  // that failed its schema, a storage error), which the API client cannot
+  // record. Offline failures are expected and not reported.
+  onUnexpected: (error: unknown) => void
   now?: () => Date
   setTimer?: (run: () => void, ms: number) => () => void
 }
@@ -67,6 +71,7 @@ export function createSyncEngine({
   isOnline,
   onRejected,
   onUnreadable,
+  onUnexpected,
   now = () => new Date(),
   setTimer = defaultTimer,
 }: SyncEngineOptions) {
@@ -124,9 +129,11 @@ export function createSyncEngine({
       setStatus({ phase: 'updateRequired', failingSince: null })
       return
     }
+    const online = isOnline()
+    if (online && !(error instanceof ApiRequestError)) onUnexpected(error)
     failures += 1
     setStatus({
-      phase: isOnline() ? 'failed' : 'offline',
+      phase: online ? 'failed' : 'offline',
       failingSince: status.failingSince ?? now().toISOString(),
     })
     cancelRetry = setTimer(() => void run(), retryDelayMs(failures))

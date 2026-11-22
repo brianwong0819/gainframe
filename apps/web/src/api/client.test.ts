@@ -74,7 +74,8 @@ describe('API client', () => {
       client().request(okSchema, { method: 'POST', path: '/api/sync/push', body: { a: 1 } }),
     ).resolves.toEqual({ ok: true })
     const [call] = apiCalls()
-    expect(headerOf(call, 'x-gainframe-token')).toBe('access-1')
+    // The format the API parses (shared token-header.ts).
+    expect(headerOf(call, 'x-gainframe-token')).toBe('Bearer access-1')
     expect(call?.init.body).toBe('{"a":1}')
     // SHA-256 of the exact bytes `{"a":1}`.
     expect(headerOf(call, 'x-amz-content-sha256')).toBe(
@@ -104,8 +105,8 @@ describe('API client', () => {
     ])
     expect(calls.filter((call) => call.url.endsWith('/oauth2/token'))).toHaveLength(1)
     expect(apiCalls().map((call) => headerOf(call, 'x-gainframe-token'))).toEqual([
-      'access-2',
-      'access-2',
+      'Bearer access-2',
+      'Bearer access-2',
     ])
     await expect(loadSession(db)).resolves.toMatchObject({
       accessToken: 'access-2',
@@ -158,7 +159,7 @@ describe('API client', () => {
     await saveSession(db, session)
     stubFetch(
       (call) =>
-        headerOf(call, 'x-gainframe-token') === 'access-1'
+        headerOf(call, 'x-gainframe-token') === 'Bearer access-1'
           ? new Response(null, { status: 401 })
           : Response.json({ ok: true }),
       () => Response.json({ access_token: 'access-2', expires_in: 3600 }),
