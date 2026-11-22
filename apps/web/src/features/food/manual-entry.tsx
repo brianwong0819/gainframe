@@ -200,31 +200,34 @@ export function ManualEntry() {
       {needle !== '' && matches.length === 0 && (
         <p className="text-body text-ink-2">{t('noMatch')}</p>
       )}
-      <div className="screen-dock flex gap-8">
-        <Pressable
-          onClick={() => {
-            setCreating(true)
-          }}
-          className="rounded-full bg-surface px-16 py-12 text-body font-semibold text-ink"
-        >
-          {t('newFood')}
-        </Pressable>
-        <Pressable
-          disabled={chosen.length === 0 || saving}
-          onClick={() => {
-            void save()
-          }}
-          className="min-w-0 flex-1 truncate rounded-full bg-accent px-16 py-12 text-body font-semibold text-accent-ink disabled:bg-sunk disabled:text-ink-3"
-        >
-          {chosen.length === 0
-            ? t('chooseFirst')
-            : t('save', {
-                meal: tFood(`mealType.${mealType}`),
-                count: chosen.length,
-                protein: whole.format(proteinG),
-              })}
-        </Pressable>
-      </div>
+      {/* The dock writes, so it renders only once the foods have loaded (L-028). */}
+      {foods !== undefined && (
+        <div className="screen-dock flex gap-8">
+          <Pressable
+            onClick={() => {
+              setCreating(true)
+            }}
+            className="rounded-full bg-surface px-16 py-12 text-body font-semibold text-ink"
+          >
+            {t('newFood')}
+          </Pressable>
+          <Pressable
+            disabled={chosen.length === 0 || saving}
+            onClick={() => {
+              void save()
+            }}
+            className="min-w-0 flex-1 truncate rounded-full bg-accent px-16 py-12 text-body font-semibold text-accent-ink disabled:bg-sunk disabled:text-ink-3"
+          >
+            {chosen.length === 0
+              ? t('chooseFirst')
+              : t('save', {
+                  meal: tFood(`mealType.${mealType}`),
+                  count: chosen.length,
+                  protein: whole.format(proteinG),
+                })}
+          </Pressable>
+        </div>
+      )}
       <NewFoodSheet
         open={creating}
         onClose={() => {
