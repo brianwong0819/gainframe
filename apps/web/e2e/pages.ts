@@ -17,4 +17,5 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
   { name: 'rest-timer', path: '/dev/rest-timer' },
   { name: 'database', path: '/dev/database' },
+  { name: 'sign-in-probe', path: '/dev/sign-in-probe', parent: '/' },
 ]

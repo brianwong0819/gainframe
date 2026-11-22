@@ -19,6 +19,7 @@ const devPages = [
   { href: '/dev/rest-timer', label: 'Rest timer test' },
   { href: '/dev/kitchen-sink', label: 'Kitchen sink' },
   { href: '/dev/database', label: 'Local database' },
+  { href: '/dev/sign-in-probe', label: 'Sign-in redirect test' },
 ] as const
 
 // Until food logging (M3) and body weight (M4) add their cards, Today is the

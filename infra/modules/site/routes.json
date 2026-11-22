@@ -13,5 +13,5 @@
     "/workout/session",
     "/workout/summary"
   ],
-  "devPages": ["/dev/database", "/dev/kitchen-sink", "/dev/rest-timer"]
+  "devPages": ["/dev/database", "/dev/kitchen-sink", "/dev/rest-timer", "/dev/sign-in-probe"]
 }
