@@ -27,3 +27,19 @@ output "api_log_group" {
 output "database_url_parameter" {
   value = module.api.database_url_parameter
 }
+
+# The web build reads these after apply. The IDs are not secret (the app ships
+# them), but they stay out of the public deploy log.
+output "auth_client_id" {
+  value     = module.auth.client_id
+  sensitive = true
+}
+
+output "auth_user_pool_id" {
+  value     = module.auth.user_pool_id
+  sensitive = true
+}
+
+output "auth_domain_origin" {
+  value = module.auth.domain_origin
+}

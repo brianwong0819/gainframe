@@ -49,3 +49,19 @@ module "site" {
   # The dev deploy builds with GAINFRAME_DEV_PAGES=1.
   dev_pages = true
 }
+
+module "auth" {
+  source = "../../modules/auth"
+
+  name = local.name
+  # The device check of the redirect flow (M2-02) runs on the developer page;
+  # the sign-in pages add their own URLs when they are built.
+  callback_urls = [
+    "https://${module.site.domain_name}/dev/sign-in-probe",
+    "http://localhost:3000/dev/sign-in-probe",
+  ]
+  logout_urls = [
+    "https://${module.site.domain_name}/dev/sign-in-probe",
+    "http://localhost:3000/dev/sign-in-probe",
+  ]
+}
