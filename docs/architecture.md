@@ -79,7 +79,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note, rest_started_at, rest_ends_at (the rest in progress, so a relaunch shows it) |
 | workout_exercises | workout_id, exercise_id, position, superset_group, note, plan_note (copied from the plan item), reps_min, reps_max, rest_s (one exercise slot in a workout, mirroring plan_items; a slot started from a plan copies the item's rep range and rest, all null for an exercise added by hand; the members of a superset share one rest_s; the same exercise may take two slots) |
 | workout_sets | workout_exercise_id, workout_id, exercise_id (both copied from the slot at creation, never changed), position (within the slot), kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
-| meals / meal_items | eaten_at, local_date, meal_type, photo_key; name, grams, protein_g, kcal, source (ai/manual/frequent), ai_raw jsonb |
+| meals / meal_items | eaten_at, local_date, meal_type (breakfast/lunch/dinner/snack), name (the dish name a model gave, else null), photo_key; meal_id, position, name, grams, protein_g, kcal (for the portion eaten), source (ai/manual/frequent), ai_raw jsonb (the model's own estimate of the item before correction). A meal's figures are the sum of its live items (`nutritionTotals`); deleting a meal soft-deletes its items. Sync version 2 added both tables |
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |
 | nudges | kind (reminder/plateau), rule, snapshot jsonb, analysis, model, prompt_version, sent_at, read_at |
 | push_subscriptions | endpoint, keys |

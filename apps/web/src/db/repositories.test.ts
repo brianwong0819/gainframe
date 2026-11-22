@@ -209,6 +209,42 @@ describe('remove', () => {
     expect(await repos.workouts.get(workout.id)).toEqual(workout)
   })
 
+  it("soft-deletes a meal's items with it, and no other meal's", async () => {
+    const newMeal = () =>
+      repos.meals.create({
+        eatenAt: clock.toISOString(),
+        localDate: toLocalDate(clock.toISOString(), 'Asia/Kuala_Lumpur'),
+        mealType: 'lunch',
+        name: null,
+        photoKey: null,
+      })
+    const newItem = (mealId: string) =>
+      repos.mealItems.create({
+        mealId,
+        position: 0,
+        name: 'Chicken rice',
+        grams: 350,
+        proteinG: 32,
+        kcal: 610,
+        source: 'manual',
+        aiRaw: null,
+      })
+    const meal = await newMeal()
+    const other = await newMeal()
+    const item = await newItem(meal.id)
+    const otherItem = await newItem(other.id)
+    await db.outbox.clear()
+
+    await repos.meals.remove(meal.id)
+
+    expect(await repos.mealItems.get(item.id)).toBeUndefined()
+    expect(await repos.mealItems.get(otherItem.id)).toEqual(otherItem)
+    expect(await outboxRows()).toEqual([
+      { table: 'meals', rowId: meal.id },
+      { table: 'mealItems', rowId: item.id },
+    ])
+  })
+
   it("soft-deletes a plan's days and items, and a day's items", async () => {
     const plan = await repos.plans.create({ name: 'Push Pull Legs' })
     const newDay = (name: string, position: number) =>

@@ -3,6 +3,8 @@ import { Dexie, type DexieOptions, type EntityTable, type Table, type Transactio
 import {
   type ClientError,
   type Exercise,
+  type Meal,
+  type MealItem,
   type Plan,
   type PlanDay,
   type PlanItem,
@@ -68,6 +70,8 @@ export class GainframeDb extends Dexie {
   workouts!: Table<Workout, string>
   workoutExercises!: Table<WorkoutExercise, string>
   workoutSets!: Table<WorkoutSet, string>
+  meals!: Table<Meal, string>
+  mealItems!: Table<MealItem, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -169,6 +173,8 @@ export class GainframeDb extends Dexie {
       )
     // A superset has one rest and, in a plan, one number of rounds.
     this.version(9).stores({}).upgrade(shareSupersetValues)
+    // M3-01: meals, read by day, and their items, read by meal.
+    this.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
   }
 }
 
