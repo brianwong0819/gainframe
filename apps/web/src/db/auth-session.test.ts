@@ -1,3 +1,4 @@
+import type { AuthSession } from '../auth/session'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -14,12 +15,14 @@ afterEach(() => {
   db.close()
 })
 
-const session = {
+const session: AuthSession = {
   userId: 'sub-1',
   email: 'someone@example.com',
   accessToken: 'access',
   accessExpiresAt: '2026-11-22T07:00:00.000Z',
   refreshToken: 'refresh',
+  expired: false,
+  method: 'email',
 }
 
 describe('auth session', () => {

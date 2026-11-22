@@ -365,6 +365,7 @@
     "noErrors": "No errors recorded.",
     "backup": "Backup",
     "backupHint": "Your data is stored only on this device for now. Export every workout, plan and custom exercise as a JSON file and keep it in Files or on a computer.",
+    "backupHintSignedIn": "Your records are backed up in your account. You can also export a JSON file with every workout, plan and custom exercise and keep it in the Files app or on a computer.",
     "backupCounts": "{workouts, plural, one {# workout} other {# workouts}} · {plans, plural, one {# plan} other {# plans}} · {exercises, plural, one {# custom exercise} other {# custom exercises}}",
     "export": "Export all data (JSON)",
     "exportFailed": "Export failed. Please try again.",
@@ -372,7 +373,18 @@
     "clearHint": "Deletes every workout, plan, custom exercise, setting and error record on this device, so the app starts as on its first launch. This cannot be undone, so export a backup first.",
     "clearAll": "Clear all data",
     "clearConfirm": "Tap again to clear",
-    "clearFailed": "Clearing failed. Please try again."
+    "clearFailed": "Clearing failed. Please try again.",
+    "outbox": "Waiting to upload (outbox)",
+    "lastSync": "Last successful sync",
+    "lastSyncNever": "Not yet",
+    "clearDevice": "Clear this phone only",
+    "clearDeviceHint": "Deletes every record and setting on this phone. They are all backed up in your account and download again after clearing.",
+    "clearPendingTitle": "{count, plural, one {# change is not backed up} other {# changes are not backed up}}",
+    "clearPendingHint": "They exist only on this phone, and clearing now loses them for good. Everything else is in your account and downloads again after clearing.",
+    "clearPendingAnyway": "{count, plural, one {Clear anyway and lose # change} other {Clear anyway and lose # changes}}",
+    "clearPendingConfirm": "{count, plural, one {Tap again to lose # change} other {Tap again to lose # changes}}",
+    "backUpFirst": "Back up first",
+    "backUpOffline": "Offline: backup starts once a connection returns."
   },
   "update": {
     "title": "A new version is ready",
@@ -383,5 +395,62 @@
     "title": "This week",
     "figures": "<num>{workouts}</num> {workouts, plural, one {workout} other {workouts}} · <num>{sets}</num> {sets, plural, one {set} other {sets}}",
     "trained": "{day}, trained"
+  },
+  "backup": {
+    "statusLabel": "Backup status",
+    "sheetTitle": "Backup",
+    "close": "Close",
+    "ok": {
+      "title": "Backed up",
+      "body": "Changes are backed up automatically; there is nothing to do."
+    },
+    "busy": {
+      "title": "{count, plural, one {Backing up # change} other {Backing up # changes}}",
+      "body": "Keep using the app; there is no need to wait."
+    },
+    "offline": {
+      "title": "Offline",
+      "body": "{count, plural, =0 {New changes are backed up when a connection returns.} one {# change is kept on this phone and backed up when a connection returns.} other {# changes are kept on this phone and backed up when a connection returns.}}"
+    },
+    "retry": {
+      "title": "Backup didn't go through",
+      "body": "{count, plural, =0 {The app tries again by itself.} one {# change is still on this phone, nothing is lost. The app tries again by itself.} other {# changes are still on this phone, nothing is lost. The app tries again by itself.}}"
+    },
+    "expired": {
+      "title": "Sign in again",
+      "body": "Your sign-in has expired. {count, plural, =0 {Backup continues after you sign in again.} one {# change is kept on this phone and backed up after you sign in again.} other {# changes are kept on this phone and backed up after you sign in again.}}"
+    },
+    "update": {
+      "title": "Update the app",
+      "body": "This version can no longer back up. Your changes are kept on this phone and backed up after the update."
+    },
+    "backUpNow": "Back up now",
+    "retryNow": "Retry now",
+    "signInAgain": "Sign in again",
+    "updateNow": "Update",
+    "account": "Account",
+    "lastBackup": "Last backup",
+    "waiting": "Not backed up yet",
+    "waitingCount": "{count}",
+    "never": "Not yet",
+    "justNow": "Just now"
+  },
+  "account": {
+    "title": "Account",
+    "signIn": "Sign in",
+    "backup": "Backup",
+    "lastBackup": "Last backup",
+    "signOut": "Sign out",
+    "close": "Close",
+    "signOutTitle": "Sign out?",
+    "signOutBody": "The records on this phone are removed. They are all backed up and return when you sign in again.",
+    "signOutPendingTitle": "{count, plural, one {# change is not backed up} other {# changes are not backed up}}",
+    "signOutPendingBody": "These workout and plan changes exist only on this phone, and signing out now loses them for good.",
+    "backUpThenSignOut": "Back up, then sign out",
+    "backUpOffline": "Offline: backup starts once a connection returns.",
+    "signOutAnyway": "{count, plural, one {Sign out anyway and lose # change} other {Sign out anyway and lose # changes}}",
+    "signOutAnywayConfirm": "{count, plural, one {Tap again to lose # change} other {Tap again to lose # changes}}",
+    "cardText": "{workouts, plural, one {# workout exists only on this phone} other {# workouts exist only on this phone}}",
+    "dismiss": "Don't remind me"
   }
 }

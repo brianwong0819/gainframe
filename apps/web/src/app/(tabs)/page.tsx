@@ -4,6 +4,8 @@ import { domainConfig, recentRecords, summarizeWeek } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 
+import { BackupCard, BackupStatus } from '@/features/account/backup-status'
+import { SignInCard } from '@/features/account/sign-in-card'
 import { formatDay } from '@/features/history/dates'
 import { SettingsLink } from '@/features/settings/settings-link'
 import { NextWorkout, useWorkoutOverview } from '@/features/workout/next-workout'
@@ -32,8 +34,14 @@ export default function TodayPage() {
     <TabScreen
       title={t('title')}
       subtitle={overview && formatDay(overview.today, locale)}
-      action={<SettingsLink />}
+      action={
+        <div className="flex items-center gap-4">
+          <BackupStatus />
+          <SettingsLink />
+        </div>
+      }
     >
+      <BackupCard />
       <UpdatePrompt />
       {overview && (
         <>
@@ -50,6 +58,7 @@ export default function TodayPage() {
             records={recentRecords(overview.history, domainConfig.recentRecords)}
             custom={overview.custom}
           />
+          <SignInCard />
         </>
       )}
       {process.env.NEXT_PUBLIC_DEV_PAGES === '1' && (

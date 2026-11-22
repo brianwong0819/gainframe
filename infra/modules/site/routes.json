@@ -3,6 +3,7 @@
     "/",
     "/food",
     "/settings",
+    "/settings/account",
     "/settings/diagnostics",
     "/settings/sign-in",
     "/workout",

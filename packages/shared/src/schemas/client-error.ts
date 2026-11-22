@@ -3,8 +3,9 @@ import { z } from 'zod'
 import { instantSchema } from './row.ts'
 
 // Where a client error was caught: a React error boundary, the window `error`
-// event, or an unhandled promise rejection.
-export const clientErrorSourceSchema = z.enum(['boundary', 'error', 'unhandledrejection'])
+// event, an unhandled promise rejection, or an API request the server answered
+// with an error status (its message names the route, status and request ID).
+export const clientErrorSourceSchema = z.enum(['boundary', 'error', 'unhandledrejection', 'api'])
 
 export const CLIENT_ERROR_MESSAGE_MAX = 500
 export const CLIENT_ERROR_STACK_MAX = 4000

@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 
+import { useBackup } from '@/features/account/use-backup'
 import { db } from '@/db/client'
 import { readPersisted } from '@/db/persistent-storage'
 import { useLiveQuery } from '@/db/use-live-query'
@@ -36,6 +37,7 @@ export function Diagnostics() {
   const locale = useLocale()
   const errors = useLiveQuery(loadErrors)
   const persisted = usePersisted()
+  const backup = useBackup()
   const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle')
   const resetTimer = useRef<number>(undefined)
   useEffect(
@@ -98,6 +100,24 @@ export function Diagnostics() {
             {release.slice(0, 7)}
           </dd>
         </div>
+        {backup !== undefined && backup.state !== 'signedOut' && (
+          <>
+            <div className="flex items-baseline justify-between gap-12 border-b border-line py-12">
+              <dt className="text-body text-ink-2">{t('outbox')}</dt>
+              <dd className="num text-body text-ink" data-testid="outbox">
+                {backup.pending}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-12 border-b border-line py-12">
+              <dt className="text-body text-ink-2">{t('lastSync')}</dt>
+              <dd className="num text-body text-ink">
+                {backup.lastSyncAt === null
+                  ? t('lastSyncNever')
+                  : timeFormat.format(new Date(backup.lastSyncAt))}
+              </dd>
+            </div>
+          </>
+        )}
         <div className="flex flex-col gap-4 py-12">
           <div className="flex items-baseline justify-between gap-12">
             <dt className="text-body text-ink-2">{t('persisted')}</dt>

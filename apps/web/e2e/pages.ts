@@ -15,6 +15,7 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'settings', path: '/settings', parent: '/' },
   { name: 'diagnostics', path: '/settings/diagnostics', parent: '/settings' },
   { name: 'sign-in', path: '/settings/sign-in', parent: '/settings' },
+  { name: 'account', path: '/settings/account', parent: '/settings' },
   { name: 'kitchen-sink', path: '/dev/kitchen-sink' },
   { name: 'rest-timer', path: '/dev/rest-timer' },
   { name: 'database', path: '/dev/database' },
