@@ -3,6 +3,8 @@ import type { z } from 'zod'
 
 import {
   exerciseSchema,
+  mealItemSchema,
+  mealSchema,
   planDaySchema,
   planItemSchema,
   planSchema,
@@ -158,6 +160,10 @@ export function createRepositories(db: GainframeDb, now: () => Date = () => new 
       [cascade(context, 'workoutSets', db.workoutSets, 'workoutExerciseId')],
     ),
     workoutSets: repository(context, 'workoutSets', db.workoutSets, workoutSetSchema),
+    meals: repository(context, 'meals', db.meals, mealSchema, [
+      cascade(context, 'mealItems', db.mealItems, 'mealId'),
+    ]),
+    mealItems: repository(context, 'mealItems', db.mealItems, mealItemSchema),
   }
 }
 

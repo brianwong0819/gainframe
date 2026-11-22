@@ -1,5 +1,7 @@
 import {
   exerciseSchema,
+  mealItemSchema,
+  mealSchema,
   planDaySchema,
   planItemSchema,
   planSchema,
@@ -27,6 +29,8 @@ const mirrors = [
     schema: workoutExerciseSchema,
   },
   { name: 'workoutSets', table: syncedTables.workoutSets, schema: workoutSetSchema },
+  { name: 'meals', table: syncedTables.meals, schema: mealSchema },
+  { name: 'mealItems', table: syncedTables.mealItems, schema: mealItemSchema },
 ] satisfies { name: keyof typeof syncedTables; table: PgTable; schema: ZodObject }[]
 
 const snakeCase = (key: string) => key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)

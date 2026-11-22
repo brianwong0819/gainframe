@@ -2,13 +2,16 @@ import { z } from 'zod'
 
 import { syncConfig } from '../config.ts'
 import { exerciseSchema } from './exercise.ts'
+import { mealItemSchema, mealSchema } from './food.ts'
 import { planDaySchema, planItemSchema, planSchema } from './plan.ts'
 import { workoutExerciseSchema, workoutSchema, workoutSetSchema } from './workout.ts'
 
 // The sync protocol (ADR-0003). The client sends its version in this header on
 // every push and pull; the server answers one it no longer supports with
 // `update_required`, so an old app asks to be updated instead of syncing.
-export const SYNC_VERSION = 1
+// Version 2 (M3-01) adds the meal tables, which a version 1 app cannot read in
+// a pull.
+export const SYNC_VERSION = 2
 export const SYNC_VERSION_HEADER = 'x-gainframe-sync-version'
 
 // Synced tables by their Dexie names; the server's Drizzle tables use the same keys.
@@ -20,6 +23,8 @@ export const syncedRowSchemas = {
   workouts: workoutSchema,
   workoutExercises: workoutExerciseSchema,
   workoutSets: workoutSetSchema,
+  meals: mealSchema,
+  mealItems: mealItemSchema,
 }
 
 export const syncedTableNameSchema = z.object(syncedRowSchemas).keyof()

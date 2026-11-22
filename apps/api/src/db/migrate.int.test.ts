@@ -20,6 +20,8 @@ describe('migrations (real Postgres)', () => {
     )
     expect(rows.map((row) => row.table_name)).toEqual([
       'exercises',
+      'meal_items',
+      'meals',
       'plan_days',
       'plan_items',
       'plans',

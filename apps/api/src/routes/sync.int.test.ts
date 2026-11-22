@@ -103,12 +103,69 @@ function customExercise(id: string) {
   }
 }
 
+function meal(id: string) {
+  return {
+    table: 'meals' as const,
+    row: {
+      id,
+      createdAt: at(-30),
+      updatedAt: at(-30),
+      deletedAt: null,
+      eatenAt: at(-40),
+      localDate: '2026-11-22',
+      mealType: 'lunch',
+      name: 'Chicken rice',
+      photoKey: null,
+    },
+  }
+}
+
+function mealItem(mealId: string) {
+  return {
+    table: 'mealItems' as const,
+    row: {
+      id: uuidv7(),
+      createdAt: at(-30),
+      updatedAt: at(-30),
+      deletedAt: null,
+      mealId,
+      position: 0,
+      name: 'Steamed chicken',
+      grams: 150.5,
+      proteinG: 32.5,
+      kcal: 280,
+      source: 'ai',
+      aiRaw: { name: 'Roast chicken', grams: 120, alternatives: ['Steamed chicken'] },
+    },
+  }
+}
+
 describe('sync (real Postgres)', () => {
   it('asks an app without a supported sync version to update', async () => {
     const res = await app.request('/api/sync/pull', {
       headers: { [TOKEN_HEADER]: `Bearer ${newUser()}` },
     })
     expect(res.status).toBe(426)
+  })
+
+  it('asks a version 1 app, which cannot read meal rows, to update', async () => {
+    const res = await app.request('/api/sync/pull', {
+      headers: { ...headers(newUser()), [SYNC_VERSION_HEADER]: '1' },
+    })
+    expect(res.status).toBe(426)
+  })
+
+  it("round-trips a meal and its items, the model's estimate included, to its owner only", async () => {
+    const userA = newUser()
+    const lunch = meal(uuidv7())
+    const item = mealItem(lunch.row.id)
+    expect(await push(userA, [lunch, item])).toEqual(['applied', 'applied'])
+
+    expect((await pull(userA)).rows).toEqual([
+      { table: 'meals', row: { ...lunch.row, userId: userA } },
+      { table: 'mealItems', row: { ...item.row, userId: userA } },
+    ])
+    expect((await pull(newUser())).rows).toEqual([])
   })
 
   it('pulls pushed rows back as they were sent, once', async () => {

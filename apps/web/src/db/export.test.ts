@@ -81,6 +81,8 @@ describe('exportData', () => {
     expect(data.tables.settings).toEqual([{ key: 'activePlanId', value: 'plan-1' }])
     expect(Object.keys(data.tables).sort()).toEqual([
       'exercises',
+      'mealItems',
+      'meals',
       'planDays',
       'planItems',
       'plans',
