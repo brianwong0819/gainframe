@@ -325,7 +325,29 @@
   "settings": {
     "title": "设置",
     "diagnostics": "诊断",
-    "diagnosticsHint": "版本、存储、备份、错误记录和清空数据"
+    "diagnosticsHint": "版本、存储、备份、错误记录和清空数据",
+    "account": "登录并备份",
+    "accountHint": "记录目前只存在这台手机",
+    "accountSignedIn": "已登录 · {email}"
+  },
+  "signIn": {
+    "title": "登录",
+    "stakeBoth": "{workouts} 次训练和 {plans} 套计划只存在这台手机。",
+    "stakeWorkouts": "{workouts} 次训练只存在这台手机。",
+    "stakePlans": "{plans} 套计划只存在这台手机。",
+    "stakeEmpty": "现在还没有任何备份。",
+    "benefit": "登录后每次改动都会自动备份，换手机也能找回。",
+    "email": "用邮箱继续",
+    "optional": "不登录也能一直用",
+    "offline": "登录需要网络",
+    "finishing": "正在登录…",
+    "signedIn": "已登录",
+    "unavailable": "这个版本还不能登录。",
+    "failed": {
+      "denied": "登录已取消，准备好再试一次。",
+      "no_pending": "这次登录不是在这里开始的，或者等太久了，请再试一次。",
+      "exchange": "登录没完成，请检查网络后再试。"
+    }
   },
   "diagnostics": {
     "release": "版本",

@@ -1,6 +1,7 @@
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
+import { saveSession } from './auth-session'
 import { exportData, exportFileName } from './export'
 import { createRepositories } from './repositories'
 import { GainframeDb } from './schema'
@@ -29,6 +30,21 @@ function newExercise(nameZh: string) {
 }
 
 describe('exportData', () => {
+  it('leaves out the signed-in session, whose tokens must not leave the app', async () => {
+    await db.settings.put({ key: 'activePlanId', value: 'plan-1' })
+    await saveSession(db, {
+      userId: 'sub-1',
+      email: 'someone@example.com',
+      accessToken: 'access',
+      accessExpiresAt: '2026-11-16T04:00:00.000Z',
+      refreshToken: 'refresh',
+    })
+
+    const data = await exportData(db, 'abc1234', '2026-11-16T03:05:00.000Z')
+
+    expect(data.tables.settings).toEqual([{ key: 'activePlanId', value: 'plan-1' }])
+  })
+
   it('copies every data table, deleted rows included, and leaves out the outbox and error log', async () => {
     const kept = await newExercise('上斜哑铃卧推')
     const removed = await newExercise('哑铃飞鸟')
