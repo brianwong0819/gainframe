@@ -176,7 +176,8 @@
     "deleteMeal": "删除这餐",
     "deleteMealConfirm": "再点一次删除",
     "close": "关闭",
-    "editTargets": "修改每日目标"
+    "editTargets": "修改每日目标",
+    "addManual": "手动添加"
   },
   "language": {
     "label": "语言",
@@ -493,5 +494,30 @@
     "signOutAnywayConfirm": "再点一次，确认丢掉 {count} 条",
     "cardText": "{workouts} 次训练只存在这台手机",
     "dismiss": "不再提醒"
+  },
+  "manual": {
+    "title": "添加食物",
+    "mealType": "餐别",
+    "search": "搜索你的食物",
+    "searchLabel": "搜索你的食物",
+    "created": "新建",
+    "frequent": "常吃",
+    "recent": "最近",
+    "results": "你的食物",
+    "noFoods": "记过的食物会出现在这里。可以按营养标签新建一个。",
+    "noMatch": "没有匹配的食物，可以新建一个。",
+    "portion": "{grams} g · 蛋白质 {protein} g · {kcal} kcal",
+    "more": "加一份{name}",
+    "less": "减一份{name}",
+    "newFood": "新建食物",
+    "chooseFirst": "先选食物",
+    "save": "记入{meal} · {count} 项 · {protein} g",
+    "close": "关闭",
+    "labelHint": "照营养标签填一次，记过之后点一下就能再记。",
+    "name": "名称",
+    "portionGrams": "每份克数",
+    "portionProtein": "蛋白质 g",
+    "portionKcal": "热量 kcal",
+    "addFood": "加入这餐"
   }
 }

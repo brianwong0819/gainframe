@@ -12,6 +12,7 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'plans', path: '/workout/plans', parent: '/workout' },
   { name: 'plan', path: '/workout/plan', parent: '/workout/plans' },
   { name: 'food', path: '/food' },
+  { name: 'food-add', path: '/food/add', parent: '/food' },
   { name: 'settings', path: '/settings', parent: '/' },
   { name: 'diagnostics', path: '/settings/diagnostics', parent: '/settings' },
   { name: 'sign-in', path: '/settings/sign-in', parent: '/settings' },
