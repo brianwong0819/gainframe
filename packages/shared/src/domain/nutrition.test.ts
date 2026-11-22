@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
-import { addDays, mealTypeAt, nutritionTotals, pastFoods } from './nutrition.ts'
+import { addDays, mealTypeAt, nutritionTotals, pastFoods, scalePortion } from './nutrition.ts'
 
 describe('nutritionTotals', () => {
   it('is zero without items', () => {
@@ -100,5 +100,15 @@ describe('addDays', () => {
   it('moves across months and years', () => {
     expect(addDays(localDateSchema.parse('2026-11-30'), 1)).toBe('2026-12-01')
     expect(addDays(localDateSchema.parse('2027-01-01'), -1)).toBe('2026-12-31')
+  })
+})
+
+describe('scalePortion', () => {
+  it('scales protein and energy with the grams', () => {
+    expect(scalePortion({ grams: 200, proteinG: 30, kcal: 500 }, 150)).toEqual({
+      grams: 150,
+      proteinG: 22.5,
+      kcal: 375,
+    })
   })
 })

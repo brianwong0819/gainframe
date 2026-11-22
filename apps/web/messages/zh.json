@@ -177,7 +177,16 @@
     "deleteMealConfirm": "再点一次删除",
     "close": "关闭",
     "editTargets": "修改每日目标",
-    "addManual": "手动添加"
+    "addManual": "手动添加",
+    "frequent": "常吃",
+    "logPortion": "记一份{name}",
+    "loggedFood": "已记入 {name}",
+    "undo": "撤销",
+    "mealTypeLabel": "餐别",
+    "gramsOf": "{name}的克数",
+    "gramsDown": "减少{name}",
+    "gramsUp": "增加{name}",
+    "removeItem": "移除"
   },
   "language": {
     "label": "语言",

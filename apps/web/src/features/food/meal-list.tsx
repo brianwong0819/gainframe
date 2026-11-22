@@ -1,21 +1,40 @@
 'use client'
 
+import { type MealItem, mealItemSchema, mealTypeSchema, scalePortion } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { repositories } from '@/db/client'
 import type { MealWithItems } from '@/db/food'
+import { ChoiceGroup } from '@/ui/choice-group'
 import { ConfirmButton } from '@/ui/confirm-button'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
+import { Stepper } from '@/ui/stepper'
 import { SwipeRow } from '@/ui/swipe-row'
 
 import { formatTime } from '../history/dates'
 
+// One tap on an item's gram stepper (design-system.md, "Food logging").
+const GRAM_STEP = 10
+
+// Typed grams, or null for anything the item schema would reject.
+function parseGrams(text: string): number | null {
+  const value = Number(text.trim().replace(',', '.'))
+  if (text.trim() === '') return null
+  return mealItemSchema.shape.grams.safeParse(value).success ? value : null
+}
+
+// A new portion keeps the food: protein and energy scale with the grams.
+function setGrams(item: MealItem, grams: number) {
+  void repositories.mealItems.update(item.id, scalePortion(item, grams))
+}
+
 const mealTitle = ({ meal, items }: MealWithItems) => meal.name ?? items[0]?.name ?? ''
 
-// A day's meals, newest first. A tap opens the meal; a swipe left deletes it,
-// and the meal's sheet offers the same delete for those who cannot swipe.
+// A day's meals, newest first. A tap opens the meal's sheet, where its type,
+// each item's grams and its items can be changed; a swipe left deletes it,
+// and the sheet offers the same delete for those who cannot swipe.
 export function MealList({ meals }: { meals: MealWithItems[] }) {
   const t = useTranslations('food')
   const locale = useLocale()
@@ -93,23 +112,57 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
             <p className="num text-label text-ink-3">
               {formatTime(opened.meal.eatenAt, locale)} · {t(`mealType.${opened.meal.mealType}`)}
             </p>
-            <ul className="flex flex-col gap-8">
+            <ChoiceGroup
+              label={t('mealTypeLabel')}
+              options={mealTypeSchema.options}
+              value={opened.meal.mealType}
+              onChange={(mealType) => {
+                void repositories.meals.update(opened.meal.id, { mealType })
+              }}
+              optionLabel={(option) => t(`mealType.${option}`)}
+            />
+            <ul className="flex flex-col gap-16">
               {opened.items.map((item) => (
-                <li key={item.id} className="flex items-baseline justify-between gap-12">
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-body text-ink">{item.name}</span>
-                    <span className="num text-label text-ink-3">
-                      {t('grams', { value: whole.format(item.grams) })}
-                    </span>
-                  </span>
-                  <span className="flex shrink-0 flex-col items-end">
-                    <span className="num text-body text-accent">
-                      {t('proteinShort', { value: whole.format(item.proteinG) })}
-                    </span>
-                    <span className="num text-label text-ink-3">
+                <li key={item.id} className="flex flex-col gap-8">
+                  <div className="flex items-baseline justify-between gap-12">
+                    <span className="min-w-0 truncate text-body text-ink">{item.name}</span>
+                    <span className="num shrink-0 text-label text-ink-2">
+                      <span className="text-accent">
+                        {t('proteinShort', { value: whole.format(item.proteinG) })}
+                      </span>
+                      {' · '}
                       {t('kcalShort', { value: whole.format(item.kcal) })}
                     </span>
-                  </span>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <div className="min-w-0 flex-1">
+                      <Stepper
+                        value={whole.format(item.grams)}
+                        editValue={String(item.grams)}
+                        inputMode="decimal"
+                        label={t('gramsOf', { name: item.name })}
+                        onEnter={(text) => {
+                          const grams = parseGrams(text)
+                          if (grams !== null) setGrams(item, grams)
+                        }}
+                        canDecrease={item.grams > GRAM_STEP}
+                        decreaseLabel={t('gramsDown', { name: item.name })}
+                        increaseLabel={t('gramsUp', { name: item.name })}
+                        onStep={(direction) => {
+                          setGrams(item, item.grams + direction * GRAM_STEP)
+                        }}
+                      />
+                    </div>
+                    <Pressable
+                      onClick={() => {
+                        if (opened.items.length === 1) remove(opened.meal.id)
+                        else void repositories.mealItems.remove(item.id)
+                      }}
+                      className="shrink-0 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
+                    >
+                      {t('removeItem')}
+                    </Pressable>
+                  </div>
                 </li>
               ))}
             </ul>
