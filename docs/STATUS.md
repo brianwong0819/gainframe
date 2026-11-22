@@ -46,6 +46,8 @@ Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows
 
 Ticking ahead (2026-11-21, asked by bw during the field week): a check on a set of a later round than the one in progress, in a superset or a standalone exercise, asks before completing it, because it is usually a mis-tap and would end the running rest; cancelling keeps the rest (PR `m1/confirm-tick-ahead`, "Ticking ahead" in `docs/design-system.md`).
 
+Offline navigation (2026-11-22, PR `m1/offline-summary-flake`): the service worker now answers Next's RSC payload requests (it ignores the `_rsc` parameter), so offline in-app navigation stays client-side instead of reloading the page. This was the cause of the `offline.spec.ts` failures on the summary's 完成 link (L-041).
+
 ## Field week checklist (pending iPhone checks)
 
 Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a failure becomes an issue.
@@ -77,6 +79,5 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 - TypeScript is pinned to 6.0 because `typescript-eslint` 8.72 supports `<6.1`; move to TypeScript 7 once it does.
 - `eslint-config-next` bundles plugins whose peer ranges stop at ESLint 9, so `pnpm install` prints a peer warning; lint runs clean. Re-check on each Next upgrade.
 - The health response shape is declared in `apps/api`, not as a schema in `packages/shared`; move it there when the web app first consumes an API response.
-- `e2e/offline.spec.ts` failed once on iPhone SE in CI (PR `m1/library-legs`, 2026-11-17): after finishing offline, tapping 完成 on the summary left the page at `/workout/summary`; the re-run passed and the diff was catalog data only. If it recurs, measure whether the link is tapped before the page can navigate (L-028).
 - The two search fields (library page, exercise picker) repeat the same input markup with different backgrounds. Extract a `SearchField` in `src/ui` if a third one appears (M3-02 frequent foods).
 - The dev site and function URLs appear in the dev deploy's public Actions logs (Terraform outputs). Nothing secret; `/api/health` no longer queries the database, and every other API route will require a token (M2-03).

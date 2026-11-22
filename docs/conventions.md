@@ -43,10 +43,11 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
   - Swipes and drags dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit ends a drag as a click (L-029).
   - Offline is a server the test owns being shut down (`e2e/site-server.ts`); in WebKit `context.setOffline` and `context.route` also block navigations the service worker would answer (L-033).
   - Run a new or changed spec locally with `--repeat-each 5` before pushing (L-024).
+  - A spec that fails and then passes on a re-run is a defect, not noise: log its requests and navigations (`page.on('request')`, `framenavigated`, `load`) to find what differed before changing the test (L-041).
   - A spec that needs an exercise missing from the library, or a set number of search results, says so in a comment; a change to the built-in catalog runs the specs that search it (`grep -l searchbox apps/web/e2e`) before pushing (L-036).
   - A test that samples an animation frame by frame takes its first sample from the DOM change that starts the animation (a `MutationObserver`), not from the first `requestAnimationFrame` after the action: on a slow runner that frame is late (L-034).
 - **Device layout (Playwright, `apps/web/e2e/layout.spec.ts`):** every page on six iPhone and Android sizes, light and dark, with simulated safe-area insets (pull requests run two of them; `main` runs all six). Add each new page to its list. Details: "Device QA" in `docs/design-system.md`.
-- **Critical flows (Playwright, `apps/web/e2e/offline.spec.ts`):** the whole workout flow offline from the service worker's precache, the one spec that allows the service worker. A change to the worker, routing or the workout flow keeps it green.
+- **Critical flows (Playwright, `apps/web/e2e/offline.spec.ts`):** the whole workout flow offline from the service worker's precache, the one spec that allows the service worker. It also asserts that in-app navigation offline stays in one document (L-041). A change to the worker, routing or the workout flow keeps it green.
 - Every Dexie schema version after v1 gets an upgrade test: open at the previous version with fixture rows, upgrade, assert the rows survive. Data on the phone cannot be repaired from the server.
 - Fixtures are explicit and small; no snapshot tests of large objects; no tests that depend on the current date (inject a clock).
 - A bug fix starts with a failing test that reproduces it.

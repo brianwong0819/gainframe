@@ -33,6 +33,10 @@ test('a workout logged offline is listed in history', async ({ page }) => {
   server.closeAllConnections()
   await new Promise((resolve) => server.close(resolve))
   await page.goto(`${origin}/workout`)
+  // In-app navigation stays in this document: the service worker answers the
+  // RSC payload requests, so Next never falls back to loading a whole page,
+  // which dropped in-memory state and left links tappable before hydration.
+  await page.evaluate(() => Reflect.set(window, 'sameDocument', true))
   await page.getByRole('button', { name: '开始训练' }).click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
   await page.getByRole('button', { name: '添加动作' }).click()
@@ -83,6 +87,7 @@ test('a workout logged offline is listed in history', async ({ page }) => {
   await expect(card).toContainText('杠铃卧推')
   // 60 × 8 + 62.5 × 8 + 65 × 8
   await expect(card).toContainText('3 组 · 1,500 kg')
+  expect(await page.evaluate(() => 'sameDocument' in window)).toBe(true)
 
   // A cold start while still offline shows the same history from the device.
   await page.reload()
