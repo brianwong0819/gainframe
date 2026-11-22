@@ -20,6 +20,7 @@ const session = {
   accessToken: 'access',
   accessExpiresAt: '2026-11-22T07:00:00.000Z',
   refreshToken: 'refresh',
+  expired: false,
 }
 
 describe('auth session', () => {
