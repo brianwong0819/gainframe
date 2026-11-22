@@ -106,6 +106,9 @@ jobs:
         run: pnpm --filter @gainframe/web build
         env:
           GAINFRAME_DEV_PAGES: '1'
+      - name: Repeat the offline spec on WebKit (temporary measurement)
+        if: steps.scope.outputs.app != 'false'
+        run: pnpm test:e2e e2e/offline.spec.ts --repeat-each 10 --project "iPhone SE" --project "iPhone 17e" --project "iPhone 17" --project "iPhone 17 Pro Max"
       - name: Run the device tests
         if: steps.scope.outputs.app != 'false'
         env:

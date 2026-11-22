@@ -11,14 +11,6 @@ declare const self: ServiceWorkerGlobalScope & {
 // one is closed, so an open page never mixes files from two releases, or when
 // the user taps "Update" (src/pwa/update.ts): Serwist then calls skipWaiting on
 // a `SKIP_WAITING` message.
-//
-// A client-side navigation fetches the page's RSC payload (`summary.txt`) with
-// an `_rsc` cache-busting parameter. The precache keys have no parameters, so
-// without ignoring it every offline navigation missed the precache, failed, and
-// Next fell back to loading the whole page.
-const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
-  precacheOptions: { ignoreURLParametersMatching: [/^_rsc$/] },
-})
+const serwist = new Serwist({ precacheEntries: self.__SW_MANIFEST })
 
 serwist.addEventListeners()
