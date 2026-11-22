@@ -61,17 +61,13 @@ module "auth" {
   release                = var.release
 
   # The sign-in page is the redirect URI and Settings the sign-out target
-  # (ADR-0007); the developer page keeps its own for the device check.
+  # (ADR-0007).
   callback_urls = [
     "https://${module.site.domain_name}/settings/sign-in",
     "http://localhost:3000/settings/sign-in",
-    "https://${module.site.domain_name}/dev/sign-in-probe",
-    "http://localhost:3000/dev/sign-in-probe",
   ]
   logout_urls = [
     "https://${module.site.domain_name}/settings",
     "http://localhost:3000/settings",
-    "https://${module.site.domain_name}/dev/sign-in-probe",
-    "http://localhost:3000/dev/sign-in-probe",
   ]
 }

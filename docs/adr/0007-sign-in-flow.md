@@ -33,4 +33,4 @@ Option 1. The sign-in page saves the state and PKCE verifier in `localStorage`, 
 - No new endpoint or storage on the server; the API only verifies access tokens (M2-03).
 - The redirect URI and the sign-out URL are fixed paths, listed in the Cognito client's callback and logout URLs for each environment.
 - Clear all data in Diagnostics also removes the session, because it is a device setting; M2-05 decides how that page warns a signed-in user.
-- If a later iOS release opens the authorize page in a separate sheet again, the probe page shows it; option 3 is the fallback.
+- If a later iOS release opens the authorize page in a separate sheet again, the sign-in page reports `no_pending` after the redirect; option 3 is the fallback. The device probe page that settled this question was removed once the real flow shipped.
