@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-038 · 2026-11-22 · workout · The first rest cue fix missed WebKit's silent audio context
+- **What happened:** after L-037's fix bw still heard no cue at times while staying in the app, possibly only after having switched away earlier in the workout.
+- **Root cause:** L-037 assumed that iOS returns the audio context to a working state on return and fixed only the delay. Open WebKit bugs ([263627](https://bugs.webkit.org/show_bug.cgi?id=263627), [276016](https://bugs.webkit.org/show_bug.cgi?id=276016)) report that a context can come back reporting `running` while it plays nothing, and it stays that way, so every later cue in the workout is silent. The bug tracker was not searched before the first fix, although the rule to read current platform behaviour first (L-004, L-016) covers it.
+- **Fix:** `m1/rest-cue-fresh-context`: the context is suspended and resumed on each return (the workaround in those bugs), any tap in an open workout unlocks the audio, and the first tap after the page was hidden replaces the context with a new one.
+- **Prevention:** `rest-cue.test.ts` covers the return, the replacement and the tap; "Read current vendor and platform docs" now names the vendor's bug tracker for platform defects (this entry).
+- **Status:** guarded
+
 ### L-037 · 2026-11-21 · workout · The rest cue was sometimes silent on the iPhone
 - **What happened:** during the field week bw found that the rest timer sometimes ended without a sound.
 - **Root cause:** `playRestCue` played only when the audio context was `running` and otherwise returned silently. iOS interrupts the context while the app is hidden and resumes it about 50 ms after the app is shown again (ADR-0005's measurement), but the rest timer asks for the cue in the render that follows `visibilitychange`, before that. A rest that ended while bw was in another app therefore came back silent, and the return cue plays only once. Another app's sound interrupting the context on screen had the same effect. The ADR measured the resume delay; the code did not account for it.

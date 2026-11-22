@@ -33,7 +33,7 @@ import { formatRepRange } from '../plans/item-edit'
 import { findExercise } from './exercise-info'
 import { ExercisePicker } from './exercise-picker'
 import { markJustFinished } from './just-finished'
-import { allowScreenOff, keepScreenOn, prepareRestCue } from './rest-cue'
+import { allowScreenOff, keepScreenOn, prepareRestCue, watchRestCue } from './rest-cue'
 import { RestPanel, RestPill, useRest } from './rest-timer'
 import { SessionHeader } from './session-header'
 import { SetDetails } from './set-details'
@@ -120,6 +120,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   const { workout } = state
   const rest = useRest(workout)
   useScreenOn()
+  useEffect(watchRestCue, [])
   const selected = selectedSet(state, chosenId)
   const selectedSlot = state.slots.find(({ slot }) => slot.id === selected?.slotId)?.slot
   const selectedRange = selectedSlot ? slotRepRange(selectedSlot) : null

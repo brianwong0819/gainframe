@@ -1,12 +1,15 @@
 // The rest timer's sound and screen wake lock (ADR-0005, layers 1 and 2).
 // iOS unlocks audio only inside a tap, so `prepareRestCue` runs in the tap that
-// completes a set; the cue itself plays later from a timer while the page is
-// visible. Nothing is scheduled on the audio clock in advance: that clock
-// stops while iOS hides the page and would play a stale cue on return.
-// iOS also interrupts the audio context while the page is hidden and resumes
-// it only after the page is shown again (about 50 ms, ADR-0005), and another
-// app's sound can interrupt it while the page is visible, so a cue asked for
-// then waits for the context to resume.
+// completes a set and in every other tap while a workout is open; the cue
+// itself plays later from a timer while the page is visible. Nothing is
+// scheduled on the audio clock in advance: that clock stops while iOS hides
+// the page and would play a stale cue on return.
+// iOS interrupts the audio context while the page is hidden. On return it may
+// take about 50 ms to resume (ADR-0005), or come back reporting `running`
+// while it plays nothing (WebKit bugs 263627, 276016). So a cue asked for
+// while the context is not running waits for it to resume, the context is
+// suspended and resumed on each return (the workaround in those bugs), and
+// the first tap after the page was hidden replaces the context.
 
 // The Audio Session API (Safari 16.4+) is not in TypeScript's DOM library yet.
 // https://w3c.github.io/audio-session/
@@ -31,12 +34,20 @@ const GAIN = 0.7
 export const RESUME_WAIT_MS = 1000
 
 let context: AudioContext | null = null
+// The page was hidden after `context` was made, so it may be silent.
+let hiddenSinceCreated = false
 let wakeLock: WakeLockSentinel | null = null
 
 export function prepareRestCue(): void {
   if (typeof AudioContext === 'undefined') return
   if (navigator.audioSession) navigator.audioSession.type = SESSION_TYPE
-  context ??= new AudioContext()
+  if (context === null || context.state === 'closed' || hiddenSinceCreated) {
+    context?.close().catch(() => {
+      // Already closed.
+    })
+    context = new AudioContext()
+    hiddenSinceCreated = false
+  }
   const audio = context
   // Playing one silent frame inside the tap unlocks later playback on iOS.
   audio.resume().then(
@@ -50,6 +61,33 @@ export function prepareRestCue(): void {
       // Not unlocked; the rest still shows on screen.
     },
   )
+}
+
+// Keeps the cue's audio usable while a workout is open; returns the cleanup.
+export function watchRestCue(): () => void {
+  const onVisibility = () => {
+    if (document.visibilityState === 'hidden') {
+      hiddenSinceCreated = true
+      return
+    }
+    const audio = context
+    if (audio?.state !== 'running') return
+    audio
+      .suspend()
+      .then(() => audio.resume())
+      .catch(() => {
+        // Left suspended; the cue resumes it, and the next tap replaces it.
+      })
+  }
+  const onTap = () => {
+    prepareRestCue()
+  }
+  document.addEventListener('visibilitychange', onVisibility)
+  document.addEventListener('touchend', onTap, { capture: true, passive: true })
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibility)
+    document.removeEventListener('touchend', onTap, { capture: true })
+  }
 }
 
 export function playRestCue(): void {

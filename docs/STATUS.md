@@ -41,7 +41,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 - Library: search, muscle filters, new and edit sheet with the keyboard up, detail sheet with cues and the muscle map.
 - Workout: a set logged one-handed in 5 s or less; the stepper's typed digits replace the value instead of being appended (see Follow-ups).
 - Plans: make a plan, start its next day from the Workout tab, finish, see the following day offered; add an exercise from its detail.
-- Rest timer: the cue and the blue pill on screen; the overdue rest after locking the phone or opening another app and coming back now beeps once (L-037).
+- Rest timer: the cue and the blue pill on screen; the overdue rest after locking the phone or opening another app and coming back now beeps once (L-037); the cue still plays after switching away and back earlier in the workout (L-038).
 - Supersets: link two exercises in a workout and in a plan; the superset sheet opens to set rounds and rest; the rest opens only after the last exercise of each round; "加一轮" adds a set to each exercise.
 - Finish: the plates and the "新纪录" tag feel right; the rest sheet's wait after a celebration is not annoying.
 - History: the swipe to delete does not fight vertical scrolling; editing a past set updates its figures.
