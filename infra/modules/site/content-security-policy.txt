@@ -3,7 +3,7 @@ script-src 'self' 'unsafe-inline'
 style-src 'self' 'unsafe-inline'
 img-src 'self'
 font-src 'self'
-connect-src 'self'
+connect-src 'self' https://*.auth.ap-southeast-1.amazoncognito.com
 manifest-src 'self'
 worker-src 'self'
 object-src 'none'

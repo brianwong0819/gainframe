@@ -42,7 +42,7 @@ See [ADR-0001](adr/0001-aws-account-model.md). The account was created under the
 |---|---|---|
 | `ci.yml` | PR, push to main | install, lint, typecheck, unit + integration tests (Postgres service), build; `terraform fmt -check` and `validate` for every stack; device layout e2e (two devices on a PR, all six on main, skipped for a docs-only PR) |
 | `plan.yml` | PR touching `infra/**`, `apps/api/**`, `packages/shared/**` or the lockfile | builds the API bundle, `terraform plan` for dev as `gainframe-ci-plan`, posts the plan as a PR comment (one comment, updated on each push; the account ID replaced) |
-| `deploy.yml` | CI succeeded on a push to main (`workflow_run`) | build with `RELEASE` = the commit SHA → migrate the dev database → `terraform apply` dev as `gainframe-ci-apply` → upload the site to S3 → invalidate CloudFront → smoke test; later prod after approval (M2-07) |
+| `deploy.yml` | CI succeeded on a push to main (`workflow_run`) | build the API bundle → migrate the dev database → `terraform apply` dev as `gainframe-ci-apply` → build the web app with `RELEASE` = the commit SHA and the Cognito origin and client ID from the Terraform outputs → upload the site to S3 → invalidate CloudFront → smoke test; later prod after approval (M2-07) |
 
 Deploy details:
 

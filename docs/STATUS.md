@@ -20,7 +20,7 @@ Design review (2026-11-16, asked by bw during the field week): every screen was 
 
 Dependency update (2026-11-22, PR `m2/dependency-update`): every package moved to its latest patch or minor release, which takes Next.js 16.4.6 past the security advisory `next build` reported on 16.4.4. TypeScript stays on 6.0 and `@types/node` on 24 (see Follow-ups).
 
-M1-13 ended on 2026-11-22 by bw's choice: problems found in daily use are fixed as they come up. The field week checklist below stays as the list of iPhone checks still open.
+M1-13 ended on 2026-11-22 by bw's choice: problems found in daily use are fixed as they come up. M1-14 (timed and cardio logging) moves after M2, also by bw's choice. The field week checklist below stays as the list of iPhone checks still open.
 
 M2-01 (2026-11-22, PR `m2/01-neon-drizzle`): the Drizzle schema in `apps/api/src/db/schema.ts` mirrors the seven synced Dexie tables plus `server_version`, with a server-only `sync_state` table; the first migration is `apps/api/drizzle/0000_initial.sql`. The deploy migrates dev before `terraform apply`; the runner connects directly (not through Neon's pooler) and sets the role's 8 s `statement_timeout`. The Neon `prod` branch moved to M2-07.
 
