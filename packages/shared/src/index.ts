@@ -13,7 +13,14 @@ export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
-export { nutritionTotals, type NutritionTotals } from './domain/nutrition.ts'
+export {
+  addDays,
+  mealTypeAt,
+  nutritionTotals,
+  type NutritionTotals,
+  type PastFood,
+  pastFoods,
+} from './domain/nutrition.ts'
 export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
@@ -110,6 +117,12 @@ export {
   planItemSchema,
   planSchema,
 } from './schemas/plan.ts'
+export {
+  type Profile,
+  profileSchema,
+  type ProteinMode,
+  proteinModeSchema,
+} from './schemas/profile.ts'
 export {
   type SetKind,
   setKindSchema,

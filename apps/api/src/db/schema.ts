@@ -174,6 +174,17 @@ export const mealItems = pgTable(
   pullIndex('meal_items'),
 )
 
+export const profiles = pgTable(
+  'profiles',
+  {
+    ...syncedColumns,
+    proteinMode: text('protein_mode').notNull(),
+    proteinValue: doublePrecision('protein_value').notNull(),
+    kcalTarget: integer('kcal_target').notNull(),
+  },
+  pullIndex('profiles'),
+)
+
 // One row per user: the last `server_version` handed out. A push locks this
 // row (`UPDATE ... RETURNING`), which serializes one user's pushes (ADR-0003).
 export const syncState = pgTable('sync_state', {
@@ -193,4 +204,5 @@ export const syncedTables = {
   workoutSets,
   meals,
   mealItems,
+  profiles,
 }

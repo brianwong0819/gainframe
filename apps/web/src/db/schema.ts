@@ -8,6 +8,7 @@ import {
   type Plan,
   type PlanDay,
   type PlanItem,
+  type Profile,
   sharedValueChanges,
   type SyncedTableName,
   type Workout,
@@ -72,6 +73,7 @@ export class GainframeDb extends Dexie {
   workoutSets!: Table<WorkoutSet, string>
   meals!: Table<Meal, string>
   mealItems!: Table<MealItem, string>
+  profiles!: Table<Profile, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -175,6 +177,8 @@ export class GainframeDb extends Dexie {
     this.version(9).stores({}).upgrade(shareSupersetValues)
     // M3-01: meals, read by day, and their items, read by meal.
     this.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
+    // M3-02: the daily targets.
+    this.version(11).stores({ profiles: 'id' })
   }
 }
 

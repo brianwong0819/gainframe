@@ -148,12 +148,15 @@ describe('sync (real Postgres)', () => {
     expect(res.status).toBe(426)
   })
 
-  it('asks a version 1 app, which cannot read meal rows, to update', async () => {
-    const res = await app.request('/api/sync/pull', {
-      headers: { ...headers(newUser()), [SYNC_VERSION_HEADER]: '1' },
-    })
-    expect(res.status).toBe(426)
-  })
+  it.each(['1', '2'])(
+    'asks a version %s app, which cannot read the newer tables, to update',
+    async (version) => {
+      const res = await app.request('/api/sync/pull', {
+        headers: { ...headers(newUser()), [SYNC_VERSION_HEADER]: version },
+      })
+      expect(res.status).toBe(426)
+    },
+  )
 
   it("round-trips a meal and its items, the model's estimate included, to its owner only", async () => {
     const userA = newUser()

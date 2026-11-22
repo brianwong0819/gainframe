@@ -25,6 +25,7 @@ describe('migrations (real Postgres)', () => {
       'plan_days',
       'plan_items',
       'plans',
+      'profiles',
       'sync_state',
       'workout_exercises',
       'workout_sets',

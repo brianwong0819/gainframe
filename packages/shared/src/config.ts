@@ -41,6 +41,18 @@ export const domainConfig = {
   recentRecords: 3,
   // The time one set takes, for the estimated length of a planned day.
   setWorkS: 45,
+  // Daily targets (M3-02): where the Settings steppers start before the user
+  // has set any, and one tap on them. 140 g is 2 g/kg for a 70 kg lifter, in
+  // the 1.6 to 2.2 g/kg range of the ISSN position stand on protein (Jäger et
+  // al. 2017); 2,800 kcal is a modest surplus for a young man of that weight.
+  // M4-01 replaces both with values calculated from the profile.
+  targets: { startProteinG: 140, startKcal: 2800, proteinStepG: 5, kcalStep: 50 },
+  // The meal type a new meal gets from the hour it is logged, on the device's
+  // clock: each type starts at its hour and runs to the next. Hours before
+  // breakfast count as a snack (supper).
+  mealHours: { breakfast: 5, lunch: 11, snack: 15, dinner: 17, supper: 22 },
+  // Frequent foods shown as one-tap pills on the Food tab.
+  frequentFoods: 8,
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.

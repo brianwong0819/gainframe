@@ -1,14 +1,7 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-
-import { TabScreen } from '../tab-screen'
+import { FoodScreen } from '@/features/food/food-screen'
 
 export default function FoodPage() {
-  const t = useTranslations('food')
-  return (
-    <TabScreen title={t('title')}>
-      <p className="text-body text-ink-2">{t('empty')}</p>
-    </TabScreen>
-  )
+  return <FoodScreen />
 }

@@ -17,6 +17,7 @@ const EXPORTED_TABLES = [
   'workoutSets',
   'meals',
   'mealItems',
+  'profiles',
   'settings',
 ] as const
 
@@ -43,6 +44,7 @@ export async function exportData(db: GainframeDb, release: string, exportedAt: s
       workoutSets: await db.workoutSets.toArray(),
       meals: await db.meals.toArray(),
       mealItems: await db.mealItems.toArray(),
+      profiles: await db.profiles.toArray(),
       settings: await db.settings.filter((setting) => !NOT_EXPORTED.has(setting.key)).toArray(),
     },
   }))
