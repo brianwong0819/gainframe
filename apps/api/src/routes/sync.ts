@@ -10,8 +10,9 @@ import { pushRows } from '../sync/push.ts'
 
 // The oldest sync version this server accepts (ADR-0003). Raise it only when a
 // change cannot be read by older apps; they then show "update the app".
-// Version 2 (M3-01): a version 1 app fails to parse a pull holding meal rows.
-const MIN_SYNC_VERSION = 2
+// Versions 2 and 3 (M3-01, M3-02) added tables an older app fails to parse in
+// a pull.
+const MIN_SYNC_VERSION = 3
 
 // Distinct rejection paths kept in a push log line, enough to spot a pattern.
 const LOGGED_ISSUES_MAX = 20

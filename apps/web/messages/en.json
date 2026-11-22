@@ -156,6 +156,19 @@
     "zh": "中文",
     "en": "English"
   },
+  "targets": {
+    "title": "Daily targets",
+    "notSet": "Set your targets so the Food tab can show what is left today. These are common starting points.",
+    "hint": "The Food tab and Today count toward these.",
+    "protein": "Protein target in grams",
+    "proteinPerDay": "Protein · g a day",
+    "proteinDown": "Lower the protein target",
+    "proteinUp": "Raise the protein target",
+    "energy": "Energy target in kcal",
+    "energyPerDay": "Energy · kcal a day",
+    "energyDown": "Lower the energy target",
+    "energyUp": "Raise the energy target"
+  },
   "notFound": {
     "title": "Page not found",
     "back": "Back to Today"

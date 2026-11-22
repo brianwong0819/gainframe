@@ -156,6 +156,19 @@
     "zh": "中文",
     "en": "English"
   },
+  "targets": {
+    "title": "每日目标",
+    "notSet": "设好目标，饮食页就能显示今天还差多少。下面是常见的起点。",
+    "hint": "饮食页和今天页按这两个目标计算。",
+    "protein": "蛋白质目标（克）",
+    "proteinPerDay": "蛋白质 · 克/天",
+    "proteinDown": "降低蛋白质目标",
+    "proteinUp": "提高蛋白质目标",
+    "energy": "热量目标（千卡）",
+    "energyPerDay": "热量 · 千卡/天",
+    "energyDown": "降低热量目标",
+    "energyUp": "提高热量目标"
+  },
   "notFound": {
     "title": "找不到这个页面",
     "back": "回到今天"

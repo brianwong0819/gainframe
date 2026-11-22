@@ -86,6 +86,7 @@ describe('exportData', () => {
       'planDays',
       'planItems',
       'plans',
+      'profiles',
       'settings',
       'workoutExercises',
       'workoutSets',

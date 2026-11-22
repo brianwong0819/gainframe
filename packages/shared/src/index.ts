@@ -111,6 +111,12 @@ export {
   planSchema,
 } from './schemas/plan.ts'
 export {
+  type Profile,
+  profileSchema,
+  type ProteinMode,
+  proteinModeSchema,
+} from './schemas/profile.ts'
+export {
   type SetKind,
   setKindSchema,
   type Workout,

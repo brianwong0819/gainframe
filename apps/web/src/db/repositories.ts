@@ -8,6 +8,7 @@ import {
   planDaySchema,
   planItemSchema,
   planSchema,
+  profileSchema,
   type SyncedTableName,
   workoutExerciseSchema,
   workoutSchema,
@@ -164,6 +165,7 @@ export function createRepositories(db: GainframeDb, now: () => Date = () => new 
       cascade(context, 'mealItems', db.mealItems, 'mealId'),
     ]),
     mealItems: repository(context, 'mealItems', db.mealItems, mealItemSchema),
+    profiles: repository(context, 'profiles', db.profiles, profileSchema),
   }
 }
 
