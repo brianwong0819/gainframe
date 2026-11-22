@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+import { useBackup } from '@/features/account/use-backup'
 import { db } from '@/db/client'
 import { exportData, exportFileName } from '@/db/export'
 import { useLiveQuery } from '@/db/use-live-query'
@@ -35,6 +36,7 @@ function download(file: File) {
 // (until sync in M2). On the iPhone it opens the share sheet ("Save to Files").
 export function ExportData() {
   const t = useTranslations('diagnostics')
+  const signedIn = (useBackup()?.state ?? 'signedOut') !== 'signedOut'
   const data = useLiveQuery(loadExport)
   const [failed, setFailed] = useState(false)
 
@@ -63,7 +65,9 @@ export function ExportData() {
     <section className="flex flex-col gap-12">
       <h2 className="text-label text-ink-3">{t('backup')}</h2>
       <div className="flex flex-col gap-12 rounded-group bg-surface p-16">
-        <p className="text-label text-ink-2">{t('backupHint')}</p>
+        <p className="text-label text-ink-2">
+          {signedIn ? t('backupHintSignedIn') : t('backupHint')}
+        </p>
         {data !== undefined && (
           <>
             <p className="text-label text-ink-3" data-testid="export-counts">

@@ -18,24 +18,9 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { reportError } from '@/diagnostics/report'
 import { Pressable } from '@/ui/pressable'
 
+import { useOnline } from './use-online'
+
 const config = readAuthConfig()
-
-function subscribeOnline(listener: () => void) {
-  window.addEventListener('online', listener)
-  window.addEventListener('offline', listener)
-  return () => {
-    window.removeEventListener('online', listener)
-    window.removeEventListener('offline', listener)
-  }
-}
-
-function useOnline(): boolean {
-  return useSyncExternalStore(
-    subscribeOnline,
-    () => navigator.onLine,
-    () => true,
-  )
-}
 
 type Redirect = { step: 'finishing' } | { step: 'failed'; failure: SignInFailure } | null
 
@@ -110,7 +95,8 @@ export function SignIn() {
       </p>
     )
   }
-  if (session !== null) {
+  // An expired session signs in again here; the account and its changes stay.
+  if (session !== null && !session.expired) {
     return (
       <section className="flex flex-col gap-4 rounded-group bg-surface p-16" aria-live="polite">
         <p className="text-body text-ink">{t('signedIn')}</p>

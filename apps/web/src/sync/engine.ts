@@ -176,7 +176,7 @@ export function createSyncEngine({
   return {
     run,
     getStatus: () => status,
-    subscribe(listener: () => void) {
+    subscribe: (listener: () => void) => {
       listeners.add(listener)
       return () => {
         listeners.delete(listener)

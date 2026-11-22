@@ -45,4 +45,20 @@ describe('clearAllData', () => {
     await db.settings.put({ key: 'activePlanId', value: 'plan-2' })
     expect(await db.settings.count()).toBe(1)
   })
+
+  it('keeps the session when asked, and forgets the sync cursor', async () => {
+    await db.settings.bulkPut([
+      { key: 'authSession', value: '{"userId":"sub-1"}' },
+      { key: 'syncCursor', value: '{"userId":"sub-1","cursor":9}' },
+      { key: 'activePlanId', value: 'plan-1' },
+    ])
+    await db.outbox.add({ table: 'exercises', rowId: 'row-1' })
+
+    await clearAllData(db, { keepSession: true })
+
+    expect(await db.settings.toArray()).toEqual([
+      { key: 'authSession', value: '{"userId":"sub-1"}' },
+    ])
+    expect(await db.outbox.count()).toBe(0)
+  })
 })
