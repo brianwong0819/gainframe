@@ -44,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-041 · 2026-11-22 · pwa · Every offline navigation reloaded the whole page
+- **What happened:** `e2e/offline.spec.ts` failed on `main` after #145 on iPhone 17e (WebKit), blocking a deploy, and once before on iPhone SE (2026-11-17): after finishing offline, tapping 完成 on the summary left the page at `/workout/summary`. Re-runs passed.
+- **Root cause:** a client-side navigation fetches the next page's RSC payload as `summary.txt?_rsc=<hash>`. The service worker precaches `summary.txt` without parameters and Serwist ignores only `utm_*` and `fbclid` when matching, so offline every payload request missed the precache, failed, and Next fell back to loading the whole document. Measured in Chromium by logging requests: after going offline each tap produced a failed `.txt?_rsc=` fetch followed by a `document` request, and the test tapped 完成 7 ms before the reloaded summary's `load` event, before hydration. That tap was lost now and then in WebKit, as in L-028. Users were affected too: at the gym every tab switch was a full page load, which also dropped in-memory state such as the summary's celebration.
+- **Fix:** PR `m1/offline-summary-flake`: `src/sw/sw.ts` ignores the `_rsc` parameter when matching the precache, so offline navigations stay client-side. The spec sets a marker on `window` once offline and asserts it survives to the history page; without the fix it fails on every run.
+- **Prevention:** the marker assertion in `e2e/offline.spec.ts` (guarded). Rule in "Tests" in `docs/conventions.md`: an e2e flake gets measured (request and navigation log) before it is re-run away.
+- **Status:** guarded
+
 ### L-040 · 2026-11-22 · test · Two integration test files migrated the database at the same time
 - **What happened:** CI's Check and build failed on PR #140 with `duplicate key value violates unique constraint "pg_namespace_nspname_index"` from `CREATE SCHEMA IF NOT EXISTS "drizzle"`; the same tests had passed on #139 and locally.
 - **Root cause:** `sync.int.test.ts` (#139) ran the migrations in `beforeAll` while `migrate.int.test.ts` ran them in another worker. `IF NOT EXISTS` does not make two concurrent `CREATE SCHEMA` statements safe; whichever commits second fails. Whether they overlap depends on timing, so it passed twice before failing.
