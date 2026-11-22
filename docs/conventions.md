@@ -19,7 +19,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - Components read data through hooks that wrap Dexie live queries (`useLiveQuery`). No fetching in components. A query run by `useLiveQuery` calls Dexie directly for every read; awaiting one of our own async helpers first loses the context Dexie uses to observe the later reads, and the screen stops updating (L-026).
 - Local UI state with `useState`/`useReducer`; cross-screen state (active workout, rest timer) in one small store per concern. No global state library.
 - Unexpected errors are recorded through `src/diagnostics`, never `console.*` (which nobody can read on the iPhone).
-- The static export prerenders every control, so it is visible before React attaches its handlers. A button that writes (create, start, add) renders only once the data it acts on has loaded; an e2e test delays the JavaScript chunks and taps at once (L-028).
+- The static export prerenders every control, so it is visible before React attaches its handlers. A button that writes (create, start, add) renders only once the data it acts on has loaded; every new screen with such a button gets an e2e test that delays the JavaScript chunks and taps at once (L-028, L-043).
 - Every interactive element is keyboard- and screen-reader-accessible (Radix where it applies). Tap targets ≥ 44×44 px.
 - All user-facing text through next-intl. Numbers and dates formatted with `Intl` using the user's locale.
 

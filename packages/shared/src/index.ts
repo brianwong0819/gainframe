@@ -20,6 +20,7 @@ export {
   type NutritionTotals,
   type PastFood,
   pastFoods,
+  scalePortion,
 } from './domain/nutrition.ts'
 export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'

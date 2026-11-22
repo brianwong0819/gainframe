@@ -177,7 +177,16 @@
     "deleteMealConfirm": "Tap again to delete",
     "close": "Close",
     "editTargets": "Change daily targets",
-    "addManual": "Add by hand"
+    "addManual": "Add by hand",
+    "frequent": "Frequent",
+    "logPortion": "Log a portion of {name}",
+    "loggedFood": "Logged {name}",
+    "undo": "Undo",
+    "mealTypeLabel": "Meal",
+    "gramsOf": "Grams of {name}",
+    "gramsDown": "Less {name}",
+    "gramsUp": "More {name}",
+    "removeItem": "Remove"
   },
   "language": {
     "label": "Language",

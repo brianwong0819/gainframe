@@ -4,16 +4,18 @@ import { addDays, type LocalDate, toLocalDate } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 
-import { db } from '@/db/client'
+import { db, repositories } from '@/db/client'
 import { foodDay } from '@/db/food'
 import { currentProfile } from '@/db/profile'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { Chevron } from '@/ui/chevron'
 import { Pressable, PressableLink } from '@/ui/pressable'
+import { Toast } from '@/ui/toast'
 
 import { formatDay } from '../history/dates'
 import { DayCard } from './day-card'
+import { FrequentFoods } from './frequent-foods'
 import { MealList } from './meal-list'
 import { TargetsSheet } from './targets-sheet'
 
@@ -33,6 +35,10 @@ export function FoodScreen() {
   const day = useLiveQuery(readDay)
   const targets = useLiveQuery(readTargets)
   const [editingTargets, setEditingTargets] = useState(false)
+  const [logged, setLogged] = useState<{ id: string; message: string } | null>(null)
+  const dismissToast = useCallback(() => {
+    setLogged(null)
+  }, [])
   const step = (days: number) => {
     setDate((current) => addDays(current, days))
   }
@@ -75,6 +81,13 @@ export function FoodScreen() {
             }}
           />
           {date === today && (
+            <FrequentFoods
+              onLogged={(mealId, name) => {
+                setLogged({ id: mealId, message: t('loggedFood', { name }) })
+              }}
+            />
+          )}
+          {date === today && (
             <PressableLink
               href="/food/add"
               className="rounded-full bg-accent px-16 py-12 text-center text-body font-semibold text-accent-ink"
@@ -87,6 +100,15 @@ export function FoodScreen() {
           ) : (
             <MealList meals={day.meals} />
           )}
+          <Toast
+            toast={logged}
+            actionLabel={t('undo')}
+            onAction={() => {
+              if (logged !== null) void repositories.meals.remove(logged.id)
+              setLogged(null)
+            }}
+            onDone={dismissToast}
+          />
           <TargetsSheet
             open={editingTargets}
             onClose={() => {

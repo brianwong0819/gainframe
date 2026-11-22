@@ -83,3 +83,13 @@ export function addDays(date: LocalDate, days: number): LocalDate {
   const noon = Date.parse(`${date}T12:00:00.000Z`) + days * 24 * 60 * 60 * 1000
   return localDateSchema.parse(new Date(noon).toISOString().slice(0, 10))
 }
+
+// An item's figures for a new portion size: protein and energy scale with the
+// grams, since both are per portion of the same food.
+export function scalePortion(
+  item: Pick<MealItem, 'grams' | 'proteinG' | 'kcal'>,
+  grams: number,
+): Pick<MealItem, 'grams' | 'proteinG' | 'kcal'> {
+  const ratio = grams / item.grams
+  return { grams, proteinG: item.proteinG * ratio, kcal: item.kcal * ratio }
+}
