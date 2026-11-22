@@ -149,7 +149,34 @@
   },
   "food": {
     "title": "饮食",
-    "empty": "今天还没有记录饮食。"
+    "today": "今天",
+    "empty": "今天还没有记录饮食。",
+    "emptyDay": "这一天没有记录饮食。",
+    "previousDay": "前一天",
+    "nextDay": "后一天",
+    "protein": "蛋白质",
+    "unitG": "g",
+    "toGoLead": "还差",
+    "eatenOfTarget": "{eaten} / {target} g",
+    "targetMet": "今天达标",
+    "energyOfTarget": "热量 {eaten} / {target} kcal",
+    "energyEaten": "热量 {eaten} kcal",
+    "setTargets": "设定每日目标",
+    "meals": "餐食",
+    "mealType": {
+      "breakfast": "早餐",
+      "lunch": "午餐",
+      "dinner": "晚餐",
+      "snack": "加餐"
+    },
+    "proteinShort": "蛋白质 {value} g",
+    "kcalShort": "{value} kcal",
+    "grams": "{value} g",
+    "delete": "删除",
+    "deleteMeal": "删除这餐",
+    "deleteMealConfirm": "再点一次删除",
+    "close": "关闭",
+    "editTargets": "修改每日目标"
   },
   "language": {
     "label": "语言",
@@ -158,7 +185,7 @@
   },
   "targets": {
     "title": "每日目标",
-    "notSet": "设好目标，饮食页就能显示今天还差多少。下面是常见的起点。",
+    "notSet": "下面是常见的起点。饮食页和今天页会按你的目标计算还差多少。",
     "hint": "饮食页和今天页按这两个目标计算。",
     "protein": "蛋白质目标（克）",
     "proteinPerDay": "蛋白质 · 克/天",
@@ -167,7 +194,8 @@
     "energy": "热量目标（千卡）",
     "energyPerDay": "热量 · 千卡/天",
     "energyDown": "降低热量目标",
-    "energyUp": "提高热量目标"
+    "energyUp": "提高热量目标",
+    "close": "关闭"
   },
   "notFound": {
     "title": "找不到这个页面",

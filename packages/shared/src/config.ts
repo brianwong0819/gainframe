@@ -47,6 +47,12 @@ export const domainConfig = {
   // al. 2017); 2,800 kcal is a modest surplus for a young man of that weight.
   // M4-01 replaces both with values calculated from the profile.
   targets: { startProteinG: 140, startKcal: 2800, proteinStepG: 5, kcalStep: 50 },
+  // The meal type a new meal gets from the hour it is logged, on the device's
+  // clock: each type starts at its hour and runs to the next. Hours before
+  // breakfast count as a snack (supper).
+  mealHours: { breakfast: 5, lunch: 11, snack: 15, dinner: 17, supper: 22 },
+  // Frequent foods shown as one-tap pills on the Food tab.
+  frequentFoods: 8,
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.

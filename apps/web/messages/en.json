@@ -149,7 +149,34 @@
   },
   "food": {
     "title": "Food",
-    "empty": "No meals logged today."
+    "today": "Today",
+    "empty": "No meals logged today.",
+    "emptyDay": "No meals logged this day.",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "protein": "Protein",
+    "unitG": "g",
+    "toGoLead": "To go",
+    "eatenOfTarget": "{eaten} / {target} g",
+    "targetMet": "Target met",
+    "energyOfTarget": "Energy {eaten} / {target} kcal",
+    "energyEaten": "Energy {eaten} kcal",
+    "setTargets": "Set daily targets",
+    "meals": "Meals",
+    "mealType": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "proteinShort": "{value} g protein",
+    "kcalShort": "{value} kcal",
+    "grams": "{value} g",
+    "delete": "Delete",
+    "deleteMeal": "Delete meal",
+    "deleteMealConfirm": "Tap again to delete",
+    "close": "Close",
+    "editTargets": "Change daily targets"
   },
   "language": {
     "label": "Language",
@@ -158,7 +185,7 @@
   },
   "targets": {
     "title": "Daily targets",
-    "notSet": "Set your targets so the Food tab can show what is left today. These are common starting points.",
+    "notSet": "These are common starting points. The Food tab and Today count toward your targets.",
     "hint": "The Food tab and Today count toward these.",
     "protein": "Protein target in grams",
     "proteinPerDay": "Protein · g a day",
@@ -167,7 +194,8 @@
     "energy": "Energy target in kcal",
     "energyPerDay": "Energy · kcal a day",
     "energyDown": "Lower the energy target",
-    "energyUp": "Raise the energy target"
+    "energyUp": "Raise the energy target",
+    "close": "Close"
   },
   "notFound": {
     "title": "Page not found",
