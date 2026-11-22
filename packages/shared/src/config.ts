@@ -61,4 +61,7 @@ export const syncConfig = {
   // How long the app waits after a change before backing it up, so the sets of
   // a workout logged in quick succession go in one push.
   pushDelayMs: 3 * 1000,
+  // A backup that has kept failing this long puts a card on Today
+  // ("Accounts and backup" in docs/design-system.md).
+  needsUserAfterMs: 24 * 60 * 60 * 1000,
 } as const

@@ -363,6 +363,7 @@
     "noErrors": "没有错误记录。",
     "backup": "备份",
     "backupHint": "数据目前只保存在这台设备上。导出一个包含全部训练、计划和自定义动作的 JSON 文件，存到「文件」App 或电脑里。",
+    "backupHintSignedIn": "记录已备份在账号里。也可以另外导出一个包含全部训练、计划和自定义动作的 JSON 文件，存到「文件」App 或电脑里。",
     "backupCounts": "{workouts} 次训练 · {plans} 个计划 · {exercises} 个自定义动作",
     "export": "导出全部数据（JSON）",
     "exportFailed": "导出失败，请再试一次。",
@@ -370,7 +371,18 @@
     "clearHint": "删除这台设备上的全部训练、计划、自定义动作、设置和错误记录，App 会回到第一次打开的状态。删除后无法恢复，请先导出备份。",
     "clearAll": "清空全部数据",
     "clearConfirm": "再点一次确认清空",
-    "clearFailed": "清空失败，请再试一次。"
+    "clearFailed": "清空失败，请再试一次。",
+    "outbox": "等待上传（outbox）",
+    "lastSync": "上次同步成功",
+    "lastSyncNever": "还没有",
+    "clearDevice": "只清空这台手机",
+    "clearDeviceHint": "删除这台手机上的全部记录和设置。它们都已备份在账号里，清空后会自动下载回来。",
+    "clearPendingTitle": "还有 {count} 条改动没备份",
+    "clearPendingHint": "它们只存在这台手机上，现在清空会永远丢掉。其余记录都在账号里，清空后会自动下载回来。",
+    "clearPendingAnyway": "仍然清空，丢掉 {count} 条",
+    "clearPendingConfirm": "再点一次，确认丢掉 {count} 条",
+    "backUpFirst": "先备份",
+    "backUpOffline": "现在离线，联网后才能备份。"
   },
   "update": {
     "title": "有新版本",
@@ -381,5 +393,44 @@
     "title": "本周",
     "figures": "<num>{workouts}</num> 次 · <num>{sets}</num> 组",
     "trained": "{day}，已训练"
+  },
+  "backup": {
+    "statusLabel": "备份状态",
+    "sheetTitle": "备份",
+    "close": "关闭",
+    "ok": {
+      "title": "已备份",
+      "body": "改动会自动备份，你不用管它。"
+    },
+    "busy": {
+      "title": "正在备份 {count} 条改动",
+      "body": "可以继续用，不用等。"
+    },
+    "offline": {
+      "title": "现在离线",
+      "body": "{count, plural, =0 {联网后，新的改动会自动备份。} other {# 条改动存在这台手机上，联网后自动备份。}}"
+    },
+    "retry": {
+      "title": "备份没成功",
+      "body": "{count, plural, =0 {App 会自动再试。} other {# 条改动还在这台手机上，没有丢。App 会自动再试。}}"
+    },
+    "expired": {
+      "title": "需要重新登录",
+      "body": "登录过期了。{count, plural, =0 {重新登录后继续备份。} other {# 条改动存在这台手机上，重新登录后继续备份。}}"
+    },
+    "update": {
+      "title": "需要更新 App",
+      "body": "这个版本已经不能备份。改动都存在这台手机上，更新后继续备份。"
+    },
+    "backUpNow": "现在备份",
+    "retryNow": "现在再试",
+    "signInAgain": "重新登录",
+    "updateNow": "更新",
+    "account": "账号",
+    "lastBackup": "上次备份",
+    "waiting": "还没备份",
+    "waitingCount": "{count} 条",
+    "never": "还没有",
+    "justNow": "刚刚"
   }
 }
