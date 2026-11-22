@@ -52,6 +52,17 @@ test('a meal typed from a label is logged, and its food is then one tap away', a
   await expect(page.getByRole('button', { name: /^记入.* · 1 项 · 30 g$/ })).toBeEnabled()
 })
 
+// The prerendered dock shows before React attaches its handlers (L-028).
+test('"新建食物" opens its sheet even when tapped as soon as it shows', async ({ page }) => {
+  await page.route(/\/_next\/static\/chunks\/.+\.js$/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    await route.continue()
+  })
+  await page.goto('/food/add', { waitUntil: 'commit' })
+  await page.getByRole('button', { name: '新建食物' }).click()
+  await expect(page.getByRole('dialog', { name: '新建食物' }).getByLabel('名称')).toBeVisible()
+})
+
 test('a frequent food is logged in one tap and undone, and a meal is edited', async ({ page }) => {
   await page.goto('/food/add')
   await page.getByRole('button', { name: '新建食物' }).click()

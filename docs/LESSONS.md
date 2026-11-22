@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-043 · 2026-11-22 · ui · "新建食物" did nothing when tapped right after the manual screen opened
+- **What happened:** on #154 the Device layout job failed on iPhone SE: the test opened `/food/add` and tapped "新建食物" at once, and the sheet never opened.
+- **Root cause:** a repeat of L-028. The manual screen's dock was prerendered and tappable before hydration, although `docs/conventions.md` already says a writing button renders only once its data has loaded. The rule was prose and the new screen had no delayed-chunk test. Reproduced in Chromium with the chunks delayed by 400 ms.
+- **Fix:** PR `m3/02-frequent-foods` renders the dock only once the foods have loaded, and adds the delayed-chunk test for it.
+- **Prevention:** `docs/conventions.md` now requires the delayed-chunk e2e test for every new screen whose first control writes, not only the render rule.
+- **Status:** documented
+
 ### L-042 · 2026-11-22 · sync · Every push was refused with 401: the client sent the token without "Bearer "
 - **What happened:** after M2-05 shipped, backup on bw's iPhone never succeeded: 94 changes stayed pending and Diagnostics showed `POST /api/sync/push answered 401` on every run, including the retry after a token refresh.
 - **Root cause:** the API's auth middleware (M2-02) reads `x-gainframe-token` as `Bearer <token>`, and its tests sent that format; the web API client (M2-05) sent the bare token, and its tests asserted the bare token. Each side was tested only against its own idea of the format, and nothing exercised the two together before the iPhone did.
