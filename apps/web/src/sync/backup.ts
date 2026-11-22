@@ -42,6 +42,9 @@ export const backup =
             `sync pull skipped ${String(rows.length)} rows that failed their schema`,
           )
         },
+        onUnexpected: (error) => {
+          reportError('api', error)
+        },
       })
 
 // Starts the triggers; returns a function that stops them.

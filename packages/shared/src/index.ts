@@ -13,6 +13,7 @@ export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
+export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
 export {

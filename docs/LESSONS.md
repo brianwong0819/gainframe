@@ -6,6 +6,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 
 Rules from recent lessons that have not yet moved into `CLAUDE.md`, a `docs/*` file or an automated check. Each links to the lesson that created it. At each milestone retro, rules that have proved themselves move into the matching doc (and leave this list); rules that turned out wrong are deleted.
 
+- A value one app writes and the other parses (header format, query parameter, body shape) is defined once in `packages/shared` with a round-trip test; tests on either side import it rather than writing the literal. ([L-042](#l-042--2026-11-22--sync--every-push-was-refused-with-401-the-client-sent-the-token-without-bearer-))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
 
 Promoted at the M1 retro (2026-11-16), so read them where they now live:
@@ -43,6 +44,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-042 · 2026-11-22 · sync · Every push was refused with 401: the client sent the token without "Bearer "
+- **What happened:** after M2-05 shipped, backup on bw's iPhone never succeeded: 94 changes stayed pending and Diagnostics showed `POST /api/sync/push answered 401` on every run, including the retry after a token refresh.
+- **Root cause:** the API's auth middleware (M2-02) reads `x-gainframe-token` as `Bearer <token>`, and its tests sent that format; the web API client (M2-05) sent the bare token, and its tests asserted the bare token. Each side was tested only against its own idea of the format, and nothing exercised the two together before the iPhone did.
+- **Fix:** PR `m2/05-sync-diagnostics`: the header name, its formatter and its parser live in `packages/shared/src/token-header.ts`, and both apps use them. The sync engine also records a failure that has no API status (a response that fails its schema, a storage error) in Diagnostics, which before left no trace.
+- **Prevention:** rule in "Active rules": a value one app writes and the other parses (a header format, a query parameter, a body shape) is defined once in `packages/shared`, with the formatter and the parser tested against each other; tests on either side import it instead of writing the literal.
+- **Status:** guarded (shared module and its round-trip test)
 
 ### L-041 · 2026-11-22 · pwa · Every offline navigation reloaded the whole page
 - **What happened:** `e2e/offline.spec.ts` failed on `main` after #145 on iPhone 17e (WebKit), blocking a deploy, and once before on iPhone SE (2026-11-17): after finishing offline, tapping 完成 on the summary left the page at `/workout/summary`. Re-runs passed.

@@ -3,7 +3,7 @@
 // POST and PUT, the SHA-256 of the body in `x-amz-content-sha256`, which the
 // function URL's origin access control requires. A request the server answers
 // with an error status is recorded for Diagnostics with its request ID.
-import { apiErrorSchema } from '@gainframe/shared'
+import { apiErrorSchema, TOKEN_HEADER, tokenHeaderValue } from '@gainframe/shared'
 import type { z } from 'zod'
 
 import type { AuthConfig } from '../auth/config'
@@ -102,7 +102,7 @@ export function createApiClient({
   async function send(request: ApiRequest, session: AuthSession): Promise<Response> {
     const body = request.body === undefined ? undefined : JSON.stringify(request.body)
     const headers = new Headers(request.headers)
-    headers.set('x-gainframe-token', session.accessToken)
+    headers.set(TOKEN_HEADER, tokenHeaderValue(session.accessToken))
     if (body !== undefined) {
       headers.set('content-type', 'application/json')
       headers.set('x-amz-content-sha256', await sha256Hex(body))

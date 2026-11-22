@@ -1,9 +1,9 @@
-import { apiErrorSchema } from '@gainframe/shared'
+import { apiErrorSchema, TOKEN_HEADER, tokenHeaderValue } from '@gainframe/shared'
 import { Hono } from 'hono'
 import { sign } from 'hono/jwt'
 import { describe, expect, it, vi } from 'vitest'
 
-import { type AuthConfig, createKeyCache, type Jwks, requireUser, TOKEN_HEADER } from './auth.ts'
+import { type AuthConfig, createKeyCache, type Jwks, requireUser } from './auth.ts'
 import type { AppEnv } from './context.ts'
 
 const config: AuthConfig = {
@@ -64,7 +64,7 @@ async function setup() {
   app.get('/whoami', (c) => c.json({ userId: c.var.userId }))
   const call = (token: string | null) =>
     app.request('/whoami', {
-      headers: token === null ? {} : { [TOKEN_HEADER]: `Bearer ${token}` },
+      headers: token === null ? {} : { [TOKEN_HEADER]: tokenHeaderValue(token) },
     })
   return { signingKey, call }
 }
