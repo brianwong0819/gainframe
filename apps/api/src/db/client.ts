@@ -1,3 +1,4 @@
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import pg from 'pg'
 
 import { errorFields, type Logger } from '../log.ts'
@@ -20,4 +21,10 @@ export function createPool(databaseUrl: string, log: Logger): pg.Pool {
 
 export async function pingDatabase(pool: pg.Pool): Promise<void> {
   await pool.query('select 1')
+}
+
+export type Database = NodePgDatabase
+
+export function createDatabase(pool: pg.Pool): Database {
+  return drizzle(pool)
 }
