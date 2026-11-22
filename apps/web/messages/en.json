@@ -176,7 +176,8 @@
     "deleteMeal": "Delete meal",
     "deleteMealConfirm": "Tap again to delete",
     "close": "Close",
-    "editTargets": "Change daily targets"
+    "editTargets": "Change daily targets",
+    "addManual": "Add by hand"
   },
   "language": {
     "label": "Language",
@@ -493,5 +494,30 @@
     "signOutAnywayConfirm": "{count, plural, one {Tap again to lose # change} other {Tap again to lose # changes}}",
     "cardText": "{workouts, plural, one {# workout exists only on this phone} other {# workouts exist only on this phone}}",
     "dismiss": "Don't remind me"
+  },
+  "manual": {
+    "title": "Add food",
+    "mealType": "Meal",
+    "search": "Search your foods",
+    "searchLabel": "Search your foods",
+    "created": "New",
+    "frequent": "Frequent",
+    "recent": "Recent",
+    "results": "Your foods",
+    "noFoods": "Foods you log appear here. Add a new one from its nutrition label.",
+    "noMatch": "None of your foods match. Add it as a new food.",
+    "portion": "{grams} g · protein {protein} g · {kcal} kcal",
+    "more": "Add a portion of {name}",
+    "less": "Remove a portion of {name}",
+    "newFood": "New food",
+    "chooseFirst": "Choose foods first",
+    "save": "Log {meal} · {count, plural, one {# item} other {# items}} · {protein} g",
+    "close": "Close",
+    "labelHint": "Copy these from the nutrition label once. After you log it, it is one tap away.",
+    "name": "Name",
+    "portionGrams": "Portion g",
+    "portionProtein": "Protein g",
+    "portionKcal": "kcal",
+    "addFood": "Add to meal"
   }
 }

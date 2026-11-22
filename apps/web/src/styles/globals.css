@@ -296,8 +296,9 @@
   }
   /* The active workout's set panel stays in reach above the tab bar while the
      sets scroll under it. */
-  /* The rest pill and the set panel, kept above the tab bar in the thumb zone. */
-  .workout-dock {
+  /* A dock kept above the tab bar in the thumb zone: the rest pill and set
+     panel in a workout, the save button on the Food tab's manual screen. */
+  .screen-dock {
     position: sticky;
     bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + var(--space-8));
   }

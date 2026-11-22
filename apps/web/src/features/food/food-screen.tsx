@@ -10,7 +10,7 @@ import { currentProfile } from '@/db/profile'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { Chevron } from '@/ui/chevron'
-import { Pressable } from '@/ui/pressable'
+import { Pressable, PressableLink } from '@/ui/pressable'
 
 import { formatDay } from '../history/dates'
 import { DayCard } from './day-card'
@@ -74,6 +74,14 @@ export function FoodScreen() {
               setEditingTargets(true)
             }}
           />
+          {date === today && (
+            <PressableLink
+              href="/food/add"
+              className="rounded-full bg-accent px-16 py-12 text-center text-body font-semibold text-accent-ink"
+            >
+              {t('addManual')}
+            </PressableLink>
+          )}
           {day.meals.length === 0 ? (
             <p className="text-body text-ink-2">{date === today ? t('empty') : t('emptyDay')}</p>
           ) : (

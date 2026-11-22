@@ -343,7 +343,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
       >
         {t('addExercise')}
       </Pressable>
-      <div className="workout-dock flex flex-col gap-8">
+      <div className="screen-dock flex flex-col gap-8">
         <AnimatePresence>
           {rest && !(shown && restSheet) && (
             <RestPill
