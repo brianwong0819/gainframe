@@ -4,7 +4,14 @@ import { z } from 'zod'
 // header and the server's log lines for the request.
 export const apiErrorSchema = z.object({
   error: z.object({
-    code: z.enum(['unauthorized', 'not_found', 'internal_error']),
+    // update_required: the app's sync version is no longer supported.
+    code: z.enum([
+      'invalid_request',
+      'unauthorized',
+      'not_found',
+      'update_required',
+      'internal_error',
+    ]),
     message: z.string(),
     requestId: z.string(),
   }),

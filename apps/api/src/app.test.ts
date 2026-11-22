@@ -1,5 +1,6 @@
 import { apiErrorSchema } from '@gainframe/shared'
 import type { MiddlewareHandler } from 'hono'
+import { drizzle } from 'drizzle-orm/node-postgres'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
@@ -24,7 +25,8 @@ function setup() {
     c.set('userId', 'user-a')
     return next()
   }
-  const app = createApp({ log, requireUser })
+  // No route here reaches the database.
+  const app = createApp({ log, requireUser, db: drizzle.mock() })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, lines, logs }
 }

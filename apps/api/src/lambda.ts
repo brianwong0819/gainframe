@@ -7,7 +7,7 @@ import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 import { createApp } from './app.ts'
 import { createKeyCache, fetchJwks, requireUser } from './auth.ts'
 import { checkDatabase, type DatabaseCheckEvent, isDatabaseCheckEvent } from './database-check.ts'
-import { createPool, pingDatabase } from './db/client.ts'
+import { createDatabase, createPool, pingDatabase } from './db/client.ts'
 import { loadLambdaEnv, readRelease } from './env.ts'
 import { createLogger } from './log.ts'
 
@@ -33,7 +33,11 @@ const pool = createPool(env.DATABASE_URL, log)
 
 const auth = { issuer: env.AUTH_ISSUER, clientId: env.AUTH_CLIENT_ID }
 const http = handle(
-  createApp({ log, requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))) }),
+  createApp({
+    log,
+    requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
+    db: createDatabase(pool),
+  }),
 )
 
 export const handler = (event: LambdaEvent | DatabaseCheckEvent, context: LambdaContext) =>
