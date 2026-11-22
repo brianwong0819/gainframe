@@ -9,6 +9,7 @@ import {
   isSignInRedirect,
   SignInError,
   type SignInFailure,
+  type SignInMethod,
   startSignIn,
 } from '@/auth/sign-in'
 import { loadSession, saveSession } from '@/db/auth-session'
@@ -67,6 +68,14 @@ function finishRedirect(authConfig: AuthConfig) {
       setRedirect(null)
     })
     .catch((error: unknown) => {
+      // The accounts were just linked; the second Google sign-in succeeds.
+      if (error instanceof SignInError && error.failure === 'linked') {
+        startSignIn(authConfig, 'google', true).catch((retryError: unknown) => {
+          reportError('unhandledrejection', retryError)
+          setRedirect({ step: 'failed', failure: 'linked' })
+        })
+        return
+      }
       if (!(error instanceof SignInError)) reportError('unhandledrejection', error)
       setRedirect({
         step: 'failed',
@@ -119,9 +128,9 @@ export function SignIn() {
     )
   }
 
-  const signIn = () => {
+  const signIn = (method: SignInMethod) => {
     setLeaving(true)
-    startSignIn(config).catch((error: unknown) => {
+    startSignIn(config, method).catch((error: unknown) => {
       setLeaving(false)
       reportError('unhandledrejection', error)
     })
@@ -140,7 +149,23 @@ export function SignIn() {
       </section>
       <section className="flex flex-col gap-12">
         <Pressable
-          onClick={signIn}
+          onClick={() => {
+            signIn('google')
+          }}
+          disabled={!online || leaving}
+          className="flex items-center justify-center gap-12 rounded-ctl bg-ink py-12 text-body font-semibold text-bg disabled:opacity-40"
+        >
+          {/* Google's mark on a white disc, as its branding rules require (docs/design/credits.md). */}
+          <span
+            aria-hidden
+            className="size-28 rounded-full bg-logo-disc bg-[url(/brand/google-g.svg)] bg-size-[16px] bg-center bg-no-repeat"
+          />
+          {t('google')}
+        </Pressable>
+        <Pressable
+          onClick={() => {
+            signIn('email')
+          }}
           disabled={!online || leaving}
           className="rounded-ctl bg-sunk py-12 text-body font-semibold text-ink disabled:opacity-40"
         >

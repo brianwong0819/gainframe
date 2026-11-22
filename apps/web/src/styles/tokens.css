@@ -21,6 +21,8 @@
   --short-wash: rgb(168 90 20 / 0.1);
   --scrim: rgb(13 15 17 / 0.28);
   --chalk: #b9bdb6;
+  /* The white disc a third-party mark must sit on (Google's sign-in button), in both themes. */
+  --logo-disc: #ffffff;
   /* The tab bar's translucent ground; nothing else is translucent. */
   --glass: rgb(238 239 235 / 0.82);
 

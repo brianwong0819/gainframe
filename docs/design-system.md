@@ -35,6 +35,7 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | `--line` | `#DADDD7` | `#25282D` | hairlines |
 | `--accent` | `#2340E0` | `#7389FF` | toward-goal only |
 | `--short` | `#A85A14` | `#E39A54` | below target only |
+| `--logo-disc` | `#FFFFFF` | `#FFFFFF` | the disc under a third-party mark that its brand rules require on white (Google) |
 | `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
 
 Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Display 48/300 (the rest countdown only), title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).

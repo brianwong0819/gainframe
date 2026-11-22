@@ -30,7 +30,9 @@ M2-03 (2026-11-22, PR `m2/03-api-auth`): every API route except `/api/health` re
 
 M2-04 (2026-11-22, PR `m2/04-sync-endpoints`): `POST /api/sync/push` and `GET /api/sync/pull?cursor=` (`apps/api/src/sync`), with the request and response schemas, `SYNC_VERSION` and its header in `packages/shared/src/schemas/sync.ts` and the limits in `syncConfig`. A request without a supported sync version gets 426 `update_required`. Instants are now ISO strings in Drizzle too (a custom column type; the SQL is unchanged). For M2-05: the web app's hand-written `SyncedTableName` should import the shared one, and a rejected row needs a decision (keep it in the outbox and show it in Diagnostics, or drop it).
 
-Next: M2-02 part (d) once bw has created the Google OAuth client; part (e) and M2-05 meanwhile.
+Part (d), PR `m2/02-google-sign-in`: the Google identity provider, the "Continue with Google" button and the pre sign-up trigger that keeps one account per email (ADR-0007). Its plan needs the SSM parameters bw writes by hand (`/gainframe/dev/google-client-id`, `google-client-secret`).
+
+Next: M2-05 and then M2-02 part (e) in their own thread.
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
 
