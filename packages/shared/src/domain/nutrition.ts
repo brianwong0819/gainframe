@@ -93,3 +93,27 @@ export function scalePortion(
   const ratio = grams / item.grams
   return { grams, proteinG: item.proteinG * ratio, kcal: item.kcal * ratio }
 }
+
+// Up to `max` of the user's frequent foods that fill a protein gap with the
+// fewest items (Today's card, option C; no model is involved). One food when
+// one covers the gap, the one that overshoots least; else two different foods,
+// the pair that covers it with the least overshoot, or the pair closest to it
+// when none does. Nothing when the gap is closed or there are no foods.
+export function fillProteinGap(gapG: number, foods: readonly PastFood[], max = 2): PastFood[] {
+  const usable = foods.filter((food) => food.proteinG > 0)
+  if (gapG <= 0 || usable.length === 0 || max < 1) return []
+  const byOvershoot = (protein: number) => (protein >= gapG ? protein - gapG : Infinity)
+  const single = usable.toSorted((a, b) => byOvershoot(a.proteinG) - byOvershoot(b.proteinG))[0]
+  if (single !== undefined && single.proteinG >= gapG) return [single]
+  if (max < 2 || usable.length < 2) {
+    return usable.toSorted((a, b) => b.proteinG - a.proteinG).slice(0, 1)
+  }
+  const pairs = usable.flatMap((a, i) => usable.slice(i + 1).map((b) => [a, b] as const))
+  const sum = ([a, b]: readonly [PastFood, PastFood]) => a.proteinG + b.proteinG
+  const covering = pairs.filter((pair) => sum(pair) >= gapG)
+  const best =
+    covering.length > 0
+      ? covering.toSorted((x, y) => sum(x) - sum(y))[0]
+      : pairs.toSorted((x, y) => sum(y) - sum(x))[0]
+  return best === undefined ? [] : [...best]
+}

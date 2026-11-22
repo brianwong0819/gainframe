@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
-import { addDays, mealTypeAt, nutritionTotals, pastFoods, scalePortion } from './nutrition.ts'
+import {
+  addDays,
+  fillProteinGap,
+  mealTypeAt,
+  nutritionTotals,
+  pastFoods,
+  scalePortion,
+} from './nutrition.ts'
 
 describe('nutritionTotals', () => {
   it('is zero without items', () => {
@@ -110,5 +117,47 @@ describe('scalePortion', () => {
       proteinG: 22.5,
       kcal: 375,
     })
+  })
+})
+
+describe('fillProteinGap', () => {
+  const food = (name: string, proteinG: number) => ({
+    name,
+    grams: 100,
+    proteinG,
+    kcal: proteinG * 5,
+    count: 1,
+    lastAt: '2026-11-22T00:00:00.000Z',
+  })
+  const egg = food('Egg', 6)
+  const milk = food('Milk', 8)
+  const chicken = food('Chicken breast', 31)
+  const yogurt = food('Greek yogurt', 15)
+
+  it('suggests nothing without frequent foods or once the target is met', () => {
+    expect(fillProteinGap(40, [])).toEqual([])
+    expect(fillProteinGap(0, [egg, chicken])).toEqual([])
+    expect(fillProteinGap(-5, [egg, chicken])).toEqual([])
+  })
+
+  it('takes the one food that covers the gap with the least overshoot', () => {
+    expect(fillProteinGap(12, [chicken, egg, yogurt, milk])).toEqual([yogurt])
+  })
+
+  it('takes the smallest food when the gap is smaller than any food', () => {
+    expect(fillProteinGap(3, [chicken, milk, egg])).toEqual([egg])
+  })
+
+  it('takes the pair that covers the gap with the least overshoot', () => {
+    expect(fillProteinGap(38, [egg, chicken, yogurt, milk])).toEqual([chicken, milk])
+  })
+
+  it('takes the largest pair when no pair covers the gap', () => {
+    expect(fillProteinGap(80, [egg, chicken, yogurt, milk])).toEqual([chicken, yogurt])
+  })
+
+  it('takes the largest food when only one fits the limit', () => {
+    expect(fillProteinGap(80, [egg, chicken], 1)).toEqual([chicken])
+    expect(fillProteinGap(80, [egg])).toEqual([egg])
   })
 })

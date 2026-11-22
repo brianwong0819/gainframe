@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { BackupCard, BackupStatus } from '@/features/account/backup-status'
 import { SignInCard } from '@/features/account/sign-in-card'
 import { formatDay } from '@/features/history/dates'
+import { TodayProteinCard } from '@/features/food/today-protein-card'
 import { SettingsLink } from '@/features/settings/settings-link'
 import { NextWorkout, useWorkoutOverview } from '@/features/workout/next-workout'
 import { RecentRecords } from '@/features/workout/recent-records'
@@ -23,8 +24,8 @@ const devPages = [
   { href: '/dev/database', label: 'Local database' },
 ] as const
 
-// Until food logging (M3) and body weight (M4) add their cards, Today is the
-// training day: the workout to do now, this week, and the latest records.
+// Today: the workout to do now, the day's protein (with the foods that would
+// fill the gap), this week and the latest records. Body weight joins in M4.
 export default function TodayPage() {
   const t = useTranslations('today')
   const locale = useLocale()
@@ -45,6 +46,11 @@ export default function TodayPage() {
       {overview && (
         <>
           <NextWorkout overview={overview} />
+          <TodayProteinCard
+            trainedDay={
+              overview.history.find(({ workout }) => workout.localDate === overview.today)?.dayName
+            }
+          />
           {overview.history.length === 0 ? (
             <p className="text-body text-ink-2">{t('empty')}</p>
           ) : (
