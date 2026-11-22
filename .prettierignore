@@ -5,5 +5,7 @@ out/
 dist/
 coverage/
 next-env.d.ts
+# Written by drizzle-kit generate; CI compares them with a fresh run.
+apps/api/drizzle/
 # Markdown is hand-formatted prose; reformatting tables and lists adds review noise.
 *.md

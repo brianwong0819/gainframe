@@ -20,7 +20,11 @@ Design review (2026-11-16, asked by bw during the field week): every screen was 
 
 Dependency update (2026-11-22, PR `m2/dependency-update`): every package moved to its latest patch or minor release, which takes Next.js 16.4.6 past the security advisory `next build` reported on 16.4.4. TypeScript stays on 6.0 and `@types/node` on 24 (see Follow-ups).
 
-Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M1-14 (timed and cardio logging), then M2-01.
+M1-13 ended on 2026-11-22 by bw's choice: problems found in daily use are fixed as they come up. The field week checklist below stays as the list of iPhone checks still open.
+
+M2-01 (2026-11-22, PR `m2/01-neon-drizzle`): the Drizzle schema in `apps/api/src/db/schema.ts` mirrors the seven synced Dexie tables plus `server_version`, with a server-only `sync_state` table; the first migration is `apps/api/drizzle/0000_initial.sql`. The deploy migrates dev before `terraform apply`; the runner connects directly (not through Neon's pooler) and sets the role's 8 s `statement_timeout`. The Neon `prod` branch moved to M2-07.
+
+Next: M2-02 (Cognito).
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
 
