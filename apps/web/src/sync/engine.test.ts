@@ -7,6 +7,8 @@ import {
   type PullResponse,
   pushRequestSchema,
   type PushResult,
+  SYNC_VERSION,
+  SYNC_VERSION_HEADER,
 } from '@gainframe/shared'
 import { z } from 'zod'
 
@@ -117,7 +119,7 @@ describe('sync engine', () => {
       'GET /api/sync/pull?cursor=0',
       'GET /api/sync/pull?cursor=4',
     ])
-    expect(requests[0]?.headers).toEqual({ 'x-gainframe-sync-version': '1' })
+    expect(requests[0]?.headers).toEqual({ [SYNC_VERSION_HEADER]: String(SYNC_VERSION) })
     await expect(pendingRowCount(db)).resolves.toBe(0)
     expect(await db.exercises.get(remote.id)).toBeDefined()
     await expect(loadLastSync(db)).resolves.toBe(NOW.toISOString())

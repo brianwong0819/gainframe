@@ -13,6 +13,7 @@ import {
   doublePrecision,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   uuid,
@@ -144,6 +145,35 @@ export const workoutSets = pgTable(
   pullIndex('workout_sets'),
 )
 
+export const meals = pgTable(
+  'meals',
+  {
+    ...syncedColumns,
+    eatenAt: instant('eaten_at').notNull(),
+    localDate: date('local_date', { mode: 'string' }).notNull(),
+    mealType: text('meal_type').notNull(),
+    name: text('name'),
+    photoKey: text('photo_key'),
+  },
+  pullIndex('meals'),
+)
+
+export const mealItems = pgTable(
+  'meal_items',
+  {
+    ...syncedColumns,
+    mealId: uuid('meal_id').notNull(),
+    position: integer('position').notNull(),
+    name: text('name').notNull(),
+    grams: doublePrecision('grams').notNull(),
+    proteinG: doublePrecision('protein_g').notNull(),
+    kcal: doublePrecision('kcal').notNull(),
+    source: text('source').notNull(),
+    aiRaw: jsonb('ai_raw'),
+  },
+  pullIndex('meal_items'),
+)
+
 // One row per user: the last `server_version` handed out. A push locks this
 // row (`UPDATE ... RETURNING`), which serializes one user's pushes (ADR-0003).
 export const syncState = pgTable('sync_state', {
@@ -161,4 +191,6 @@ export const syncedTables = {
   workouts,
   workoutExercises,
   workoutSets,
+  meals,
+  mealItems,
 }

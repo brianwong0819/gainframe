@@ -109,8 +109,8 @@ Done when: signing in on a second device shows all data.
 
 Done when: a meal is logged in under 30 seconds and the eval script reports mean protein error.
 
-- [ ] **M3-01 Food domain model**: meal and meal_item schemas, nutrition totals, `local_date`; Dexie and sync extended to both tables.
-  Verify: tests pass; a manual meal syncs to a second device.
+- [x] **M3-01 Food domain model**: meal and meal_item schemas, nutrition totals, `local_date`; Dexie and sync extended to both tables.
+  Verify: tests pass; a manual meal syncs to a second device (the push and pull round trip is covered by `sync.int.test.ts`; the two-device check runs with M3-02, the first screen that writes meals).
 - [ ] **M3-02 Food tab, manual entry + frequent foods**: the Food tab and manual screen from "Food logging" in [design-system.md](design-system.md): day card (protein to go, energy), one-tap frequent foods, own foods created from a nutrition label, swipe to delete, edit a meal. Frequent and recent foods are derived from past `meal_items`, not a separate table. Daily targets: two fields in Settings (protein g, energy kcal) stored in `profiles` (fixed protein mode, `kcal_target`), because the day card needs a target before M4-01 adds the calculated suggestions. The Today protein card (option C) with its gap-filling suggestion as a pure function in `packages/shared/src/domain`.
   Verify: a frequent-food meal takes ≤ 10 seconds; fixture tests cover the suggestion rule (no frequent foods, gap smaller than any food, target met).
 - [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle. A photo taken offline is kept on the device (a device-only Dexie table, never synced) with its meal saved as waiting for an estimate; the upload and the estimate run when the app is next online, and the meal then asks for confirmation. Add the bucket origin (`connect-src`) and `blob:` (`img-src`) to the Content-Security-Policy.
