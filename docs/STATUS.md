@@ -24,7 +24,11 @@ M1-13 ended on 2026-11-22 by bw's choice: problems found in daily use are fixed 
 
 M2-01 (2026-11-22, PR `m2/01-neon-drizzle`): the Drizzle schema in `apps/api/src/db/schema.ts` mirrors the seven synced Dexie tables plus `server_version`, with a server-only `sync_state` table; the first migration is `apps/api/drizzle/0000_initial.sql`. The deploy migrates dev before `terraform apply`; the runner connects directly (not through Neon's pooler) and sets the role's 8 s `statement_timeout`. The Neon `prod` branch moved to M2-07.
 
-Next: M2-02 (Cognito).
+M2-02 so far (2026-11-22): the dev user pool, managed login domain and web client exist (PR `m2/02-cognito-pool`); the developer page `/dev/sign-in-probe` (PR `m2/02-sign-in-probe`) waits for bw's check on the iPhone, which decides the sign-in flow (part c).
+
+M2-03 (2026-11-22, PR `m2/03-api-auth`): every API route except `/api/health` requires a Cognito access token in `x-gainframe-token` (`apps/api/src/auth.ts`); the access line logs `userId`. Local API development now needs `AUTH_ISSUER` and `AUTH_CLIENT_ID` in `apps/api/.env` (see `.env.example`).
+
+Next: M2-02 part (c) after bw's iPhone check; M2-04 (sync endpoints) meanwhile.
 
 Food logging design (2026-11-16, PR `m3/food-design`, documents only): the M3 screens were designed ahead of the milestone and bw chose the options; the specification is "Food logging" in `docs/design-system.md`. ROADMAP changes: M3-02 gains the daily targets and the Today protein card, M3-03 keeps offline photos for a later estimate, and M3-10 (text estimate) moves in from the post-MVP list.
 

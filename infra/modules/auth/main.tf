@@ -86,3 +86,18 @@ resource "aws_cognito_managed_login_branding" "web" {
 }
 
 data "aws_region" "current" {}
+
+locals {
+  issuer = "https://cognito-idp.${data.aws_region.current.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+}
+
+# What the API needs to verify access tokens. A parameter, not a Lambda
+# environment variable: the client's callback URLs name the CloudFront domain,
+# which depends on the function, so the function cannot depend on the client.
+# Not secret, so a plain String.
+resource "aws_ssm_parameter" "api_config" {
+  name        = "${var.ssm_prefix}/auth-config"
+  description = "Cognito issuer and web client ID, read by the API at cold start."
+  type        = "String"
+  value       = jsonencode({ issuer = local.issuer, clientId = aws_cognito_user_pool_client.web.id })
+}

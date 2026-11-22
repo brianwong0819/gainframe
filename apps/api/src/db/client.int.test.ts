@@ -1,12 +1,12 @@
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { checkDatabase } from '../database-check.ts'
-import { parseEnv } from '../env.ts'
+import { parseDatabaseUrl } from '../env.ts'
 import { createLogger } from '../log.ts'
 import { createPool, pingDatabase } from './client.ts'
 
 const log = createLogger({ release: 'test', write: () => undefined })
-const pool = createPool(parseEnv(process.env).DATABASE_URL, log)
+const pool = createPool(parseDatabaseUrl(process.env), log)
 
 afterAll(async () => {
   await pool.end()

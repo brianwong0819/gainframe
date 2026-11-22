@@ -1,10 +1,10 @@
 import pg from 'pg'
 import { afterAll, describe, expect, it } from 'vitest'
 
-import { parseEnv } from '../env.ts'
+import { parseDatabaseUrl } from '../env.ts'
 import { runMigrations, STATEMENT_TIMEOUT_MS } from './migrate.ts'
 
-const { DATABASE_URL } = parseEnv(process.env)
+const DATABASE_URL = parseDatabaseUrl(process.env)
 const pool = new pg.Pool({ connectionString: DATABASE_URL })
 
 afterAll(async () => {
