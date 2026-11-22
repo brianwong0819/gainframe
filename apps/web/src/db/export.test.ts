@@ -30,8 +30,10 @@ function newExercise(nameZh: string) {
 }
 
 describe('exportData', () => {
-  it('leaves out the signed-in session, whose tokens must not leave the app', async () => {
+  it('leaves out the signed-in session, whose tokens must not leave the app, and the sync settings', async () => {
     await db.settings.put({ key: 'activePlanId', value: 'plan-1' })
+    await db.settings.put({ key: 'syncCursor', value: '{"userId":"sub-1","cursor":3}' })
+    await db.settings.put({ key: 'lastSyncAt', value: '2026-11-16T03:00:00.000Z' })
     await saveSession(db, {
       userId: 'sub-1',
       email: 'someone@example.com',

@@ -1,4 +1,6 @@
-import type { GainframeDb, SyncedTableName } from './schema'
+import type { SyncedTableName } from '@gainframe/shared'
+
+import type { GainframeDb } from './schema'
 
 export interface TableSummary {
   table: SyncedTableName
