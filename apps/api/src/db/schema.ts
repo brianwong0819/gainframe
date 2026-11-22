@@ -1,0 +1,159 @@
+// The server's copy of the synced tables (ADR-0003). Each table mirrors a row
+// schema in @gainframe/shared column for column, plus `server_version`, which
+// only the server writes; schema.test.ts checks that both name the same fields.
+// Values are validated with those Zod schemas at the API boundary, so columns
+// hold plain types (enums as text) and an added enum value needs no migration.
+// No foreign keys: rows arrive in batches and may reference a parent from a
+// later batch. Every query is scoped by `user_id`, the Cognito `sub`.
+import {
+  type AnyPgColumn,
+  bigint,
+  date,
+  doublePrecision,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
+
+// Instants are read back as Date, whose ISO form matches the client's
+// millisecond `Z` strings exactly, so last-writer-wins compares like values.
+const instant = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' })
+
+const syncedColumns = {
+  id: uuid('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  createdAt: instant('created_at').notNull(),
+  updatedAt: instant('updated_at').notNull(),
+  deletedAt: instant('deleted_at'),
+  // The user's sync counter when the row was last applied; pulls page by it.
+  serverVersion: bigint('server_version', { mode: 'number' }).notNull(),
+}
+
+// Pull reads `server_version > cursor` for one user, in order.
+const pullIndex =
+  (table: string) => (columns: { userId: AnyPgColumn; serverVersion: AnyPgColumn }) => [
+    index(`${table}_user_version_idx`).on(columns.userId, columns.serverVersion),
+  ]
+
+export const exercises = pgTable(
+  'exercises',
+  {
+    ...syncedColumns,
+    nameZh: text('name_zh'),
+    nameEn: text('name_en'),
+    muscle: text('muscle').notNull(),
+    secondaryMuscles: text('secondary_muscles').array().notNull(),
+    equipment: text('equipment').notNull(),
+    defaultRestS: integer('default_rest_s').notNull(),
+  },
+  pullIndex('exercises'),
+)
+
+export const plans = pgTable(
+  'plans',
+  {
+    ...syncedColumns,
+    name: text('name').notNull(),
+  },
+  pullIndex('plans'),
+)
+
+export const planDays = pgTable(
+  'plan_days',
+  {
+    ...syncedColumns,
+    planId: uuid('plan_id').notNull(),
+    name: text('name').notNull(),
+    position: integer('position').notNull(),
+  },
+  pullIndex('plan_days'),
+)
+
+export const planItems = pgTable(
+  'plan_items',
+  {
+    ...syncedColumns,
+    planId: uuid('plan_id').notNull(),
+    planDayId: uuid('plan_day_id').notNull(),
+    exerciseId: uuid('exercise_id').notNull(),
+    position: integer('position').notNull(),
+    supersetGroup: integer('superset_group'),
+    targetSets: integer('target_sets').notNull(),
+    repsMin: integer('reps_min').notNull(),
+    repsMax: integer('reps_max').notNull(),
+    restS: integer('rest_s'),
+    note: text('note'),
+  },
+  pullIndex('plan_items'),
+)
+
+export const workouts = pgTable(
+  'workouts',
+  {
+    ...syncedColumns,
+    startedAt: instant('started_at').notNull(),
+    endedAt: instant('ended_at'),
+    planDayId: uuid('plan_day_id'),
+    localDate: date('local_date', { mode: 'string' }).notNull(),
+    note: text('note'),
+    restStartedAt: instant('rest_started_at'),
+    restEndsAt: instant('rest_ends_at'),
+  },
+  pullIndex('workouts'),
+)
+
+export const workoutExercises = pgTable(
+  'workout_exercises',
+  {
+    ...syncedColumns,
+    workoutId: uuid('workout_id').notNull(),
+    exerciseId: uuid('exercise_id').notNull(),
+    position: integer('position').notNull(),
+    supersetGroup: integer('superset_group'),
+    note: text('note'),
+    repsMin: integer('reps_min'),
+    repsMax: integer('reps_max'),
+    restS: integer('rest_s'),
+    planNote: text('plan_note'),
+  },
+  pullIndex('workout_exercises'),
+)
+
+export const workoutSets = pgTable(
+  'workout_sets',
+  {
+    ...syncedColumns,
+    workoutExerciseId: uuid('workout_exercise_id').notNull(),
+    workoutId: uuid('workout_id').notNull(),
+    exerciseId: uuid('exercise_id').notNull(),
+    position: integer('position').notNull(),
+    kind: text('kind').notNull(),
+    weightKg: doublePrecision('weight_kg').notNull(),
+    reps: integer('reps').notNull(),
+    rpe: doublePrecision('rpe'),
+    completedAt: instant('completed_at'),
+  },
+  pullIndex('workout_sets'),
+)
+
+// One row per user: the last `server_version` handed out. A push locks this
+// row (`UPDATE ... RETURNING`), which serializes one user's pushes (ADR-0003).
+export const syncState = pgTable('sync_state', {
+  userId: text('user_id').primaryKey(),
+  serverVersion: bigint('server_version', { mode: 'number' }).notNull().default(0),
+})
+
+// The synced tables, keyed by the client's table names (`SyncedTableName` in
+// the web app's Dexie schema).
+export const syncedTables = {
+  exercises,
+  plans,
+  planDays,
+  planItems,
+  workouts,
+  workoutExercises,
+  workoutSets,
+}

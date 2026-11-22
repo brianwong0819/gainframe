@@ -8,3 +8,6 @@ engineStrict: true
 allowBuilds:
   '@parcel/watcher': false
   '@swc/core': false
+  # drizzle-kit bundles the schema with esbuild; the platform binary arrives as an
+  # optional dependency, so the install check is not needed.
+  esbuild: false

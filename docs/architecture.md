@@ -44,7 +44,8 @@ apps/
   api/                Hono on AWS Lambda
     src/routes/       one file per resource; thin: validate → call service → respond
     src/services/     business logic that needs the DB or AI
-    src/db/           Drizzle schema, migrations, client
+    src/db/           Drizzle schema, client, migration runner
+    drizzle/          SQL migrations written by `drizzle-kit generate` (never edited by hand)
     src/ai/           the only place that talks to model providers (see docs/ai.md)
     src/log.ts        JSON-lines logger (the only code that writes to stdout/stderr)
     src/jobs/         scheduled handlers (weekly report, plateau check)
@@ -65,7 +66,7 @@ Dependency direction: `web` → `shared`, `api` → `shared`. `shared` depends o
 
 ## Data model
 
-All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`; on the server also `server_version`. Units: kg, g, kcal (a weight shown in pounds is converted when typed and when shown). `weekly_summaries` and `nudges` are written by the server and only pulled; `push_subscriptions` and `ai_usage` are not synced.
+All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`, `updated_at`, `deleted_at`; on the server also `server_version`, and the server-only `sync_state` table holds each user's last `server_version` (`apps/api/src/db/schema.ts`). Units: kg, g, kcal (a weight shown in pounds is converted when typed and when shown). `weekly_summaries` and `nudges` are written by the server and only pulled; `push_subscriptions` and `ai_usage` are not synced.
 
 | Table | Key fields |
 |---|---|
