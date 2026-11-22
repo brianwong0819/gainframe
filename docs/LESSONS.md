@@ -44,6 +44,20 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-040 · 2026-11-22 · test · Two integration test files migrated the database at the same time
+- **What happened:** CI's Check and build failed on PR #140 with `duplicate key value violates unique constraint "pg_namespace_nspname_index"` from `CREATE SCHEMA IF NOT EXISTS "drizzle"`; the same tests had passed on #139 and locally.
+- **Root cause:** `sync.int.test.ts` (#139) ran the migrations in `beforeAll` while `migrate.int.test.ts` ran them in another worker. `IF NOT EXISTS` does not make two concurrent `CREATE SCHEMA` statements safe; whichever commits second fails. Whether they overlap depends on timing, so it passed twice before failing.
+- **Fix:** the integration project's `globalSetup` (`apps/api/src/db/integration-setup.ts`) migrates once before any file runs; test files no longer migrate.
+- **Prevention:** rule in "Tests" in `docs/conventions.md`: integration test files share one database and never change its schema; only the global setup and `migrate.int.test.ts` migrate.
+- **Status:** documented
+
+### L-039 · 2026-11-22 · infra · A Terraform plan comment showed the Cognito client ID
+- **What happened:** the dev plan posted on PR #140 listed the Cognito web client in full, its ID included, in a public comment and in the job log. The comment was edited by hand.
+- **Root cause:** `plan.yml` replaced only the account ID. Terraform prints a resource's ID in every in-place update, and the auth module (M2-02) added resources whose IDs CLAUDE.md lists as never to appear in PRs or CI logs. Marking the outputs `sensitive` hides outputs, not resource attributes in a plan.
+- **Fix:** `.github/scripts/mask-cognito-ids.sh` reads the pool and client IDs from the state outputs after `terraform init`, masks them for the rest of the job and lists them for the plan comment, which replaces them; `plan.yml` and `deploy.yml` run it before plan and apply.
+- **Prevention:** the script runs in both workflows; a new resource whose ID is private gets an output and a line in that script in the same PR (this entry).
+- **Status:** guarded
+
 ### L-038 · 2026-11-22 · workout · The first rest cue fix missed WebKit's silent audio context
 - **What happened:** after L-037's fix bw still heard no cue at times while staying in the app, possibly only after having switched away earlier in the workout.
 - **Root cause:** L-037 assumed that iOS returns the audio context to a working state on return and fixed only the delay. Open WebKit bugs ([263627](https://bugs.webkit.org/show_bug.cgi?id=263627), [276016](https://bugs.webkit.org/show_bug.cgi?id=276016)) report that a context can come back reporting `running` while it plays nothing, and it stays that way, so every later cue in the workout is silent. The bug tracker was not searched before the first fix, although the rule to read current platform behaviour first (L-004, L-016) covers it.

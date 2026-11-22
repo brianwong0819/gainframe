@@ -92,6 +92,7 @@ jobs:
         working-directory: infra/envs/dev
         run: |
           terraform init
+          ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt"
           terraform apply -no-color -auto-approve -lock-timeout=5m "-var=release=${RELEASE}"
           {
             echo "SITE_URL=$(terraform output -raw site_url)"
@@ -100,7 +101,8 @@ jobs:
             echo "LOG_GROUP=$(terraform output -raw api_log_group)"
             echo "FUNCTION_NAME=$(terraform output -raw api_function_name)"
           } >> "${GITHUB_ENV}"
-          # Shipped in the public bundle anyway, but masked so the log does not show them.
+          # Shipped in the public bundle anyway, but masked so the log does not
+          # show it; masked again here for the first apply, which creates it.
           client_id=$(terraform output -raw auth_client_id)
           echo "::add-mask::${client_id}"
           {

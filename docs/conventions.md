@@ -35,7 +35,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 ## Tests
 
 - **Unit (Vitest):** every function in `packages/shared/src/domain`, every service branch, every Zod schema with tricky rules. Name tests by behaviour: `it('does not count warm-up sets toward a PR')`.
-- **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows). Files end in `.int.test.ts` and run with `pnpm test:integration` (after `pnpm db:up`); `pnpm check` runs unit tests only.
+- **Integration (Vitest + Postgres in Docker/CI):** every API route, including an ownership test (user A cannot read/modify user B's rows). Files end in `.int.test.ts` and run with `pnpm test:integration` (after `pnpm db:up`); `pnpm check` runs unit tests only. The files run in parallel against one database, which the project's global setup migrates once: a file never migrates or changes the schema itself, and keeps its rows apart by using its own user IDs instead of clearing tables (L-040).
 - Every test runs with `TZ=America/Los_Angeles` (set in `vitest.config.ts`, guarded by `packages/shared/src/time-zone.test.ts`), so a day derived from a UTC timestamp fails locally too.
 - **E2E (Playwright, iPhone viewport):** the critical flows listed in ROADMAP. WebKit runs only in CI (the cloud container has Chromium only), so write each test for the slowest, strictest engine:
   - After a write, wait for the screen to show the stored value before navigating or reloading (L-024); assert each entered value right away (`toHaveValue`) and enter text with `fill` (L-027).

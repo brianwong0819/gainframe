@@ -38,9 +38,12 @@ export interface ErrorLogEntry extends ClientError {
 // the plan the Workout tab offers; keeping it here rather than as a flag on plan
 // rows means two devices can never both mark a plan active.
 // `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
-// it is not kg (db/weight-units.ts).
+// it is not kg (db/weight-units.ts). `authSession` is the signed-in session as
+// JSON (db/auth-session.ts, ADR-0007).
 export type DeviceSetting =
-  { key: 'activePlanId'; value: string } | { key: `weightUnit:${string}`; value: string }
+  | { key: 'activePlanId'; value: string }
+  | { key: `weightUnit:${string}`; value: string }
+  | { key: 'authSession'; value: string }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.

@@ -7,6 +7,8 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
+import { readAuthConfig } from '@/auth/config'
+import { codeChallenge, randomToken } from '@/auth/pkce'
 import { release } from '@/release'
 import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
@@ -16,14 +18,11 @@ import {
   authorizeUrl,
   channelName,
   clearLog,
-  codeChallenge,
   describeContext,
   exchangeCode,
   loadPending,
   logSnapshot,
   type ProbeMode,
-  randomToken,
-  readAuthConfig,
   savePending,
   serverLogSnapshot,
   subscribeLog,

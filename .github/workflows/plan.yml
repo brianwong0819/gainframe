@@ -11,6 +11,7 @@ on:
       - packages/shared/**
       - pnpm-lock.yaml
       - .github/workflows/plan.yml
+      - .github/scripts/mask-cognito-ids.sh
 
 permissions:
   contents: read
@@ -58,6 +59,7 @@ jobs:
           RELEASE: ${{ github.event.pull_request.head.sha }}
         run: |
           terraform init
+          ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt"
           terraform plan -no-color -lock-timeout=5m "-var=release=${RELEASE}" -out=dev.tfplan
       - name: Comment the plan
         working-directory: infra/envs/dev
@@ -66,7 +68,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        # The comment is public once the repository is: the account ID is
+        # The comment is public: the account ID and the Cognito IDs are
         # replaced, and the body stays under GitHub's 65,536-character limit.
         run: |
           terraform show -no-color dev.tfplan > plan.txt
@@ -83,4 +85,8 @@ jobs:
             echo '```'
             echo "</details>"
           } | sed "s/${ACCOUNT_ID}/<account-id>/g" > comment.md
+          touch "${RUNNER_TEMP}/redact.txt"
+          while read -r value; do
+            sed -i "s/${value}/<cognito-id>/g" comment.md
+          done < "${RUNNER_TEMP}/redact.txt"
           gh pr comment "${PR_NUMBER}" --repo "${GITHUB_REPOSITORY}" --body-file comment.md --edit-last --create-if-none

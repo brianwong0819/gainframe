@@ -9,21 +9,19 @@ import {
   type SyncedTableName,
 } from '@gainframe/shared'
 import type { MiddlewareHandler } from 'hono'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 
 import { createApp } from '../app.ts'
 import { TOKEN_HEADER } from '../auth.ts'
 import type { AppEnv } from '../context.ts'
 import { createDatabase, createPool } from '../db/client.ts'
-import { runMigrations } from '../db/migrate.ts'
 import { parseDatabaseUrl } from '../env.ts'
 import { createLogger } from '../log.ts'
 import { pullRows } from '../sync/pull.ts'
 
-const DATABASE_URL = parseDatabaseUrl(process.env)
 const lines: string[] = []
 const log = createLogger({ release: 'test', write: (line) => lines.push(line) })
-const pool = createPool(DATABASE_URL, log)
+const pool = createPool(parseDatabaseUrl(process.env), log)
 const db = createDatabase(pool)
 const NOW = new Date('2026-11-22T12:00:00.000Z')
 
@@ -34,9 +32,6 @@ const requireUser: MiddlewareHandler<AppEnv> = async (c, next) => {
 }
 const app = createApp({ log, requireUser, db, now: () => NOW })
 
-beforeAll(async () => {
-  await runMigrations(DATABASE_URL)
-})
 afterAll(async () => {
   await pool.end()
 })

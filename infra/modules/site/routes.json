@@ -4,6 +4,7 @@
     "/food",
     "/settings",
     "/settings/diagnostics",
+    "/settings/sign-in",
     "/workout",
     "/workout/exercises",
     "/workout/history",

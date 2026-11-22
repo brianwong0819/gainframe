@@ -325,7 +325,29 @@
   "settings": {
     "title": "Settings",
     "diagnostics": "Diagnostics",
-    "diagnosticsHint": "Version, storage, backup, error log and clearing data"
+    "diagnosticsHint": "Version, storage, backup, error log and clearing data",
+    "account": "Sign in and back up",
+    "accountHint": "Your records are only on this device",
+    "accountSignedIn": "Signed in · {email}"
+  },
+  "signIn": {
+    "title": "Sign in",
+    "stakeBoth": "{workouts, plural, one {# workout} other {# workouts}} and {plans, plural, one {# plan} other {# plans}} exist only on this device.",
+    "stakeWorkouts": "{workouts, plural, one {# workout exists} other {# workouts exist}} only on this device.",
+    "stakePlans": "{plans, plural, one {# plan exists} other {# plans exist}} only on this device.",
+    "stakeEmpty": "Nothing is backed up yet.",
+    "benefit": "With an account, every change is backed up and comes back on a new phone.",
+    "email": "Continue with email",
+    "optional": "You can keep using the app without an account.",
+    "offline": "Signing in needs a connection.",
+    "finishing": "Signing in…",
+    "signedIn": "Signed in",
+    "unavailable": "Signing in is not available in this version yet.",
+    "failed": {
+      "denied": "Sign-in was cancelled. Try again when you are ready.",
+      "no_pending": "That sign-in was not started here or took too long. Please try again.",
+      "exchange": "Sign-in did not finish. Check the connection and try again."
+    }
   },
   "diagnostics": {
     "release": "Version",

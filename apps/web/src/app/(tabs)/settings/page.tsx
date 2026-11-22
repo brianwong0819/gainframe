@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 
+import { AccountRow } from '@/features/account/account-row'
 import { LanguageSwitch } from '@/features/settings/language-switch'
 import { BackLink } from '@/ui/back-link'
 import { Chevron } from '@/ui/chevron'
@@ -17,6 +18,7 @@ export default function SettingsPage() {
         <BackLink href="/" label={tToday('title')} />
         <h1 className="text-title">{t('title')}</h1>
       </header>
+      <AccountRow />
       <section className="flex flex-col gap-8">
         <h2 className="text-label text-ink-3">{tLanguage('label')}</h2>
         <LanguageSwitch />

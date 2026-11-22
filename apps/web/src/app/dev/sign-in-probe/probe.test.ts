@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { authorizeUrl, codeChallenge } from './probe'
+import { authorizeUrl } from './probe'
 
 describe('sign-in probe', () => {
-  it('derives the S256 challenge of RFC 7636 appendix B', async () => {
-    await expect(codeChallenge('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk')).resolves.toBe(
-      'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
-    )
-  })
-
   it('asks for an authorization code with PKCE', () => {
     const url = new URL(
       authorizeUrl(

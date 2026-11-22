@@ -4,20 +4,7 @@
 
 import { z } from 'zod'
 
-// Set by the dev deploy from the Terraform outputs; absent in other builds.
-const authConfigSchema = z.object({
-  origin: z.url({ protocol: /^https$/ }),
-  clientId: z.string().min(1),
-})
-export type AuthConfig = z.infer<typeof authConfigSchema>
-
-export function readAuthConfig(): AuthConfig | null {
-  const result = authConfigSchema.safeParse({
-    origin: process.env.NEXT_PUBLIC_AUTH_ORIGIN,
-    clientId: process.env.NEXT_PUBLIC_AUTH_CLIENT_ID,
-  })
-  return result.success ? result.data : null
-}
+import type { AuthConfig } from '@/auth/config'
 
 export type ProbeMode = 'navigate' | 'popup'
 
@@ -112,22 +99,6 @@ export function appendLog(line: string): void {
 
 export function clearLog(): void {
   setLines(noLines)
-}
-
-function base64Url(bytes: Uint8Array): string {
-  let binary = ''
-  for (const byte of bytes) binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-export function randomToken(): string {
-  return base64Url(crypto.getRandomValues(new Uint8Array(32)))
-}
-
-// RFC 7636 S256: BASE64URL(SHA-256(verifier)).
-export async function codeChallenge(verifier: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  return base64Url(new Uint8Array(digest))
 }
 
 export function authorizeUrl(

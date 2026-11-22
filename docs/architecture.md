@@ -31,6 +31,7 @@ apps/
     src/app/          routes (client components; static only)
     src/features/     one folder per feature: exercises/, plans/, workout/, history/, settings/ (later food/, today/, trends/, coach/)
     src/db/           Dexie schema + repositories (the only code that touches IndexedDB)
+    src/auth/         sign-in with Cognito: PKCE, the redirect flow and the session's shape (ADR-0007)
     src/sync/         sync engine (the only code that calls /api/sync)
     src/diagnostics/  client error log and Diagnostics data (the only code that records client errors)
     src/ui/           design-system primitives and components used by two or more features (Pressable, Sheet, Stepper, ConfirmButton, SwipeRow…)
