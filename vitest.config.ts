@@ -20,6 +20,7 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['apps/*/src/**/*.int.test.ts'],
+          globalSetup: ['apps/api/src/db/integration-setup.ts'],
         },
       },
     ],
