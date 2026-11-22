@@ -7,8 +7,8 @@ import { liveQuery } from 'dexie'
 
 import { createApiClient } from '../api/client'
 import { readAuthConfig } from '../auth/config'
-import { loadSession } from '../db/auth-session'
 import { db } from '../db/client'
+import { readBackupState } from '../db/sync'
 import { reportError } from '../diagnostics/report'
 
 import { createSyncEngine } from './engine'
@@ -53,19 +53,19 @@ export function startBackup(): () => void {
     if (document.visibilityState === 'visible') run()
   }
   let pushTimer: ReturnType<typeof setTimeout> | undefined
-  let last: { account: string; pending: number } | null = null
+  let last: { account: string; queued: number } | null = null
   // Fires once on subscribe, which is the run at launch. A token refresh also
   // rewrites the session and a push empties the outbox, so only a change of
   // account or expiry, or a new outbox entry, starts a run.
   const changes = liveQuery(async () => {
-    const session = await loadSession(db)
+    const { session, queued } = await readBackupState(db)
     return {
       account: session === null ? '' : `${session.userId} ${String(session.expired)}`,
-      pending: await db.outbox.count(),
+      queued,
     }
   }).subscribe((next) => {
     const accountChanged = last?.account !== next.account
-    const added = last !== null && next.pending > last.pending
+    const added = last !== null && next.queued > last.queued
     last = next
     if (accountChanged) {
       clearTimeout(pushTimer)
