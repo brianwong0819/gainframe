@@ -53,4 +53,12 @@ export const syncConfig = {
   // are set from the network and are seconds off at most; a larger lead is a
   // wrong clock, whose rows would otherwise win every later conflict.
   clockSkewMs: 5 * 60 * 1000,
+  // A failed sync retries after this delay, doubled after each further failure
+  // up to the maximum; a returning connection or the app coming to the
+  // foreground tries again at once.
+  retryBaseMs: 5 * 1000,
+  retryMaxMs: 5 * 60 * 1000,
+  // How long the app waits after a change before backing it up, so the sets of
+  // a workout logged in quick succession go in one push.
+  pushDelayMs: 3 * 1000,
 } as const

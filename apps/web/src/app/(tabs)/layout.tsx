@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { BackupOnLaunch } from '@/features/account/backup-on-launch'
 import { ResumeOnLaunch } from '@/features/workout/resume-on-launch'
 
 import { TabBar } from './tab-bar'
@@ -11,6 +12,7 @@ export default function TabsLayout({ children }: { children: ReactNode }) {
     <div className="tab-content">
       {children}
       <ResumeOnLaunch />
+      <BackupOnLaunch />
       <TabBar />
     </div>
   )
