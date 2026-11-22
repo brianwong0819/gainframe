@@ -9,7 +9,8 @@ import {
 } from '@gainframe/shared'
 import { z } from 'zod'
 
-import type { GainframeDb } from './schema'
+import { parseSession } from './auth-session'
+import type { GainframeDb, OutboxEntry } from './schema'
 
 interface SyncedRow {
   id: string
@@ -36,9 +37,28 @@ const syncedTables = (db: GainframeDb) =>
 
 // The number of rows with changes not yet pushed.
 export async function pendingRowCount(db: GainframeDb): Promise<number> {
-  const keys = new Set<string>()
-  await db.outbox.each((entry) => keys.add(keyOf(entry.table, entry.rowId)))
-  return keys.size
+  return distinctRows(await db.outbox.toArray())
+}
+
+function distinctRows(entries: OutboxEntry[]): number {
+  return new Set(entries.map((entry) => keyOf(entry.table, entry.rowId))).size
+}
+
+// Everything the backup status reads, for one live query: the reads start
+// together, so Dexie observes all of them (L-026). `queued` counts outbox
+// entries, which grows with every write; `pending` counts the rows they name.
+export async function readBackupState(db: GainframeDb) {
+  const [session, entries, lastSync] = await Promise.all([
+    db.settings.get('authSession'),
+    db.outbox.toArray(),
+    db.settings.get('lastSyncAt'),
+  ])
+  return {
+    session: parseSession(session),
+    queued: entries.length,
+    pending: distinctRows(entries),
+    lastSyncAt: lastSync?.value ?? null,
+  }
 }
 
 // The next rows to push, in the order they were first changed, each once with

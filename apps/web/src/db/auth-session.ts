@@ -1,13 +1,17 @@
 import { type AuthSession, authSessionSchema } from '../auth/session'
 
-import type { GainframeDb } from './schema'
+import type { DeviceSetting, GainframeDb } from './schema'
 
 const KEY = 'authSession'
 
 // The session as stored, or null when signed out or when the stored value no
 // longer matches the schema (then the user signs in again).
 export async function loadSession(db: GainframeDb): Promise<AuthSession | null> {
-  const setting = await db.settings.get(KEY)
+  return parseSession(await db.settings.get(KEY))
+}
+
+// For a live query that reads the setting together with other tables.
+export function parseSession(setting: DeviceSetting | undefined): AuthSession | null {
   if (setting === undefined) return null
   try {
     const result = authSessionSchema.safeParse(JSON.parse(setting.value))
