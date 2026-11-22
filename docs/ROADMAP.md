@@ -115,19 +115,17 @@ Done when: a meal is logged in under 30 seconds and the eval script reports mean
   Verify: a frequent-food meal takes ≤ 10 seconds; fixture tests cover the suggestion rule (no frequent foods, gap smaller than any food, target met).
 - [ ] **M3-03 Photo upload**: client-side resize (long edge ≤ 1600 px); presigned PUT URL from the API (type and size limits, 5-minute expiry); 30-day S3 lifecycle. A photo taken offline is kept on the device (a device-only Dexie table, never synced) with its meal saved as waiting for an estimate; the upload and the estimate run when the app is next online, and the meal then asks for confirmation. Add the bucket origin (`connect-src`) and `blob:` (`img-src`) to the Content-Security-Policy.
   Verify: the photo lands in S3; the lifecycle rule is visible; oversized files are rejected; a photo taken in airplane mode is estimated after the network returns.
-- [ ] **M3-04 AI service layer**: `apps/api/src/ai` with one interface and Bedrock, Anthropic and OpenAI providers; model IDs in config; Zod-validated structured output with one retry; timeouts; per-user daily caps in Postgres. One log line per call: feature, provider, model, prompt version, latency, tokens in/out and outcome (`ok`, `retried`, `invalid`, `timeout`, `capped`, `provider_error`); on invalid output only the Zod issue paths are logged.
-  Verify: unit tests with a fake provider cover retry, timeout and cap, and assert each outcome's log line; one real Bedrock call succeeds on dev and its line is in CloudWatch.
-- [ ] **M3-05 Vision estimate endpoint**: `prompts/vision/v1.md`; relevant past corrections for this user sent as reference; returns items with grams, protein, kcal and alternative names.
-  Verify: three test photos return JSON that passes schema validation.
-- [ ] **M3-06 Confirm screen**: the estimating and confirm screens and their four states from "Food logging" in [design-system.md](design-system.md): scan line, tap-to-correct names (alternatives first), gram steppers, the oil and sauce row, meal type, "remember this correction", the effect on today's protein before saving; saves both the AI's raw output and the final values.
+- [ ] **M3-04 AI service layer**: `apps/api/src/ai` with one interface, the Bedrock provider (`AnthropicBedrockMantle` from `@anthropic-ai/bedrock-sdk`) and a fake for tests; model IDs and effort in config, no sampling parameters; structured outputs (`output_config.format`) validated with Zod, with one retry; `stop_reason` handled (`refused`, `max_tokens`); timeouts; per-user daily caps in Postgres. One log line per call: feature, provider, model, prompt version, latency, tokens in/out and outcome (`ok`, `retried`, `invalid`, `refused`, `timeout`, `capped`, `provider_error`); on invalid output only the Zod issue paths are logged.
+  Verify: unit tests with a fake provider cover retry, refusal, timeout and cap, and assert each outcome's log line; one real Bedrock call succeeds on dev and its line is in CloudWatch.
+- [ ] **M3-05 Vision estimate endpoint**: `prompts/vision/v1.md`; the prompt carries the bundled food table's ids and names; returns items with a table entry id (or a name when none fits), grams, confidence and alternative entries; protein and kcal are computed in code from the table, and only items without an entry carry model-estimated values, tagged as such ("Food estimates" in [ai.md](ai.md)); relevant past corrections for this user sent as reference.
+  Verify: three test photos return JSON that passes schema validation; a fixture test computes nutrients from table entries and grams.
+- [ ] **M3-06 Confirm screen**: the estimating and confirm screens and their four states from "Food logging" in [design-system.md](design-system.md): scan line, tap-to-correct names (alternatives first), gram steppers, the oil and sauce row, meal type, "remember this correction", a small / regular / large choice for low-confidence items, the effect on today's protein before saving; saves both the AI's raw output and the final values.
   Verify: 👤 a real meal is logged in under 30 seconds; the Today screen updates.
-- [ ] **M3-07 Bring-your-own key**: Claude or OpenAI key in settings. ADR first (recommended: the key stays on the device and is sent per request over HTTPS; the server never stores or logs it).
-  Verify: requests use the user's provider; the key never appears in logs.
-- [ ] **M3-08 Eval script**: `pnpm eval:vision` reads the labelled set and reports mean absolute error for protein and kcal per prompt version as Markdown. Photos stay in private S3 or locally, never in the repo.
-  Verify: one run produces the v1 error figures for the README draft.
+- [ ] **M3-08 Eval script**: `pnpm eval:vision` reads the labelled set and reports, per prompt version and model, mean absolute error and signed bias for protein and kcal, the share within ±20 %, the spread over three runs and the cost per call, on a fixed test split, beside a no-AI baseline (table lookup at the default serving), as Markdown. Photos stay in private S3 or locally, never in the repo.
+  Verify: one run compares Haiku 5.5 and Sonnet 5.5 and produces the v1 figures for the README draft; the model in config is the cheapest one that holds accuracy.
 - [ ] **M3-09 👤 Eval dataset**: the owner photographs packaged or weighed meals and records true protein and kcal; target 30–50.
   Verify: ≥ 30 labelled entries.
-- [ ] **M3-10 Text estimate**: "describe it in a sentence" on the manual screen (moved forward from the post-MVP list, 2026-11-16: it reuses the M3-05 endpoint, schema and confirm screen, costs less per call than a photo, and replaces a built-in food table that would need licensed data). `prompts/text-meal/v1.md`; the same daily cap as photos; `pnpm eval:vision` gains a text set of the same meals described in words.
+- [ ] **M3-10 Text estimate**: "describe it in a sentence" on the manual screen (moved forward from the post-MVP list, 2026-11-16: it reuses the M3-05 endpoint, schema and confirm screen, costs less per call than a photo, and, like the photo estimate, takes nutrients from the bundled food table). `prompts/text-meal/v1.md`; the same daily cap as photos; `pnpm eval:vision` gains a text set of the same meals described in words.
   Verify: three sentences in Chinese and three in English return items that pass schema validation; the eval reports protein and kcal error for the text set.
 
 ## M4 Goals, body weight and trends (weeks 11–12)
@@ -161,22 +159,22 @@ Done when: seeded plateau data triggers an analysis, and a Monday report arrives
   Verify: fixture tests cover triggering and non-triggering cases.
 - [ ] **M5-04 Plateau rules**: an exercise's e1RM flat for 3 weeks (≥ 3 sessions); weekly average weight flat for 2 weeks.
   Verify: fixture tests cover trigger, no-trigger and boundaries.
-- [ ] **M5-05 Plateau analysis**: snapshot → AI structured explanation and suggestions → `nudges` → push.
+- [ ] **M5-05 Plateau analysis**: snapshot → AI structured explanation and suggestions → `nudges` → push. Numbers are references to snapshot fields that code fills in ("Prompts" in [ai.md](ai.md)).
   Verify: for seeded plateau data, the analysis cites real numbers from the snapshot.
-- [ ] **M5-06 Weekly report**: Monday 08:00 Malaysia time; stats snapshot + AI text in `weekly_summaries`; report card on Today. Scheduled jobs log a start and a finish line with counts (users processed, failed), so a silent skip is visible; failures reach the M2-08 alarm.
+- [ ] **M5-06 Weekly report**: Monday 08:00 Malaysia time; stats snapshot + AI text in `weekly_summaries`, numbers filled in by code from the snapshot; report card on Today. Scheduled jobs log a start and a finish line with counts (users processed, failed), so a silent skip is visible; failures reach the M2-08 alarm.
   Verify: a manual run matches the database for session count and on-target days.
-- [ ] **M5-07 Report eval**: fixed snapshots; generated reports contain no invented numbers (rule-based assertions).
+- [ ] **M5-07 Report eval**: fixed snapshots; every reference in generated text resolves to a snapshot field and no number appears outside one.
   Verify: `pnpm eval:summary` passes.
 
 ## M6 AI coach (weeks 15–16, MVP complete)
 
 Done when: "Why has my bench stalled?" is answered with the user's own data, and off-topic questions are declined.
 
-- [ ] **M6-01 Topic guard**: small-model classifier for fitness scope; ≥ 50 in- and out-of-scope test questions; eval reports accuracy.
-  Verify: `pnpm eval:guard` reports ≥ 95% accuracy.
+- [ ] **M6-01 Topic scope** (changed 2026-11-22: part of the coach prompt, not a separate classifier call): the coach's system prompt limits it to training, nutrition and recovery, and an off-topic question returns a structured decline; ≥ 50 in- and out-of-scope test questions in `pnpm eval:coach`.
+  Verify: `pnpm eval:coach` reports ≥ 95% off-topic accuracy and its false-refusal rate.
 - [ ] **M6-02 Data tools**: get_workouts, get_exercise_progress, get_plans (days, exercises, rep ranges and rest, so the coach can explain or adjust a rest time), get_nutrition_summary, get_weight_trend, get_plateaus. Read-only; `user_id` injected server-side, never chosen by the model; Zod-validated parameters.
   Verify: unit tests prove tools only return the current user's data.
-- [ ] **M6-03 Coach endpoint**: tool-use loop (max N iterations), streaming, last few turns only, daily cap, refers injury and medication questions to professionals.
+- [ ] **M6-03 Coach endpoint**: tool-use loop (max N iterations), prompt caching on the system prompt and tools, streaming (Lambda response streaming through CloudFront, checked against current AWS docs first), last few turns only, daily cap, refers injury and medication questions to professionals.
   Verify: "Why has my bench stalled?" cites real numbers.
 - [ ] **M6-04 Coach UI**: follows the design system (no chat bubbles; answers render like data cards with an AI source tag); "not medical advice" notice.
   Verify: 👤 three questions on the phone feel smooth.
@@ -213,4 +211,4 @@ Decided in [ADR-0006](adr/0006-strength-standing.md) (proposed until M8-01 start
 
 ---
 
-If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: M8 strength standing, training programmes, CSV import/export. Version 2: body composition import from an InBody result sheet photo (through the M3 vision pipeline, every field confirmed by the user before saving) and Apple Health weight through an iOS Shortcut ([ADR-0004](adr/0004-pwa-over-native.md)), both writing `body_metrics` rows with their own `source`.
+If time runs short, compress M4 and M7 first; M5 and M6 are the differentiators and stay. After the MVP: M8 strength standing, training programmes, CSV import/export, a second AI provider and bring-your-own key (removed from M3 on 2026-11-22). Version 2: body composition import from an InBody result sheet photo (through the M3 vision pipeline, every field confirmed by the user before saving) and Apple Health weight through an iOS Shortcut ([ADR-0004](adr/0004-pwa-over-native.md)), both writing `body_metrics` rows with their own `source`.
