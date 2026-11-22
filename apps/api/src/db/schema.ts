@@ -8,19 +8,24 @@
 import {
   type AnyPgColumn,
   bigint,
+  customType,
   date,
   doublePrecision,
   index,
   integer,
   pgTable,
   text,
-  timestamp,
   uuid,
 } from 'drizzle-orm/pg-core'
 
-// Instants are read back as Date, whose ISO form matches the client's
-// millisecond `Z` strings exactly, so last-writer-wins compares like values.
-const instant = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' })
+// An instant is a `timestamptz` read and written as the client's ISO string
+// (`2026-11-08T14:40:26.000Z`), so rows go between the Zod schemas and the
+// database unchanged. The driver hands Drizzle the Postgres text form, which
+// `Date` parses.
+const instant = customType<{ data: string; driverData: string }>({
+  dataType: () => 'timestamp with time zone',
+  fromDriver: (value) => new Date(value).toISOString(),
+})
 
 const syncedColumns = {
   id: uuid('id').primaryKey(),

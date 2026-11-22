@@ -4,14 +4,19 @@ import { Hono, type MiddlewareHandler } from 'hono'
 import { matchedRoutes } from 'hono/route'
 
 import type { AppEnv } from './context.ts'
+import type { Database } from './db/client.ts'
 import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
 import { healthRoutes } from './routes/health.ts'
+import { syncRoutes } from './routes/sync.ts'
 
 export interface AppDeps {
   log: Logger
   // Verifies the caller's token and sets `userId` (auth.ts `requireUser`).
   requireUser: MiddlewareHandler<AppEnv>
+  db: Database
+  // The server clock for the push clock-skew check; tests fix it.
+  now?: () => Date
 }
 
 // The Lambda request ID also tags the runtime's own START/END/REPORT lines.
@@ -21,7 +26,7 @@ function lambdaRequestId(bindings: AppEnv['Bindings'] | undefined): string | und
 }
 
 // Dependencies are passed in so tests can run without a database and capture log lines.
-export function createApp({ log, requireUser }: AppDeps) {
+export function createApp({ log, requireUser, db, now }: AppDeps) {
   const app = new Hono<AppEnv>()
 
   // Request ID and access log. Registered first, so it wraps every route,
@@ -65,6 +70,7 @@ export function createApp({ log, requireUser }: AppDeps) {
   // Every other route needs a signed-in user; an unknown route without a token
   // gets 401 rather than 404, so the API's shape is not visible to strangers.
   app.use('/api/*', requireUser)
+  app.route('/api/sync', syncRoutes(db, now))
 
   return app
 }

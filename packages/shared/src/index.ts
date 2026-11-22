@@ -11,7 +11,7 @@ export {
 } from './schemas/client-error.ts'
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
-export { domainConfig } from './config.ts'
+export { domainConfig, syncConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
@@ -110,3 +110,20 @@ export {
   type WeightUnit,
   weightUnitSchema,
 } from './schemas/workout.ts'
+export {
+  type PullResponse,
+  pullResponseSchema,
+  type PushRejection,
+  pushRejectionSchema,
+  type PushRequest,
+  pushRequestSchema,
+  type PushResponse,
+  pushResponseSchema,
+  type PushResult,
+  pushResultSchema,
+  SYNC_VERSION,
+  SYNC_VERSION_HEADER,
+  type SyncedTableName,
+  syncedRowSchemas,
+  syncedTableNameSchema,
+} from './schemas/sync.ts'

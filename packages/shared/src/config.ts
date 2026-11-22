@@ -42,3 +42,15 @@ export const domainConfig = {
   // The time one set takes, for the estimated length of a planned day.
   setWorkS: 45,
 } as const
+
+// Sync limits (ADR-0003), shared so the client batches to what the server accepts.
+export const syncConfig = {
+  // Rows in one push request.
+  pushBatchMax: 200,
+  // Rows in one pull page.
+  pullPageMax: 500,
+  // How far a row's `updatedAt` may be ahead of the server clock. Phone clocks
+  // are set from the network and are seconds off at most; a larger lead is a
+  // wrong clock, whose rows would otherwise win every later conflict.
+  clockSkewMs: 5 * 60 * 1000,
+} as const

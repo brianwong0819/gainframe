@@ -2,8 +2,8 @@
 
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
-- **Milestone:** M1 Workout logging (code complete)
-- **Current task:** M1-13 Field week (bw logs every session for a week)
+- **Milestone:** M2 Accounts + sync
+- **Current task:** M2-02 part (c) after bw's iPhone check of the sign-in probe
 - **Last updated:** 2026-11-22
 
 ## Now
@@ -27,6 +27,8 @@ M2-01 (2026-11-22, PR `m2/01-neon-drizzle`): the Drizzle schema in `apps/api/src
 M2-02 so far (2026-11-22): the dev user pool, managed login domain and web client exist (PR `m2/02-cognito-pool`); bw ran `/dev/sign-in-probe` (PR `m2/02-sign-in-probe`) in the installed app, and the full-page redirect stayed inside it with shared storage, so the flow is a plain redirect with PKCE (ADR-0007). Part (c), PR `m2/02-sign-in-flow`: `src/auth`, the session as a device setting (left out of the JSON export), the sign-in page `/settings/sign-in` with email and the account row in Settings, shown only in builds with the Cognito settings (dev).
 
 M2-03 (2026-11-22, PR `m2/03-api-auth`): every API route except `/api/health` requires a Cognito access token in `x-gainframe-token` (`apps/api/src/auth.ts`); the access line logs `userId`. Local API development now needs `AUTH_ISSUER` and `AUTH_CLIENT_ID` in `apps/api/.env` (see `.env.example`).
+
+M2-04 (2026-11-22, PR `m2/04-sync-endpoints`): `POST /api/sync/push` and `GET /api/sync/pull?cursor=` (`apps/api/src/sync`), with the request and response schemas, `SYNC_VERSION` and its header in `packages/shared/src/schemas/sync.ts` and the limits in `syncConfig`. A request without a supported sync version gets 426 `update_required`. Instants are now ISO strings in Drizzle too (a custom column type; the SQL is unchanged). For M2-05: the web app's hand-written `SyncedTableName` should import the shared one, and a rejected row needs a decision (keep it in the outbox and show it in Diagnostics, or drop it).
 
 Next: M2-02 part (d) once bw has created the Google OAuth client; part (e) and M2-05 meanwhile.
 
