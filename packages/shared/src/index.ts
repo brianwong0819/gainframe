@@ -15,6 +15,7 @@ export { domainConfig, syncConfig } from './config.ts'
 export { searchExercises } from './domain/exercise-search.ts'
 export {
   addDays,
+  fillProteinGap,
   mealTypeAt,
   nutritionTotals,
   type NutritionTotals,

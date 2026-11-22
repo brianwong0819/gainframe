@@ -186,7 +186,12 @@
     "gramsOf": "{name}的克数",
     "gramsDown": "减少{name}",
     "gramsUp": "增加{name}",
-    "removeItem": "移除"
+    "removeItem": "移除",
+    "trainedToday": "今天练过了",
+    "trainedDay": "今天练了{day}",
+    "fromTraining": "训练联动",
+    "fillHeading": "用你常吃的补上",
+    "fillSum": "合计 蛋白质 {protein} g · {kcal} kcal"
   },
   "language": {
     "label": "语言",

@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  type Exercise,
-  lastOfPlanDay,
-  type LocalDate,
-  toLocalDate,
-  type WorkoutSummaryEntry,
-} from '@gainframe/shared'
+import { type Exercise, lastOfPlanDay, type LocalDate, toLocalDate } from '@gainframe/shared'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -15,6 +9,7 @@ import { db, workoutSession } from '@/db/client'
 import type { UpNext } from '@/db/plans'
 import { useLiveQuery } from '@/db/use-live-query'
 import { loadWorkoutHistory } from '@/db/workout-history'
+import type { WorkoutSummaryState } from '@/db/workout-summary'
 import type { ActiveWorkoutState } from '@/db/workout-session'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { Pressable } from '@/ui/pressable'
@@ -31,7 +26,7 @@ export interface WorkoutOverview {
   active: ActiveWorkoutState | null
   upNext: UpNext | null
   // Finished workouts, newest first.
-  history: WorkoutSummaryEntry[]
+  history: WorkoutSummaryState[]
   custom: Exercise[]
   today: LocalDate
 }

@@ -3,6 +3,7 @@
 import type { MealWithItems } from '@/db/food'
 import type { NutritionTotals } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
+import type { ReactNode } from 'react'
 
 import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
@@ -21,11 +22,17 @@ export function DayCard({
   totals,
   targets,
   onEditTargets,
+  heading,
+  children,
 }: {
   meals: MealWithItems[]
   totals: NutritionTotals
   targets: Targets | null
   onEditTargets: () => void
+  /** Replaces the "Protein" label, e.g. Today's line about the day's workout. */
+  heading?: ReactNode
+  /** Rows that continue the card, e.g. Today's suggestion. */
+  children?: ReactNode
 }) {
   const t = useTranslations('food')
   const locale = useLocale()
@@ -38,7 +45,7 @@ export function DayCard({
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
       <div className="flex items-baseline justify-between gap-12">
-        <h2 className="text-label text-ink-3">{t('protein')}</h2>
+        {heading ?? <h2 className="text-label text-ink-3">{t('protein')}</h2>}
         {targets !== null && (
           <Pressable
             aria-label={t('editTargets')}
@@ -109,6 +116,7 @@ export function DayCard({
           {t('setTargets')}
         </Pressable>
       )}
+      {children}
     </section>
   )
 }

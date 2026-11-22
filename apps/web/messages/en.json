@@ -186,7 +186,12 @@
     "gramsOf": "Grams of {name}",
     "gramsDown": "Less {name}",
     "gramsUp": "More {name}",
-    "removeItem": "Remove"
+    "removeItem": "Remove",
+    "trainedToday": "Trained today",
+    "trainedDay": "Trained {day} today",
+    "fromTraining": "From training",
+    "fillHeading": "Fill it with your usual",
+    "fillSum": "Together {protein} g protein · {kcal} kcal"
   },
   "language": {
     "label": "Language",

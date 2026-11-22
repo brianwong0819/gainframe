@@ -78,3 +78,35 @@ test('a frequent food is logged in one tap and undone, and a meal is edited', as
   await expect(meal.getByRole('textbox', { name: '鸡胸肉的克数' })).toHaveValue('110')
   await expect(meal.getByText('蛋白质 34 g')).toBeVisible()
 })
+
+test('Today suggests a frequent food for the protein gap and logs it in one tap', async ({
+  page,
+}) => {
+  await page.goto('/food/add')
+  await page.getByRole('button', { name: '新建食物' }).click()
+  const sheet = page.getByRole('dialog', { name: '新建食物' })
+  await sheet.getByLabel('名称').fill('鸡胸肉')
+  await sheet.getByLabel('每份克数').fill('100')
+  await sheet.getByLabel('蛋白质 g').fill('31')
+  await sheet.getByLabel('热量 kcal').fill('165')
+  await sheet.getByRole('button', { name: '加入这餐' }).click()
+  await page.getByRole('button', { name: /^记入/ }).click()
+  await expect(page).toHaveURL(/\/food\/?$/)
+
+  await page.getByRole('link', { name: '今天' }).click()
+  await page.getByRole('button', { name: '设定每日目标' }).click()
+  await page.getByRole('dialog', { name: '每日目标' }).getByRole('button', { name: '关闭' }).click()
+  await expect(page.getByText('用你常吃的补上')).toBeHidden()
+
+  // Any change stores the targets: 140 g less 31 g eaten leaves 109 g.
+  await page.getByRole('button', { name: '设定每日目标' }).click()
+  const targets = page.getByRole('dialog', { name: '每日目标' })
+  await targets.getByRole('button', { name: '提高蛋白质目标' }).click()
+  await targets.getByRole('button', { name: '降低蛋白质目标' }).click()
+  await targets.getByRole('button', { name: '关闭' }).click()
+  await expect(page.getByText('用你常吃的补上')).toBeVisible()
+  await expect(page.getByText('109', { exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: '记一份鸡胸肉' }).click()
+  await expect(page.getByText('78', { exact: true })).toBeVisible()
+})
