@@ -4,7 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M1 Workout logging (code complete)
 - **Current task:** M1-13 Field week (bw logs every session for a week)
-- **Last updated:** 2026-11-17
+- **Last updated:** 2026-11-22
 
 ## Now
 
@@ -17,6 +17,8 @@ Health check (2026-11-16, PR `m1/health-limit`, moved forward from M2-09 by bw b
 Clear data (2026-11-16, PR `m1/clear-data`, asked by bw for the field week): Diagnostics → "Clear all data" (two taps) empties every Dexie table and reopens the app at Today, so a reset no longer needs reinstalling the Home Screen app. It is shown in every build, not only with `GAINFRAME_DEV_PAGES`: a local-only app needs a way to erase its data, and the button sits on the developer-facing Diagnostics page. M2-05 revisits it for sync.
 
 Design review (2026-11-16, asked by bw during the field week): every screen was captured and compared with a proposed version, and bw chose all ten changes. They land as small PRs outside the numbered tasks, in this order: (1) workout header with elapsed time, set progress and the finish button, and a finish prompt once every set is done — PR `m1/design-session-header`; (2) Workout tab: this week's days, last time's figures, a prominent workout in progress; (3) Today shows the next workout, the week and recent records; (4) summary compares with the last time the day was done; (5) compact history cards with month totals; (6) the rest sheet previews the next set; (7) plan editor and library tidy-ups. Across all of them, units are set smaller than their numbers. The mock's side-by-side steppers were dropped: beside 44 px buttons a three-digit weight ("102.5") does not fit at 390 px unless the number shrinks to 18 px, so the steppers stay stacked at full size and the panel only loses the unit pill's height. All ten are implemented (#109 to #115 and `m1/design-library`); bw checks them on the iPhone during the field week.
+
+Dependency update (2026-11-22, PR `m2/dependency-update`): every package moved to its latest patch or minor release, which takes Next.js 16.4.6 past the security advisory `next build` reported on 16.4.4. TypeScript stays on 6.0 and `@types/node` on 24 (see Follow-ups).
 
 Next: M1-13. Problems found during the week become issues with the copied Diagnostics report; severe ones are fixed that week. Then M1-14 (timed and cardio logging), then M2-01.
 
@@ -56,7 +58,6 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Check on the iPhone during M1-13 and fix in the stepper if confirmed.
-- `next build` (16.4.4) reports that the installed Next.js has a known security advisory; one local build stopped on it (`SecurityFatalError`) and the next run continued with a warning. The app is a static export, so no Next server runs in production, but the patch release should be taken in the dependency bump planned for the start of M2, or sooner if CI starts failing on it.
 - A day's estimated length (`estimateDayS`) counts a rest after every set of a superset member, although a superset rests only after each round, so a day with supersets is estimated too long.
 - Plan days keep the order they were added in; exercises can be reordered, days cannot yet.
 - The spacing scale has no 44 px step, so a 44 px tap target comes from padding (`py-12` around 15 px text). Consider a `--tap` size token when a third component needs one.
