@@ -144,7 +144,8 @@ export interface PulledRow {
   row: Record<string, unknown>
 }
 
-// Applies one pulled page and stores its cursor in the same transaction. A row
+// Applies one pulled page and stores its cursor in the same transaction, only
+// while `userId` is still the signed-in account. A row
 // replaces the local one only when its `updatedAt` is later (the server's rule),
 // and creates no outbox entry. Returns the rows that failed their schema, which
 // are skipped.
@@ -155,6 +156,11 @@ export async function applyPulledPage(
   cursor: number,
 ): Promise<PulledRow[]> {
   return db.transaction('rw', [db.settings, ...syncedTables(db)], async () => {
+    // A sign-out or a cleared device while the page was on its way: the rows
+    // belong to an account no longer on this device.
+    if (parseSession(await db.settings.get('authSession'))?.userId !== userId) {
+      throw new Error('pulled page for an account no longer signed in')
+    }
     const invalid: PulledRow[] = []
     for (const pulled of rows) {
       const parsed = syncedRowSchemas[pulled.table].safeParse(pulled.row)

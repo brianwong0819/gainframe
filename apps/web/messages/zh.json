@@ -432,5 +432,23 @@
     "waitingCount": "{count} 条",
     "never": "还没有",
     "justNow": "刚刚"
+  },
+  "account": {
+    "title": "账号",
+    "signIn": "登录",
+    "backup": "备份",
+    "lastBackup": "上次备份",
+    "signOut": "退出登录",
+    "close": "关闭",
+    "signOutTitle": "退出登录？",
+    "signOutBody": "这台手机上的记录会清掉。它们都已备份，再登录就回来。",
+    "signOutPendingTitle": "还有 {count} 条改动没备份",
+    "signOutPendingBody": "这些训练和计划的改动只存在这台手机上，现在退出会永远丢掉它们。",
+    "backUpThenSignOut": "先备份再退出",
+    "backUpOffline": "现在离线，联网后才能备份。",
+    "signOutAnyway": "仍然退出，丢掉 {count} 条",
+    "signOutAnywayConfirm": "再点一次，确认丢掉 {count} 条",
+    "cardText": "{workouts} 次训练只存在这台手机",
+    "dismiss": "不再提醒"
   }
 }

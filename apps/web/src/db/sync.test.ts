@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import type { Exercise } from '@gainframe/shared'
 
+import { saveSession } from './auth-session'
 import { createRepositories, type NewRow } from './repositories'
 import { GainframeDb } from './schema'
 import { applyPulledPage, pendingRowCount, readCursor, readPushBatch, settlePush } from './sync'
@@ -11,8 +12,16 @@ let db: GainframeDb
 let clock: Date
 let repos: ReturnType<typeof createRepositories>
 
-beforeEach(() => {
+beforeEach(async () => {
   db = new GainframeDb('test', { indexedDB: new IDBFactory(), IDBKeyRange })
+  await saveSession(db, {
+    userId: 'sub-1',
+    email: 'someone@example.com',
+    accessToken: 'access',
+    accessExpiresAt: '2026-11-22T07:00:00.000Z',
+    refreshToken: 'refresh',
+    expired: false,
+  })
   clock = new Date('2026-11-22T06:00:00.000Z')
   repos = createRepositories(db, () => clock)
 })
@@ -129,5 +138,21 @@ describe('pulled page', () => {
   it('starts from the beginning for another account', async () => {
     await applyPulledPage(db, 'sub-1', [], 9)
     await expect(readCursor(db, 'sub-2')).resolves.toBe(0)
+  })
+
+  it('writes nothing once the account has signed out', async () => {
+    const local = await repos.exercises.create(exercise)
+    await db.settings.delete('authSession')
+
+    await expect(
+      applyPulledPage(
+        db,
+        'sub-1',
+        [{ table: 'exercises', row: { ...local, id: '019ab000-0000-7000-8000-000000000002' } }],
+        3,
+      ),
+    ).rejects.toThrow('no longer signed in')
+    await expect(db.exercises.count()).resolves.toBe(1)
+    await expect(readCursor(db, 'sub-1')).resolves.toBe(0)
   })
 })

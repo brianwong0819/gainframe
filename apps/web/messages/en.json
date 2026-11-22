@@ -432,5 +432,23 @@
     "waitingCount": "{count}",
     "never": "Not yet",
     "justNow": "Just now"
+  },
+  "account": {
+    "title": "Account",
+    "signIn": "Sign in",
+    "backup": "Backup",
+    "lastBackup": "Last backup",
+    "signOut": "Sign out",
+    "close": "Close",
+    "signOutTitle": "Sign out?",
+    "signOutBody": "The records on this phone are removed. They are all backed up and return when you sign in again.",
+    "signOutPendingTitle": "{count, plural, one {# change is not backed up} other {# changes are not backed up}}",
+    "signOutPendingBody": "These workout and plan changes exist only on this phone, and signing out now loses them for good.",
+    "backUpThenSignOut": "Back up, then sign out",
+    "backUpOffline": "Offline: backup starts once a connection returns.",
+    "signOutAnyway": "{count, plural, one {Sign out anyway and lose # change} other {Sign out anyway and lose # changes}}",
+    "signOutAnywayConfirm": "{count, plural, one {Tap again to lose # change} other {Tap again to lose # changes}}",
+    "cardText": "{workouts, plural, one {# workout exists only on this phone} other {# workouts exist only on this phone}}",
+    "dismiss": "Don't remind me"
   }
 }
