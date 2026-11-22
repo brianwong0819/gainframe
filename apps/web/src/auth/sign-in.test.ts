@@ -81,6 +81,7 @@ describe('sign-in by redirect', () => {
       accessToken: 'access-1',
       accessExpiresAt: '2026-11-22T07:00:00.000Z',
       refreshToken: 'refresh-1',
+      expired: false,
     })
     expect(body.get('code')).toBe('code-1')
     expect(body.get('code_verifier')).toMatch(/^[\w-]{43}$/)

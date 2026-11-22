@@ -137,5 +137,6 @@ export async function finishSignIn(
     accessToken: tokens.access_token,
     accessExpiresAt: new Date(now.getTime() + tokens.expires_in * 1000).toISOString(),
     refreshToken: tokens.refresh_token,
+    expired: false,
   }
 }
