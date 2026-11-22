@@ -1,19 +1,17 @@
 import { randomUUID } from 'node:crypto'
 
-import type { ApiError } from '@gainframe/shared'
-import { Hono } from 'hono'
-import { routePath } from 'hono/route'
+import { Hono, type MiddlewareHandler } from 'hono'
+import { matchedRoutes } from 'hono/route'
 
 import type { AppEnv } from './context.ts'
+import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
 import { healthRoutes } from './routes/health.ts'
 
 export interface AppDeps {
   log: Logger
-}
-
-function errorBody(code: ApiError['error']['code'], message: string, requestId: string): ApiError {
-  return { error: { code, message, requestId } }
+  // Verifies the caller's token and sets `userId` (auth.ts `requireUser`).
+  requireUser: MiddlewareHandler<AppEnv>
 }
 
 // The Lambda request ID also tags the runtime's own START/END/REPORT lines.
@@ -23,7 +21,7 @@ function lambdaRequestId(bindings: AppEnv['Bindings'] | undefined): string | und
 }
 
 // Dependencies are passed in so tests can run without a database and capture log lines.
-export function createApp({ log }: AppDeps) {
+export function createApp({ log, requireUser }: AppDeps) {
   const app = new Hono<AppEnv>()
 
   // Request ID and access log. Registered first, so it wraps every route,
@@ -34,17 +32,19 @@ export function createApp({ log }: AppDeps) {
     const requestLog = log.child({ requestId })
     c.set('requestId', requestId)
     c.set('log', requestLog)
-    const ownRoute = routePath(c)
-
     await next()
 
     c.header('x-request-id', requestId)
-    // The route pattern, never the path or query string, which can hold IDs or personal data.
-    const route = routePath(c, -1)
+    // The route pattern, never the path or query string, which can hold IDs or
+    // personal data. Middleware (`use`, method ALL) is skipped, so a request that
+    // matched no route logs null.
+    const route = matchedRoutes(c).findLast((match) => match.method !== 'ALL')?.path ?? null
     requestLog.info('request', {
       method: c.req.method,
-      route: route === ownRoute ? null : route,
+      route,
       status: c.res.status,
+      // The Cognito `sub` once a route has verified the token; never the email.
+      userId: c.var.userId ?? null,
       durationMs: Math.round(performance.now() - start),
     })
   })
@@ -61,6 +61,10 @@ export function createApp({ log }: AppDeps) {
   // CloudFront forwards `/api/*` to the Lambda without stripping the prefix,
   // so every route is mounted under `/api`.
   app.route('/api/health', healthRoutes())
+
+  // Every other route needs a signed-in user; an unknown route without a token
+  // gets 401 rather than 404, so the API's shape is not visible to strangers.
+  app.use('/api/*', requireUser)
 
   return app
 }

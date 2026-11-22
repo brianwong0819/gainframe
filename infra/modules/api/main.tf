@@ -52,7 +52,18 @@ data "aws_iam_policy_document" "api" {
     actions   = ["ssm:GetParameter"]
     resources = [aws_ssm_parameter.database_url.arn]
   }
+
+  # Written by the auth module; named here rather than referenced (see its comment).
+  statement {
+    sid       = "ReadAuthConfig"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/auth-config"]
+  }
 }
+
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role_policy" "api" {
   name   = "${var.name}-api"
@@ -74,6 +85,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       DATABASE_URL_PARAMETER = aws_ssm_parameter.database_url.name
+      AUTH_CONFIG_PARAMETER  = "${var.ssm_prefix}/auth-config"
       NODE_OPTIONS           = "--enable-source-maps"
       RELEASE                = var.release
     }

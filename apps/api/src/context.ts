@@ -6,5 +6,6 @@ import type { Logger } from './log.ts'
 export interface AppEnv {
   // Set by @hono/aws-lambda in Lambda; absent under the Node dev server and in tests.
   Bindings: { lambdaContext?: Pick<LambdaContext, 'awsRequestId'> }
-  Variables: { requestId: string; log: Logger }
+  // `userId` is set by `requireUser` (auth.ts) on routes that need a signed-in user.
+  Variables: { requestId: string; log: Logger; userId?: string }
 }

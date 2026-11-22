@@ -53,7 +53,8 @@ module "site" {
 module "auth" {
   source = "../../modules/auth"
 
-  name = local.name
+  name       = local.name
+  ssm_prefix = "/gainframe/dev"
   # The device check of the redirect flow (M2-02) runs on the developer page;
   # the sign-in pages add their own URLs when they are built.
   callback_urls = [

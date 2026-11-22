@@ -12,3 +12,8 @@ variable "logout_urls" {
   description = "Pages the logout endpoint may redirect back to after signing out."
   type        = list(string)
 }
+
+variable "ssm_prefix" {
+  description = "SSM Parameter Store path for this environment, /gainframe/<env>; the API reads the auth settings there."
+  type        = string
+}

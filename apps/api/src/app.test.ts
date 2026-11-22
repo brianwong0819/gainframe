@@ -1,16 +1,30 @@
 import { apiErrorSchema } from '@gainframe/shared'
+import type { MiddlewareHandler } from 'hono'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
 import { createApp } from './app.ts'
+import { TOKEN_HEADER } from './auth.ts'
+import type { AppEnv } from './context.ts'
+import { errorBody } from './error-body.ts'
 import { createLogger } from './log.ts'
+
+const signedIn = { headers: { [TOKEN_HEADER]: 'Bearer test-token' } }
 
 const lineSchema = z.record(z.string(), z.unknown())
 
 function setup() {
   const lines: string[] = []
   const log = createLogger({ release: 'test-sha', write: (line) => lines.push(line) })
-  const app = createApp({ log })
+  // Stands in for auth.ts, tested on its own: a request with the test token is user-a.
+  const requireUser: MiddlewareHandler<AppEnv> = async (c, next) => {
+    if (c.req.header(TOKEN_HEADER) !== 'Bearer test-token') {
+      return c.json(errorBody('unauthorized', 'Sign-in required', c.var.requestId), 401)
+    }
+    c.set('userId', 'user-a')
+    return next()
+  }
+  const app = createApp({ log, requireUser })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, lines, logs }
 }
@@ -77,7 +91,7 @@ describe('request ID and access log', () => {
 describe('error responses', () => {
   it('returns 404 in the shared error shape for an unknown route', async () => {
     const { app, logs } = setup()
-    const res = await app.request('/api/unknown')
+    const res = await app.request('/api/unknown', signedIn)
 
     expect(res.status).toBe(404)
     const body = apiErrorSchema.parse(await res.json())
@@ -86,7 +100,9 @@ describe('error responses', () => {
       message: 'Not found',
       requestId: res.headers.get('x-request-id'),
     })
-    expect(logs()).toEqual([expect.objectContaining({ msg: 'request', route: null, status: 404 })])
+    expect(logs()).toEqual([
+      expect.objectContaining({ msg: 'request', route: null, status: 404, userId: 'user-a' }),
+    ])
   })
 
   it('returns 500 in the shared error shape and logs the unexpected error once with its stack', async () => {
@@ -95,7 +111,7 @@ describe('error responses', () => {
       throw new Error('internal detail')
     })
 
-    const res = await app.request('/api/throws')
+    const res = await app.request('/api/throws', signedIn)
 
     expect(res.status).toBe(500)
     const body = apiErrorSchema.parse(await res.json())
@@ -117,5 +133,26 @@ describe('error responses', () => {
     expect(logs()).toContainEqual(
       expect.objectContaining({ msg: 'request', route: '/api/throws', status: 500 }),
     )
+  })
+})
+
+describe('signed-in routes', () => {
+  it('answers 401 without a token, also for a route that does not exist', async () => {
+    const { app, logs } = setup()
+    const res = await app.request('/api/anything')
+
+    expect(res.status).toBe(401)
+    expect(apiErrorSchema.parse(await res.json()).error.code).toBe('unauthorized')
+    expect(logs()[0]).toMatchObject({ msg: 'request', status: 401, userId: null })
+  })
+
+  it("logs the verified user's ID on the access line", async () => {
+    const { app, logs } = setup()
+    const res = await app.request('/api/anything', {
+      headers: { [TOKEN_HEADER]: 'Bearer test-token' },
+    })
+
+    expect(res.status).toBe(404)
+    expect(logs()[0]).toMatchObject({ msg: 'request', status: 404, userId: 'user-a' })
   })
 })

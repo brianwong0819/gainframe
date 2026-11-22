@@ -1,13 +1,19 @@
 import { z } from 'zod'
 
-const envSchema = z.object({
+const databaseEnvSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+})
+
+const envSchema = databaseEnvSchema.extend({
+  // The Cognito user pool's issuer and the web app's client (auth.ts).
+  AUTH_ISSUER: z.url({ protocol: /^https$/ }),
+  AUTH_CLIENT_ID: z.string().min(1),
 })
 
 export type Env = z.infer<typeof envSchema>
 
-export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = envSchema.safeParse(source)
+function parse<T>(schema: z.ZodType<T>, source: Record<string, string | undefined>): T {
+  const result = schema.safeParse(source)
   if (!result.success) {
     throw new Error(
       `Invalid environment:\n${z.prettifyError(result.error)}\n` +
@@ -17,11 +23,25 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
   return result.data
 }
 
+/** The API server's environment. */
+export function parseEnv(source: Record<string, string | undefined>): Env {
+  return parse(envSchema, source)
+}
+
+/** Only the database, for the migration runner and the integration tests. */
+export function parseDatabaseUrl(source: Record<string, string | undefined>): string {
+  return parse(databaseEnvSchema, source).DATABASE_URL
+}
+
 // In Lambda, secrets stay in SSM Parameter Store; the environment holds only
 // the parameter names, and the values are read once per cold start.
 const lambdaEnvSchema = z.object({
   DATABASE_URL_PARAMETER: z.string().startsWith('/gainframe/'),
+  AUTH_CONFIG_PARAMETER: z.string().startsWith('/gainframe/'),
 })
+
+// Written by infra/modules/auth as JSON.
+const authParameterSchema = z.object({ issuer: z.string(), clientId: z.string() })
 
 export async function loadLambdaEnv(
   source: Record<string, string | undefined>,
@@ -31,7 +51,16 @@ export async function loadLambdaEnv(
   if (!result.success) {
     throw new Error(`Invalid Lambda environment:\n${z.prettifyError(result.error)}`)
   }
-  return parseEnv({ DATABASE_URL: await getParameter(result.data.DATABASE_URL_PARAMETER) })
+  const [databaseUrl, authConfig] = await Promise.all([
+    getParameter(result.data.DATABASE_URL_PARAMETER),
+    getParameter(result.data.AUTH_CONFIG_PARAMETER),
+  ])
+  const auth = authParameterSchema.parse(JSON.parse(authConfig))
+  return parseEnv({
+    DATABASE_URL: databaseUrl,
+    AUTH_ISSUER: auth.issuer,
+    AUTH_CLIENT_ID: auth.clientId,
+  })
 }
 
 // The git SHA of the deployed build, included in every log line. CD stamps it
