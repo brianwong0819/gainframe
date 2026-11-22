@@ -47,14 +47,14 @@ afterEach(() => {
 
 // Starts a sign-in and returns the redirect back Cognito would send.
 async function redirectBack(): Promise<URLSearchParams> {
-  await startSignIn(config)
+  await startSignIn(config, 'email')
   const url = new URL(assigned ?? '')
   return new URLSearchParams({ code: 'code-1', state: url.searchParams.get('state') ?? '' })
 }
 
 describe('sign-in by redirect', () => {
   it('sends the whole page to the authorize endpoint with a PKCE challenge', async () => {
-    await startSignIn(config)
+    await startSignIn(config, 'email')
     const url = new URL(assigned ?? '')
 
     expect(url.origin + url.pathname).toBe(`${config.origin}/oauth2/authorize`)
@@ -65,6 +65,12 @@ describe('sign-in by redirect', () => {
       scope: 'openid email',
       code_challenge_method: 'S256',
     })
+    expect(url.searchParams.has('identity_provider')).toBe(false)
+  })
+
+  it('sends Google sign-in straight to Google', async () => {
+    await startSignIn(config, 'google')
+    expect(new URL(assigned ?? '').searchParams.get('identity_provider')).toBe('Google')
   })
 
   it('exchanges the code with the saved verifier and returns the session', async () => {
@@ -82,6 +88,7 @@ describe('sign-in by redirect', () => {
       accessExpiresAt: '2026-11-22T07:00:00.000Z',
       refreshToken: 'refresh-1',
       expired: false,
+      method: 'email',
     })
     expect(body.get('code')).toBe('code-1')
     expect(body.get('code_verifier')).toMatch(/^[\w-]{43}$/)
@@ -100,6 +107,26 @@ describe('sign-in by redirect', () => {
     await finishSignIn(config, params)
 
     await expect(finishSignIn(config, params)).rejects.toEqual(new SignInError('no_pending'))
+  })
+
+  it('asks for one more Google sign-in after Cognito linked the accounts', async () => {
+    const linkedError = (state: string) =>
+      new URLSearchParams({
+        error: 'invalid_request',
+        error_description: 'Already found an entry for username google_1234 ',
+        state,
+      })
+    await startSignIn(config, 'google')
+    const first = new URL(assigned ?? '').searchParams.get('state') ?? ''
+    await expect(finishSignIn(config, linkedError(first))).rejects.toEqual(
+      new SignInError('linked'),
+    )
+
+    await startSignIn(config, 'google', true)
+    const second = new URL(assigned ?? '').searchParams.get('state') ?? ''
+    await expect(finishSignIn(config, linkedError(second))).rejects.toEqual(
+      new SignInError('denied'),
+    )
   })
 
   it('reports a cancelled sign-in and a refused exchange', async () => {

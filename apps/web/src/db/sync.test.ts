@@ -21,6 +21,7 @@ beforeEach(async () => {
     accessExpiresAt: '2026-11-22T07:00:00.000Z',
     refreshToken: 'refresh',
     expired: false,
+    method: 'email',
   })
   clock = new Date('2026-11-22T06:00:00.000Z')
   repos = createRepositories(db, () => clock)

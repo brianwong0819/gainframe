@@ -41,6 +41,7 @@ describe('exportData', () => {
       accessExpiresAt: '2026-11-16T04:00:00.000Z',
       refreshToken: 'refresh',
       expired: false,
+      method: 'email',
     })
 
     const data = await exportData(db, 'abc1234', '2026-11-16T03:05:00.000Z')

@@ -55,6 +55,11 @@ module "auth" {
 
   name       = local.name
   ssm_prefix = "/gainframe/dev"
+
+  pre_sign_up_source_dir = "${path.root}/../../../apps/api/dist/pre-sign-up"
+  log_retention_days     = 14
+  release                = var.release
+
   # The sign-in page is the redirect URI and Settings the sign-out target
   # (ADR-0007); the developer page keeps its own for the device check.
   callback_urls = [

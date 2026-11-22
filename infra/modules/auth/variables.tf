@@ -17,3 +17,18 @@ variable "ssm_prefix" {
   description = "SSM Parameter Store path for this environment, /gainframe/<env>; the API reads the auth settings there."
   type        = string
 }
+
+variable "pre_sign_up_source_dir" {
+  description = "Directory with the bundled pre sign-up trigger (apps/api/dist/pre-sign-up)."
+  type        = string
+}
+
+variable "log_retention_days" {
+  description = "Days to keep the pre sign-up trigger's logs."
+  type        = number
+}
+
+variable "release" {
+  description = "Git SHA of the build being deployed, logged by the trigger."
+  type        = string
+}

@@ -1,3 +1,4 @@
+import type { AuthSession } from '../auth/session'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -18,13 +19,14 @@ import { loadLastSync, pendingRowCount, type RejectedRow } from '../db/sync'
 import { createSyncEngine, retryDelayMs } from './engine'
 
 const NOW = new Date('2026-11-22T06:00:00.000Z')
-const session = {
+const session: AuthSession = {
   userId: 'sub-1',
   email: 'someone@example.com',
   accessToken: 'access-1',
   accessExpiresAt: '2026-11-22T07:00:00.000Z',
   refreshToken: 'refresh-1',
   expired: false,
+  method: 'email',
 }
 const exercise: NewRow<Exercise> = {
   nameZh: '上斜哑铃卧推',

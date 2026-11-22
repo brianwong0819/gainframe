@@ -39,12 +39,48 @@ resource "aws_cognito_user_pool" "main" {
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
+
+  lambda_config {
+    pre_sign_up = aws_lambda_function.pre_sign_up.arn
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
   domain                = var.name
   user_pool_id          = aws_cognito_user_pool.main.id
   managed_login_version = 2
+}
+
+# Google as an identity provider (M2-02 part d). The owner created the OAuth
+# client in Google Cloud and stored its ID and secret in SSM by hand, so the
+# secret never passes through the repository. Terraform keeps it in the
+# encrypted state, as it does every provider secret.
+data "aws_ssm_parameter" "google_client_id" {
+  name = "${var.ssm_prefix}/google-client-id"
+}
+
+data "aws_ssm_parameter" "google_client_secret" {
+  name            = "${var.ssm_prefix}/google-client-secret"
+  with_decryption = true
+}
+
+resource "aws_cognito_identity_provider" "google" {
+  user_pool_id  = aws_cognito_user_pool.main.id
+  provider_name = "Google"
+  provider_type = "Google"
+
+  provider_details = {
+    client_id        = data.aws_ssm_parameter.google_client_id.value
+    client_secret    = data.aws_ssm_parameter.google_client_secret.value
+    authorize_scopes = "openid email"
+  }
+
+  # `username` must map to Google's `sub`; the email lets the app name the account.
+  attribute_mapping = {
+    username       = "sub"
+    email          = "email"
+    email_verified = "email_verified"
+  }
 }
 
 resource "aws_cognito_user_pool_client" "web" {
@@ -56,7 +92,7 @@ resource "aws_cognito_user_pool_client" "web" {
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email"]
-  supported_identity_providers         = ["COGNITO"]
+  supported_identity_providers         = ["COGNITO", aws_cognito_identity_provider.google.provider_name]
   callback_urls                        = var.callback_urls
   logout_urls                          = var.logout_urls
   explicit_auth_flows                  = ["ALLOW_REFRESH_TOKEN_AUTH"]
@@ -100,4 +136,89 @@ resource "aws_ssm_parameter" "api_config" {
   description = "Cognito issuer and web client ID, read by the API at cold start."
   type        = "String"
   value       = jsonencode({ issuer = local.issuer, clientId = aws_cognito_user_pool_client.web.id })
+}
+
+# The pre sign-up trigger (apps/api/src/cognito/pre-sign-up.ts): links a first
+# Google sign-in to the email account with the same verified address, so one
+# person has one account (ADR-0007). Billed per request, within the free tier.
+data "archive_file" "pre_sign_up" {
+  type        = "zip"
+  source_dir  = var.pre_sign_up_source_dir
+  output_path = "${var.pre_sign_up_source_dir}.zip"
+}
+
+resource "aws_cloudwatch_log_group" "pre_sign_up" {
+  name              = "/aws/lambda/${var.name}-pre-sign-up"
+  retention_in_days = var.log_retention_days
+}
+
+data "aws_iam_policy_document" "assume_lambda" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "pre_sign_up" {
+  name               = "${var.name}-pre-sign-up"
+  assume_role_policy = data.aws_iam_policy_document.assume_lambda.json
+}
+
+data "aws_iam_policy_document" "pre_sign_up" {
+  statement {
+    sid       = "WriteOwnLogs"
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.pre_sign_up.arn}:*"]
+  }
+
+  statement {
+    sid       = "LinkUsers"
+    actions   = ["cognito-idp:ListUsers", "cognito-idp:AdminLinkProviderForUser"]
+    resources = [aws_cognito_user_pool.main.arn]
+  }
+}
+
+# Not a dependency of the function: the pool depends on the function and this
+# policy on the pool, so waiting for it would form a cycle.
+resource "aws_iam_role_policy" "pre_sign_up" {
+  name   = "${var.name}-pre-sign-up"
+  role   = aws_iam_role.pre_sign_up.id
+  policy = data.aws_iam_policy_document.pre_sign_up.json
+}
+
+resource "aws_lambda_function" "pre_sign_up" {
+  function_name    = "${var.name}-pre-sign-up"
+  role             = aws_iam_role.pre_sign_up.arn
+  runtime          = "nodejs24.x"
+  architectures    = ["arm64"]
+  handler          = "index.handler"
+  filename         = data.archive_file.pre_sign_up.output_path
+  source_code_hash = data.archive_file.pre_sign_up.output_base64sha256
+  memory_size      = 256
+  # Cognito waits at most 5 seconds for a trigger.
+  timeout = 5
+
+  environment {
+    variables = {
+      NODE_OPTIONS = "--enable-source-maps"
+      RELEASE      = var.release
+    }
+  }
+
+  logging_config {
+    log_format = "Text"
+    log_group  = aws_cloudwatch_log_group.pre_sign_up.name
+  }
+}
+
+resource "aws_lambda_permission" "pre_sign_up" {
+  statement_id  = "AllowCognito"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.pre_sign_up.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
 }

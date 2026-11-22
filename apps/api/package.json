@@ -10,6 +10,7 @@
     "db:migrate": "node --env-file-if-exists=.env src/db/migrate-cli.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "3.1175.0",
     "@aws-sdk/client-ssm": "3.1175.0",
     "@gainframe/shared": "workspace:*",
     "@hono/aws-lambda": "1.0.1",

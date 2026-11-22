@@ -1,16 +1,18 @@
+import type { AuthSession } from './session'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { needsRefresh, refreshSession, SessionExpiredError } from './refresh'
 
 const config = { origin: 'https://gainframe-dev.auth.example.com', clientId: 'client-1' }
 const NOW = new Date('2026-11-22T06:00:00.000Z')
-const session = {
+const session: AuthSession = {
   userId: 'sub-1',
   email: 'someone@example.com',
   accessToken: 'access-1',
   accessExpiresAt: '2026-11-22T06:30:00.000Z',
   refreshToken: 'refresh-1',
   expired: false,
+  method: 'email',
 }
 
 afterEach(() => {

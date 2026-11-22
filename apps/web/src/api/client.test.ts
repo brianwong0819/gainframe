@@ -17,6 +17,7 @@ const session: AuthSession = {
   accessExpiresAt: '2026-11-22T06:30:00.000Z',
   refreshToken: 'refresh-1',
   expired: false,
+  method: 'email',
 }
 const okSchema = z.object({ ok: z.boolean() })
 
