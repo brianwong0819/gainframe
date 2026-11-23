@@ -20,6 +20,7 @@ export const foodTableEntrySchema = z.object({
   source: foodTableSourceSchema,
 })
 
+export type FoodTableSource = z.infer<typeof foodTableSourceSchema>
 export type FoodTableEntry = z.infer<typeof foodTableEntrySchema>
 
 const nutrient = z.number().min(0).nullable()

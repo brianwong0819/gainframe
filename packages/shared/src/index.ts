@@ -28,6 +28,16 @@ export {
   pastFoods,
   scalePortion,
 } from './domain/nutrition.ts'
+export {
+  currentFoods,
+  foodLibrary,
+  type FoodOrigin,
+  type LibraryFood,
+  per100G,
+  type Portion,
+  portionOf,
+  withLibraryPortions,
+} from './domain/food-library.ts'
 export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export {
@@ -111,6 +121,10 @@ export {
   muscleGroupSchema,
 } from './schemas/exercise.ts'
 export {
+  type Food,
+  foodSchema,
+  type FoodServing,
+  foodServingSchema,
   type Meal,
   type MealItem,
   mealItemSchema,
@@ -123,6 +137,7 @@ export {
 export {
   type FoodTableEntry,
   foodTableEntrySchema,
+  type FoodTableSource,
   foodTableSourceSchema,
 } from './schemas/food-table.ts'
 export { instantSchema, type LocalDate, localDateSchema, syncedRowSchema } from './schemas/row.ts'

@@ -43,6 +43,13 @@
       "when": 1795418867752,
       "tag": "0005_deleted_users",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795430799492,
+      "tag": "0006_foods",
+      "breakpoints": true
     }
   ]
 }

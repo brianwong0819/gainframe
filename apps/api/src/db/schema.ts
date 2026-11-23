@@ -206,6 +206,19 @@ export const bodyMetrics = pgTable(
   pullIndex('body_metrics'),
 )
 
+export const foods = pgTable(
+  'foods',
+  {
+    ...syncedColumns,
+    tableId: text('table_id'),
+    name: text('name').notNull(),
+    proteinPer100G: doublePrecision('protein_per100_g').notNull(),
+    kcalPer100G: doublePrecision('kcal_per100_g').notNull(),
+    servings: jsonb('servings').notNull(),
+  },
+  pullIndex('foods'),
+)
+
 // One row per user: the last `server_version` handed out. A push locks this
 // row (`UPDATE ... RETURNING`), which serializes one user's pushes (ADR-0003).
 export const syncState = pgTable('sync_state', {
@@ -253,4 +266,5 @@ export const syncedTables = {
   mealItems,
   profiles,
   bodyMetrics,
+  foods,
 }

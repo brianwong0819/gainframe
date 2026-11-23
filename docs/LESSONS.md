@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-047 · 2026-11-23 · sync · The version 13 Dexie upgrade broke as soon as a synced table was added
+- **What happened:** adding the `foods` table (Dexie version 14) made the version 12 → 13 upgrade test fail with "Table foods not part of transaction". A device still on version 12 would have failed to open the app.
+- **Root cause:** `adoptBackedUpRows` (version 13) iterated `syncedTableNameSchema.options`, the current list of synced tables, which grows with each new table. An upgrade step only holds the tables of its own version.
+- **Fix:** PR `m3/12-food-library`: the upgrade names its version's tables in a constant.
+- **Prevention:** "Tests" in `docs/conventions.md`: an upgrade function names its own tables. The upgrade tests open every earlier version at the current one, which is what caught it.
+- **Status:** guarded (upgrade tests)
+
 ### L-046 · 2026-11-23 · food · A meal item's gram stepper showed "399" with no unit
 - **What happened:** bw opened a meal and asked what the 399 under 椰浆饭 meant. It was the portion in grams, but the stepper showed the bare number.
 - **Root cause:** `Stepper` was built for the workout panel, where the label beside it names the unit (kg, reps). The meal item reused it without that label, and nothing in the component asked for a unit.

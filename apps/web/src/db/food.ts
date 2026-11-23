@@ -1,4 +1,6 @@
 import {
+  currentFoods,
+  type Food,
   type LocalDate,
   type Meal,
   type MealItem,
@@ -8,6 +10,7 @@ import {
   pastFoods,
   type PastFood,
   toLocalDate,
+  withLibraryPortions,
 } from '@gainframe/shared'
 
 import type { NewRow, Repositories } from './repositories'
@@ -47,12 +50,66 @@ export async function foodDay(db: GainframeDb, date: LocalDate): Promise<FoodDay
   return { meals: withItems, totals: nutritionTotals(withItems.flatMap((meal) => meal.items)) }
 }
 
-/** The foods of every past meal, for the frequent and recent lists. */
+/**
+ * The foods of every past meal, for the frequent and recent lists; a food the
+ * user saved under the same name gives its first serving (M3-12).
+ */
 export async function knownFoods(
   db: GainframeDb,
   order: 'frequent' | 'recent',
 ): Promise<PastFood[]> {
-  return pastFoods(await db.mealItems.toArray(), order)
+  return withLibraryPortions(
+    pastFoods(await db.mealItems.toArray(), order),
+    await db.foods.toArray(),
+  )
+}
+
+/** The user's live foods and edits of table entries (M3-12). */
+export async function savedFoods(db: GainframeDb): Promise<Food[]> {
+  return currentFoods(await db.foods.toArray())
+}
+
+export type FoodValues = Omit<NewRow<Food>, 'tableId'>
+
+/**
+ * Saves a food: an own food by its id (a new one when `id` is null), or the
+ * edit of a table entry, updating the current edit when there is one, so an
+ * entry has one edit per device.
+ */
+export async function saveFood(
+  db: GainframeDb,
+  repos: Repositories,
+  target: { id: string | null; tableId: string | null },
+  values: FoodValues,
+): Promise<Food> {
+  return db.transaction('rw', db.foods, db.outbox, async () => {
+    const edit =
+      target.tableId === null
+        ? undefined
+        : currentFoods(await db.foods.where('tableId').equals(target.tableId).toArray())[0]
+    const id = target.id ?? edit?.id
+    if (id !== undefined) return repos.foods.update(id, values)
+    return repos.foods.create({ ...values, tableId: target.tableId })
+  })
+}
+
+/**
+ * Deletes an own food, or every edit of a table entry, which restores the
+ * entry as shipped. Logged meals keep their figures either way.
+ */
+export async function removeFood(
+  db: GainframeDb,
+  repos: Repositories,
+  target: { id: string | null; tableId: string | null },
+): Promise<void> {
+  await db.transaction('rw', db.foods, db.outbox, async () => {
+    const rows =
+      target.tableId === null
+        ? []
+        : await db.foods.where('tableId').equals(target.tableId).toArray()
+    const ids = new Set([...rows.map((row) => row.id), ...(target.id === null ? [] : [target.id])])
+    for (const id of ids) await repos.foods.remove(id)
+  })
 }
 
 export type NewMealItem = Omit<NewRow<MealItem>, 'mealId' | 'position'>

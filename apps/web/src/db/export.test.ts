@@ -82,6 +82,7 @@ describe('exportData', () => {
     expect(Object.keys(data.tables).sort()).toEqual([
       'bodyMetrics',
       'exercises',
+      'foods',
       'mealItems',
       'meals',
       'planDays',

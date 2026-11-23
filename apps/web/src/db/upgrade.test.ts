@@ -41,7 +41,8 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(13)
+    expect(await current.foods.count()).toBe(0)
+    expect(current.verno).toBe(14)
     current.close()
   })
 
@@ -70,7 +71,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(13)
+    expect(v3.verno).toBe(14)
     v3.close()
   })
 
@@ -174,7 +175,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(13)
+    expect(v5.verno).toBe(14)
     v5.close()
   })
 
@@ -223,7 +224,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(13)
+    expect(v6.verno).toBe(14)
     v6.close()
   })
 
@@ -288,7 +289,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(13)
+    expect(v7.verno).toBe(14)
     v7.close()
   })
 
@@ -337,7 +338,7 @@ describe('Dexie schema upgrades', () => {
       restEndsAt: null,
     })
     expect(await v8.outbox.count()).toBe(0)
-    expect(v8.verno).toBe(13)
+    expect(v8.verno).toBe(14)
     v8.close()
   })
 
@@ -425,7 +426,7 @@ describe('Dexie schema upgrades', () => {
       slot(1, 0).id,
       slot(2, 0).id,
     ])
-    expect(v9.verno).toBe(13)
+    expect(v9.verno).toBe(14)
     v9.close()
   })
 
@@ -462,7 +463,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v10.meals.where('localDate').equals('2026-11-22').count()).toBe(0)
     expect(await v10.profiles.count()).toBe(0)
     expect(await v10.outbox.count()).toBe(1)
-    expect(v10.verno).toBe(13)
+    expect(v10.verno).toBe(14)
     v10.close()
   })
 
@@ -514,7 +515,7 @@ describe('Dexie schema upgrades', () => {
     })
     expect(await v12.bodyMetrics.where('localDate').equals('2026-11-23').count()).toBe(0)
     expect(await v12.outbox.count()).toBe(0)
-    expect(v12.verno).toBe(13)
+    expect(v12.verno).toBe(14)
     v12.close()
   })
 
