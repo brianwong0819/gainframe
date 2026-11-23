@@ -25,7 +25,12 @@ function setup() {
     c.set('userId', user)
     return next()
   }
-  const app = createApp({ log, requireUser, db: drizzle.mock() })
+  const app = createApp({
+    log,
+    requireUser,
+    db: drizzle.mock(),
+    deleteIdentity: () => Promise.resolve(),
+  })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, logs }
 }
