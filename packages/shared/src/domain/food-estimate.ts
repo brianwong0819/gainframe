@@ -8,7 +8,7 @@ import { currentFoods } from './food-library.ts'
 // an entry id the table does not have, or an item without an entry that lacks
 // its own figures. The messages go back to the model for its one retry.
 export function visionReplyIssues(
-  reply: VisionReply,
+  reply: Pick<VisionReply, 'items'>,
   hasEntry: (id: string) => boolean,
 ): { path: (string | number)[]; message: string }[] {
   return reply.items.flatMap((item, index) => {
@@ -34,7 +34,7 @@ export function visionReplyIssues(
 // from the model's own per-100 g figures. Alternatives keep only known ids,
 // without the chosen one or repeats. Figures stay unrounded; screens round.
 export function resolveEstimate(
-  reply: VisionReply,
+  reply: Pick<VisionReply, 'items'>,
   entries: ReadonlyMap<string, FoodTableEntry>,
 ): FoodEstimateItem[] {
   return reply.items.map((item) => {

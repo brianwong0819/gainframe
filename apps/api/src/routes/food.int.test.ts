@@ -5,6 +5,8 @@ import {
   type EstimateAiRaw,
   FOOD_ESTIMATE_BODY_BYTES_MAX,
   foodEstimateResponseSchema,
+  TEXT_MEAL_CHARS_MAX,
+  textEstimateResponseSchema,
   TOKEN_HEADER,
   type VisionItem,
 } from '@gainframe/shared'
@@ -254,5 +256,64 @@ describe('POST /api/food/estimate', () => {
     const huge = { photo: { ...photo, base64: 'A'.repeat(FOOD_ESTIMATE_BODY_BYTES_MAX) } }
     expect((await estimate(app, newUser(), huge)).status).toBe(413)
     expect(provider.requests).toEqual([])
+  })
+})
+
+describe('POST /api/food/estimate-text', () => {
+  const question = { question: '饭是一碗还是半碗？', options: ['半碗', '一碗', '两碗'] }
+  const textReply = (questions: (typeof question)[], ...items: VisionItem[]) =>
+    reply(JSON.stringify({ dishName: 'Rice', questions, assumptions: '假设一碗饭。', items }))
+  const describeMeal = (app: ReturnType<typeof setup>['app'], user: string, body: unknown) =>
+    app.request('/api/food/estimate-text', {
+      method: 'POST',
+      headers: { [TOKEN_HEADER]: `Bearer ${user}`, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  it('returns the best estimate with its questions and assumptions', async () => {
+    const { app, provider, aiLine } = setup([textReply([question], item({}))])
+    const res = await describeMeal(app, newUser(), { text: '一碗白饭', locale: 'zh', answers: [] })
+
+    expect(res.status).toBe(200)
+    const body = textEstimateResponseSchema.parse(await res.json())
+    expect(body).toMatchObject({ questions: [question], assumptions: '假设一碗饭。' })
+    expect(body.items).toEqual([
+      expect.objectContaining({ entryId: rice.id, proteinG: rice.proteinPer100G * 2 }),
+    ])
+    expect(textOf(provider.requests[0] ?? { messages: [] })).toContain('一碗白饭')
+    expect(aiLine()).toMatchObject({ feature: 'textMeal', outcome: 'ok' })
+  })
+
+  it('sends the answers and asks no more questions after them', async () => {
+    const { app, provider } = setup([textReply([question], item({ grams: 100 }))])
+    const answers = [{ question: question.question, answer: '半碗' }]
+    const res = await describeMeal(app, newUser(), { text: '一碗白饭', locale: 'zh', answers })
+
+    const body = textEstimateResponseSchema.parse(await res.json())
+    expect(body.questions).toEqual([])
+    expect(textOf(provider.requests[0] ?? { messages: [] })).toContain('半碗')
+  })
+
+  it('rejects an empty or overlong description without calling the model', async () => {
+    const { app, provider } = setup([])
+    const empty = await describeMeal(app, newUser(), { text: ' ', locale: 'zh', answers: [] })
+    expect(empty.status).toBe(400)
+    const long = await describeMeal(app, newUser(), {
+      text: 'x'.repeat(TEXT_MEAL_CHARS_MAX + 1),
+      locale: 'en',
+      answers: [],
+    })
+    expect(long.status).toBe(400)
+    expect(provider.requests).toEqual([])
+  })
+
+  it('answers 503 when the model cannot be reached', async () => {
+    const res = await describeMeal(setup([{ throws: new Error('404') }]).app, newUser(), {
+      text: 'two eggs',
+      locale: 'en',
+      answers: [],
+    })
+    expect(res.status).toBe(503)
+    expect(await errorCode(res)).toBe('ai_unavailable')
   })
 })
