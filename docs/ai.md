@@ -45,6 +45,7 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 - The `global.` and `apac.` inference-profile IDs belong to `bedrock-runtime` (InvokeModel, Converse) and are not used.
 - IAM: `bedrock-mantle:CreateInference` on `project/*`, with the condition key `bedrock-mantle:Model` limiting the role to the configured models (AWS Service Authorization Reference, "Amazon Bedrock powered by AWS Mantle"). `bedrock:InvokeModel` does not apply to this endpoint.
 - The deploy smoke test makes one call (`{ "check": "ai" }`, feature `check`); a failure is a warning, because model access and credits are account settings.
+- 2026-11-23: the first dev call with `anthropic.claude-haiku-5-5` was authorised but answered 404 "model does not exist". Config now tries the account's `global.` profile ID on the same endpoint; if that also fails, Claude Haiku 5.5 needs model access in the Bedrock console (bw).
 - Re-check the model table before changing a model ID; models launch and retire.
 
 ## Prompts

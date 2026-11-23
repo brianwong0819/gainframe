@@ -29,7 +29,7 @@ export const aiConfig = z
     region: 'ap-southeast-1',
     features: {
       vision: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'global.anthropic.claude-haiku-5-5',
         effort: 'low',
         maxTokens: 2048,
         timeoutMs: 12_000,
@@ -38,7 +38,7 @@ export const aiConfig = z
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.
       check: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'global.anthropic.claude-haiku-5-5',
         effort: 'low',
         maxTokens: 256,
         timeoutMs: 12_000,
