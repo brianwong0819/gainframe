@@ -208,3 +208,24 @@ test('the calculator fills the daily targets from a few answers', async ({ page 
   await sheet.getByRole('button', { name: /^帮我算/ }).click()
   await expect(sheet.getByRole('textbox', { name: '体重 · 公斤' })).toHaveValue('62')
 })
+
+// ROADMAP M3-06: a photo chosen on the Food tab opens the estimate screen,
+// shrunk on the device. This build has no sign-in, so the screen explains why
+// an account is needed and offers the manual screen instead.
+const photo = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAGCAIAAABxZ0isAAAAEUlEQVR4nGM40ROAFTEMpAQAKq9OwUUQEEcAAAAASUVORK5CYII=',
+  'base64',
+)
+
+test('a meal photo opens the estimate screen, which asks to sign in first', async ({ page }) => {
+  await page.goto('/food')
+  await page
+    .getByLabel('拍照')
+    .setInputFiles({ name: 'meal.png', mimeType: 'image/png', buffer: photo })
+  await expect(page).toHaveURL(/\/food\/photo\/?$/)
+  await expect(page.getByRole('img', { name: '这餐的照片' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '登录后才能拍照估算' })).toBeVisible()
+  await expect(page.getByRole('link', { name: '登录' })).toBeVisible()
+  await page.getByRole('link', { name: '不等了，手动输入' }).click()
+  await expect(page).toHaveURL(/\/food\/add\/?$/)
+})

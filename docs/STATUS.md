@@ -3,7 +3,7 @@
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
-- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen next (M3-04 and M3-05 done once real Bedrock calls pass on dev)
+- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen in three PRs: (1) photo pick, on-device shrink, estimating screen, its states and the basic confirm screen; (2) the oil and sauce row; (3) the name-correction sheet with "remember this correction" and the small / regular / large choice (M3-04 and M3-05 done once real Bedrock calls pass on dev). Until M3-03 adds the offline photo queue, the offline state offers Retry and Enter by hand instead of saving the meal as waiting for its estimate
 - **Last updated:** 2026-11-23
 
 ## Now

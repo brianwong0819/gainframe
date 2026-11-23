@@ -57,6 +57,18 @@ describe('food log', () => {
     expect(meals.map(({ items }) => items.map((item) => item.name))).toEqual([['Egg', 'Toast']])
     expect(totals).toEqual({ proteinG: 10, kcal: 190 })
     expect(await db.outbox.count()).toBe(3)
+    expect(meal.name).toBeNull()
+  })
+
+  it("keeps an estimate's dish name as the meal's name", async () => {
+    const meal = await logMeal(db, repos, {
+      eatenAt: '2026-11-22T04:30:00.000Z',
+      timeZone: KL,
+      mealType: 'lunch',
+      name: 'Chicken rice',
+      items: [food('Roast chicken rice', 28, 630)],
+    })
+    expect(meal.name).toBe('Chicken rice')
   })
 
   it('lists the newest meal first and leaves out deleted meals', async () => {

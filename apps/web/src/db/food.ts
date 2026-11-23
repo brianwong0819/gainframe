@@ -117,18 +117,26 @@ export type NewMealItem = Omit<NewRow<MealItem>, 'mealId' | 'position'>
 /**
  * Logs a meal and its items in one transaction, so a meal never syncs without
  * its items. The day it counts for is computed in `timeZone` at `eatenAt`.
+ * `name` is the dish name an estimate gave; without one the first item names
+ * the meal.
  */
 export async function logMeal(
   db: GainframeDb,
   repos: Repositories,
-  values: { eatenAt: string; timeZone: string; mealType: MealType; items: NewMealItem[] },
+  values: {
+    eatenAt: string
+    timeZone: string
+    mealType: MealType
+    name?: string | null
+    items: NewMealItem[]
+  },
 ): Promise<Meal> {
   return db.transaction('rw', db.meals, db.mealItems, db.outbox, async () => {
     const meal = await repos.meals.create({
       eatenAt: values.eatenAt,
       localDate: toLocalDate(values.eatenAt, values.timeZone),
       mealType: values.mealType,
-      name: null,
+      name: values.name ?? null,
       photoKey: null,
     })
     for (const [position, item] of values.items.entries()) {

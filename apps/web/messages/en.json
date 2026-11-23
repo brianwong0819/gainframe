@@ -177,6 +177,7 @@
     "deleteMealConfirm": "Tap again to delete",
     "close": "Close",
     "editTargets": "Change daily targets",
+    "addPhoto": "Photo",
     "addManual": "Add by hand",
     "frequent": "Frequent",
     "logPortion": "Log a portion of {name}",
@@ -572,6 +573,53 @@
     "mine": "My foods",
     "edit": "Edit {name}",
     "edited": "Edited"
+  },
+  "photo": {
+    "title": "Photo estimate",
+    "mealType": "Meal",
+    "choose": "Choose a photo",
+    "noPhoto": "Choose a photo of the meal to estimate it.",
+    "photoAlt": "The meal photo",
+    "retake": "Retake",
+    "byHand": "Enter it by hand",
+    "wait": "Estimating, usually 3 to 8 seconds. The photo is only used for this estimate.",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "protein": "{value} g protein",
+    "kcal": "{value} kcal",
+    "reaches": "After logging, today's protein is {value} / {target} g, on target.",
+    "short": "After logging, today's protein is {value} / {target} g, {gap} g to go.",
+    "modelFigures": "AI figures",
+    "remove": "Remove {name}",
+    "removeShort": "Remove",
+    "nothingLeft": "No foods left",
+    "save": "Log {meal}",
+    "retry": "Retry",
+    "frequent": "Your frequent foods",
+    "signInAction": "Sign in",
+    "signIn": {
+      "title": "Sign in to estimate photos",
+      "body": "Photos are estimated on the server, which needs an account. Everything else works without one."
+    },
+    "offline": {
+      "title": "No connection",
+      "body": "Photos are estimated on the server. Retry once you are online, or enter the meal by hand."
+    },
+    "failed": {
+      "title": "The estimate did not come back",
+      "body": "Nothing was logged. Retry with the same photo, or enter the meal by hand."
+    },
+    "noFood": {
+      "title": "No food found",
+      "body": "Take the photo from above, with the whole plate in frame and good light."
+    },
+    "capped": {
+      "title": "Today's estimates are used up",
+      "body": "You can estimate {count} photos a day. More from {time}."
+    },
+    "aiTag": "AI",
+    "proteinLabel": "Protein",
+    "kcalLabel": "Energy",
+    "unitKcal": "kcal"
   },
   "foodSheet": {
     "title": "Edit food",
