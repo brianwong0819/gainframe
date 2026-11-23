@@ -8,6 +8,12 @@ import { BackLink } from '@/ui/back-link'
 import { Chevron } from '@/ui/chevron'
 import { PressableLink } from '@/ui/pressable'
 
+// The food table's sources, named as each asks to be cited (docs/design/credits.md).
+const SOURCES = [
+  { key: 'sourceMyfcd', href: 'https://myfcd.moh.gov.my/' },
+  { key: 'sourceUsda', href: 'https://fdc.nal.usda.gov/' },
+] as const
+
 export default function SettingsPage() {
   const t = useTranslations('settings')
   const tToday = useTranslations('today')
@@ -35,6 +41,18 @@ export default function SettingsPage() {
           <Chevron direction="right" />
         </span>
       </PressableLink>
+      <section className="flex flex-col gap-8">
+        <h2 className="text-label text-ink-3">{t('dataSources')}</h2>
+        <ul className="flex flex-col gap-4 text-label text-ink-2">
+          {SOURCES.map(({ key, href }) => (
+            <li key={key}>
+              <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                {t(key)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
     </main>
   )
 }

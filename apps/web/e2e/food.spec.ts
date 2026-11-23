@@ -52,6 +52,22 @@ test('a meal typed from a label is logged, and its food is then one tap away', a
   await expect(page.getByRole('button', { name: /^记入.* · 1 项 · 30 g$/ })).toBeEnabled()
 })
 
+// ROADMAP M3-11: a search also lists the bundled food table, one tap adding a serving.
+test('a search finds a food table entry, and one tap adds its serving', async ({ page }) => {
+  await page.goto('/food/add')
+  await page.getByRole('searchbox', { name: '搜索食物' }).fill('烤鸡胸肉')
+  await expect(page.getByRole('heading', { name: '食物库' })).toBeVisible()
+  await expect(page.getByText('120 g · 蛋白质 37 g · 198 kcal').first()).toBeVisible()
+  await page.getByRole('button', { name: '加一份烤鸡胸肉', exact: true }).click()
+
+  // The chosen serving stays in view once the search is cleared.
+  await page.getByRole('searchbox', { name: '搜索食物' }).fill('')
+  await expect(page.getByRole('button', { name: '减一份烤鸡胸肉', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: /^记入.* · 1 项 · 37 g$/ }).click()
+  await expect(page).toHaveURL(/\/food\/?$/)
+  await expect(page.getByRole('listitem').filter({ hasText: '198 kcal' })).toContainText('烤鸡胸肉')
+})
+
 // The prerendered dock shows before React attaches its handlers (L-028).
 test('"新建食物" opens its sheet even when tapped as soon as it shows', async ({ page }) => {
   await page.route(/\/_next\/static\/chunks\/.+\.js$/, async (route) => {

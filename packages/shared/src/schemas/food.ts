@@ -6,8 +6,9 @@ export const mealTypeSchema = z.enum(['breakfast', 'lunch', 'dinner', 'snack'])
 
 // Where an item's figures came from. ai: a photo or text estimate (M3-05,
 // M3-10), possibly corrected. manual: typed by the user, usually from a
-// nutrition label. frequent: copied from an earlier item with one tap.
-export const mealItemSourceSchema = z.enum(['ai', 'manual', 'frequent'])
+// nutrition label. frequent: copied from an earlier item with one tap. table:
+// a serving of a bundled food table entry (M3-11).
+export const mealItemSourceSchema = z.enum(['ai', 'manual', 'frequent', 'table'])
 
 // The largest stored model output for one item, as JSON text. An estimate holds
 // a name, its figures and a few alternative names, well under this.

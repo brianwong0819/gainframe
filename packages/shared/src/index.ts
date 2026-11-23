@@ -12,7 +12,7 @@ export {
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
-export { searchExercises } from './domain/exercise-search.ts'
+export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
   fillProteinGap,

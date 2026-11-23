@@ -1,5 +1,5 @@
 import type { BuiltInExercise, Exercise, MuscleGroup } from '@gainframe/shared'
-import { BUILT_IN_EXERCISES, muscleGroupSchema, searchExercises } from '@gainframe/shared'
+import { BUILT_IN_EXERCISES, muscleGroupSchema, searchByName } from '@gainframe/shared'
 
 import type { NewRow } from '@/db/repositories'
 import type { Locale } from '@/i18n/locale'
@@ -41,7 +41,7 @@ export function libraryEntries(
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((exercise): LibraryEntry => ({ ...exercise, custom: true }))
   const all = [...own, ...builtIns].filter((entry) => muscle === null || entry.muscle === muscle)
-  return searchExercises(all, query)
+  return searchByName(all, query)
 }
 
 // The name in the app's language, else the other one (a custom exercise may

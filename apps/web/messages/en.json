@@ -387,7 +387,10 @@
     "diagnosticsHint": "Version, storage, backup, error log and clearing data",
     "account": "Sign in and back up",
     "accountHint": "Your records are only on this device",
-    "accountSignedIn": "Signed in · {email}"
+    "accountSignedIn": "Signed in · {email}",
+    "dataSources": "Food data",
+    "sourceMyfcd": "Malaysian Food Composition Database (MyFCD), Ministry of Health Malaysia",
+    "sourceUsda": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019"
   },
   "signIn": {
     "title": "Sign in",
@@ -515,14 +518,15 @@
   "manual": {
     "title": "Add food",
     "mealType": "Meal",
-    "search": "Search your foods",
-    "searchLabel": "Search your foods",
+    "search": "Search foods",
+    "searchLabel": "Search foods",
     "created": "New",
     "frequent": "Frequent",
     "recent": "Recent",
     "results": "Your foods",
-    "noFoods": "Foods you log appear here. Add a new one from its nutrition label.",
-    "noMatch": "None of your foods match. Add it as a new food.",
+    "table": "Food table",
+    "noFoods": "Foods you log appear here. Search for a Malaysian or everyday food, or add one from its nutrition label.",
+    "noMatch": "No food matches. Add it as a new food.",
     "portion": "{grams} g · protein {protein} g · {kcal} kcal",
     "more": "Add a portion of {name}",
     "less": "Remove a portion of {name}",

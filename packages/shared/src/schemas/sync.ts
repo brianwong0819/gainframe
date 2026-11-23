@@ -13,8 +13,9 @@ import { workoutExerciseSchema, workoutSchema, workoutSetSchema } from './workou
 // `update_required`, so an old app asks to be updated instead of syncing.
 // Version 2 (M3-01) adds the meal tables, version 3 (M3-02) the profile, and
 // version 4 (M4-01) the profile's body fields and the body metrics, which an
-// older app cannot read in a pull and would clear in a push.
-export const SYNC_VERSION = 4
+// older app cannot read in a pull and would clear in a push. Version 5 (M3-11)
+// adds the meal item source `table`, which an older app fails to parse.
+export const SYNC_VERSION = 5
 export const SYNC_VERSION_HEADER = 'x-gainframe-sync-version'
 
 // Synced tables by their Dexie names; the server's Drizzle tables use the same keys.
