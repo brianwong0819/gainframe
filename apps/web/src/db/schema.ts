@@ -4,6 +4,7 @@ import {
   type BodyMetric,
   type ClientError,
   type Exercise,
+  type Food,
   type Meal,
   type MealItem,
   type Plan,
@@ -12,7 +13,6 @@ import {
   type Profile,
   sharedValueChanges,
   type SyncedTableName,
-  syncedTableNameSchema,
   type Workout,
   type WorkoutExercise,
   type WorkoutSet,
@@ -81,6 +81,7 @@ export class GainframeDb extends Dexie {
   mealItems!: Table<MealItem, string>
   profiles!: Table<Profile, string>
   bodyMetrics!: Table<BodyMetric, string>
+  foods!: Table<Food, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -205,6 +206,8 @@ export class GainframeDb extends Dexie {
       )
     // M2-06: a row's `userId` is set once the account holds it.
     this.version(13).stores({}).upgrade(adoptBackedUpRows)
+    // M3-12: the user's foods and edits of food table entries, found by entry.
+    this.version(14).stores({ foods: 'id, tableId' })
   }
 }
 
@@ -213,6 +216,22 @@ export class GainframeDb extends Dexie {
 // device, every row with no change waiting is in the account. A row the server
 // refused for good also has none and is labelled too; it stays on the device as
 // before. A signed-out device has nothing to adopt.
+// The upgrade names the synced tables of version 13 itself: a table added in a
+// later version is not part of this step's transaction.
+const V13_SYNCED_TABLES = [
+  'exercises',
+  'plans',
+  'planDays',
+  'planItems',
+  'workouts',
+  'workoutExercises',
+  'workoutSets',
+  'meals',
+  'mealItems',
+  'profiles',
+  'bodyMetrics',
+] as const satisfies readonly SyncedTableName[]
+
 export async function adoptBackedUpRows(tx: Transaction): Promise<void> {
   const session = parseSession(await tx.table<DeviceSetting, string>('settings').get('authSession'))
   if (session === null) return
@@ -221,7 +240,7 @@ export async function adoptBackedUpRows(tx: Transaction): Promise<void> {
       (entry) => `${entry.table} ${entry.rowId}`,
     ),
   )
-  for (const table of syncedTableNameSchema.options) {
+  for (const table of V13_SYNCED_TABLES) {
     await tx
       .table<{ id: string; userId: string | null }, string>(table)
       .filter((row) => row.userId === null && !waiting.has(`${table} ${row.id}`))

@@ -45,6 +45,12 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-048 · 2026-11-23 · sync · The version 13 Dexie upgrade broke as soon as a synced table was added
+- **What happened:** adding the `foods` table (Dexie version 14) made the version 12 → 13 upgrade test fail with "Table foods not part of transaction". A device still on version 12 would have failed to open the app.
+- **Root cause:** `adoptBackedUpRows` (version 13) iterated `syncedTableNameSchema.options`, the current list of synced tables, which grows with each new table. An upgrade step only holds the tables of its own version.
+- **Fix:** PR `m3/12-food-library`: the upgrade names its version's tables in a constant.
+- **Prevention:** "Tests" in `docs/conventions.md`: an upgrade function names its own tables. The upgrade tests open every earlier version at the current one, which is what caught it.
+- **Status:** guarded (upgrade tests)
 ### L-047 · 2026-11-23 · ai · The Bedrock provider sent JSON Schema limits the output format rejects
 - **What happened:** writing M3-05, the photo estimate's schema came out of `z.toJSONSchema` with `minimum`, `maximum`, `maxLength` and `maxItems`. The M3-04 provider passed the schema on with only `$schema` removed, so the first real call with it would have been refused; the deploy's AI check (`z.int()`, which also yields `minimum` and `maximum`) had not reached that point because the model returned 404.
 - **Root cause:** the provider was written from the shape of `output_config.format` without the list of JSON Schema features structured outputs supports; the SDK applies its own transform only in its Zod and JSON-schema helpers, which the provider does not use.
