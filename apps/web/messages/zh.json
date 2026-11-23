@@ -536,7 +536,13 @@
     "signOutAnyway": "仍然退出，丢掉 {count} 条",
     "signOutAnywayConfirm": "再点一次，确认丢掉 {count} 条",
     "cardText": "{workouts} 次训练只存在这台手机",
-    "dismiss": "不再提醒"
+    "dismiss": "不再提醒",
+    "delete": "删除账号和全部记录",
+    "deleteConfirm": "再点一次，永久删除",
+    "deleteBody": "会永久删除账号，以及云端和这台手机上的所有训练、计划、饮食和身体记录。删除后无法恢复，需要的话先在诊断页导出。",
+    "deleting": "正在删除…",
+    "deleteOffline": "删除账号需要网络。",
+    "deleteFailed": "没删成，账号和记录都还在。请检查网络后再试。"
   },
   "manual": {
     "title": "添加食物",
