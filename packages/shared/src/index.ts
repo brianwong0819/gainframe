@@ -91,6 +91,7 @@ export {
   nextSetValues,
   previousPerformance,
   type RecordKind,
+  setsFollowingWeight,
   setsTakingWeight,
   type SetValues,
   totalVolumeKg,

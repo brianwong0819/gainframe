@@ -37,6 +37,7 @@ import { allowScreenOff, keepScreenOn, prepareRestCue, watchRestCue } from './re
 import { RestPanel, RestPill, useRest } from './rest-timer'
 import { SessionHeader } from './session-header'
 import { SetDetails } from './set-details'
+import { SetFields } from './set-fields'
 import { SetPanel } from './set-panel'
 import { SetTable } from './set-table'
 import { SlotActions } from './slot-actions'
@@ -122,8 +123,10 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   useScreenOn()
   useEffect(watchRestCue, [])
   const selected = selectedSet(state, chosenId)
-  const selectedSlot = state.slots.find(({ slot }) => slot.id === selected?.slotId)?.slot
-  const selectedRange = selectedSlot ? slotRepRange(selectedSlot) : null
+  const rangeOf = (slotId: string) => {
+    const slot = state.slots.find((slotState) => slotState.slot.id === slotId)?.slot
+    return slot ? slotRepRange(slot) : null
+  }
   const slotRows = state.slots.map(({ slot }) => slot)
   const labels = supersetLabels(slotRows)
   const nameOf = (exerciseId: string) => exerciseName(findExercise(exerciseId, custom), locale)
@@ -247,7 +250,12 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
     exercise: sheetExercise ? exerciseName(sheetExercise, locale) : '',
     picker: t('pickerTitle'),
     finish: t('finishTitle'),
-    set: sheet?.kind === 'set' ? `${t('colSet')} ${String(sheet.n)}` : '',
+    set:
+      sheet?.kind === 'set'
+        ? sheetSet !== undefined && sheetSet.completedAt !== null
+          ? `${nameOf(sheetSet.exerciseId)} · ${t('colSet')} ${String(sheet.n)}`
+          : `${t('colSet')} ${String(sheet.n)}`
+        : '',
     actions: sheetSlot ? nameOf(sheetSlot.exerciseId) : '',
     rest: t('restTitle'),
     superset: t('supersetSheetTitle', { letter: sheetSuperset?.letter ?? '' }),
@@ -368,7 +376,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
             exercise={findExercise(selected.exerciseId, custom)}
             supersetLabel={labels.get(selected.slotId) ?? null}
             unit={unitOf(selected.exerciseId)}
-            repRange={selectedRange}
+            repRange={rangeOf(selected.slotId)}
             onDetails={() => {
               open({ kind: 'set', setId: selected.set.id, n: selected.n })
             }}
@@ -395,7 +403,22 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         title={sheet ? title[sheet.kind] : ''}
         fullHeight={sheet?.kind === 'picker'}
       >
-        {sheetSet && <SetDetails set={sheetSet} onDeleted={close} />}
+        {sheetSet && sheet?.kind === 'set' && (
+          <div className="flex flex-col gap-20">
+            {/* A done set is corrected here; a set still to do has the panel. */}
+            {sheetSet.completedAt !== null && (
+              <SetFields
+                set={sheetSet}
+                n={sheet.n}
+                exerciseId={sheetSet.exerciseId}
+                exercise={findExercise(sheetSet.exerciseId, custom)}
+                unit={unitOf(sheetSet.exerciseId)}
+                repRange={rangeOf(sheetSet.workoutExerciseId)}
+              />
+            )}
+            <SetDetails set={sheetSet} onDeleted={close} />
+          </div>
+        )}
         {sheetSlot && (
           <SlotActions
             key={sheetSlot.id}
