@@ -1,7 +1,7 @@
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { currentProfile, saveTargets } from './profile'
+import { applyEstimate, currentProfile, latestBodyMetric, saveTargets } from './profile'
 import { createRepositories } from './repositories'
 import { GainframeDb } from './schema'
 
@@ -73,5 +73,54 @@ describe('daily targets', () => {
     const profile = await saveTargets(db, repos, { proteinG: 140, kcal: 2800 })
     await repos.profiles.remove(profile.id)
     expect(await currentProfile(db)).toBeUndefined()
+  })
+})
+
+describe('applyEstimate', () => {
+  const answers = {
+    sex: 'male',
+    birthYear: 2001,
+    heightCm: 175,
+    weightKg: 62,
+    activityLevel: 'moderate',
+    phase: 'bulk',
+  } as const
+  const apply = (weightKg: number, measuredAt: string) =>
+    applyEstimate(db, repos, {
+      answers: { ...answers, weightKg },
+      targets: { proteinG: 125, kcal: 2750 },
+      measuredAt,
+      timeZone: 'Asia/Kuala_Lumpur',
+    })
+
+  it('stores the answers and targets on the profile and the weight as a weigh-in', async () => {
+    await saveTargets(db, repos, { proteinG: 140, kcal: 2800 })
+    await apply(62, '2026-11-22T16:30:00.000Z')
+
+    expect(await db.profiles.count()).toBe(1)
+    expect(await currentProfile(db)).toMatchObject({
+      sex: 'male',
+      birthYear: 2001,
+      heightCm: 175,
+      activityLevel: 'moderate',
+      phase: 'bulk',
+      proteinValue: 125,
+      kcalTarget: 2750,
+    })
+    // 16:30 UTC is 00:30 the next day in Kuala Lumpur.
+    expect(await latestBodyMetric(db)).toMatchObject({
+      weightKg: 62,
+      localDate: '2026-11-23',
+      source: 'manual',
+    })
+  })
+
+  it('does not store the same weight twice on one day, but keeps a changed one', async () => {
+    await apply(62, '2026-11-23T01:00:00.000Z')
+    await apply(62, '2026-11-23T02:00:00.000Z')
+    expect(await db.bodyMetrics.count()).toBe(1)
+    await apply(62.5, '2026-11-23T03:00:00.000Z')
+    expect(await db.bodyMetrics.count()).toBe(2)
+    expect((await latestBodyMetric(db))?.weightKg).toBe(62.5)
   })
 })

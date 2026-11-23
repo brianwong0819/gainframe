@@ -121,3 +121,35 @@ test('Today suggests a frequent food for the protein gap and logs it in one tap'
   await page.getByRole('button', { name: '记一份鸡胸肉' }).click()
   await expect(page.getByText('78', { exact: true })).toBeVisible()
 })
+
+test('the calculator fills the daily targets from a few answers', async ({ page }) => {
+  await page.goto('/food')
+  await page.getByRole('button', { name: '设定每日目标' }).click()
+  const sheet = page.getByRole('dialog', { name: '每日目标' })
+  await sheet.getByRole('button', { name: /^帮我算/ }).click()
+
+  // A man of 22 and 170 cm, the calculator's start, at 62 kg: resting energy
+  // 1,578 × 1.55 + 300 = 2,746, to the nearest 50; 62 kg × 2.0 g = 124, to the nearest 5.
+  const weight = sheet.getByRole('textbox', { name: '体重 · 公斤' })
+  await weight.click()
+  await weight.fill('62')
+  await weight.press('Enter')
+  await expect(sheet.getByText('蛋白质 125 g')).toBeVisible()
+  await expect(sheet.getByText('热量 2,750 kcal')).toBeVisible()
+  await expect(sheet.getByText('热量 = 基础代谢 1,578 × 活动系数 1.55 +300 kcal')).toBeVisible()
+
+  await sheet.getByRole('button', { name: '减脂' }).click()
+  await expect(sheet.getByText('热量 2,050 kcal')).toBeVisible()
+  await sheet.getByRole('button', { name: '增肌' }).click()
+  await sheet.getByRole('button', { name: '用这个目标' }).click()
+
+  await expect(sheet.getByRole('textbox', { name: '蛋白质目标（克）' })).toHaveValue('125')
+  await expect(sheet.getByRole('textbox', { name: '热量目标（千卡）' })).toHaveValue('2750')
+  await sheet.getByRole('button', { name: '关闭' }).click()
+  await expect(page.getByRole('button', { name: '修改每日目标' })).toContainText('0 / 125 g')
+
+  // The answers are kept: the calculator opens again where they were left.
+  await page.getByRole('button', { name: '修改每日目标' }).click()
+  await sheet.getByRole('button', { name: /^帮我算/ }).click()
+  await expect(sheet.getByRole('textbox', { name: '体重 · 公斤' })).toHaveValue('62')
+})
