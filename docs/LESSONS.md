@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-047 · 2026-11-23 · ai · The Bedrock provider sent JSON Schema limits the output format rejects
+- **What happened:** writing M3-05, the photo estimate's schema came out of `z.toJSONSchema` with `minimum`, `maximum`, `maxLength` and `maxItems`. The M3-04 provider passed the schema on with only `$schema` removed, so the first real call with it would have been refused; the deploy's AI check (`z.int()`, which also yields `minimum` and `maximum`) had not reached that point because the model returned 404.
+- **Root cause:** the provider was written from the shape of `output_config.format` without the list of JSON Schema features structured outputs supports; the SDK applies its own transform only in its Zod and JSON-schema helpers, which the provider does not use.
+- **Fix:** PR `m3/05-vision-estimate`: the provider passes every schema through the SDK's `transformJSONSchema`; Zod still checks the limits.
+- **Prevention:** a provider test asserts that `minimum` and `maximum` leave the schema sent to the model; "Rules" in `docs/ai.md` names the transform.
+- **Status:** guarded
+
 ### L-046 · 2026-11-23 · food · A meal item's gram stepper showed "399" with no unit
 - **What happened:** bw opened a meal and asked what the 399 under 椰浆饭 meant. It was the portion in grams, but the stepper showed the bare number.
 - **Root cause:** `Stepper` was built for the workout panel, where the label beside it names the unit (kg, reps). The meal item reused it without that label, and nothing in the component asked for a unit.

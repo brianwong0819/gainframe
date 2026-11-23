@@ -1,4 +1,5 @@
 import { AnthropicBedrockMantle } from '@anthropic-ai/bedrock-sdk'
+import { transformJSONSchema } from '@anthropic-ai/sdk/lib/transform-json-schema'
 
 import type { AiContent, AiProvider, AiResponse } from './provider.ts'
 
@@ -33,10 +34,10 @@ export function bedrockProvider(
   return {
     name: 'bedrock',
     generate: async (request) => {
-      // The JSON Schema dialect line is not part of the output format.
-      const schema = Object.fromEntries(
-        Object.entries(request.jsonSchema).filter(([key]) => key !== '$schema'),
-      )
+      // The output format supports a subset of JSON Schema: the SDK's own
+      // transform drops the dialect line and moves limits it cannot enforce,
+      // such as `maximum` and `maxLength`, into descriptions. Zod still checks them.
+      const schema = transformJSONSchema(request.jsonSchema)
       const message = await client.messages.create(
         {
           model: request.model,

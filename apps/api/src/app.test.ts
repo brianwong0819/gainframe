@@ -30,6 +30,7 @@ function setup() {
     requireUser,
     db: drizzle.mock(),
     deleteIdentity: () => Promise.resolve(),
+    generate: () => Promise.reject(new Error('no AI route here')),
   })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, lines, logs }
