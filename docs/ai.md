@@ -18,6 +18,15 @@ Plan reviewed 2026-11-22 (bw chose every recommendation): food estimates take th
 - Health safety: injury, medication, eating-disorder or extreme-diet topics → suggest a professional. UI states "not medical advice".
 - Photos are re-encoded on the device before upload (long edge ≤ 1600 px), which drops EXIF data such as location. The image sent to the model may be smaller still; its size is set in config and chosen with `pnpm eval:vision`.
 
+## Who can use AI
+
+AI calls cost money per call, so the AI features are open only to members of the Cognito group `ai` (bw, 2026-11-24). Everyone else, signed in or not, keeps every other feature.
+
+- The API reads the groups from the verified access token (`cognito:groups`, `AI_GROUP` in `packages/shared/src/ai-access.ts`) and answers 403 `ai_not_enabled` before any model call or cap count (`apps/api/src/routes/food.ts`). Later AI routes (coach, weekly report) use the same check.
+- The web app reads the same claim from the stored token (`src/auth/groups.ts`) only to choose what to show: the AI entry points are greyed out with one line saying how to get them (signed out: sign in, then ask the administrator; signed in: ask the administrator). A 403 that still arrives, for example after a removal, shows its own problem state.
+- The group is created by Terraform (`infra/modules/auth`); bw adds a member in the Cognito console (User pool, Groups, `ai`, Add user). A new member's access token carries the group from its next refresh, within an hour, or at once after signing out and in.
+- The per-user daily caps stay in place for members.
+
 ## Models and cost
 
 Each feature's model is chosen with its eval, comparing accuracy and cost per call; the eval report has a cost column. Rough cost per food photo at first-party list prices (check Bedrock pricing before relying on them): with the food table in the prompt (about 35,000 input tokens), Claude Haiku 5.5 about $0.004, Claude Sonnet 5.5 about $0.075, Claude Opus 5.5 about $0.15. At four photos a day that is roughly $0.5, $9 or $18 a month against the $5 budget, so the cheapest model that holds the eval's accuracy wins. The weekly report and plateau analysis run once a week per user and can use a larger model.

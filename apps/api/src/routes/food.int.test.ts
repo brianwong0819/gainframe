@@ -33,9 +33,12 @@ afterAll(async () => {
   await pool.end()
 })
 
-// Stands in for auth.ts: the token is the user's `sub`.
+// Stands in for auth.ts: the token is the user's `sub`; a user whose `sub`
+// starts with `no-ai-` is not in the AI group.
 const requireUser: MiddlewareHandler<AppEnv> = async (c, next) => {
-  c.set('userId', c.req.header(TOKEN_HEADER)?.replace('Bearer ', '') ?? '')
+  const userId = c.req.header(TOKEN_HEADER)?.replace('Bearer ', '') ?? ''
+  c.set('userId', userId)
+  c.set('aiAllowed', !userId.startsWith('no-ai-'))
   return next()
 }
 
@@ -212,6 +215,15 @@ describe('POST /api/food/estimate', () => {
     })
   })
 
+  it('answers 403 for a user outside the AI group, without calling the model', async () => {
+    const { app, provider } = setup([])
+    const res = await estimate(app, `no-ai-${randomUUID()}`)
+
+    expect(res.status).toBe(403)
+    expect(await errorCode(res)).toBe('ai_not_enabled')
+    expect(provider.requests).toEqual([])
+  })
+
   it('answers 429 once the daily cap is used, without calling the model', async () => {
     const user = newUser()
     await db.insert(aiUsage).values({
@@ -304,6 +316,18 @@ describe('POST /api/food/estimate-text', () => {
       answers: [],
     })
     expect(long.status).toBe(400)
+    expect(provider.requests).toEqual([])
+  })
+
+  it('answers 403 for a user outside the AI group, without calling the model', async () => {
+    const { app, provider } = setup([])
+    const res = await describeMeal(app, `no-ai-${randomUUID()}`, {
+      text: 'two eggs',
+      locale: 'en',
+      answers: [],
+    })
+    expect(res.status).toBe(403)
+    expect(await errorCode(res)).toBe('ai_not_enabled')
     expect(provider.requests).toEqual([])
   })
 

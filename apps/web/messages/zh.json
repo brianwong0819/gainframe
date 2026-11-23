@@ -641,6 +641,14 @@
       "large": "大份"
     },
     "portionGrams": "{grams} g",
+    "locked": {
+      "signedOut": "登录后，请管理员为你的账号开通 AI 功能。",
+      "notEnabled": "这个账号还没开通 AI 功能，请联系管理员开通。"
+    },
+    "notEnabled": {
+      "title": "AI 估算还没开放给这个账号",
+      "body": "这个账号还不能用 AI 估算，其他功能都能照常用。先手动输入这餐，什么都没有记下。"
+    },
     "unavailable": {
       "title": "AI 服务暂时用不了",
       "body": "现在没法做 AI 估算，重试也没用。先手动输入这餐，什么都没有记下。"

@@ -1,5 +1,6 @@
 // Public entry of @gainframe/shared: Zod schemas, inferred types and pure domain
 // functions used by both apps.
+export { AI_GROUP, groupsAllowAi } from './ai-access.ts'
 export { type ApiError, apiErrorSchema } from './api-error.ts'
 export {
   CLIENT_ERROR_MESSAGE_MAX,

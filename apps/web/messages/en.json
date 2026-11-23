@@ -641,6 +641,14 @@
       "large": "Large"
     },
     "portionGrams": "{grams} g",
+    "locked": {
+      "signedOut": "Sign in, then ask the administrator to turn on AI features for your account.",
+      "notEnabled": "AI features are not enabled for this account. Ask the administrator to turn them on."
+    },
+    "notEnabled": {
+      "title": "AI estimates are not enabled for this account",
+      "body": "This account cannot use AI estimates yet; everything else works as usual. Enter this meal by hand. Nothing was saved."
+    },
     "unavailable": {
       "title": "The AI service is unavailable",
       "body": "AI estimates cannot run right now, and retrying will not help yet. Enter the meal by hand; nothing was logged."

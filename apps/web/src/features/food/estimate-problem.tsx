@@ -12,6 +12,7 @@ import { PressableLink } from '@/ui/pressable'
 // is a description that names no food.
 export type EstimateProblem =
   | 'signIn'
+  | 'notEnabled'
   | 'offline'
   | 'unavailable'
   | 'timeout'
@@ -23,6 +24,7 @@ export type EstimateProblem =
 
 // The API's AI error codes as problems; any other answer is a failed estimate.
 const API_PROBLEMS: Partial<Record<ApiError['error']['code'], EstimateProblem>> = {
+  ai_not_enabled: 'notEnabled',
   ai_capped: 'capped',
   ai_unavailable: 'unavailable',
   ai_timeout: 'timeout',

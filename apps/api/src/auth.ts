@@ -1,4 +1,4 @@
-import { TOKEN_HEADER, tokenFromHeader } from '@gainframe/shared'
+import { groupsAllowAi, TOKEN_HEADER, tokenFromHeader } from '@gainframe/shared'
 import { decode, verifyWithJwks } from 'hono/jwt'
 import type { MiddlewareHandler } from 'hono'
 import { z } from 'zod'
@@ -64,12 +64,14 @@ function claimsSchema(clientId: string) {
     // hono/jwt checks `exp` only when the token has one; Cognito's always do,
     // so a token without one is refused rather than accepted forever.
     exp: z.number(),
+    'cognito:groups': z.array(z.string()).default([]),
   })
 }
 
 /**
  * Accepts only a valid Cognito access token for the web app and sets
- * `userId` to its `sub` and `username` to its `username`. Every other request gets 401; the token is never logged.
+ * `userId` to its `sub`, `username` to its `username` and `aiAllowed` from its
+ * groups. Every other request gets 401; the token is never logged.
  */
 export function requireUser(
   config: AuthConfig,
@@ -84,10 +86,13 @@ export function requireUser(
     }
     c.set('userId', user.sub)
     c.set('username', user.username)
+    c.set('aiAllowed', user.aiAllowed)
     return next()
   }
 
-  async function verifiedUser(token: string): Promise<{ sub: string; username: string } | null> {
+  async function verifiedUser(
+    token: string,
+  ): Promise<{ sub: string; username: string; aiAllowed: boolean } | null> {
     let kid: string | undefined
     try {
       kid = decode(token).header.kid
@@ -104,7 +109,9 @@ export function requireUser(
         allowedAlgorithms: ['RS256'],
       })
       const result = claims.safeParse(payload)
-      return result.success ? { sub: result.data.sub, username: result.data.username } : null
+      if (!result.success) return null
+      const { sub, username } = result.data
+      return { sub, username, aiAllowed: groupsAllowAi(result.data['cognito:groups']) }
     } catch {
       return null
     }
