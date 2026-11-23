@@ -58,6 +58,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
 - Commits: Conventional Commits (`feat(workout): …`, `fix(sync): …`, `chore`, `docs`, `test`, `refactor`, `ci`, `infra`). One logical change per commit.
 - PR title: `<type>(<scope>): <summary> [M1-05]`. Squash-merge.
 - Lockfile changes only with a matching `package.json` change.
+- After a merge, resolve each conflicted file by hand, then run `git diff --check origin/main` (it reports leftover conflict markers) before `git add`; never `git add -A` an unfinished merge (L-044).
 
 ## Dependencies
 
