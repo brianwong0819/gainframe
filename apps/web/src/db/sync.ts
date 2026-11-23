@@ -14,6 +14,7 @@ import type { GainframeDb, OutboxEntry } from './schema'
 
 interface SyncedRow {
   id: string
+  userId: string | null
   updatedAt: string
 }
 
@@ -101,15 +102,19 @@ export interface RejectedRow {
   result: Extract<PushResult, { status: 'rejected' }>
 }
 
-// Removes the outbox entries a push settled. A row rejected for clock skew stays
-// queued: once the device clock is right, the next push can succeed. Returns the
-// rows rejected for good, and how many entries were removed.
+// Removes the outbox entries a push settled, and sets `userId` on each row the
+// account now holds (applied, or ignored because the account has it already),
+// which is how the device tells what is backed up (M2-06). A row rejected for
+// clock skew stays queued: once the device clock is right, the next push can
+// succeed. Returns the rows rejected for good, and how many entries were removed.
 export async function settlePush(
   db: GainframeDb,
+  userId: string,
   batch: PushEntry[],
   results: PushResult[],
 ): Promise<{ removed: number; rejected: RejectedRow[] }> {
   const settled: PushEntry[] = []
+  const held: PushEntry[] = []
   const rejected: RejectedRow[] = []
   batch.forEach((entry, index) => {
     const result = results[index]
@@ -117,10 +122,19 @@ export async function settlePush(
     if (result.status === 'rejected') {
       if (result.reason === 'clock_skew') return
       rejected.push({ table: entry.table, rowId: entry.rowId, result })
+    } else {
+      held.push(entry)
     }
     settled.push(entry)
   })
-  const removed = await db.transaction('rw', db.outbox, () => removeEntries(db, settled))
+  const removed = await db.transaction('rw', [db.outbox, ...syncedTables(db)], async () => {
+    for (const entry of held) {
+      const table = syncedTable(db, entry.table)
+      const row = await table.get(entry.rowId)
+      if (row?.userId === null) await table.put({ ...row, userId })
+    }
+    return removeEntries(db, settled)
+  })
   return { removed, rejected }
 }
 

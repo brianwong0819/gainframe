@@ -173,6 +173,17 @@ runs:
           echo "::error::the API cannot reach its database"
           exit 1
         fi
+        # One real model call through the AI pipeline. A warning rather than a
+        # failure: model access and credits are account settings bw changes
+        # by hand, and the rest of the app does not depend on them.
+        aws lambda invoke --function-name "${FUNCTION_NAME}" --cli-binary-format raw-in-base64-out \
+          --payload '{"check":"ai"}' --output json "${RUNNER_TEMP}/ai.json" \
+          > "${RUNNER_TEMP}/ai-invoke.json"
+        cat "${RUNNER_TEMP}/ai.json"; echo
+        if [ "$(jq -r '.FunctionError // empty' "${RUNNER_TEMP}/ai-invoke.json")" != "" ] \
+          || [ "$(jq -r '.ai' "${RUNNER_TEMP}/ai.json")" != "ok" ]; then
+          echo "::warning::the AI check did not succeed; see the 'ai call' line in the API log group"
+        fi
         request_id=$(tr -d '\r' < "${RUNNER_TEMP}/health.headers" \
           | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
         if [ -z "${request_id}" ]; then

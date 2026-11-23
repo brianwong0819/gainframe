@@ -42,6 +42,7 @@ const now = () => Math.floor(Date.now() / 1000)
 function claims(overrides: Record<string, unknown> = {}) {
   return {
     sub: 'user-a',
+    username: 'user-a',
     iss: config.issuer,
     client_id: config.clientId,
     token_use: 'access',
@@ -99,6 +100,11 @@ describe('requireUser', () => {
   it('rejects an expired token', async () => {
     const { signingKey, call } = await setup()
     await expectUnauthorized(await call(await sign(claims({ exp: now() - 1 }), signingKey)))
+  })
+
+  it('rejects a token without an expiry, which would never expire', async () => {
+    const { signingKey, call } = await setup()
+    await expectUnauthorized(await call(await sign(claims({ exp: undefined }), signingKey)))
   })
 
   it('rejects a token from another issuer', async () => {

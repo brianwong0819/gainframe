@@ -15,6 +15,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   uuid,
 } from 'drizzle-orm/pg-core'
@@ -210,6 +211,32 @@ export const bodyMetrics = pgTable(
 export const syncState = pgTable('sync_state', {
   userId: text('user_id').primaryKey(),
   serverVersion: bigint('server_version', { mode: 'number' }).notNull().default(0),
+})
+
+// Server-only, never synced: one row per user, day and AI feature, counting
+// the calls made and their tokens. A call is counted before it is made, so the
+// daily cap holds even when calls fail (apps/api/src/ai/usage.ts). `day` is
+// the UTC date: a date sent by the client could be changed to reset the cap.
+export const aiUsage = pgTable(
+  'ai_usage',
+  {
+    userId: text('user_id').notNull(),
+    day: date('day', { mode: 'string' }).notNull(),
+    feature: text('feature').notNull(),
+    calls: integer('calls').notNull(),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    outputTokens: integer('output_tokens').notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day, table.feature] })],
+)
+
+// Accounts deleted with DELETE /api/account (M2-10): only the opaque Cognito
+// `sub`, never personal data. An access token stays valid for up to an hour
+// after its user is deleted, so a push checks this table and refuses the
+// user instead of recreating rows for an account that no longer exists.
+export const deletedUsers = pgTable('deleted_users', {
+  userId: text('user_id').primaryKey(),
+  deletedAt: instant('deleted_at').notNull(),
 })
 
 // The synced tables, keyed by the client's table names (`SyncedTableName` in

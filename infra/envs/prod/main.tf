@@ -52,8 +52,9 @@ module "site" {
 module "auth" {
   source = "../../modules/auth"
 
-  name       = local.name
-  ssm_prefix = "/gainframe/prod"
+  name          = local.name
+  ssm_prefix    = "/gainframe/prod"
+  api_role_name = module.api.role_name
 
   pre_sign_up_source_dir = "${path.root}/../../../apps/api/dist/pre-sign-up"
   log_retention_days     = 30
@@ -64,4 +65,15 @@ module "auth" {
   # against dev.
   callback_urls = ["https://${module.site.domain_name}/settings/sign-in"]
   logout_urls   = ["https://${module.site.domain_name}/settings"]
+}
+
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  name              = local.name
+  api_function_name = module.api.function_name
+  log_groups = {
+    api         = module.api.log_group
+    pre-sign-up = module.auth.pre_sign_up_log_group
+  }
 }

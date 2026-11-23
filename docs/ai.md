@@ -13,7 +13,7 @@ Plan reviewed 2026-11-22 (bw chose every recommendation): food estimates take th
 - Check `stop_reason` before reading content: `refusal` and `max_tokens` are outcomes, not crashes.
 - Timeouts on every call. One `info` log line per call with `requestId`, feature, provider, model, prompt version, latency, tokens in/out (including cache reads and writes) and outcome (`ok`, `retried`, `invalid`, `refused`, `timeout`, `capped`, `provider_error`). On invalid output, log the Zod issue paths, not the output. Never log the image, prompts or model text.
 - Bedrock model invocation logging stays off: it would store images and prompts. To debug a bad answer, use what the product already keeps (`meal_items.ai_raw`, `weekly_summaries`, `nudges.analysis`), each stored with model and prompt version.
-- Daily caps are enforced server-side in `ai_usage` before the call is made.
+- Daily caps are enforced server-side in `ai_usage` before the call is made: one statement counts the call only while the count is under the cap, per user, feature and UTC day. A failed call still counts. Entry point: `createAi` in `apps/api/src/ai/generate.ts`.
 - The coach's tools are read-only and get `userId` from the server context; the model can never choose whose data to read.
 - Health safety: injury, medication, eating-disorder or extreme-diet topics → suggest a professional. UI states "not medical advice".
 - Photos are re-encoded on the device before upload (long edge ≤ 1600 px), which drops EXIF data such as location. The image sent to the model may be smaller still; its size is set in config and chosen with `pnpm eval:vision`.
@@ -41,9 +41,11 @@ The photo (M3-05) and text (M3-10) estimates return, per item: a food table entr
 
 Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload account. Anthropic use-case details were submitted once (Bedrock console), which unlocks Anthropic models for the account.
 
-- Current Claude models are available only as `global.` profiles, for example `global.anthropic.claude-haiku-5-5`, `global.anthropic.claude-sonnet-5-5`, `global.anthropic.claude-opus-5-5`.
-- `apac.` profiles cover only Claude 3.x and 3.5 models; do not use them.
-- Re-run the command before changing a model ID; the list changes as models launch and retire. Confirm which ID form the Mantle client expects in Anthropic's Bedrock documentation.
+- The API calls Claude through Bedrock's Messages API endpoint (`bedrock-mantle`, `https://bedrock-mantle.ap-southeast-1.api.aws/anthropic`), not `bedrock-runtime`. Its model IDs carry only the `anthropic.` prefix, for example `anthropic.claude-haiku-5-5`, `anthropic.claude-sonnet-5-5`, `anthropic.claude-opus-5-5` (Anthropic's "Claude in Amazon Bedrock" page, checked 2026-11-23). In ap-southeast-1 the endpoint routes globally, at no premium; a regional endpoint would cost 10 % more and is not offered there.
+- The `global.` and `apac.` inference-profile IDs belong to `bedrock-runtime` (InvokeModel, Converse) and are not used.
+- IAM: `bedrock-mantle:CreateInference` on `project/*`, with the condition key `bedrock-mantle:Model` limiting the role to the configured models (AWS Service Authorization Reference, "Amazon Bedrock powered by AWS Mantle"). `bedrock:InvokeModel` does not apply to this endpoint.
+- The deploy smoke test makes one call (`{ "check": "ai" }`, feature `check`); a failure is a warning, because model access and credits are account settings.
+- Re-check the model table before changing a model ID; models launch and retire.
 
 ## Prompts
 

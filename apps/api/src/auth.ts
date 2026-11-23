@@ -58,14 +58,18 @@ export function createKeyCache(load: () => Promise<Jwks>, now: () => number = Da
 function claimsSchema(clientId: string) {
   return z.object({
     sub: z.string().min(1),
+    username: z.string().min(1),
     token_use: z.literal('access'),
     client_id: z.literal(clientId),
+    // hono/jwt checks `exp` only when the token has one; Cognito's always do,
+    // so a token without one is refused rather than accepted forever.
+    exp: z.number(),
   })
 }
 
 /**
  * Accepts only a valid Cognito access token for the web app and sets
- * `userId` to its `sub`. Every other request gets 401; the token is never logged.
+ * `userId` to its `sub` and `username` to its `username`. Every other request gets 401; the token is never logged.
  */
 export function requireUser(
   config: AuthConfig,
@@ -74,15 +78,16 @@ export function requireUser(
   const claims = claimsSchema(config.clientId)
   return async (c, next) => {
     const token = tokenFromHeader(c.req.header(TOKEN_HEADER))
-    const userId = token === null ? null : await verifiedUserId(token)
-    if (userId === null) {
+    const user = token === null ? null : await verifiedUser(token)
+    if (user === null) {
       return c.json(errorBody('unauthorized', 'Sign-in required', c.var.requestId), 401)
     }
-    c.set('userId', userId)
+    c.set('userId', user.sub)
+    c.set('username', user.username)
     return next()
   }
 
-  async function verifiedUserId(token: string): Promise<string | null> {
+  async function verifiedUser(token: string): Promise<{ sub: string; username: string } | null> {
     let kid: string | undefined
     try {
       kid = decode(token).header.kid
@@ -99,7 +104,7 @@ export function requireUser(
         allowedAlgorithms: ['RS256'],
       })
       const result = claims.safeParse(payload)
-      return result.success ? result.data.sub : null
+      return result.success ? { sub: result.data.sub, username: result.data.username } : null
     } catch {
       return null
     }

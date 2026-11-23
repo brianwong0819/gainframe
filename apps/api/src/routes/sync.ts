@@ -1,4 +1,9 @@
-import { pushRequestSchema, type PushResponse, SYNC_VERSION_HEADER } from '@gainframe/shared'
+import {
+  pushRequestSchema,
+  type PushResponse,
+  type PushResult,
+  SYNC_VERSION_HEADER,
+} from '@gainframe/shared'
 import { type Context, Hono, type MiddlewareHandler } from 'hono'
 import { z } from 'zod'
 
@@ -6,7 +11,7 @@ import type { AppEnv } from '../context.ts'
 import type { Database } from '../db/client.ts'
 import { errorBody } from '../error-body.ts'
 import { pullRows } from '../sync/pull.ts'
-import { pushRows } from '../sync/push.ts'
+import { AccountDeletedError, pushRows } from '../sync/push.ts'
 
 // The oldest sync version this server accepts (ADR-0003). Raise it only when a
 // change cannot be read by older apps; they then show "update the app".
@@ -58,7 +63,14 @@ export function syncRoutes(db: Database, now: () => Date = () => new Date()) {
       const request = pushRequestSchema.safeParse(await c.req.json().catch(() => undefined))
       if (!request.success) return invalidRequest(c, request.error)
       const { rows } = request.data
-      const results = await pushRows(db, signedInUser(c), rows, now())
+      let results: PushResult[]
+      try {
+        results = await pushRows(db, signedInUser(c), rows, now())
+      } catch (error) {
+        if (!(error instanceof AccountDeletedError)) throw error
+        c.var.log.info('sync push refused: account deleted')
+        return c.json(errorBody('unauthorized', 'Account deleted', c.var.requestId), 401)
+      }
 
       // Counts and issue paths only: row contents are personal data.
       const count = (status: string) => results.filter((result) => result.status === status).length
