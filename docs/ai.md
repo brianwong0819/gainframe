@@ -20,7 +20,7 @@ Plan reviewed 2026-11-22 (bw chose every recommendation): food estimates take th
 
 ## Models and cost
 
-Each feature's model is chosen with its eval, comparing accuracy and cost per call; the eval report has a cost column. Rough cost per food photo at first-party list prices (check Bedrock pricing before relying on them): Claude Haiku 5.5 about $0.001, Claude Sonnet 5.5 about $0.02, Claude Opus 5.5 about $0.04. At four photos a day that is roughly $0.1, $2 or $4.5 a month against the $5 budget, so the cheapest model that holds the eval's accuracy wins. The weekly report and plateau analysis run once a week per user and can use a larger model.
+Each feature's model is chosen with its eval, comparing accuracy and cost per call; the eval report has a cost column. Rough cost per food photo at first-party list prices (check Bedrock pricing before relying on them): with the food table in the prompt (about 35,000 input tokens), Claude Haiku 5.5 about $0.004, Claude Sonnet 5.5 about $0.075, Claude Opus 5.5 about $0.15. At four photos a day that is roughly $0.5, $9 or $18 a month against the $5 budget, so the cheapest model that holds the eval's accuracy wins. The weekly report and plateau analysis run once a week per user and can use a larger model.
 
 - Effort: `low` for food estimates (latency matters, the task is short), the default for the coach, report and analysis. Set effort explicitly; defaults differ by model.
 - Prompt caching: only where requests repeat within five minutes, which is the coach's tool loop (cache the system prompt and tool definitions). Meals are hours apart, so food estimates are not designed around caching.
@@ -49,7 +49,8 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 - The `global.` and `apac.` inference-profile IDs belong to `bedrock-runtime` (InvokeModel, Converse) and are not used.
 - IAM: `bedrock-mantle:CreateInference` on `project/*`, with the condition key `bedrock-mantle:Model` limiting the role to the configured models (AWS Service Authorization Reference, "Amazon Bedrock powered by AWS Mantle"). `bedrock:InvokeModel` does not apply to this endpoint.
 - The deploy smoke test makes one call (`{ "check": "ai" }`, feature `check`); a failure is a warning, because model access and credits are account settings.
-- 2026-11-23: the first dev call with `anthropic.claude-haiku-5-5` was authorised but answered 404 "model does not exist". Config now tries the account's `global.` profile ID on the same endpoint; if that also fails, Claude Haiku 5.5 needs model access in the Bedrock console (bw).
+- 2026-11-23: dev calls to Claude Haiku 5.5 answered 404 "model does not exist" with both the `anthropic.` and the `global.` ID. In the Bedrock playground every Anthropic model first failed with `INVALID_PAYMENT_INSTRUMENT`: Anthropic models are sold through AWS Marketplace, which subscribes the account on first use and needs a payment method on the organization's payer account. With one added, Claude Haiku 4.5 answered, while Claude Haiku 5.5 and Claude Sonnet 5.5 answered "not available for this account", which an AWS Support case (Account and billing) asks to lift. Config keeps the documented `anthropic.claude-haiku-5-5`.
+- Claude Haiku 4.5 is not a stopgap: it is served only on `bedrock-runtime` (Anthropic's "Claude on Amazon Bedrock (legacy)" page), and Bedrock accepts the SDK's API version `2026-10-21` only for Claude 4.7 and later, so it would need a second client, other IAM actions and a version override.
 - Re-check the model table before changing a model ID; models launch and retire.
 
 ## Prompts
