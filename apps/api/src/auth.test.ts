@@ -102,6 +102,11 @@ describe('requireUser', () => {
     await expectUnauthorized(await call(await sign(claims({ exp: now() - 1 }), signingKey)))
   })
 
+  it('rejects a token without an expiry, which would never expire', async () => {
+    const { signingKey, call } = await setup()
+    await expectUnauthorized(await call(await sign(claims({ exp: undefined }), signingKey)))
+  })
+
   it('rejects a token from another issuer', async () => {
     const { signingKey, call } = await setup()
     const token = await sign(claims({ iss: 'https://example.com/other' }), signingKey)

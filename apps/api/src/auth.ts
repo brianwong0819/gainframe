@@ -61,6 +61,9 @@ function claimsSchema(clientId: string) {
     username: z.string().min(1),
     token_use: z.literal('access'),
     client_id: z.literal(clientId),
+    // hono/jwt checks `exp` only when the token has one; Cognito's always do,
+    // so a token without one is refused rather than accepted forever.
+    exp: z.number(),
   })
 }
 

@@ -74,7 +74,7 @@ export function createApp({ log, requireUser, db, deleteIdentity, now }: AppDeps
   // gets 401 rather than 404, so the API's shape is not visible to strangers.
   app.use('/api/*', requireUser)
   app.route('/api/sync', syncRoutes(db, now))
-  app.route('/api/account', accountRoutes(db, deleteIdentity))
+  app.route('/api/account', accountRoutes(db, deleteIdentity, now))
   app.route('/api/client-errors', clientErrorRoutes())
 
   return app
