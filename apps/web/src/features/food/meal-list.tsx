@@ -25,6 +25,62 @@ function parseGrams(text: string): number | null {
   return mealItemSchema.shape.grams.safeParse(value).success ? value : null
 }
 
+// A typed protein or energy figure, or null for anything the schema rejects.
+function parseNutrient(text: string, field: 'proteinG' | 'kcal'): number | null {
+  const value = Number(text.trim().replace(',', '.'))
+  if (text.trim() === '') return null
+  return mealItemSchema.shape[field].safeParse(value).success ? value : null
+}
+
+// Protein or energy as typed text: one decimal at most, no grouping.
+const editText = (value: number) => String(Math.round(value * 10) / 10)
+
+interface NutrientFieldProps {
+  label: string
+  accessibleName: string
+  unit: string
+  value: string
+  editValue: string
+  inputMode: 'decimal' | 'numeric'
+  onEnter: (text: string) => void
+}
+
+// A figure of an item the user can correct, e.g. from the dish's label. Like
+// the stepper's number, the typed text is sent on blur or Enter.
+function NutrientField(props: NutrientFieldProps) {
+  const [draft, setDraft] = useState<string | null>(null)
+  return (
+    <label className="flex min-w-0 flex-col gap-4">
+      <span className="text-label text-ink-3">{props.label}</span>
+      <span className="flex items-baseline gap-4 rounded-ctl bg-sunk px-16 py-12">
+        <input
+          aria-label={props.accessibleName}
+          inputMode={props.inputMode}
+          enterKeyHint="done"
+          autoComplete="off"
+          value={draft ?? props.value}
+          onFocus={(event) => {
+            setDraft(props.editValue)
+            event.currentTarget.select()
+          }}
+          onChange={(event) => {
+            setDraft(event.target.value)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur()
+          }}
+          onBlur={() => {
+            if (draft !== null && draft !== props.editValue) props.onEnter(draft)
+            setDraft(null)
+          }}
+          className="num w-full min-w-0 bg-transparent text-input text-ink"
+        />
+        <span className="text-label text-ink-3">{props.unit}</span>
+      </span>
+    </label>
+  )
+}
+
 // A new portion keeps the food: protein and energy scale with the grams.
 function setGrams(item: MealItem, grams: number) {
   void repositories.mealItems.update(item.id, scalePortion(item, grams))
@@ -33,12 +89,13 @@ function setGrams(item: MealItem, grams: number) {
 const mealTitle = ({ meal, items }: MealWithItems) => meal.name ?? items[0]?.name ?? ''
 
 // A day's meals, newest first. A tap opens the meal's sheet, where its type,
-// each item's grams and its items can be changed; a swipe left deletes it,
+// each item's grams, protein and energy, and its items can be changed; a swipe left deletes it,
 // and the sheet offers the same delete for those who cannot swipe.
 export function MealList({ meals }: { meals: MealWithItems[] }) {
   const t = useTranslations('food')
   const locale = useLocale()
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
+  const tenths = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 })
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -124,16 +181,7 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
             <ul className="flex flex-col gap-16">
               {opened.items.map((item) => (
                 <li key={item.id} className="flex flex-col gap-8">
-                  <div className="flex items-baseline justify-between gap-12">
-                    <span className="min-w-0 truncate text-body text-ink">{item.name}</span>
-                    <span className="num shrink-0 text-label text-ink-2">
-                      <span className="text-accent">
-                        {t('proteinShort', { value: whole.format(item.proteinG) })}
-                      </span>
-                      {' · '}
-                      {t('kcalShort', { value: whole.format(item.kcal) })}
-                    </span>
-                  </div>
+                  <span className="truncate text-body text-ink">{item.name}</span>
                   <div className="flex items-center gap-8">
                     <div className="min-w-0 flex-1">
                       <Stepper
@@ -163,6 +211,33 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
                     >
                       {t('removeItem')}
                     </Pressable>
+                  </div>
+                  <div className="grid grid-cols-2 gap-8">
+                    <NutrientField
+                      label={t('proteinLabel')}
+                      accessibleName={t('proteinOf', { name: item.name })}
+                      unit="g"
+                      value={tenths.format(item.proteinG)}
+                      editValue={editText(item.proteinG)}
+                      inputMode="decimal"
+                      onEnter={(text) => {
+                        const proteinG = parseNutrient(text, 'proteinG')
+                        if (proteinG !== null)
+                          void repositories.mealItems.update(item.id, { proteinG })
+                      }}
+                    />
+                    <NutrientField
+                      label={t('kcalLabel')}
+                      accessibleName={t('kcalOf', { name: item.name })}
+                      unit="kcal"
+                      value={whole.format(item.kcal)}
+                      editValue={editText(item.kcal)}
+                      inputMode="decimal"
+                      onEnter={(text) => {
+                        const kcal = parseNutrient(text, 'kcal')
+                        if (kcal !== null) void repositories.mealItems.update(item.id, { kcal })
+                      }}
+                    />
                   </div>
                 </li>
               ))}
