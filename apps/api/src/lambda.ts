@@ -4,6 +4,7 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 
+import { cognitoIdentityDeleter } from './account/identity.ts'
 import { createApp } from './app.ts'
 import { createKeyCache, fetchJwks, requireUser } from './auth.ts'
 import { checkDatabase, type DatabaseCheckEvent, isDatabaseCheckEvent } from './database-check.ts'
@@ -37,6 +38,7 @@ const http = handle(
     log,
     requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
     db: createDatabase(pool),
+    deleteIdentity: cognitoIdentityDeleter(auth.issuer),
   }),
 )
 

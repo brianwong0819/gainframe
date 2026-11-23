@@ -30,7 +30,13 @@ const requireUser: MiddlewareHandler<AppEnv> = async (c, next) => {
   c.set('userId', c.req.header(TOKEN_HEADER)?.replace('Bearer ', '') ?? '')
   return next()
 }
-const app = createApp({ log, requireUser, db, now: () => NOW })
+const app = createApp({
+  log,
+  requireUser,
+  db,
+  deleteIdentity: () => Promise.resolve(),
+  now: () => NOW,
+})
 
 afterAll(async () => {
   await pool.end()

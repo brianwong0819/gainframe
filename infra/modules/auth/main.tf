@@ -230,3 +230,20 @@ resource "aws_lambda_permission" "pre_sign_up" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }
+
+# Account deletion (M2-10): the API deletes the signed-in user from this pool
+# and no other. Granted here because the pool depends on the API (through the
+# site's callback URLs), so the API module cannot name it.
+data "aws_iam_policy_document" "api_delete_user" {
+  statement {
+    sid       = "DeleteUsersOfThisPool"
+    actions   = ["cognito-idp:AdminDeleteUser"]
+    resources = [aws_cognito_user_pool.main.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "api_delete_user" {
+  name   = "${var.name}-api-delete-user"
+  role   = var.api_role_name
+  policy = data.aws_iam_policy_document.api_delete_user.json
+}
