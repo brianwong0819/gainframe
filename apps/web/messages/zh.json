@@ -574,7 +574,7 @@
     "edit": "编辑{name}",
     "edited": "已修改"
   },
-  "photo": {
+  "estimate": {
     "title": "拍照估算",
     "mealType": "餐次",
     "choose": "选一张照片",
@@ -597,20 +597,20 @@
     "frequent": "常吃的食物",
     "signInAction": "登录",
     "signIn": {
-      "title": "登录后才能拍照估算",
-      "body": "照片要在服务器上估算，所以需要账号。其他功能不登录也能用。"
+      "title": "登录后才能用 AI 估算",
+      "body": "AI 估算在服务器上进行，所以需要账号。其他功能不登录也能用。"
     },
     "offline": {
       "title": "现在离线",
-      "body": "照片要在服务器上估算。联网后重试，或者手动输入这餐。"
+      "body": "AI 估算在服务器上进行。联网后重试，或者手动输入这餐。"
     },
     "failed": {
       "title": "估算没有完成",
-      "body": "AI 的回答用不了。用同一张照片重试，或者手动输入。"
+      "body": "AI 的回答用不了。重试，或者手动输入。"
     },
     "capped": {
       "title": "今天的估算次数用完了",
-      "body": "每天可以估算 {count} 张照片，{time} 后恢复。"
+      "body": "拍照和文字估算每天各可用 {count} 次，{time} 后恢复。"
     },
     "aiTag": "AI",
     "proteinLabel": "蛋白质",
@@ -643,15 +643,15 @@
     "portionGrams": "{grams} g",
     "unavailable": {
       "title": "AI 服务暂时用不了",
-      "body": "现在没法估算照片，重试也没用。先手动输入这餐，什么都没有记下。"
+      "body": "现在没法做 AI 估算，重试也没用。先手动输入这餐，什么都没有记下。"
     },
     "timeout": {
       "title": "估算太久没回应",
-      "body": "AI 没有及时回答。用同一张照片重试，或者手动输入。"
+      "body": "AI 没有及时回答。重试，或者手动输入。"
     },
     "refused": {
-      "title": "AI 不估算这张照片",
-      "body": "只拍这餐的食物再试，或者手动输入。"
+      "title": "AI 不估算这个内容",
+      "body": "只拍或只写这餐的食物再试，或者手动输入。"
     },
     "no_food": {
       "title": "照片里没有食物",
@@ -678,7 +678,26 @@
       "high": "把握高",
       "medium": "把握中",
       "low": "把握低"
+    },
+    "no_text_food": {
+      "title": "描述里没有食物",
+      "body": "写出吃了什么、大概多少，比如「鸡饭，多加鸡肉」。"
     }
+  },
+  "describe": {
+    "title": "用一句话记",
+    "entry": "写一句话来记",
+    "entryHint": "列表里没有？AI 按你的描述估算。",
+    "label": "吃了什么？",
+    "placeholder": "例如：椰浆饭加炸鸡和一个蛋",
+    "hint": "知道分量就写上，其余由 AI 估算。",
+    "estimate": "估算",
+    "estimateAgain": "重新估算",
+    "wait": "正在估算，通常要 2 到 5 秒。",
+    "assumed": "假设：{assumptions}",
+    "questions": "想更准一点",
+    "questionsHint": "知道的就选，不想答可以直接记入现在的估算。",
+    "update": "按回答更新估算"
   },
   "foodSheet": {
     "title": "编辑食物",

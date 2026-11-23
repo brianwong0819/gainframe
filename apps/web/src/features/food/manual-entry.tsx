@@ -23,8 +23,10 @@ import { knownFoods, logMeal, saveFood, savedFoods } from '@/db/food'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { ChoiceGroup } from '@/ui/choice-group'
+import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 
+import { setPendingText } from './describe'
 import { FoodSheet, type FoodToEdit } from './food-sheet'
 import { loadFoodTable } from './food-table'
 import { type NewFood, NewFoodSheet } from './new-food-sheet'
@@ -87,6 +89,8 @@ const pastToEdit = (food: NewFood): FoodToEdit => ({
 // library. The meal is written when it is saved.
 export function ManualEntry() {
   const t = useTranslations('manual')
+  const tDescribe = useTranslations('describe')
+  const tEstimate = useTranslations('estimate')
   const tFood = useTranslations('food')
   const locale = useLocale()
   const router = useRouter()
@@ -285,6 +289,26 @@ export function ManualEntry() {
           className="w-full rounded-ctl bg-surface px-16 py-12 text-input text-ink placeholder:text-ink-3"
         />
       )}
+      {/* A food the lists lack is described in a sentence for the AI (M3-10);
+          the search text is the start of the description. */}
+      <Pressable
+        onClick={() => {
+          setPendingText(query.trim())
+          router.push('/food/describe')
+        }}
+        className="flex items-center justify-between gap-12 rounded-group bg-surface px-16 py-12 text-left"
+      >
+        <span className="flex flex-col">
+          <span className="text-body text-ink">
+            <span className="text-label text-accent">{tEstimate('aiTag')}</span>{' '}
+            {tDescribe('entry')}
+          </span>
+          <span className="text-label text-ink-3">{tDescribe('entryHint')}</span>
+        </span>
+        <span className="text-ink-3">
+          <Chevron direction="right" />
+        </span>
+      </Pressable>
       {needle === '' ? (
         <>
           {section(t('mine'), libraryRows(mineUnlisted))}

@@ -574,7 +574,7 @@
     "edit": "Edit {name}",
     "edited": "Edited"
   },
-  "photo": {
+  "estimate": {
     "title": "Photo estimate",
     "mealType": "Meal",
     "choose": "Choose a photo",
@@ -597,20 +597,20 @@
     "frequent": "Your frequent foods",
     "signInAction": "Sign in",
     "signIn": {
-      "title": "Sign in to estimate photos",
-      "body": "Photos are estimated on the server, which needs an account. Everything else works without one."
+      "title": "Sign in to use AI estimates",
+      "body": "AI estimates run on the server, which needs an account. Everything else works without one."
     },
     "offline": {
       "title": "No connection",
-      "body": "Photos are estimated on the server. Retry once you are online, or enter the meal by hand."
+      "body": "AI estimates run on the server. Retry once you are online, or enter the meal by hand."
     },
     "failed": {
       "title": "The estimate did not come back",
-      "body": "The AI's answer could not be used. Retry with the same photo, or enter the meal by hand."
+      "body": "The AI's answer could not be used. Retry, or enter the meal by hand."
     },
     "capped": {
       "title": "Today's estimates are used up",
-      "body": "You can estimate {count} photos a day. More from {time}."
+      "body": "Photo and described estimates can each run {count} times a day. More from {time}."
     },
     "aiTag": "AI",
     "proteinLabel": "Protein",
@@ -643,15 +643,15 @@
     "portionGrams": "{grams} g",
     "unavailable": {
       "title": "The AI service is unavailable",
-      "body": "Photo estimates cannot run right now, and retrying will not help yet. Enter the meal by hand; nothing was logged."
+      "body": "AI estimates cannot run right now, and retrying will not help yet. Enter the meal by hand; nothing was logged."
     },
     "timeout": {
       "title": "The estimate took too long",
-      "body": "The AI did not answer in time. Retry with the same photo, or enter the meal by hand."
+      "body": "The AI did not answer in time. Retry, or enter the meal by hand."
     },
     "refused": {
-      "title": "The AI would not estimate this photo",
-      "body": "Take a photo of just the meal, or enter it by hand."
+      "title": "The AI would not estimate this",
+      "body": "Show or describe just the meal, or enter it by hand."
     },
     "no_food": {
       "title": "No food in this photo",
@@ -678,7 +678,26 @@
       "high": "sure",
       "medium": "fairly sure",
       "low": "unsure"
+    },
+    "no_text_food": {
+      "title": "No food in the description",
+      "body": "Name what you ate and roughly how much, for example \"chicken rice, extra chicken\"."
     }
+  },
+  "describe": {
+    "title": "Describe a meal",
+    "entry": "Describe it in a sentence",
+    "entryHint": "Not in the list? The AI estimates it from a description.",
+    "label": "What did you eat?",
+    "placeholder": "e.g. nasi lemak with fried chicken and an egg",
+    "hint": "Name amounts if you know them. The AI estimates the rest.",
+    "estimate": "Estimate",
+    "estimateAgain": "Estimate again",
+    "wait": "Estimating, usually 2 to 5 seconds.",
+    "assumed": "Assumed: {assumptions}",
+    "questions": "To be more exact",
+    "questionsHint": "Answer what you know, or skip and log the estimate as it is.",
+    "update": "Update the estimate"
   },
   "foodSheet": {
     "title": "Edit food",
