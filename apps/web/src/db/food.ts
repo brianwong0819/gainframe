@@ -52,7 +52,7 @@ export async function foodDay(db: GainframeDb, date: LocalDate): Promise<FoodDay
 
 /**
  * The foods of every past meal, for the frequent and recent lists; a food the
- * user saved under the same name gives its first serving (M3-12).
+ * user saved under the same name gives its figures (M3-12).
  */
 export async function knownFoods(
   db: GainframeDb,

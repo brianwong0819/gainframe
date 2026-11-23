@@ -123,7 +123,7 @@ describe('food library', () => {
     expect(await savedFoods(db)).toEqual([])
   })
 
-  it('gives a frequent food the serving of the saved food of that name, past meals unchanged', async () => {
+  it('gives a frequent food the figures of the saved food of that name, past meals unchanged', async () => {
     await logMeal(db, repos, {
       eatenAt: '2026-11-22T04:00:00.000Z',
       timeZone: KL,
@@ -133,8 +133,8 @@ describe('food library', () => {
     await saveFood(db, repos, wheyEntry, scoop(68.6))
 
     const [frequent] = await knownFoods(db, 'frequent')
-    expect(frequent?.grams).toBe(35)
-    expect(frequent?.proteinG).toBeCloseTo(24.01, 2)
+    expect(frequent?.grams).toBe(30)
+    expect(frequent?.proteinG).toBeCloseTo(20.58, 2)
     expect((await foodDay(db, day)).totals).toEqual({ proteinG: 17, kcal: 108 })
   })
 })

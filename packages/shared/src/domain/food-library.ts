@@ -134,14 +134,13 @@ export function per100G(portion: Portion): Pick<Food, 'proteinPer100G' | 'kcalPe
 const nameKey = (name: string) => name.trim().toLocaleLowerCase()
 
 // Past foods (derived from meal items) whose name is a food in the user's
-// library take that food's first serving, so an edit reaches the frequent and
-// recent lists too; how often and when a food was eaten stay as they were.
+// library take that food's figures for the amount last eaten, so an edit
+// reaches the frequent and recent lists too; how much, how often and when a
+// food was eaten stay as they were.
 export function withLibraryPortions(past: readonly PastFood[], foods: readonly Food[]): PastFood[] {
   const byName = new Map(currentFoods(foods).map((food) => [nameKey(food.name), food]))
   return past.map((item) => {
     const food = byName.get(nameKey(item.name))
-    const serving = food?.servings[0]
-    if (food === undefined || serving === undefined) return item
-    return { ...item, ...portionOf(food, serving.grams) }
+    return food === undefined ? item : { ...item, ...portionOf(food, item.grams) }
   })
 }
