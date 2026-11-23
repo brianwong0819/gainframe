@@ -25,6 +25,11 @@ export {
 } from './domain/nutrition.ts'
 export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'
+export {
+  type EstimateInput,
+  estimateTargets,
+  type TargetEstimate,
+} from './domain/target-estimate.ts'
 export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
 export {
   adjustRestEnd,
@@ -125,11 +130,18 @@ export {
   planSchema,
 } from './schemas/plan.ts'
 export {
+  type ActivityLevel,
+  activityLevelSchema,
+  type Phase,
+  phaseSchema,
   type Profile,
   profileSchema,
   type ProteinMode,
   proteinModeSchema,
+  type Sex,
+  sexSchema,
 } from './schemas/profile.ts'
+export { type BodyMetric, bodyMetricSchema, bodyMetricSourceSchema } from './schemas/body-metric.ts'
 export {
   type SetKind,
   setKindSchema,

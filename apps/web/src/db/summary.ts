@@ -29,6 +29,7 @@ export async function summarize(db: GainframeDb): Promise<DatabaseSummary> {
         ['meals', db.meals],
         ['mealItems', db.mealItems],
         ['profiles', db.profiles],
+        ['bodyMetrics', db.bodyMetrics],
       ] as const
     ).map(async ([table, rows]) => {
       const total = await rows.count()

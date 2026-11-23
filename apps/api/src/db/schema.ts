@@ -181,8 +181,28 @@ export const profiles = pgTable(
     proteinMode: text('protein_mode').notNull(),
     proteinValue: doublePrecision('protein_value').notNull(),
     kcalTarget: integer('kcal_target').notNull(),
+    sex: text('sex'),
+    birthYear: integer('birth_year'),
+    heightCm: doublePrecision('height_cm'),
+    activityLevel: text('activity_level'),
+    phase: text('phase'),
   },
   pullIndex('profiles'),
+)
+
+export const bodyMetrics = pgTable(
+  'body_metrics',
+  {
+    ...syncedColumns,
+    measuredAt: instant('measured_at').notNull(),
+    localDate: date('local_date', { mode: 'string' }).notNull(),
+    weightKg: doublePrecision('weight_kg').notNull(),
+    bodyFatPct: doublePrecision('body_fat_pct'),
+    skeletalMuscleKg: doublePrecision('skeletal_muscle_kg'),
+    fatMassKg: doublePrecision('fat_mass_kg'),
+    source: text('source').notNull(),
+  },
+  pullIndex('body_metrics'),
 )
 
 // One row per user: the last `server_version` handed out. A push locks this
@@ -205,4 +225,5 @@ export const syncedTables = {
   meals,
   mealItems,
   profiles,
+  bodyMetrics,
 }

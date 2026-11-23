@@ -17,6 +17,15 @@ export async function currentProfile(db: GainframeDb): Promise<Profile | undefin
   )
 }
 
+// A profile made by the targets sheet before the calculator has been used.
+const NO_BODY = {
+  sex: null,
+  birthYear: null,
+  heightCm: null,
+  activityLevel: null,
+  phase: null,
+} as const
+
 export interface DailyTargets {
   proteinG: number
   kcal: number
@@ -32,7 +41,7 @@ export async function saveTargets(
     const profile = await currentProfile(db)
     const values = { proteinMode: 'fixed' as const, proteinValue: proteinG, kcalTarget: kcal }
     return profile === undefined
-      ? repos.profiles.create(values)
+      ? repos.profiles.create({ ...values, ...NO_BODY })
       : repos.profiles.update(profile.id, values)
   })
 }

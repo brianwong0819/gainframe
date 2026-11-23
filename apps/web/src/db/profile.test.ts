@@ -19,6 +19,14 @@ afterEach(() => {
   db.close()
 })
 
+const noBody = {
+  sex: null,
+  birthYear: null,
+  heightCm: null,
+  activityLevel: null,
+  phase: null,
+} as const
+
 describe('daily targets', () => {
   it('has no profile until targets are saved', async () => {
     expect(await currentProfile(db)).toBeUndefined()
@@ -44,12 +52,14 @@ describe('daily targets', () => {
       proteinMode: 'fixed',
       proteinValue: 120,
       kcalTarget: 2500,
+      ...noBody,
     })
     clock = new Date('2026-11-22T11:00:00.000Z')
     const newer = await repos.profiles.create({
       proteinMode: 'fixed',
       proteinValue: 160,
       kcalTarget: 3000,
+      ...noBody,
     })
     expect((await currentProfile(db))?.id).toBe(newer.id)
 
