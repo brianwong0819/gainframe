@@ -35,6 +35,7 @@ const app = createApp({
   requireUser,
   db,
   deleteIdentity: () => Promise.resolve(),
+  generate: () => Promise.reject(new Error('no AI route here')),
   now: () => NOW,
 })
 
@@ -185,6 +186,23 @@ function bodyMetric() {
   }
 }
 
+function savedFood() {
+  return {
+    table: 'foods' as const,
+    row: {
+      id: uuidv7(),
+      createdAt: at(-30),
+      updatedAt: at(-30),
+      deletedAt: null,
+      tableId: 'usda-173180',
+      name: 'Whey',
+      proteinPer100G: 68.6,
+      kcalPer100G: 371,
+      servings: [{ label: '1 scoop', grams: 35 }],
+    },
+  }
+}
+
 describe('sync (real Postgres)', () => {
   it('asks an app without a supported sync version to update', async () => {
     const res = await app.request('/api/sync/pull', {
@@ -193,7 +211,7 @@ describe('sync (real Postgres)', () => {
     expect(res.status).toBe(426)
   })
 
-  it.each(['1', '2', '3', '4'])(
+  it.each(['1', '2', '3', '4', '5'])(
     'asks a version %s app, which cannot read the newer tables, to update',
     async (version) => {
       const res = await app.request('/api/sync/pull', {
@@ -225,6 +243,17 @@ describe('sync (real Postgres)', () => {
     expect((await pull(userA)).rows).toEqual([
       { table: 'profiles', row: { ...goals.row, userId: userA } },
       { table: 'bodyMetrics', row: { ...weighIn.row, userId: userA } },
+    ])
+    expect((await pull(newUser())).rows).toEqual([])
+  })
+
+  it('round-trips an edited food table entry, servings included, to its owner only', async () => {
+    const userA = newUser()
+    const whey = savedFood()
+    expect(await push(userA, [whey])).toEqual(['applied'])
+
+    expect((await pull(userA)).rows).toEqual([
+      { table: 'foods', row: { ...whey.row, userId: userA } },
     ])
     expect((await pull(newUser())).rows).toEqual([])
   })

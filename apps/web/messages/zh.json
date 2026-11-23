@@ -177,6 +177,7 @@
     "deleteMealConfirm": "再点一次删除",
     "close": "关闭",
     "editTargets": "修改每日目标",
+    "addPhoto": "拍照",
     "addManual": "手动添加",
     "frequent": "常吃",
     "logPortion": "记一份{name}",
@@ -549,7 +550,6 @@
     "mealType": "餐别",
     "search": "搜索食物",
     "searchLabel": "搜索食物",
-    "created": "新建",
     "frequent": "常吃",
     "recent": "最近",
     "results": "你的食物",
@@ -557,6 +557,7 @@
     "noFoods": "记过的食物会出现在这里。可以搜索马来西亚和日常食物，或按营养标签新建一个。",
     "noMatch": "没有匹配的食物，可以新建一个。",
     "portion": "{grams} g · 蛋白质 {protein} g · {kcal} kcal",
+    "servingPortion": "{serving} · {grams} g · 蛋白质 {protein} g · {kcal} kcal",
     "more": "加一份{name}",
     "less": "减一份{name}",
     "newFood": "新建食物",
@@ -568,7 +569,113 @@
     "portionGrams": "每份克数",
     "portionProtein": "蛋白质 g",
     "portionKcal": "热量 kcal",
-    "addFood": "加入这餐"
+    "addFood": "加入这餐",
+    "mine": "我的食物",
+    "edit": "编辑{name}",
+    "edited": "已修改"
+  },
+  "photo": {
+    "title": "拍照估算",
+    "mealType": "餐次",
+    "choose": "选一张照片",
+    "noPhoto": "选一张这餐的照片来估算。",
+    "photoAlt": "这餐的照片",
+    "retake": "重拍",
+    "byHand": "不等了，手动输入",
+    "wait": "正在估算，通常要 3 到 8 秒。照片只用于这次估算。",
+    "itemCount": "{count} 样",
+    "protein": "蛋白质 {value} g",
+    "kcal": "{value} 千卡",
+    "reaches": "记入后今天蛋白质 {value} / {target} g，达标",
+    "short": "记入后今天蛋白质 {value} / {target} g，还差 {gap} g",
+    "modelFigures": "AI 数据",
+    "remove": "去掉{name}",
+    "removeShort": "去掉",
+    "nothingLeft": "没有食物了",
+    "save": "记入{meal}",
+    "retry": "重试",
+    "frequent": "常吃的食物",
+    "signInAction": "登录",
+    "signIn": {
+      "title": "登录后才能拍照估算",
+      "body": "照片要在服务器上估算，所以需要账号。其他功能不登录也能用。"
+    },
+    "offline": {
+      "title": "现在离线",
+      "body": "照片要在服务器上估算。联网后重试，或者手动输入这餐。"
+    },
+    "failed": {
+      "title": "估算没有完成",
+      "body": "什么都没有记下。用同一张照片重试，或者手动输入。"
+    },
+    "noFood": {
+      "title": "没认出食物",
+      "body": "从上往下拍，整盘入镜，光线亮一点。"
+    },
+    "capped": {
+      "title": "今天的估算次数用完了",
+      "body": "每天可以估算 {count} 张照片，{time} 后恢复。"
+    },
+    "aiTag": "AI",
+    "proteinLabel": "蛋白质",
+    "kcalLabel": "热量",
+    "unitKcal": "千卡",
+    "oilSauce": "油和酱",
+    "oilSauceChoice": {
+      "less": "少",
+      "usual": "正常",
+      "more": "多"
+    },
+    "oilSauceUsual": "正常的油和酱已经算在里面。",
+    "oilSauceKcal": "油和酱 {sign}{value} 千卡",
+    "correct": "修改{name}",
+    "correctTitle": "修改食物",
+    "close": "关闭",
+    "seen": "AI 看到的：{seen}",
+    "alternatives": "也可能是",
+    "somethingElse": "其他食物",
+    "keepFigures": "保留估算的数据",
+    "remember": "记住这次纠正",
+    "rememberHint": "以后估算会参考这次纠正。",
+    "saveCorrection": "保存",
+    "portionSize": "{name}的分量",
+    "portion": {
+      "small": "小份",
+      "regular": "一般",
+      "large": "大份"
+    },
+    "portionGrams": "{grams} g"
+  },
+  "foodSheet": {
+    "title": "编辑食物",
+    "close": "关闭",
+    "tableHint": "数据来自{source}，是常见做法或常见品牌的平均值。照你手上的营养标签改，以后都按你的数字算。",
+    "editedHint": "你改过这个食物（原数据来自{source}）。",
+    "ownHint": "你自己的食物。照营养标签填一次，以后点一下就能记。",
+    "source": {
+      "myfcd": "MyFCD",
+      "usda": "USDA",
+      "sgfoodid": "SG FoodID"
+    },
+    "name": "名称",
+    "servings": "份量（第一个是点 + 时加的那份）",
+    "servingLabel": "第 {n} 个份量的名称",
+    "servingGrams": "第 {n} 个份量的克数",
+    "servingPlaceholder": "例如：1 勺",
+    "servingOther": "例如：1 碗",
+    "removeServing": "删除第 {n} 个份量",
+    "addServing": "加一个份量",
+    "perServing": "每 {serving}",
+    "protein": "蛋白质 g",
+    "kcal": "热量 kcal",
+    "per100": "每 100 g：蛋白质 {protein} g · {kcal} kcal",
+    "invalid": "把名称、克数、蛋白质和热量填完整",
+    "pastMeals": "已经记下的餐不会变，改动只影响以后。",
+    "save": "保存",
+    "restore": "恢复默认数据",
+    "restoreConfirm": "再点一次恢复默认",
+    "delete": "删除这个食物",
+    "deleteConfirm": "再点一次删除"
   },
   "calculator": {
     "back": "每日目标",

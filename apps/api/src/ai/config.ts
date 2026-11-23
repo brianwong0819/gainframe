@@ -1,3 +1,4 @@
+import { FOOD_ESTIMATES_PER_DAY } from '@gainframe/shared'
 import { z } from 'zod'
 
 // Per-feature model settings ("Models and cost" in docs/ai.md). Each feature's
@@ -23,22 +24,25 @@ export type AiFeatureConfig = z.infer<typeof featureSchema>
 export const aiConfig = z
   .object({
     region: z.string().min(1),
+    // Remembered corrections sent with a photo estimate as reference.
+    visionCorrectionsMax: z.int().min(0),
     features: z.object({ vision: featureSchema, check: featureSchema }),
   })
   .parse({
     region: 'ap-southeast-1',
+    visionCorrectionsMax: 8,
     features: {
       vision: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'global.anthropic.claude-haiku-5-5',
         effort: 'low',
         maxTokens: 2048,
         timeoutMs: 12_000,
-        dailyCap: 20,
+        dailyCap: FOOD_ESTIMATES_PER_DAY,
         promptVersion: 1,
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.
       check: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'global.anthropic.claude-haiku-5-5',
         effort: 'low',
         maxTokens: 256,
         timeoutMs: 12_000,

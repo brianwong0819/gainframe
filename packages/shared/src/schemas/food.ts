@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { domainConfig } from '../config.ts'
+import { foodTableEntrySchema } from './food-table.ts'
 import { instantSchema, localDateSchema, syncedRowSchema } from './row.ts'
 
 export const mealTypeSchema = z.enum(['breakfast', 'lunch', 'dinner', 'snack'])
@@ -47,7 +49,30 @@ export const mealItemSchema = syncedRowSchema.extend({
     .nullable(),
 })
 
+// A named portion of a food: "1 scoop" of 31 g. A null label is the food's
+// usual portion, shown by its grams alone.
+export const foodServingSchema = z.object({
+  label: z.string().trim().min(1).max(40).nullable(),
+  grams: z.number().positive().max(2000),
+})
+
+// A food in the user's library (M3-12): their own food (`tableId` null), or
+// their edit of a bundled food table entry, which replaces that entry for them
+// wherever the table is read; deleting the edit restores the entry. Figures are
+// per 100 g like the table's; the first serving is the one a tap adds. A meal
+// item copies a portion's figures when it is logged, so editing a food never
+// changes a logged meal.
+export const foodSchema = syncedRowSchema.extend({
+  tableId: foodTableEntrySchema.shape.id.nullable(),
+  name: z.string().trim().min(1).max(120),
+  proteinPer100G: z.number().min(0).max(100),
+  kcalPer100G: z.number().min(0).max(900),
+  servings: z.array(foodServingSchema).min(1).max(domainConfig.foodServingsMax),
+})
+
 export type MealType = z.infer<typeof mealTypeSchema>
 export type MealItemSource = z.infer<typeof mealItemSourceSchema>
 export type Meal = z.infer<typeof mealSchema>
 export type MealItem = z.infer<typeof mealItemSchema>
+export type FoodServing = z.infer<typeof foodServingSchema>
+export type Food = z.infer<typeof foodSchema>

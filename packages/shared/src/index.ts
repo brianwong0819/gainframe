@@ -17,6 +17,15 @@ export {
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
+export {
+  oilSauceKcal,
+  portionGrams,
+  type PortionSize,
+  resolveEstimate,
+  spreadKcal,
+  visionReplyIssues,
+  withFoodEdits,
+} from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
@@ -28,6 +37,16 @@ export {
   pastFoods,
   scalePortion,
 } from './domain/nutrition.ts'
+export {
+  currentFoods,
+  foodLibrary,
+  type FoodOrigin,
+  type LibraryFood,
+  per100G,
+  type Portion,
+  portionOf,
+  withLibraryPortions,
+} from './domain/food-library.ts'
 export { TOKEN_HEADER, tokenFromHeader, tokenHeaderValue } from './token-header.ts'
 export { toLocalDate } from './domain/local-date.ts'
 export {
@@ -80,6 +99,7 @@ export {
   nextSetValues,
   previousPerformance,
   type RecordKind,
+  setsFollowingWeight,
   setsTakingWeight,
   type SetValues,
   totalVolumeKg,
@@ -111,6 +131,10 @@ export {
   muscleGroupSchema,
 } from './schemas/exercise.ts'
 export {
+  type Food,
+  foodSchema,
+  type FoodServing,
+  foodServingSchema,
   type Meal,
   type MealItem,
   mealItemSchema,
@@ -121,8 +145,25 @@ export {
   mealTypeSchema,
 } from './schemas/food.ts'
 export {
+  type EstimateAiRaw,
+  type OilSauce,
+  oilSauceSchema,
+  estimateAiRawSchema,
+  FOOD_ESTIMATE_BODY_BYTES_MAX,
+  FOOD_ESTIMATES_PER_DAY,
+  FOOD_PHOTO_LONG_EDGE_PX,
+  type FoodEstimateItem,
+  type FoodEstimateRequest,
+  foodEstimateRequestSchema,
+  type FoodEstimateResponse,
+  foodEstimateResponseSchema,
+  type VisionItem,
+  visionReplySchema,
+} from './schemas/food-estimate.ts'
+export {
   type FoodTableEntry,
   foodTableEntrySchema,
+  type FoodTableSource,
   foodTableSourceSchema,
 } from './schemas/food-table.ts'
 export { instantSchema, type LocalDate, localDateSchema, syncedRowSchema } from './schemas/row.ts'

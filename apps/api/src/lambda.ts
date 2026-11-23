@@ -51,6 +51,7 @@ const http = handle(
     requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
     db,
     deleteIdentity: cognitoIdentityDeleter(auth.issuer),
+    generate,
   }),
 )
 

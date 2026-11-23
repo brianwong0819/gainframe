@@ -63,7 +63,7 @@ export function SetFields({ set, n, exerciseId, exercise, unit, repRange = null 
         label={t('weightLabel', { n })}
         onEnter={(text) => {
           const weightKg = parseWeight(text === '' && bodyweight ? '0' : text, unit)
-          if (weightKg !== null) void repositories.workoutSets.update(set.id, { weightKg })
+          if (weightKg !== null) void workoutSession.setWeight(set.id, weightKg)
         }}
         canDecrease={set.weightKg > 0}
         decreaseLabel={t('weightDown', { n })}

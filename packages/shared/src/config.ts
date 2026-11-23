@@ -55,6 +55,18 @@ export const domainConfig = {
   frequentFoods: 8,
   // Food table matches shown on the manual screen for one search, best first.
   foodTableResults: 20,
+  // The oil and sauce row on the photo confirm screen (M3-06). Table figures
+  // for a cooked dish already hold its usual oil, so "usual" changes nothing;
+  // "less" and "more" take away or add oil worth this share of the meal's
+  // weight (3 g per 100 g: about 10 g, roughly a tablespoon, on a 350 g
+  // plate), at the energy of fat (Atwater: 9 kcal per g). A rough rule, shown
+  // as an estimate; the user can still edit the logged meal.
+  oilSauce: { shareOfGrams: 0.03, kcalPerG: 9 },
+  // The small / regular / large choice for an estimated item the model is
+  // unsure of (M3-06), as shares of the food's typical serving.
+  portionSizes: { small: 0.7, regular: 1, large: 1.4 },
+  // Named servings one food may have ("1 scoop", "1 bowl").
+  foodServingsMax: 6,
   // The target calculator (M4-01). Energy: resting energy by Mifflin-St Jeor
   // (Mifflin et al. 1990) times a physical activity factor (the FAO/WHO/UNU
   // 2004 PAL bands: 1.4 to 1.69 sedentary or light, 1.7 to 1.99 active, 2.0 to

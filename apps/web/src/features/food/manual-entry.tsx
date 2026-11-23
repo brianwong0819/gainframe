@@ -2,25 +2,30 @@
 
 import {
   domainConfig,
+  foodLibrary,
   type FoodTableEntry,
+  type LibraryFood,
   type MealItemSource,
   type MealType,
   mealTypeAt,
   mealTypeSchema,
-  scalePortion,
+  type PastFood,
+  per100G,
+  portionOf,
   searchByName,
 } from '@gainframe/shared'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { db, repositories } from '@/db/client'
-import { knownFoods, logMeal } from '@/db/food'
+import { knownFoods, logMeal, saveFood, savedFoods } from '@/db/food'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { ChoiceGroup } from '@/ui/choice-group'
 import { Pressable } from '@/ui/pressable'
 
+import { FoodSheet, type FoodToEdit } from './food-sheet'
 import { loadFoodTable } from './food-table'
 import { type NewFood, NewFoodSheet } from './new-food-sheet'
 
@@ -31,6 +36,7 @@ interface Pick {
 }
 
 const readFoods = () => knownFoods(db, 'frequent')
+const readSaved = () => savedFoods(db)
 const key = (name: string) => name.trim().toLocaleLowerCase()
 
 function Sign({ plus }: { plus: boolean }) {
@@ -47,22 +53,38 @@ function Sign({ plus }: { plus: boolean }) {
   )
 }
 
-// A food table entry as a food to pick: its name in the app's language and its
-// typical serving.
-function tableFood(entry: FoodTableEntry, locale: string): NewFood {
+// A library food as a food to pick: its first serving, named when the serving
+// has a name ("1 scoop").
+function libraryFood(food: LibraryFood): NewFood {
+  const serving = food.servings[0] ?? { label: null, grams: 100 }
   return {
-    name: locale === 'zh' ? entry.nameZh : entry.nameEn,
-    ...scalePortion(
-      { grams: 100, proteinG: entry.proteinPer100G, kcal: entry.kcalPer100G },
-      entry.servingG,
-    ),
+    name: food.name,
+    ...portionOf(food, serving.grams),
+    ...(serving.label !== null && { serving: serving.label }),
   }
 }
 
-// The manual screen (/food/add): the user's own foods, searched or from the
-// frequent and recent lists, then the bundled food table's matches for a
-// search, chosen with plus and minus in portions, and new foods typed from a
-// label. Nothing is written until the meal is saved.
+const toEdit = (food: LibraryFood): FoodToEdit => ({
+  ...food,
+  target: { id: food.foodId, tableId: food.tableId },
+})
+
+// A food known only from logged meals, edited as a new own food of that name.
+const pastToEdit = (food: NewFood): FoodToEdit => ({
+  key: `past ${key(food.name)}`,
+  origin: 'past',
+  target: { id: null, tableId: null },
+  source: null,
+  name: food.name,
+  ...per100G(food),
+  servings: [{ label: null, grams: food.grams }],
+})
+
+// The manual screen (/food/add): the user's saved foods and edits, the
+// frequent and recent lists, and for a search the bundled food table's matches,
+// chosen with plus and minus in portions. A tap on a food's name opens its
+// sheet to edit it (M3-12); a new food typed from a label is saved to the
+// library. The meal is written when it is saved.
 export function ManualEntry() {
   const t = useTranslations('manual')
   const tFood = useTranslations('food')
@@ -70,15 +92,19 @@ export function ManualEntry() {
   const router = useRouter()
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
   const foods = useLiveQuery(readFoods)
+  const saved = useLiveQuery(readSaved)
+  const [editing, setEditing] = useState<FoodToEdit | null>(null)
   const [mealType, setMealType] = useState<MealType>(() => mealTypeAt(new Date().getHours()))
   const [query, setQuery] = useState('')
   const [picks, setPicks] = useState<Map<string, Pick>>(new Map())
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
-  const searching = query.trim() !== ''
+  // The table is a large chunk: it loads for a search, or to show the user's
+  // edits of its entries.
+  const needsTable = query.trim() !== '' || (saved ?? []).some((food) => food.tableId !== null)
   useEffect(() => {
-    if (!searching || table !== null) return
+    if (!needsTable || table !== null) return
     let current = true
     void loadFoodTable().then((entries) => {
       if (current) setTable(entries)
@@ -86,7 +112,7 @@ export function ManualEntry() {
     return () => {
       current = false
     }
-  }, [searching, table])
+  }, [needsTable, table])
 
   const change = (food: NewFood, source: MealItemSource, delta: number) => {
     setPicks((current) => {
@@ -117,20 +143,34 @@ export function ManualEntry() {
     router.push('/food')
   }
 
-  const row = (food: NewFood, source: MealItemSource) => {
+  const row = (food: NewFood, source: MealItemSource, edit: FoodToEdit) => {
     const count = picks.get(key(food.name))?.count ?? 0
+    const portion = {
+      grams: whole.format(food.grams),
+      protein: whole.format(food.proteinG),
+      kcal: whole.format(food.kcal),
+    }
     return (
       <li key={key(food.name)} className="flex items-center justify-between gap-12 py-8">
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-body text-ink">{food.name}</span>
-          <span className="text-label text-ink-3">
-            {t('portion', {
-              grams: whole.format(food.grams),
-              protein: whole.format(food.proteinG),
-              kcal: whole.format(food.kcal),
-            })}
+        <Pressable
+          aria-label={t('edit', { name: food.name })}
+          onClick={() => {
+            setEditing(edit)
+          }}
+          className="flex min-w-0 flex-1 flex-col items-start text-left"
+        >
+          <span className="flex max-w-full items-center gap-8">
+            <span className="truncate text-body text-ink">{food.name}</span>
+            {edit.origin === 'edited' && (
+              <span className="shrink-0 text-label text-ink-3">{t('edited')}</span>
+            )}
           </span>
-        </span>
+          <span className="text-label text-ink-3">
+            {food.serving === undefined
+              ? t('portion', portion)
+              : t('servingPortion', { ...portion, serving: food.serving })}
+          </span>
+        </Pressable>
         <span className="flex shrink-0 items-center">
           {count > 0 && (
             <>
@@ -168,27 +208,58 @@ export function ManualEntry() {
     )
   }
 
-  const created = chosen.filter((pick) => pick.source === 'manual')
+  const library = foodLibrary(table ?? [], saved ?? [], locale === 'zh' ? 'zh' : 'en')
+  const mine = library.filter((food) => food.origin !== 'table')
+  // Own foods and edits win a name shared with a table entry.
+  const byName = new Map(
+    [...library.filter((food) => food.origin === 'table'), ...mine].map((food) => [
+      key(food.name),
+      food,
+    ]),
+  )
+  const editOf = (food: NewFood) => {
+    const known = byName.get(key(food.name))
+    return known === undefined ? pastToEdit(food) : toEdit(known)
+  }
   const needle = key(query)
-  const matches = (foods ?? []).filter((food) => key(food.name).includes(needle))
+  const mineMatches = searchByName(mine, query)
+  const shown = new Set(mineMatches.map((food) => key(food.name)))
+  const pastMatches = (foods ?? []).filter(
+    (food) => key(food.name).includes(needle) && !shown.has(key(food.name)),
+  )
+  for (const food of pastMatches) shown.add(key(food.name))
   const recent = (foods ?? []).toSorted((a, b) => b.lastAt.localeCompare(a.lastAt))
-  const own = new Set(matches.map((food) => key(food.name)))
   const tableMatches =
     table === null || needle === ''
       ? []
-      : searchByName(table, query)
-          .map((entry) => tableFood(entry, locale))
-          .filter((food) => !own.has(key(food.name)))
+      : searchByName(
+          library.filter((food) => food.origin === 'table'),
+          query,
+        )
+          .filter((food) => !shown.has(key(food.name)))
           .slice(0, domainConfig.foodTableResults)
-  const list = (title: string, entries: NewFood[], source: MealItemSource) =>
-    entries.length > 0 && (
+  const section = (title: string, rows: ReactNode[]) =>
+    rows.length > 0 && (
       <section className="flex flex-col gap-4">
         <h2 className="text-label text-ink-3">{title}</h2>
-        <ul className="flex flex-col rounded-group bg-surface px-16 py-8">
-          {entries.map((food) => row(food, source))}
-        </ul>
+        <ul className="flex flex-col rounded-group bg-surface px-16 py-8">{rows}</ul>
       </section>
     )
+  const libraryRows = (entries: LibraryFood[]) =>
+    entries.map((food) =>
+      row(libraryFood(food), food.origin === 'own' ? 'manual' : 'table', toEdit(food)),
+    )
+  const pastRows = (entries: PastFood[]) =>
+    entries.map((food) => row(food, 'frequent', editOf(food)))
+  const frequent = (foods ?? []).slice(0, domainConfig.frequentFoods)
+  const latest = recent.slice(0, domainConfig.frequentFoods)
+  // A saved food already in the frequent or recent list is listed there only.
+  const listed = new Set([...frequent, ...latest].map((food) => key(food.name)))
+  const mineUnlisted = mine.filter((food) => !listed.has(key(food.name)))
+  const mineNames = new Set(mine.map((food) => key(food.name)))
+  const tablePicks = chosen.filter(
+    (pick) => pick.source === 'table' && !mineNames.has(key(pick.food.name)),
+  )
 
   return (
     <div className="flex flex-col gap-20">
@@ -214,34 +285,26 @@ export function ManualEntry() {
           className="w-full rounded-ctl bg-surface px-16 py-12 text-input text-ink placeholder:text-ink-3"
         />
       )}
-      {created.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-label text-ink-3">{t('created')}</h2>
-          <ul className="flex flex-col rounded-group bg-surface px-16 py-8">
-            {created.map(({ food }) => row(food, 'manual'))}
-          </ul>
-        </section>
-      )}
       {needle === '' ? (
         <>
-          {list(
+          {section(t('mine'), libraryRows(mineUnlisted))}
+          {section(
             t('table'),
-            chosen.filter((pick) => pick.source === 'table').map((pick) => pick.food),
-            'table',
+            tablePicks.map((pick) => row(pick.food, 'table', editOf(pick.food))),
           )}
-          {list(t('frequent'), (foods ?? []).slice(0, domainConfig.frequentFoods), 'frequent')}
-          {list(t('recent'), recent.slice(0, domainConfig.frequentFoods), 'frequent')}
+          {section(t('frequent'), pastRows(frequent))}
+          {section(t('recent'), pastRows(latest))}
         </>
       ) : (
         <>
-          {list(t('results'), matches, 'frequent')}
-          {list(t('table'), tableMatches, 'table')}
+          {section(t('results'), [...libraryRows(mineMatches), ...pastRows(pastMatches)])}
+          {section(t('table'), libraryRows(tableMatches))}
         </>
       )}
-      {foods?.length === 0 && created.length === 0 && needle === '' && (
+      {foods?.length === 0 && mine.length === 0 && needle === '' && (
         <p className="text-body text-ink-2">{t('noFoods')}</p>
       )}
-      {needle !== '' && table !== null && matches.length === 0 && tableMatches.length === 0 && (
+      {needle !== '' && table !== null && shown.size === 0 && tableMatches.length === 0 && (
         <p className="text-body text-ink-2">{t('noMatch')}</p>
       )}
       {/* The dock writes, so it renders only once the foods have loaded (L-028). */}
@@ -280,6 +343,25 @@ export function ManualEntry() {
         onAdd={(food) => {
           setCreating(false)
           change(food, 'manual', 1)
+          void saveFood(
+            db,
+            repositories,
+            { id: null, tableId: null },
+            { name: food.name, ...per100G(food), servings: [{ label: null, grams: food.grams }] },
+          )
+        }}
+      />
+      <FoodSheet
+        food={editing}
+        onClose={() => {
+          setEditing(null)
+        }}
+        onSaved={(name) => {
+          setPicks((current) => {
+            const next = new Map(current)
+            next.delete(key(name))
+            return next
+          })
         }}
       />
     </div>

@@ -15,9 +15,9 @@ import { AccountDeletedError, pushRows } from '../sync/push.ts'
 
 // The oldest sync version this server accepts (ADR-0003). Raise it only when a
 // change cannot be read by older apps; they then show "update the app".
-// Versions 2 to 5 (M3-01, M3-02, M4-01, M3-11) added tables, columns or values
-// an older app fails to parse in a pull.
-const MIN_SYNC_VERSION = 5
+// Versions 2 to 6 (M3-01, M3-02, M4-01, M3-11, M3-12) added tables, columns or
+// values an older app fails to parse in a pull.
+const MIN_SYNC_VERSION = 6
 
 // Distinct rejection paths kept in a push log line, enough to spot a pattern.
 const LOGGED_ISSUES_MAX = 20
