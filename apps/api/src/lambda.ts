@@ -5,6 +5,7 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 
+import { cognitoIdentityDeleter } from './account/identity.ts'
 import { type AiCheckEvent, checkAi, isAiCheckEvent } from './ai-check.ts'
 import { bedrockProvider } from './ai/bedrock.ts'
 import { aiConfig } from './ai/config.ts'
@@ -49,6 +50,7 @@ const http = handle(
     log,
     requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
     db,
+    deleteIdentity: cognitoIdentityDeleter(auth.issuer),
   }),
 )
 

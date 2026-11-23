@@ -32,3 +32,8 @@ variable "release" {
   description = "Git SHA of the build being deployed, logged by the trigger."
   type        = string
 }
+
+variable "api_role_name" {
+  description = "The API function's role, which may delete users of this pool (DELETE /api/account)."
+  type        = string
+}

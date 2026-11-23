@@ -7,6 +7,8 @@ import type { AppEnv } from './context.ts'
 import type { Database } from './db/client.ts'
 import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
+import { accountRoutes, type DeleteIdentity } from './routes/account.ts'
+import { clientErrorRoutes } from './routes/client-errors.ts'
 import { healthRoutes } from './routes/health.ts'
 import { syncRoutes } from './routes/sync.ts'
 
@@ -15,6 +17,7 @@ export interface AppDeps {
   // Verifies the caller's token and sets `userId` (auth.ts `requireUser`).
   requireUser: MiddlewareHandler<AppEnv>
   db: Database
+  deleteIdentity: DeleteIdentity
   // The server clock for the push clock-skew check; tests fix it.
   now?: () => Date
 }
@@ -26,7 +29,7 @@ function lambdaRequestId(bindings: AppEnv['Bindings'] | undefined): string | und
 }
 
 // Dependencies are passed in so tests can run without a database and capture log lines.
-export function createApp({ log, requireUser, db, now }: AppDeps) {
+export function createApp({ log, requireUser, db, deleteIdentity, now }: AppDeps) {
   const app = new Hono<AppEnv>()
 
   // Request ID and access log. Registered first, so it wraps every route,
@@ -71,6 +74,8 @@ export function createApp({ log, requireUser, db, now }: AppDeps) {
   // gets 401 rather than 404, so the API's shape is not visible to strangers.
   app.use('/api/*', requireUser)
   app.route('/api/sync', syncRoutes(db, now))
+  app.route('/api/account', accountRoutes(db, deleteIdentity))
+  app.route('/api/client-errors', clientErrorRoutes())
 
   return app
 }

@@ -53,8 +53,9 @@ module "site" {
 module "auth" {
   source = "../../modules/auth"
 
-  name       = local.name
-  ssm_prefix = "/gainframe/dev"
+  name          = local.name
+  ssm_prefix    = "/gainframe/dev"
+  api_role_name = module.api.role_name
 
   pre_sign_up_source_dir = "${path.root}/../../../apps/api/dist/pre-sign-up"
   log_retention_days     = 14

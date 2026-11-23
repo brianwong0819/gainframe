@@ -1,6 +1,7 @@
 // Local development server. In AWS the same app runs on Lambda (M0-08).
 import { serve } from '@hono/node-server'
 
+import { cognitoIdentityDeleter } from './account/identity.ts'
 import { createApp } from './app.ts'
 import { createKeyCache, fetchJwks, requireUser } from './auth.ts'
 import { checkDatabase } from './database-check.ts'
@@ -18,6 +19,8 @@ const app = createApp({
   log,
   requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
   db: createDatabase(pool),
+  // Needs AWS credentials allowed to delete users in the dev pool.
+  deleteIdentity: cognitoIdentityDeleter(auth.issuer),
 })
 
 serve({ fetch: app.fetch, port }, (info) => {
