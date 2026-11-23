@@ -12,6 +12,8 @@ import {
   type OilSauce,
   oilSauceKcal,
   oilSauceSchema,
+  portionGrams,
+  type PortionSize,
   scalePortion,
   spreadKcal,
   toLocalDate,
@@ -31,17 +33,39 @@ import { ChoiceGroup } from '@/ui/choice-group'
 import { Pressable, PressableLink } from '@/ui/pressable'
 import { Stepper } from '@/ui/stepper'
 
+import { type Correction, CorrectionSheet, type ItemToCorrect } from './correction-sheet'
 import { loadFoodTable } from './food-table'
 import { GRAM_STEP, parseGrams } from './grams'
 import { type EncodedPhoto, encodePhoto, pendingPhoto, setPendingPhoto } from './photo'
 import { PhotoPicker } from './photo-picker'
+
+const portionSizes: readonly PortionSize[] = ['small', 'regular', 'large']
+
+function Pencil() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="size-16 shrink-0 fill-none stroke-current text-ink-3"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4" />
+    </svg>
+  )
+}
 
 type Problem = 'signIn' | 'offline' | 'failed' | 'noFood' | 'capped'
 
 type Phase =
   | { kind: 'estimating' }
   | { kind: 'problem'; problem: Problem }
-  | { kind: 'ready'; dishName: string | null; items: FoodEstimateItem[] }
+  | { kind: 'ready'; dishName: string | null; items: Row[] }
+
+// An estimated item as the user has checked it: `remember` is set when its
+// name was corrected with "remember this correction" on.
+type Row = FoodEstimateItem & { remember: boolean }
 
 const readSaved = () => savedFoods(db)
 const readProteinTarget = () =>
@@ -72,7 +96,11 @@ async function estimate(photo: EncodedPhoto): Promise<Phase> {
       body: { photo },
     })
     if (response.items.length === 0) return { kind: 'problem', problem: 'noFood' }
-    return { kind: 'ready', dishName: response.dishName, items: response.items }
+    return {
+      kind: 'ready',
+      dishName: response.dishName,
+      items: response.items.map((item) => ({ ...item, remember: false })),
+    }
   } catch (error) {
     return { kind: 'problem', problem: problemOf(error) }
   }
@@ -103,6 +131,7 @@ export function PhotoEstimate() {
   const [result, setResult] = useState<{ run: number; phase: Phase } | null>(null)
   const phase: Phase = result?.run === shot.run ? result.phase : { kind: 'estimating' }
   const [oilSauce, setOilSauce] = useState<OilSauce>('usual')
+  const [correcting, setCorrecting] = useState<{ index: number; item: ItemToCorrect } | null>(null)
   const [mealType, setMealType] = useState<MealType>(() => mealTypeAt(new Date().getHours()))
   const [saving, setSaving] = useState(false)
   const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
@@ -177,13 +206,12 @@ export function PhotoEstimate() {
     )
   }
 
-  const names = new Map(
-    foodLibrary(table ?? [], saved ?? [], locale === 'zh' ? 'zh' : 'en').flatMap((food) =>
-      food.tableId === null ? [] : [[food.tableId, food.name] as const],
-    ),
+  const library = foodLibrary(table ?? [], saved ?? [], locale === 'zh' ? 'zh' : 'en')
+  const byEntry = new Map(
+    library.flatMap((food) => (food.tableId === null ? [] : [[food.tableId, food] as const])),
   )
-  const nameOf = (item: FoodEstimateItem) =>
-    (item.entryId === null ? undefined : names.get(item.entryId)) ?? item.name
+  const entryOf = (item: Row) => (item.entryId === null ? undefined : byEntry.get(item.entryId))
+  const nameOf = (item: Row) => entryOf(item)?.name ?? item.name
   const items = phase.kind === 'ready' ? phase.items : []
   const oilKcal = oilSauceKcal(items, oilSauce)
   // The figures as logged: the oil and sauce energy spread over the items.
@@ -192,13 +220,49 @@ export function PhotoEstimate() {
     (sum, item) => ({ proteinG: sum.proteinG + item.proteinG, kcal: sum.kcal + item.kcal }),
     { proteinG: 0, kcal: 0 },
   )
-  const setItems = (next: FoodEstimateItem[]) => {
+  const setItems = (next: Row[]) => {
     if (phase.kind === 'ready') setResult({ run: shot.run, phase: { ...phase, items: next } })
   }
   const setGrams = (index: number, grams: number) => {
     setItems(
       items.map((item, i) => (i === index ? { ...item, ...scalePortion(item, grams) } : item)),
     )
+  }
+
+  const correct = (index: number, correction: Correction, remember: boolean) => {
+    setItems(
+      items.map((item, i) => {
+        if (i !== index) return item
+        if (correction.kind === 'name') {
+          return { ...item, name: correction.name, entryId: null, remember }
+        }
+        const { food } = correction
+        return {
+          ...item,
+          name: food.name,
+          entryId: food.tableId,
+          proteinG: (food.proteinPer100G * item.grams) / 100,
+          kcal: (food.kcalPer100G * item.grams) / 100,
+          nutrients: 'table',
+          remember,
+        }
+      }),
+    )
+    setCorrecting(null)
+  }
+  const openCorrection = (index: number, item: Row) => {
+    setCorrecting({
+      index,
+      item: {
+        name: nameOf(item),
+        seen: item.raw.seen,
+        grams: item.grams,
+        alternatives: [...new Set([item.raw.entryId, ...item.alternativeIds])].flatMap((id) => {
+          const food = id === null || id === item.entryId ? undefined : byEntry.get(id)
+          return food === undefined ? [] : [food]
+        }),
+      },
+    })
   }
 
   const save = async () => {
@@ -215,7 +279,7 @@ export function PhotoEstimate() {
         proteinG: item.proteinG,
         kcal: item.kcal,
         source: 'ai',
-        aiRaw: { ...item.raw, remember: false, oilSauce },
+        aiRaw: { ...item.raw, remember: item.remember, oilSauce },
       })),
     })
     router.push('/food')
@@ -381,8 +445,17 @@ export function PhotoEstimate() {
               return (
                 <li key={`${String(index)} ${item.raw.seen}`} className="flex flex-col gap-8 py-12">
                   <div className="flex items-start justify-between gap-12">
-                    <span className="flex min-w-0 flex-col">
-                      <span className="text-body text-ink">{name}</span>
+                    <span className="flex min-w-0 flex-col items-start">
+                      <Pressable
+                        aria-label={t('correct', { name })}
+                        onClick={() => {
+                          openCorrection(index, item)
+                        }}
+                        className="flex items-center gap-4 text-left text-body text-ink"
+                      >
+                        {name}
+                        <Pencil />
+                      </Pressable>
                       <span className="num text-label text-ink-3">
                         <span className="text-accent">
                           {t('protein', { value: whole.format(item.proteinG) })}
@@ -402,6 +475,35 @@ export function PhotoEstimate() {
                       {t('removeShort')}
                     </Pressable>
                   </div>
+                  {item.confidence === 'low' && (
+                    <div
+                      role="group"
+                      aria-label={t('portionSize', { name })}
+                      className="grid grid-cols-3 gap-8"
+                    >
+                      {portionSizes.map((size) => {
+                        const grams = portionGrams(
+                          entryOf(item)?.servings[0]?.grams ?? item.raw.grams,
+                          size,
+                        )
+                        return (
+                          <Pressable
+                            key={size}
+                            aria-pressed={item.grams === grams}
+                            onClick={() => {
+                              setGrams(index, grams)
+                            }}
+                            className="flex flex-col items-center rounded-ctl border border-line px-8 py-4 text-label text-ink-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg"
+                          >
+                            <span>{t(`portion.${size}`)}</span>
+                            <span className="num">
+                              {t('portionGrams', { grams: whole.format(grams) })}
+                            </span>
+                          </Pressable>
+                        )
+                      })}
+                    </div>
+                  )}
                   <Stepper
                     value={whole.format(item.grams)}
                     editValue={String(item.grams)}
@@ -442,6 +544,16 @@ export function PhotoEstimate() {
               </li>
             )}
           </ul>
+          <CorrectionSheet
+            item={correcting?.item ?? null}
+            library={library}
+            onClose={() => {
+              setCorrecting(null)
+            }}
+            onSave={(correction, remember) => {
+              if (correcting !== null) correct(correcting.index, correction, remember)
+            }}
+          />
           <div className="screen-dock flex">
             <Pressable
               disabled={items.length === 0 || saving}

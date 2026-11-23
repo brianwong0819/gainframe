@@ -62,6 +62,9 @@ export const domainConfig = {
   // plate), at the energy of fat (Atwater: 9 kcal per g). A rough rule, shown
   // as an estimate; the user can still edit the logged meal.
   oilSauce: { shareOfGrams: 0.03, kcalPerG: 9 },
+  // The small / regular / large choice for an estimated item the model is
+  // unsure of (M3-06), as shares of the food's typical serving.
+  portionSizes: { small: 0.7, regular: 1, large: 1.4 },
   // Named servings one food may have ("1 scoop", "1 bowl").
   foodServingsMax: 6,
   // The target calculator (M4-01). Energy: resting energy by Mifflin-St Jeor

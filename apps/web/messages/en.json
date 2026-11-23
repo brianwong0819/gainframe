@@ -627,7 +627,24 @@
       "more": "More"
     },
     "oilSauceUsual": "Usual oil and sauce is already in the figures.",
-    "oilSauceKcal": "{sign}{value} kcal for oil and sauce"
+    "oilSauceKcal": "{sign}{value} kcal for oil and sauce",
+    "correct": "Correct {name}",
+    "correctTitle": "Correct the food",
+    "close": "Close",
+    "seen": "The AI saw: {seen}",
+    "alternatives": "Could also be",
+    "somethingElse": "Something else",
+    "keepFigures": "Keep the estimated figures",
+    "remember": "Remember this correction",
+    "rememberHint": "Later estimates take it into account.",
+    "saveCorrection": "Save",
+    "portionSize": "Portion of {name}",
+    "portion": {
+      "small": "Small",
+      "regular": "Regular",
+      "large": "Large"
+    },
+    "portionGrams": "{grams} g"
   },
   "foodSheet": {
     "title": "Edit food",
