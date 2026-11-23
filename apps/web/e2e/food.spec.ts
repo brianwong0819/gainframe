@@ -55,7 +55,11 @@ test('a meal typed from a label is logged, and its food is then one tap away', a
 // ROADMAP M3-11: a search also lists the bundled food table, one tap adding a serving.
 test('a search finds a food table entry, and one tap adds its serving', async ({ page }) => {
   await page.goto('/food/add')
+  const tabs = page.getByRole('navigation', { name: '主导航' })
+  await expect(tabs).toBeVisible()
   await page.getByRole('searchbox', { name: '搜索食物' }).fill('烤鸡胸肉')
+  // While typing, the tab bar gives its room to the results (bw, 2026-11-23).
+  await expect(tabs).toBeHidden()
   await expect(page.getByRole('heading', { name: '食物库' })).toBeVisible()
   await expect(page.getByText('120 g · 蛋白质 37 g · 198 kcal').first()).toBeVisible()
   await page.getByRole('button', { name: '加一份烤鸡胸肉', exact: true }).click()
