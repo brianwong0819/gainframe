@@ -3,7 +3,7 @@
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
-- **Current task:** M2-07 prod environment (then M2-08, M2-10, M2-09); M3-03 Photo upload in parallel
+- **Current task:** M2-08 Monitoring (M2-07 waits on bw; then M2-10, M2-09); M3-03 Photo upload in parallel
 - **Last updated:** 2026-11-23
 
 ## Now
@@ -53,6 +53,8 @@ Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows
 Ticking ahead (2026-11-21, asked by bw during the field week): a check on a set of a later round than the one in progress, in a superset or a standalone exercise, asks before completing it, because it is usually a mis-tap and would end the running rest; cancelling keeps the rest (PR `m1/confirm-tick-ahead`, "Ticking ahead" in `docs/design-system.md`).
 
 Offline navigation (2026-11-22, PR `m1/offline-summary-flake`): the service worker now answers Next's RSC payload requests (it ignores the `_rsc` parameter), so offline in-app navigation stays client-side instead of reloading the page. This was the cause of the `offline.spec.ts` failures on the summary's 完成 link (L-041).
+
+M2-08 part (a) (2026-11-23, PR `m2/08-monitoring`): `infra/modules/monitoring` with an SNS topic, a metric filter on `level: error` lines in the API and pre sign-up log groups, alarms on those lines and on the API's Lambda `Errors` and `Throttles`, and three saved Logs Insights queries; dev uses it now, prod once M2-07 merges. The runbook is `docs/debugging.md`. bw subscribes an email to each topic by hand (its last section). Part (b): `POST /api/client-errors`.
 
 ## Field week checklist (pending iPhone checks)
 
