@@ -131,7 +131,8 @@ export function createApiClient({
         requestId,
       )
     }
-    return schema.parse(await response.json())
+    // 204 No Content (DELETE /api/account) has no body to parse.
+    return schema.parse(response.status === 204 ? undefined : await response.json())
   }
 
   return { request }

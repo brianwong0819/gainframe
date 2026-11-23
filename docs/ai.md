@@ -41,9 +41,11 @@ The photo (M3-05) and text (M3-10) estimates return, per item: a food table entr
 
 Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload account. Anthropic use-case details were submitted once (Bedrock console), which unlocks Anthropic models for the account.
 
-- Current Claude models are available only as `global.` profiles, for example `global.anthropic.claude-haiku-5-5`, `global.anthropic.claude-sonnet-5-5`, `global.anthropic.claude-opus-5-5`.
-- `apac.` profiles cover only Claude 3.x and 3.5 models; do not use them.
-- Re-run the command before changing a model ID; the list changes as models launch and retire. Confirm which ID form the Mantle client expects in Anthropic's Bedrock documentation.
+- The API calls Claude through Bedrock's Messages API endpoint (`bedrock-mantle`, `https://bedrock-mantle.ap-southeast-1.api.aws/anthropic`), not `bedrock-runtime`. Its model IDs carry only the `anthropic.` prefix, for example `anthropic.claude-haiku-5-5`, `anthropic.claude-sonnet-5-5`, `anthropic.claude-opus-5-5` (Anthropic's "Claude in Amazon Bedrock" page, checked 2026-11-23). In ap-southeast-1 the endpoint routes globally, at no premium; a regional endpoint would cost 10 % more and is not offered there.
+- The `global.` and `apac.` inference-profile IDs belong to `bedrock-runtime` (InvokeModel, Converse) and are not used.
+- IAM: `bedrock-mantle:CreateInference` on `project/*`, with the condition key `bedrock-mantle:Model` limiting the role to the configured models (AWS Service Authorization Reference, "Amazon Bedrock powered by AWS Mantle"). `bedrock:InvokeModel` does not apply to this endpoint.
+- The deploy smoke test makes one call (`{ "check": "ai" }`, feature `check`); a failure is a warning, because model access and credits are account settings.
+- Re-check the model table before changing a model ID; models launch and retire.
 
 ## Prompts
 

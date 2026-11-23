@@ -536,7 +536,13 @@
     "signOutAnyway": "{count, plural, one {Sign out anyway and lose # change} other {Sign out anyway and lose # changes}}",
     "signOutAnywayConfirm": "{count, plural, one {Tap again to lose # change} other {Tap again to lose # changes}}",
     "cardText": "{workouts, plural, one {# workout exists only on this phone} other {# workouts exist only on this phone}}",
-    "dismiss": "Don't remind me"
+    "dismiss": "Don't remind me",
+    "delete": "Delete account and all records",
+    "deleteConfirm": "Tap again to delete for good",
+    "deleteBody": "This deletes the account and every workout, plan, meal and body record, in the cloud and on this phone. It cannot be undone; export from Diagnostics first if you need a copy.",
+    "deleting": "Deleting…",
+    "deleteOffline": "Deleting the account needs a connection.",
+    "deleteFailed": "The account was not deleted; it and its records are still here. Check the connection and try again."
   },
   "manual": {
     "title": "Add food",
