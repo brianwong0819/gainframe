@@ -59,6 +59,41 @@ test('a logged set and an open workout survive a reload', async ({ page }) => {
   await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
 })
 
+test('a ticked set is corrected from its row, and later sets follow', async ({ page }) => {
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await page.getByRole('button', { name: '添加动作' }).click()
+  await page.getByRole('searchbox').fill('杠铃卧推')
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^杠铃卧推/ })
+    .click()
+  await expect(page.locator('.set-panel')).toContainText('杠铃卧推 · 组 1/1')
+  // Steps, not typing: where a tap leaves the caret in the field differs by engine.
+  const heavier = page.getByRole('button', { name: '第 1 组加重量' })
+  await heavier.click()
+  await heavier.click()
+  await expect(page.getByRole('textbox', { name: '第 1 组重量' })).toHaveValue('5')
+  await page.getByRole('button', { name: '加一组' }).click()
+  await page.getByRole('button', { name: '完成第 1 组' }).first().click()
+  await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+  const rest = page.getByRole('dialog', { name: '组间休息' })
+  await expect(rest).toBeVisible()
+  await rest.getByRole('button', { name: '关闭' }).click()
+  await expect(rest).toBeHidden()
+
+  // The done row opens its weight and reps; one step up moves set 2 with it.
+  await page.getByRole('button', { name: '组 1', exact: true }).click()
+  const sheet = page.getByRole('dialog')
+  await expect(sheet.getByRole('heading', { name: '杠铃卧推 · 组 1' })).toBeVisible()
+  await sheet.getByRole('button', { name: '第 1 组加重量' }).click()
+  await expect(sheet.getByRole('textbox', { name: '第 1 组重量' })).toHaveValue('7.5')
+  await sheet.getByRole('button', { name: '关闭' }).click()
+  await expect(page.getByRole('button', { name: '组 1', exact: true })).toContainText('7.5')
+  await expect(page.getByRole('button', { name: '组 2', exact: true })).toContainText('7.5')
+  await expect(page.getByRole('button', { name: '取消完成第 1 组' })).toBeVisible()
+})
+
 test('leaving keeps the workout, and discarding deletes it', async ({ page }) => {
   await page.goto('/workout')
   await page.getByRole('button', { name: '开始训练' }).click()

@@ -20,7 +20,7 @@ import { usageStore } from '../ai/usage.ts'
 import { createApp } from '../app.ts'
 import type { AppEnv } from '../context.ts'
 import { createDatabase, createPool } from '../db/client.ts'
-import { aiUsage, mealItems } from '../db/schema.ts'
+import { aiUsage, foods, mealItems } from '../db/schema.ts'
 import { parseDatabaseUrl } from '../env.ts'
 import { createLogger } from '../log.ts'
 
@@ -56,6 +56,7 @@ function setup(steps: readonly FakeStep[]) {
 }
 
 const newUser = () => `user-${randomUUID()}`
+const uuidv7 = () => randomUUID().replace(/^(.{14})4/, '$17')
 const [rice, egg] = [FOOD_TABLE[0], FOOD_TABLE[1]]
 if (rice === undefined || egg === undefined) throw new Error('food table is empty')
 
@@ -175,6 +176,37 @@ describe('POST /api/food/estimate', () => {
     expect(text).toContain('you saw \\"yellow rice\\"')
     expect(text).toContain('Nasi minyak')
     expect(text).not.toMatch(/Forgotten|Deleted|Not mine/)
+  })
+
+  it("counts an entry with the user's own edit of it, and not another user's", async () => {
+    const [user, other] = [newUser(), newUser()]
+    const now = new Date().toISOString()
+    const editOf = (owner: string, proteinPer100G: number) => ({
+      id: uuidv7(),
+      userId: owner,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      serverVersion: 1,
+      tableId: rice.id,
+      name: `Rice of ${owner}`,
+      proteinPer100G,
+      kcalPer100G: 100,
+      servings: [{ label: null, grams: 200 }],
+    })
+    await db.insert(foods).values([editOf(user, 5), editOf(other, 50)])
+
+    const mine = await estimate(setup([modelReply(item({}))]).app, user)
+    expect(foodEstimateResponseSchema.parse(await mine.json()).items[0]).toMatchObject({
+      name: `Rice of ${user}`,
+      proteinG: 10,
+      kcal: 200,
+    })
+    const theirs = await estimate(setup([modelReply(item({}))]).app, newUser())
+    expect(foodEstimateResponseSchema.parse(await theirs.json()).items[0]).toMatchObject({
+      name: rice.nameEn,
+      proteinG: rice.proteinPer100G * 2,
+    })
   })
 
   it('answers 429 once the daily cap is used, without calling the model', async () => {

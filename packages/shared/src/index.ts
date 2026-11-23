@@ -22,6 +22,7 @@ export {
   resolveEstimate,
   spreadKcal,
   visionReplyIssues,
+  withFoodEdits,
 } from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
 export {
@@ -96,6 +97,7 @@ export {
   nextSetValues,
   previousPerformance,
   type RecordKind,
+  setsFollowingWeight,
   setsTakingWeight,
   type SetValues,
   totalVolumeKg,
