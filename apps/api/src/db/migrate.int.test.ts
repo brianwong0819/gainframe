@@ -21,6 +21,7 @@ describe('migrations (real Postgres)', () => {
     expect(rows.map((row) => row.table_name)).toEqual([
       'ai_usage',
       'body_metrics',
+      'deleted_users',
       'exercises',
       'meal_items',
       'meals',

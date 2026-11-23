@@ -230,6 +230,15 @@ export const aiUsage = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.day, table.feature] })],
 )
 
+// Accounts deleted with DELETE /api/account (M2-10): only the opaque Cognito
+// `sub`, never personal data. An access token stays valid for up to an hour
+// after its user is deleted, so a push checks this table and refuses the
+// user instead of recreating rows for an account that no longer exists.
+export const deletedUsers = pgTable('deleted_users', {
+  userId: text('user_id').primaryKey(),
+  deletedAt: instant('deleted_at').notNull(),
+})
+
 // The synced tables, keyed by the client's table names (`SyncedTableName` in
 // the web app's Dexie schema).
 export const syncedTables = {

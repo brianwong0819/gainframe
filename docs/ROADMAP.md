@@ -102,7 +102,7 @@ Done when: signing in on a second device shows all data.
   Verify: an error thrown in the web app appears in CloudWatch with the same release SHA as an `error` line and brings the alarm email within minutes (this replaced a dev-only `/api/debug/throw` route: the client report exercises the same metric filter without adding a route).
 - [x] **M2-10 Account deletion** (added 2026-11-17 with the sign-in design; part (a), the API, PR `m2/10-delete-account`; part (b), the account page's card, PR `m2/10-delete-account-page`): `DELETE /api/account` removes the user's rows in every table and the Cognito user; the account page (built in M2-02 part e without it) gains "删除账号和全部记录", which asks twice, then clears the device. An app that stores training and, from M3, food data under an account needs a way to remove it.
   Verify: after deletion a new sign-in with the same email starts empty; an integration test proves user B's rows are untouched.
-- [ ] **M2-09 Security pass**: `/security-review`; optionally a Strix scan of dev (see [tooling.md](tooling.md)); findings become issues and get fixed.
+- [x] **M2-09 Security pass**: `/security-review`; optionally a Strix scan of dev (see [tooling.md](tooling.md)); findings become issues and get fixed.
   Verify: no open high-severity findings.
 
 ## M3 Food logging + AI vision (weeks 8–10)

@@ -9,11 +9,13 @@ import {
   TOKEN_HEADER,
 } from '@gainframe/shared'
 import type { MiddlewareHandler } from 'hono'
+import { eq } from 'drizzle-orm'
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { createApp } from '../app.ts'
 import type { AppEnv } from '../context.ts'
 import { createDatabase, createPool } from '../db/client.ts'
+import { aiUsage } from '../db/schema.ts'
 import { parseDatabaseUrl } from '../env.ts'
 import { createLogger } from '../log.ts'
 
@@ -121,14 +123,53 @@ describe('DELETE /api/account', () => {
     const b = newUser()
     await pushWorkoutAndSet(a)
     await pushWorkoutAndSet(b)
+    for (const userId of [a, b]) {
+      await db.insert(aiUsage).values({ userId, day: '2026-11-23', feature: 'test', calls: 1 })
+    }
+    const usageOf = (userId: string) => db.select().from(aiUsage).where(eq(aiUsage.userId, userId))
 
     const res = await deleteAccount(a)
 
     expect(res.status).toBe(204)
     expect(await pulledRows(a)).toBe(0)
     expect(await pulledRows(b)).toBe(2)
+    expect(await usageOf(a)).toHaveLength(0)
+    expect(await usageOf(b)).toHaveLength(1)
     expect(deletedIdentities).toContain(`name-of-${a}`)
     expect(deletedIdentities).not.toContain(`name-of-${b}`)
+  })
+
+  it('refuses a later push with a token that outlived the account, and stores nothing', async () => {
+    const a = newUser()
+    await pushWorkoutAndSet(a)
+    expect((await deleteAccount(a)).status).toBe(204)
+
+    const res = await app.request('/api/sync/push', {
+      method: 'POST',
+      headers: { ...headers(a), 'content-type': 'application/json' },
+      body: JSON.stringify({
+        rows: [
+          {
+            table: 'exercises',
+            row: {
+              id: uuidv7(),
+              createdAt: iso,
+              updatedAt: iso,
+              deletedAt: null,
+              nameZh: null,
+              nameEn: 'Landmine press',
+              muscle: 'shoulders',
+              secondaryMuscles: [],
+              equipment: 'barbell',
+              defaultRestS: 90,
+            },
+          },
+        ],
+      }),
+    })
+
+    expect(res.status).toBe(401)
+    expect(await pulledRows(a)).toBe(0)
   })
 
   it('can be retried when the identity could not be deleted', async () => {
