@@ -4,12 +4,16 @@ import {
   type FoodTableEntry,
   type MyfcdRow,
   myfcdRowSchema,
+  type SgfoodidRow,
+  sgfoodidRowSchema,
   type UsdaRow,
   usdaRowSchema,
 } from '../schemas/food-table.ts'
 import type { FoodCuration } from './curation.ts'
 import { MYFCD_CURATION } from './myfcd-curation.ts'
+import { SGFOODID_CURATION } from './sgfoodid-curation.ts'
 import myfcdJson from './sources/myfcd.json' with { type: 'json' }
+import sgfoodidJson from './sources/sgfoodid.json' with { type: 'json' }
 import usdaJson from './sources/usda.json' with { type: 'json' }
 import { USDA_CURATION } from './usda-curation.ts'
 
@@ -70,6 +74,7 @@ const round1 = (value: number) => Math.round(value * 10) / 10
 export function buildFoodTable(
   myfcd: readonly MyfcdRow[],
   usda: readonly UsdaRow[],
+  sgfoodid: readonly SgfoodidRow[],
 ): FoodTableEntry[] {
   const fromMyfcd = dedupeMyfcd(myfcd).flatMap((row): FoodTableEntry[] => {
     const entry = curated(MYFCD_CURATION, row.code)
@@ -104,12 +109,35 @@ export function buildFoodTable(
       },
     ]
   })
-  return [...fromMyfcd, ...fromUsda]
+  const fromSgfoodid = sgfoodid.flatMap((row): FoodTableEntry[] => {
+    const entry = curated(SGFOODID_CURATION, row.code)
+    if (entry === null) return []
+    if (row.proteinG === null) throw new Error(`SG FoodID food ${row.code} has no protein figure`)
+    return [
+      {
+        id: `sgfoodid-${row.code}`,
+        nameEn: entry.en ?? row.name,
+        nameZh: entry.zh,
+        aliases: [...(entry.aliases ?? [])],
+        proteinPer100G: round1(row.proteinG),
+        kcalPer100G: Math.round(row.kcal),
+        servingG: entry.servingG,
+        source: 'sgfoodid',
+      },
+    ]
+  })
+  return [...fromMyfcd, ...fromUsda, ...fromSgfoodid]
 }
 
 export const MYFCD_ROWS = z.array(myfcdRowSchema).parse(myfcdJson)
 export const USDA_ROWS = z.array(usdaRowSchema).parse(usdaJson)
+export const SGFOODID_ROWS = z.array(sgfoodidRowSchema).parse(sgfoodidJson)
 
 // The bundled Malaysian food table (ROADMAP M3-11): MyFCD first, then USDA
-// for the gym staples and cooked meats MyFCD lacks.
-export const FOOD_TABLE: readonly FoodTableEntry[] = buildFoodTable(MYFCD_ROWS, USDA_ROWS)
+// for the gym staples and cooked meats MyFCD lacks, then SG FoodID for hawker
+// dishes, economy rice, kopitiam drinks and kueh.
+export const FOOD_TABLE: readonly FoodTableEntry[] = buildFoodTable(
+  MYFCD_ROWS,
+  USDA_ROWS,
+  SGFOODID_ROWS,
+)

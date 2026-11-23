@@ -49,4 +49,12 @@ describe('searchByName', () => {
   it('returns nothing when no exercise matches', () => {
     expect(searchByName(BUILT_IN_EXERCISES, 'zzz')).toEqual([])
   })
+
+  it('ranks an exact name above names that start with it', () => {
+    const items = [
+      { nameZh: '叉烧包', nameEn: 'Char siew pau' },
+      { nameZh: '叉烧', nameEn: 'Char siew' },
+    ]
+    expect(searchByName(items, '叉烧')[0]).toBe(items[1])
+  })
 })

@@ -21,14 +21,16 @@ function terms(item: Searchable): string[] {
     .map(normalize)
 }
 
-// 0: a name or alias starts with the query; 1: one contains it; 2: every word of
-// the query appears somewhere in the names and aliases; null: no match.
+// 0: a name or alias is the query; 1: one starts with it; 2: one contains it;
+// 3: every word of the query appears somewhere in the names and aliases; null:
+// no match.
 function rank(item: Searchable, query: string, words: readonly string[]): number | null {
   const names = terms(item)
-  if (names.some((name) => name.startsWith(query))) return 0
-  if (names.some((name) => name.includes(query))) return 1
+  if (names.includes(query)) return 0
+  if (names.some((name) => name.startsWith(query))) return 1
+  if (names.some((name) => name.includes(query))) return 2
   const all = names.join(' ')
-  return words.every((word) => all.includes(word)) ? 2 : null
+  return words.every((word) => all.includes(word)) ? 3 : null
 }
 
 // Items whose Chinese name, English name or aliases match `query`, best match
