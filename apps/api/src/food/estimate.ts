@@ -11,7 +11,7 @@ import {
 import { FOOD_TABLE } from '@gainframe/shared/food-table'
 import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
-import * as visionV1 from '../../prompts/vision/v1.ts'
+import * as visionV2 from '../../prompts/vision/v2.ts'
 import { aiConfig } from '../ai/config.ts'
 import type { Database } from '../db/client.ts'
 import { foods, mealItems } from '../db/schema.ts'
@@ -21,9 +21,9 @@ const FOOD_ENTRIES: ReadonlyMap<string, FoodTableEntry> = new Map(
 )
 
 // The prompt versions of the photo estimate; config chooses one.
-const VISION_PROMPTS: Readonly<Record<number, typeof visionV1>> = { 1: visionV1 }
+const VISION_PROMPTS: Readonly<Record<number, typeof visionV2>> = { 2: visionV2 }
 
-function visionPrompt(version: number): typeof visionV1 {
+function visionPrompt(version: number): typeof visionV2 {
   const prompt = VISION_PROMPTS[version]
   if (prompt === undefined) throw new Error(`No vision prompt version ${String(version)}`)
   return prompt

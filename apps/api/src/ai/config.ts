@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 // Per-feature model settings ("Models and cost" in docs/ai.md). Each feature's
 // model is chosen with its eval; prompt versions are files in
-// `apps/api/prompts/<feature>/v<N>.md`.
+// `apps/api/prompts/<feature>/v<N>.ts`.
 // A model added here is also added to `ai_models` in infra/modules/api, which
 // the Lambda's permission to call Bedrock is limited to.
 const featureSchema = z.object({
@@ -38,7 +38,7 @@ export const aiConfig = z
         maxTokens: 2048,
         timeoutMs: 12_000,
         dailyCap: FOOD_ESTIMATES_PER_DAY,
-        promptVersion: 1,
+        promptVersion: 2,
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.
       check: {

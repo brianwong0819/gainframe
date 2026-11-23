@@ -71,7 +71,8 @@ const item = (overrides: Partial<VisionItem>): VisionItem => ({
   ...overrides,
 })
 
-const modelReply = (...items: VisionItem[]) => reply(JSON.stringify({ dishName: 'Rice', items }))
+const modelReply = (...items: VisionItem[]) =>
+  reply(JSON.stringify({ dishName: 'Rice', photoIssue: null, items }))
 
 const photo = { type: 'image/jpeg', base64: Buffer.from('a jpeg').toString('base64') }
 
@@ -225,14 +226,24 @@ describe('POST /api/food/estimate', () => {
     expect(provider.requests).toEqual([])
   })
 
-  it('answers 422 for a refusal and 502 when the model cannot be reached', async () => {
+  it('answers 200 with the photo issue when no food can be named', async () => {
+    const noFood = reply(JSON.stringify({ dishName: null, photoIssue: 'dark', items: [] }))
+    const res = await estimate(setup([noFood]).app, newUser())
+    expect(res.status).toBe(200)
+    expect(foodEstimateResponseSchema.parse(await res.json())).toMatchObject({
+      photoIssue: 'dark',
+      items: [],
+    })
+  })
+
+  it('answers 422 for a refusal and 503 when the model cannot be reached', async () => {
     const refused = await estimate(setup([reply('', 'refusal')]).app, newUser())
     expect(refused.status).toBe(422)
     expect(await errorCode(refused)).toBe('ai_refused')
 
     const failed = await estimate(setup([{ throws: new Error('503') }]).app, newUser())
-    expect(failed.status).toBe(502)
-    expect(await errorCode(failed)).toBe('ai_failed')
+    expect(failed.status).toBe(503)
+    expect(await errorCode(failed)).toBe('ai_unavailable')
   })
 
   it('rejects a body without a valid photo and one over the size limit', async () => {

@@ -147,6 +147,8 @@ export {
 export {
   type EstimateAiRaw,
   type OilSauce,
+  type PhotoIssue,
+  photoIssueSchema,
   oilSauceSchema,
   estimateAiRawSchema,
   FOOD_ESTIMATE_BODY_BYTES_MAX,

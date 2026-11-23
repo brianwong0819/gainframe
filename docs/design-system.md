@@ -129,6 +129,8 @@ The save button ("记入晚餐 / Log dinner") is docked at the bottom. Saving re
 | No food recognised | Advice on framing and light | Retake, enter by hand |
 | Daily cap reached | The count and when it resets | Frequent, enter by hand |
 
+Each failure names its cause (design change at bw's request, 2026-11-23): "AI 服务暂时用不了" when the model cannot be reached (no Retry, since it would not help), "估算太久没回应" and "估算没有完成" with Retry, and for a photo the model cannot count, its reason (no food, too dark, blurry, part of the meal out of frame) with a matching tip and Retake. Each estimated item shows a small `AI` tag with its confidence (把握高 / 中 / 低).
+
 A meal waiting for its estimate counts as zero in the day's totals and says so in its row; it never shows invented numbers.
 
 **Today card (option C).** The Food tab's day card, followed, when protein is short and the user has frequent foods, by "用你常吃的补上 / Fill it with your usual", up to two of the user's frequent foods chosen by a rule to cover the gap with the fewest items, each with its protein, its energy and a plus button that logs it, and a line with their sum. When a workout was finished today the heading names it ("今天练了腿") and carries the "训练联动 / From training" tag. The suggestion is a pure function in `packages/shared/src/domain`; no model call is involved. With no frequent foods yet the card ends after the bar and offers the Photo button instead.
