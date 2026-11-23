@@ -3,6 +3,7 @@
     "/",
     "/food",
     "/food/add",
+    "/food/photo",
     "/settings",
     "/settings/account",
     "/settings/diagnostics",

@@ -4,6 +4,13 @@ import { z } from 'zod'
 // names the foods it sees and their grams, and the server takes protein and
 // energy from the bundled food table ("Food estimates" in docs/ai.md).
 
+// Photo estimates per user and UTC day: the server's cap (`ai_usage`), and
+// the number the device shows when it is reached.
+export const FOOD_ESTIMATES_PER_DAY = 20
+
+// The long edge, in pixels, the device scales a photo down to before sending it.
+export const FOOD_PHOTO_LONG_EDGE_PX = 1568
+
 // The largest photo the endpoint takes, decoded. The device re-encodes photos
 // (long edge at most 1600 px, M3-03), which keeps a JPEG well under this.
 const FOOD_PHOTO_BYTES_MAX = 1_500_000
@@ -82,4 +89,5 @@ export const foodEstimateResponseSchema = z.object({
 })
 
 export type FoodEstimateItem = z.infer<typeof foodEstimateItemSchema>
+export type FoodEstimateRequest = z.infer<typeof foodEstimateRequestSchema>
 export type FoodEstimateResponse = z.infer<typeof foodEstimateResponseSchema>

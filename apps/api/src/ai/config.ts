@@ -1,3 +1,4 @@
+import { FOOD_ESTIMATES_PER_DAY } from '@gainframe/shared'
 import { z } from 'zod'
 
 // Per-feature model settings ("Models and cost" in docs/ai.md). Each feature's
@@ -36,7 +37,7 @@ export const aiConfig = z
         effort: 'low',
         maxTokens: 2048,
         timeoutMs: 12_000,
-        dailyCap: 20,
+        dailyCap: FOOD_ESTIMATES_PER_DAY,
         promptVersion: 1,
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.

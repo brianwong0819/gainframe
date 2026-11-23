@@ -177,6 +177,7 @@
     "deleteMealConfirm": "再点一次删除",
     "close": "关闭",
     "editTargets": "修改每日目标",
+    "addPhoto": "拍照",
     "addManual": "手动添加",
     "frequent": "常吃",
     "logPortion": "记一份{name}",
@@ -572,6 +573,53 @@
     "mine": "我的食物",
     "edit": "编辑{name}",
     "edited": "已修改"
+  },
+  "photo": {
+    "title": "拍照估算",
+    "mealType": "餐次",
+    "choose": "选一张照片",
+    "noPhoto": "选一张这餐的照片来估算。",
+    "photoAlt": "这餐的照片",
+    "retake": "重拍",
+    "byHand": "不等了，手动输入",
+    "wait": "正在估算，通常要 3 到 8 秒。照片只用于这次估算。",
+    "itemCount": "{count} 样",
+    "protein": "蛋白质 {value} g",
+    "kcal": "{value} 千卡",
+    "reaches": "记入后今天蛋白质 {value} / {target} g，达标",
+    "short": "记入后今天蛋白质 {value} / {target} g，还差 {gap} g",
+    "modelFigures": "AI 数据",
+    "remove": "去掉{name}",
+    "removeShort": "去掉",
+    "nothingLeft": "没有食物了",
+    "save": "记入{meal}",
+    "retry": "重试",
+    "frequent": "常吃的食物",
+    "signInAction": "登录",
+    "signIn": {
+      "title": "登录后才能拍照估算",
+      "body": "照片要在服务器上估算，所以需要账号。其他功能不登录也能用。"
+    },
+    "offline": {
+      "title": "现在离线",
+      "body": "照片要在服务器上估算。联网后重试，或者手动输入这餐。"
+    },
+    "failed": {
+      "title": "估算没有完成",
+      "body": "什么都没有记下。用同一张照片重试，或者手动输入。"
+    },
+    "noFood": {
+      "title": "没认出食物",
+      "body": "从上往下拍，整盘入镜，光线亮一点。"
+    },
+    "capped": {
+      "title": "今天的估算次数用完了",
+      "body": "每天可以估算 {count} 张照片，{time} 后恢复。"
+    },
+    "aiTag": "AI",
+    "proteinLabel": "蛋白质",
+    "kcalLabel": "热量",
+    "unitKcal": "千卡"
   },
   "foodSheet": {
     "title": "编辑食物",

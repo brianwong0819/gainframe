@@ -14,16 +14,7 @@ import { Stepper } from '@/ui/stepper'
 import { SwipeRow } from '@/ui/swipe-row'
 
 import { formatTime } from '../history/dates'
-
-// One tap on an item's gram stepper (design-system.md, "Food logging").
-const GRAM_STEP = 10
-
-// Typed grams, or null for anything the item schema would reject.
-function parseGrams(text: string): number | null {
-  const value = Number(text.trim().replace(',', '.'))
-  if (text.trim() === '') return null
-  return mealItemSchema.shape.grams.safeParse(value).success ? value : null
-}
+import { GRAM_STEP, parseGrams } from './grams'
 
 // A typed protein or energy figure, or null for anything the schema rejects.
 function parseNutrient(text: string, field: 'proteinG' | 'kcal'): number | null {

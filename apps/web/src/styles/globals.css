@@ -86,6 +86,18 @@
   --ease-soft: var(--ease-soft);
   --ease-press: var(--ease-press);
   --ease-fade: var(--ease-fade);
+
+  /* The photo estimate's scan line: down the photo and back while it waits. */
+  --animate-scan: scan calc(var(--dur-soft) * 4) var(--ease-fade) infinite alternate;
+
+  @keyframes scan {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
 }
 
 @layer base {
