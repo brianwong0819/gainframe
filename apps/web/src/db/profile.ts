@@ -1,4 +1,11 @@
-import type { Profile } from '@gainframe/shared'
+import {
+  type ActivityLevel,
+  type BodyMetric,
+  type Phase,
+  type Profile,
+  type Sex,
+  toLocalDate,
+} from '@gainframe/shared'
 
 import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
@@ -43,5 +50,67 @@ export async function saveTargets(
     return profile === undefined
       ? repos.profiles.create({ ...values, ...NO_BODY })
       : repos.profiles.update(profile.id, values)
+  })
+}
+
+/** The latest live weigh-in, or undefined before the first. */
+export async function latestBodyMetric(db: GainframeDb): Promise<BodyMetric | undefined> {
+  const live = await db.bodyMetrics.filter((metric) => metric.deletedAt === null).toArray()
+  return live.reduce<BodyMetric | undefined>(
+    (latest, metric) =>
+      latest === undefined || metric.measuredAt > latest.measuredAt ? metric : latest,
+    undefined,
+  )
+}
+
+export interface CalculatorAnswers {
+  sex: Sex
+  birthYear: number
+  heightCm: number
+  weightKg: number
+  activityLevel: ActivityLevel
+  phase: Phase
+}
+
+/**
+ * Saves the calculator's answers and the targets it suggested in one
+ * transaction: the profile's body fields and targets, and the weight as a
+ * weigh-in (M4-02 starts its trend from it). A weight equal to the latest
+ * weigh-in of the same day is not stored twice.
+ */
+export async function applyEstimate(
+  db: GainframeDb,
+  repos: Repositories,
+  values: {
+    answers: CalculatorAnswers
+    targets: DailyTargets
+    measuredAt: string
+    timeZone: string
+  },
+): Promise<void> {
+  const { weightKg, ...body } = values.answers
+  await db.transaction('rw', db.profiles, db.bodyMetrics, db.outbox, async () => {
+    const profile = await currentProfile(db)
+    const fields = {
+      ...body,
+      proteinMode: 'fixed' as const,
+      proteinValue: values.targets.proteinG,
+      kcalTarget: values.targets.kcal,
+    }
+    if (profile === undefined) await repos.profiles.create(fields)
+    else await repos.profiles.update(profile.id, fields)
+
+    const localDate = toLocalDate(values.measuredAt, values.timeZone)
+    const latest = await latestBodyMetric(db)
+    if (latest?.localDate === localDate && latest.weightKg === weightKg) return
+    await repos.bodyMetrics.create({
+      measuredAt: values.measuredAt,
+      localDate,
+      weightKg,
+      bodyFatPct: null,
+      skeletalMuscleKg: null,
+      fatMassKg: null,
+      source: 'manual',
+    })
   })
 }

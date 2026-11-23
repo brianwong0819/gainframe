@@ -210,7 +210,10 @@
     "energyPerDay": "Energy · kcal a day",
     "energyDown": "Lower the energy target",
     "energyUp": "Raise the energy target",
-    "close": "Close"
+    "close": "Close",
+    "calculate": "Work it out for me",
+    "calculateHint": "Estimate from height, weight, activity and goal",
+    "recalculateHint": "Estimate again from your last answers"
   },
   "notFound": {
     "title": "Page not found",
@@ -537,5 +540,59 @@
     "portionProtein": "Protein g",
     "portionKcal": "kcal",
     "addFood": "Add to meal"
+  },
+  "calculator": {
+    "back": "Daily targets",
+    "intro": "Answer a few questions for an estimate of daily energy and protein by the Mifflin-St Jeor equation. You can still adjust the result. Sex, birth year and height are used only for this.",
+    "sex": "Sex",
+    "sexOption": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "birthYear": "Birth year",
+    "birthYearDown": "Earlier birth year",
+    "birthYearUp": "Later birth year",
+    "heightCm": "Height · cm",
+    "heightDown": "Lower height",
+    "heightUp": "Raise height",
+    "weightKg": "Weight · kg",
+    "weightDown": "Lower weight",
+    "weightUp": "Raise weight",
+    "activity": "Usual activity, training included",
+    "activityOption": {
+      "sedentary": {
+        "name": "Sedentary",
+        "detail": "Sitting most of the day, little exercise"
+      },
+      "light": {
+        "name": "Light",
+        "detail": "Desk job, training 1–3 times a week"
+      },
+      "moderate": {
+        "name": "Moderate",
+        "detail": "Training 3–5 times a week"
+      },
+      "high": {
+        "name": "High",
+        "detail": "Training 6–7 times a week, or on your feet at work"
+      },
+      "veryHigh": {
+        "name": "Very high",
+        "detail": "Physical work plus daily training"
+      }
+    },
+    "phase": "Goal",
+    "phaseOption": {
+      "bulk": "Gain muscle",
+      "maintain": "Maintain",
+      "cut": "Lose fat"
+    },
+    "result": "Suggested",
+    "proteinResult": "Protein {protein} g",
+    "energyResult": "Energy {kcal} kcal",
+    "howEnergy": "Energy = resting {resting} × activity {factor} {change} kcal",
+    "howProtein": "Protein = weight {weight} kg × {perKg} g/kg",
+    "apply": "Use these targets",
+    "howEnergyBalance": "Energy = resting {resting} × activity {factor}"
   }
 }
