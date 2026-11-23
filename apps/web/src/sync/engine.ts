@@ -87,7 +87,7 @@ export function createSyncEngine({
     for (const listener of listeners) listener()
   }
 
-  async function push() {
+  async function push(userId: string) {
     for (;;) {
       const batch = await readPushBatch(db, syncConfig.pushBatchMax)
       if (batch.length === 0) return
@@ -98,7 +98,7 @@ export function createSyncEngine({
         headers,
       })
       if (results.length !== batch.length) throw new Error('push answered a different row count')
-      const { removed, rejected } = await settlePush(db, batch, results)
+      const { removed, rejected } = await settlePush(db, userId, batch, results)
       if (rejected.length > 0) onRejected(rejected)
       // Only rows held back for clock skew are left: stop until the next run.
       if (removed === 0) return
@@ -149,7 +149,7 @@ export function createSyncEngine({
     }
     setStatus({ ...status, phase: 'syncing' })
     try {
-      await push()
+      await push(session.userId)
       await pull(session.userId)
       await saveLastSync(db, now())
       failures = 0

@@ -73,7 +73,7 @@ describe('push batch', () => {
     tick()
     await repos.exercises.update(row.id, { defaultRestS: 60 })
 
-    await settlePush(db, batch, [{ status: 'applied' }])
+    await settlePush(db, 'sub-1', batch, [{ status: 'applied' }])
     await expect(pendingRowCount(db)).resolves.toBe(1)
     const [next] = await readPushBatch(db, 200)
     expect(next?.row).toMatchObject({ defaultRestS: 60 })
@@ -85,7 +85,7 @@ describe('push batch', () => {
     await repos.exercises.create(exercise)
     const batch = await readPushBatch(db, 200)
 
-    const { removed, rejected } = await settlePush(db, batch, [
+    const { removed, rejected } = await settlePush(db, 'sub-1', batch, [
       { status: 'rejected', reason: 'invalid', issues: ['defaultRestS'] },
       { status: 'rejected', reason: 'clock_skew', issues: [] },
       { status: 'ignored' },
@@ -94,6 +94,29 @@ describe('push batch', () => {
     expect(rejected.map((row) => row.rowId)).toEqual([invalid.id])
     expect((await readPushBatch(db, 200)).map((entry) => entry.rowId)).toEqual([ahead.id])
     expect(await db.exercises.get(invalid.id)).toBeDefined()
+  })
+
+  it('marks the rows the account holds with its user and leaves refused rows unmarked', async () => {
+    const applied = await repos.exercises.create(exercise)
+    const ignored = await repos.exercises.create(exercise)
+    const refused = await repos.exercises.create(exercise)
+    const ahead = await repos.exercises.create(exercise)
+    const batch = await readPushBatch(db, 200)
+
+    await settlePush(db, 'sub-1', batch, [
+      { status: 'applied' },
+      { status: 'ignored' },
+      { status: 'rejected', reason: 'not_owned', issues: [] },
+      { status: 'rejected', reason: 'clock_skew', issues: [] },
+    ])
+    const userIds = await Promise.all(
+      [applied, ignored, refused, ahead].map(
+        async (row) => (await db.exercises.get(row.id))?.userId,
+      ),
+    )
+    expect(userIds).toEqual(['sub-1', 'sub-1', null, null])
+    expect((await db.exercises.get(applied.id))?.updatedAt).toBe(applied.updatedAt)
+    expect(await db.outbox.count()).toBe(1)
   })
 
   it('drops entries whose row is gone', async () => {
