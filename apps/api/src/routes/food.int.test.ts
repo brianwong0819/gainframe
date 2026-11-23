@@ -159,7 +159,11 @@ describe('POST /api/food/estimate', () => {
 
   it("sends the user's own remembered corrections, and no one else's", async () => {
     const [user, other] = [newUser(), newUser()]
-    const remembered = { ...item({ seen: 'yellow rice' }), remember: true }
+    const remembered: EstimateAiRaw = {
+      ...item({ seen: 'yellow rice' }),
+      remember: true,
+      oilSauce: 'usual',
+    }
     await storeItem(user, 'Nasi minyak', remembered)
     await storeItem(user, 'Forgotten', { ...remembered, remember: false })
     await storeItem(user, 'Deleted', remembered, true)

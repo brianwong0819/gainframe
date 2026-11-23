@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { VisionItem, VisionReply } from '../schemas/food-estimate.ts'
 import type { FoodTableEntry } from '../schemas/food-table.ts'
-import { resolveEstimate, visionReplyIssues } from './food-estimate.ts'
+import { oilSauceKcal, resolveEstimate, spreadKcal, visionReplyIssues } from './food-estimate.ts'
 
 const entry = (overrides: Partial<FoodTableEntry>): FoodTableEntry => ({
   id: 'sgfoodid-F00000001',
@@ -118,5 +118,33 @@ describe('visionReplyIssues', () => {
     ])
     expect(issues[0]?.message).toContain('not a food table id')
     expect(issues[1]?.message).toContain('needs proteinPer100G')
+  })
+})
+
+describe('oilSauceKcal', () => {
+  const meal = [{ grams: 300 }, { grams: 50 }]
+
+  it('adds nothing for the usual oil, which the figures already hold', () => {
+    expect(oilSauceKcal(meal, 'usual')).toBe(0)
+  })
+
+  it('adds or takes away oil worth 3% of the meal weight at 9 kcal/g', () => {
+    expect(oilSauceKcal(meal, 'more')).toBeCloseTo(94.5)
+    expect(oilSauceKcal(meal, 'less')).toBeCloseTo(-94.5)
+  })
+})
+
+describe('spreadKcal', () => {
+  it('spreads the energy over the items in proportion to their energy', () => {
+    const items = [{ kcal: 600 }, { kcal: 200 }]
+    expect(spreadKcal(items, 80).map((item) => item.kcal)).toEqual([660, 220])
+  })
+
+  it('never takes an item below zero', () => {
+    expect(spreadKcal([{ kcal: 50 }], -80)).toEqual([{ kcal: 0 }])
+  })
+
+  it('leaves items without energy as they are', () => {
+    expect(spreadKcal([{ kcal: 0 }], 80)).toEqual([{ kcal: 0 }])
   })
 })

@@ -619,7 +619,15 @@
     "aiTag": "AI",
     "proteinLabel": "蛋白质",
     "kcalLabel": "热量",
-    "unitKcal": "千卡"
+    "unitKcal": "千卡",
+    "oilSauce": "油和酱",
+    "oilSauceChoice": {
+      "less": "少",
+      "usual": "正常",
+      "more": "多"
+    },
+    "oilSauceUsual": "正常的油和酱已经算在里面。",
+    "oilSauceKcal": "油和酱 {sign}{value} 千卡"
   },
   "foodSheet": {
     "title": "编辑食物",

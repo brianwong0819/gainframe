@@ -1,4 +1,5 @@
-import type { FoodEstimateItem, VisionReply } from '../schemas/food-estimate.ts'
+import { domainConfig } from '../config.ts'
+import type { FoodEstimateItem, OilSauce, VisionReply } from '../schemas/food-estimate.ts'
 import type { FoodTableEntry } from '../schemas/food-table.ts'
 
 // What makes a model reply unusable even though it matches the output format:
@@ -55,4 +56,24 @@ export function resolveEstimate(
       raw: item,
     }
   })
+}
+
+// The energy the oil and sauce choice adds to a meal (negative for "less"),
+// from the meal's weight (`domainConfig.oilSauce`).
+export function oilSauceKcal(items: readonly { grams: number }[], choice: OilSauce): number {
+  if (choice === 'usual') return 0
+  const grams = items.reduce((sum, item) => sum + item.grams, 0)
+  const { shareOfGrams, kcalPerG } = domainConfig.oilSauce
+  return (choice === 'more' ? 1 : -1) * grams * shareOfGrams * kcalPerG
+}
+
+// The items with `kcal` added across them in proportion to their energy, so
+// the meal's total changes by `kcal` (never below zero for an item).
+export function spreadKcal<T extends { kcal: number }>(items: readonly T[], kcal: number): T[] {
+  const total = items.reduce((sum, item) => sum + item.kcal, 0)
+  if (kcal === 0 || total === 0) return [...items]
+  return items.map((item) => ({
+    ...item,
+    kcal: Math.max(0, item.kcal + (kcal * item.kcal) / total),
+  }))
 }

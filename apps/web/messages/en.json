@@ -619,7 +619,15 @@
     "aiTag": "AI",
     "proteinLabel": "Protein",
     "kcalLabel": "Energy",
-    "unitKcal": "kcal"
+    "unitKcal": "kcal",
+    "oilSauce": "Oil and sauce",
+    "oilSauceChoice": {
+      "less": "Less",
+      "usual": "Usual",
+      "more": "More"
+    },
+    "oilSauceUsual": "Usual oil and sauce is already in the figures.",
+    "oilSauceKcal": "{sign}{value} kcal for oil and sauce"
   },
   "foodSheet": {
     "title": "Edit food",

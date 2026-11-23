@@ -54,13 +54,22 @@ export const visionReplySchema = z.object({
   items: z.array(visionItemSchema).max(ESTIMATE_ITEMS_MAX),
 })
 
-// A meal item's `aiRaw` for an estimated item: the model's item, and whether
-// the user kept "remember this correction" on when correcting it (M3-06).
-// Remembered corrections are sent with later estimates as reference.
-export const estimateAiRawSchema = visionItemSchema.extend({ remember: z.boolean() })
+// The oil and sauce choice on the confirm screen (M3-06): the model cannot see
+// either, so the user says whether the dish had less, the usual or more.
+export const oilSauceSchema = z.enum(['less', 'usual', 'more'])
+
+// A meal item's `aiRaw` for an estimated item: the model's item, whether the
+// user kept "remember this correction" on when correcting it, and the meal's
+// oil and sauce choice (M3-06). Remembered corrections are sent with later
+// estimates as reference.
+export const estimateAiRawSchema = visionItemSchema.extend({
+  remember: z.boolean(),
+  oilSauce: oilSauceSchema,
+})
 
 export type VisionItem = z.infer<typeof visionItemSchema>
 export type EstimateAiRaw = z.infer<typeof estimateAiRawSchema>
+export type OilSauce = z.infer<typeof oilSauceSchema>
 export type VisionReply = z.infer<typeof visionReplySchema>
 
 // One estimated item as the endpoint returns it: protein and energy for the

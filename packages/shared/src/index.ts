@@ -17,7 +17,12 @@ export {
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
-export { resolveEstimate, visionReplyIssues } from './domain/food-estimate.ts'
+export {
+  oilSauceKcal,
+  resolveEstimate,
+  spreadKcal,
+  visionReplyIssues,
+} from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
@@ -137,6 +142,8 @@ export {
 } from './schemas/food.ts'
 export {
   type EstimateAiRaw,
+  type OilSauce,
+  oilSauceSchema,
   estimateAiRawSchema,
   FOOD_ESTIMATE_BODY_BYTES_MAX,
   FOOD_ESTIMATES_PER_DAY,
