@@ -59,6 +59,20 @@ data "aws_iam_policy_document" "api" {
     actions   = ["ssm:GetParameter"]
     resources = ["arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/auth-config"]
   }
+
+  # Claude through Bedrock's Messages API endpoint (apps/api/src/ai/bedrock.ts),
+  # limited to the models apps/api/src/ai/config.ts names.
+  statement {
+    sid       = "CallClaude"
+    actions   = ["bedrock-mantle:CreateInference"]
+    resources = ["arn:aws:bedrock-mantle:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:project/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "bedrock-mantle:Model"
+      values   = var.ai_models
+    }
+  }
 }
 
 data "aws_region" "current" {}
@@ -80,7 +94,9 @@ resource "aws_lambda_function" "api" {
   filename         = data.archive_file.handler.output_path
   source_code_hash = data.archive_file.handler.output_base64sha256
   memory_size      = 512
-  timeout          = 10
+  # An AI call may take two attempts of the feature's timeout (apps/api/src/ai/config.ts);
+  # CloudFront gives up on the origin after 30 s.
+  timeout = 30
 
   environment {
     variables = {
