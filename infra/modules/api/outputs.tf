@@ -13,3 +13,8 @@ output "database_url_parameter" {
 output "log_group" {
   value = aws_cloudwatch_log_group.api.name
 }
+
+output "role_name" {
+  description = "The function's role; the auth module grants it account deletion on its user pool."
+  value       = aws_iam_role.api.name
+}

@@ -25,7 +25,12 @@ function setup() {
     return next()
   }
   // No route here reaches the database.
-  const app = createApp({ log, requireUser, db: drizzle.mock() })
+  const app = createApp({
+    log,
+    requireUser,
+    db: drizzle.mock(),
+    deleteIdentity: () => Promise.resolve(),
+  })
   const logs = () => lines.map((line) => lineSchema.parse(JSON.parse(line)))
   return { app, lines, logs }
 }

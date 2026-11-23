@@ -42,6 +42,7 @@ const now = () => Math.floor(Date.now() / 1000)
 function claims(overrides: Record<string, unknown> = {}) {
   return {
     sub: 'user-a',
+    username: 'user-a',
     iss: config.issuer,
     client_id: config.clientId,
     token_use: 'access',
