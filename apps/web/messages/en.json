@@ -390,7 +390,8 @@
     "accountSignedIn": "Signed in · {email}",
     "dataSources": "Food data",
     "sourceMyfcd": "Malaysian Food Composition Database (MyFCD), Ministry of Health Malaysia",
-    "sourceUsda": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019"
+    "sourceUsda": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019",
+    "sourceSgfoodid": "Contains information from Singapore Food Insights Database (SG FoodID) accessed on 23 November 2026 from Health Promotion Board, which is made available under the terms of use of SG FoodID"
   },
   "signIn": {
     "title": "Sign in",

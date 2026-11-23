@@ -390,7 +390,8 @@
     "accountSignedIn": "已登录 · {email}",
     "dataSources": "食物营养数据",
     "sourceMyfcd": "马来西亚食物成分数据库（MyFCD），马来西亚卫生部",
-    "sourceUsda": "美国农业部农业研究局 FoodData Central（2019）"
+    "sourceUsda": "美国农业部农业研究局 FoodData Central（2019）",
+    "sourceSgfoodid": "Contains information from Singapore Food Insights Database (SG FoodID) accessed on 23 November 2026 from Health Promotion Board, which is made available under the terms of use of SG FoodID"
   },
   "signIn": {
     "title": "登录",

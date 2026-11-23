@@ -7,10 +7,12 @@ import {
   FOOD_TABLE,
   MYFCD_ROWS,
   myfcdNames,
+  SGFOODID_ROWS,
   USDA_ROWS,
 } from './food-table.ts'
 import { searchByName } from '../domain/name-search.ts'
 import { MYFCD_CURATION } from './myfcd-curation.ts'
+import { SGFOODID_CURATION } from './sgfoodid-curation.ts'
 import { USDA_CURATION } from './usda-curation.ts'
 
 const row = (overrides: Partial<MyfcdRow>): MyfcdRow => ({
@@ -45,21 +47,28 @@ describe('FOOD_TABLE', () => {
     const usdaIds = new Set(USDA_ROWS.map((source) => String(source.fdcId)))
     expect(new Set(Object.keys(MYFCD_CURATION))).toEqual(myfcdCodes)
     expect(new Set(Object.keys(USDA_CURATION))).toEqual(usdaIds)
+    expect(new Set(Object.keys(SGFOODID_CURATION))).toEqual(
+      new Set(SGFOODID_ROWS.map((source) => source.code)),
+    )
   })
 
   // A misread page or unit shows as energy far from the protein, fat and
   // carbohydrate it is made of (4, 9 and 4 kcal per gram).
   it('takes only source rows whose energy agrees with their macronutrients', () => {
-    const disagree = [...MYFCD_ROWS, ...USDA_ROWS].filter(({ kcal, proteinG, fatG, carbG }) => {
-      if (fatG === null || carbG === null) return false
-      const atwater = 4 * proteinG + 9 * fatG + 4 * carbG
-      return Math.abs(atwater - kcal) > Math.max(25, 0.15 * kcal)
-    })
+    // SG FoodID rows whose energy disagrees are left out in their curation.
+    const included = SGFOODID_ROWS.filter((row) => !('skip' in (SGFOODID_CURATION[row.code] ?? {})))
+    const disagree = [...MYFCD_ROWS, ...USDA_ROWS, ...included].filter(
+      ({ kcal, proteinG, fatG, carbG }) => {
+        if (proteinG === null || fatG === null || carbG === null) return false
+        const atwater = 4 * proteinG + 9 * fatG + 4 * carbG
+        return Math.abs(atwater - kcal) > Math.max(25, 0.15 * kcal)
+      },
+    )
     expect(disagree).toEqual([])
   })
 
   it('throws on a source row without a curation entry', () => {
-    expect(() => buildFoodTable([row({ code: 'unknown' })], [])).toThrow('No curation')
+    expect(() => buildFoodTable([row({ code: 'unknown' })], [], [])).toThrow('No curation')
   })
 })
 
@@ -95,8 +104,16 @@ describe('searchByName over FOOD_TABLE', () => {
   const first = (query: string) => searchByName(FOOD_TABLE, query)[0]
 
   it('finds a food by its English, Chinese and Malay names', () => {
-    expect(first('chicken breast')?.nameZh).toBe('鸡胸肉')
+    expect(first('chicken breast meat')?.nameZh).toBe('鸡胸肉')
     expect(first('鸡蛋')?.nameEn).toBe('Hen egg, whole')
     expect(first('nasi lemak')?.nameZh).toBe('椰浆饭')
+  })
+
+  it('finds everyday Malaysian Chinese food by its local names', () => {
+    expect(first('经济饭')?.nameZh).toMatch(/^杂饭/)
+    expect(first('char kuey teow')?.nameZh).toMatch(/炒粿条/)
+    expect(first('wantan mee')?.nameZh).toMatch(/^云吞面/)
+    expect(first('肉骨茶')?.nameZh).toMatch(/肉骨茶/)
+    expect(first('pan mee')?.nameZh).toMatch(/板面|面粉粿/)
   })
 })

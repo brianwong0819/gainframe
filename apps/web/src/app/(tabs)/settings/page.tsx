@@ -12,6 +12,9 @@ import { PressableLink } from '@/ui/pressable'
 const SOURCES = [
   { key: 'sourceMyfcd', href: 'https://myfcd.moh.gov.my/' },
   { key: 'sourceUsda', href: 'https://fdc.nal.usda.gov/' },
+  // SG FoodID's terms ask for this notice and a link to the terms, and no
+  // suggestion that the Health Promotion Board endorses the app.
+  { key: 'sourceSgfoodid', href: 'https://go.gov.sg/termsofuse-hpbsgfoodid' },
 ] as const
 
 export default function SettingsPage() {
