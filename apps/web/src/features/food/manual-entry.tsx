@@ -2,15 +2,17 @@
 
 import {
   domainConfig,
+  type FoodTableEntry,
   type MealItemSource,
   type MealType,
   mealTypeAt,
   mealTypeSchema,
-  type PastFood,
+  scalePortion,
+  searchByName,
 } from '@gainframe/shared'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { db, repositories } from '@/db/client'
 import { knownFoods, logMeal } from '@/db/food'
@@ -19,6 +21,7 @@ import { deviceTimeZone } from '@/i18n/time-zone'
 import { ChoiceGroup } from '@/ui/choice-group'
 import { Pressable } from '@/ui/pressable'
 
+import { loadFoodTable } from './food-table'
 import { type NewFood, NewFoodSheet } from './new-food-sheet'
 
 interface Pick {
@@ -44,9 +47,22 @@ function Sign({ plus }: { plus: boolean }) {
   )
 }
 
+// A food table entry as a food to pick: its name in the app's language and its
+// typical serving.
+function tableFood(entry: FoodTableEntry, locale: string): NewFood {
+  return {
+    name: locale === 'zh' ? entry.nameZh : entry.nameEn,
+    ...scalePortion(
+      { grams: 100, proteinG: entry.proteinPer100G, kcal: entry.kcalPer100G },
+      entry.servingG,
+    ),
+  }
+}
+
 // The manual screen (/food/add): the user's own foods, searched or from the
-// frequent and recent lists, chosen with plus and minus in portions, and new
-// foods typed from a label. Nothing is written until the meal is saved.
+// frequent and recent lists, then the bundled food table's matches for a
+// search, chosen with plus and minus in portions, and new foods typed from a
+// label. Nothing is written until the meal is saved.
 export function ManualEntry() {
   const t = useTranslations('manual')
   const tFood = useTranslations('food')
@@ -59,6 +75,18 @@ export function ManualEntry() {
   const [picks, setPicks] = useState<Map<string, Pick>>(new Map())
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
+  const searching = query.trim() !== ''
+  useEffect(() => {
+    if (!searching || table !== null) return
+    let current = true
+    void loadFoodTable().then((entries) => {
+      if (current) setTable(entries)
+    })
+    return () => {
+      current = false
+    }
+  }, [searching, table])
 
   const change = (food: NewFood, source: MealItemSource, delta: number) => {
     setPicks((current) => {
@@ -144,12 +172,20 @@ export function ManualEntry() {
   const needle = key(query)
   const matches = (foods ?? []).filter((food) => key(food.name).includes(needle))
   const recent = (foods ?? []).toSorted((a, b) => b.lastAt.localeCompare(a.lastAt))
-  const list = (title: string, entries: PastFood[]) =>
+  const own = new Set(matches.map((food) => key(food.name)))
+  const tableMatches =
+    table === null || needle === ''
+      ? []
+      : searchByName(table, query)
+          .map((entry) => tableFood(entry, locale))
+          .filter((food) => !own.has(key(food.name)))
+          .slice(0, domainConfig.foodTableResults)
+  const list = (title: string, entries: NewFood[], source: MealItemSource) =>
     entries.length > 0 && (
       <section className="flex flex-col gap-4">
         <h2 className="text-label text-ink-3">{title}</h2>
         <ul className="flex flex-col rounded-group bg-surface px-16 py-8">
-          {entries.map((food) => row(food, 'frequent'))}
+          {entries.map((food) => row(food, source))}
         </ul>
       </section>
     )
@@ -164,7 +200,7 @@ export function ManualEntry() {
         onChange={setMealType}
         optionLabel={(option) => tFood(`mealType.${option}`)}
       />
-      {foods !== undefined && foods.length > 0 && (
+      {foods !== undefined && (
         <input
           type="search"
           value={query}
@@ -188,16 +224,24 @@ export function ManualEntry() {
       )}
       {needle === '' ? (
         <>
-          {list(t('frequent'), (foods ?? []).slice(0, domainConfig.frequentFoods))}
-          {list(t('recent'), recent.slice(0, domainConfig.frequentFoods))}
+          {list(
+            t('table'),
+            chosen.filter((pick) => pick.source === 'table').map((pick) => pick.food),
+            'table',
+          )}
+          {list(t('frequent'), (foods ?? []).slice(0, domainConfig.frequentFoods), 'frequent')}
+          {list(t('recent'), recent.slice(0, domainConfig.frequentFoods), 'frequent')}
         </>
       ) : (
-        list(t('results'), matches)
+        <>
+          {list(t('results'), matches, 'frequent')}
+          {list(t('table'), tableMatches, 'table')}
+        </>
       )}
-      {foods?.length === 0 && created.length === 0 && (
+      {foods?.length === 0 && created.length === 0 && needle === '' && (
         <p className="text-body text-ink-2">{t('noFoods')}</p>
       )}
-      {needle !== '' && matches.length === 0 && (
+      {needle !== '' && table !== null && matches.length === 0 && tableMatches.length === 0 && (
         <p className="text-body text-ink-2">{t('noMatch')}</p>
       )}
       {/* The dock writes, so it renders only once the foods have loaded (L-028). */}

@@ -187,7 +187,7 @@ describe('sync (real Postgres)', () => {
     expect(res.status).toBe(426)
   })
 
-  it.each(['1', '2', '3'])(
+  it.each(['1', '2', '3', '4'])(
     'asks a version %s app, which cannot read the newer tables, to update',
     async (version) => {
       const res = await app.request('/api/sync/pull', {

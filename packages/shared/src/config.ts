@@ -53,6 +53,8 @@ export const domainConfig = {
   mealHours: { breakfast: 5, lunch: 11, snack: 15, dinner: 17, supper: 22 },
   // Frequent foods shown as one-tap pills on the Food tab.
   frequentFoods: 8,
+  // Food table matches shown on the manual screen for one search, best first.
+  foodTableResults: 20,
   // The target calculator (M4-01). Energy: resting energy by Mifflin-St Jeor
   // (Mifflin et al. 1990) times a physical activity factor (the FAO/WHO/UNU
   // 2004 PAL bands: 1.4 to 1.69 sedentary or light, 1.7 to 1.99 active, 2.0 to

@@ -9,6 +9,7 @@ import {
   myfcdNames,
   USDA_ROWS,
 } from './food-table.ts'
+import { searchByName } from '../domain/name-search.ts'
 import { MYFCD_CURATION } from './myfcd-curation.ts'
 import { USDA_CURATION } from './usda-curation.ts'
 
@@ -87,5 +88,15 @@ describe('dedupeMyfcd', () => {
     const product = row({ code: '222003', name: 'Beef burger', kcal: 237 })
     const fastFood = row({ code: '232001', name: 'Beef burger', kcal: 255 })
     expect(dedupeMyfcd([product, fastFood])).toEqual([product, fastFood])
+  })
+})
+
+describe('searchByName over FOOD_TABLE', () => {
+  const first = (query: string) => searchByName(FOOD_TABLE, query)[0]
+
+  it('finds a food by its English, Chinese and Malay names', () => {
+    expect(first('chicken breast')?.nameZh).toBe('鸡胸肉')
+    expect(first('鸡蛋')?.nameEn).toBe('Hen egg, whole')
+    expect(first('nasi lemak')?.nameZh).toBe('椰浆饭')
   })
 })

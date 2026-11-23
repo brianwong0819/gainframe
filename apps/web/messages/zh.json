@@ -384,7 +384,10 @@
     "diagnosticsHint": "版本、存储、备份、错误记录和清空数据",
     "account": "登录并备份",
     "accountHint": "记录目前只存在这台手机",
-    "accountSignedIn": "已登录 · {email}"
+    "accountSignedIn": "已登录 · {email}",
+    "dataSources": "食物营养数据",
+    "sourceMyfcd": "马来西亚食物成分数据库（MyFCD），马来西亚卫生部",
+    "sourceUsda": "美国农业部农业研究局 FoodData Central（2019）"
   },
   "signIn": {
     "title": "登录",
@@ -512,13 +515,14 @@
   "manual": {
     "title": "添加食物",
     "mealType": "餐别",
-    "search": "搜索你的食物",
-    "searchLabel": "搜索你的食物",
+    "search": "搜索食物",
+    "searchLabel": "搜索食物",
     "created": "新建",
     "frequent": "常吃",
     "recent": "最近",
     "results": "你的食物",
-    "noFoods": "记过的食物会出现在这里。可以按营养标签新建一个。",
+    "table": "食物库",
+    "noFoods": "记过的食物会出现在这里。可以搜索马来西亚和日常食物，或按营养标签新建一个。",
     "noMatch": "没有匹配的食物，可以新建一个。",
     "portion": "{grams} g · 蛋白质 {protein} g · {kcal} kcal",
     "more": "加一份{name}",
