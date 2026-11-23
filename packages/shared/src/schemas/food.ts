@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { domainConfig } from '../config.ts'
 import { foodTableEntrySchema } from './food-table.ts'
 import { instantSchema, localDateSchema, syncedRowSchema } from './row.ts'
 
@@ -66,7 +67,7 @@ export const foodSchema = syncedRowSchema.extend({
   name: z.string().trim().min(1).max(120),
   proteinPer100G: z.number().min(0).max(100),
   kcalPer100G: z.number().min(0).max(900),
-  servings: z.array(foodServingSchema).min(1).max(6),
+  servings: z.array(foodServingSchema).min(1).max(domainConfig.foodServingsMax),
 })
 
 export type MealType = z.infer<typeof mealTypeSchema>
