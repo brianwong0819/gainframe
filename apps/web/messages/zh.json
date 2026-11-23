@@ -210,7 +210,10 @@
     "energyPerDay": "热量 · 千卡/天",
     "energyDown": "降低热量目标",
     "energyUp": "提高热量目标",
-    "close": "关闭"
+    "close": "关闭",
+    "calculate": "帮我算",
+    "calculateHint": "按身高、体重、活动量和目标估算",
+    "recalculateHint": "按你上次的回答重新估算"
   },
   "notFound": {
     "title": "找不到这个页面",
@@ -533,5 +536,59 @@
     "portionProtein": "蛋白质 g",
     "portionKcal": "热量 kcal",
     "addFood": "加入这餐"
+  },
+  "calculator": {
+    "back": "每日目标",
+    "intro": "回答几个问题，按 Mifflin-St Jeor 公式估算每天的热量和蛋白质。结果可以再手动调。性别、年份和身高只用来算这个。",
+    "sex": "性别",
+    "sexOption": {
+      "male": "男",
+      "female": "女"
+    },
+    "birthYear": "出生年份",
+    "birthYearDown": "出生年份减一",
+    "birthYearUp": "出生年份加一",
+    "heightCm": "身高 · 厘米",
+    "heightDown": "降低身高",
+    "heightUp": "提高身高",
+    "weightKg": "体重 · 公斤",
+    "weightDown": "降低体重",
+    "weightUp": "提高体重",
+    "activity": "平时的活动量（含训练）",
+    "activityOption": {
+      "sedentary": {
+        "name": "很少活动",
+        "detail": "久坐，几乎不运动"
+      },
+      "light": {
+        "name": "轻度",
+        "detail": "坐办公室，每周练 1–3 次"
+      },
+      "moderate": {
+        "name": "中度",
+        "detail": "每周练 3–5 次"
+      },
+      "high": {
+        "name": "高",
+        "detail": "每周练 6–7 次，或工作要走动"
+      },
+      "veryHigh": {
+        "name": "很高",
+        "detail": "体力劳动，加上每天训练"
+      }
+    },
+    "phase": "目标",
+    "phaseOption": {
+      "bulk": "增肌",
+      "maintain": "维持",
+      "cut": "减脂"
+    },
+    "result": "建议",
+    "proteinResult": "蛋白质 {protein} g",
+    "energyResult": "热量 {kcal} kcal",
+    "howEnergy": "热量 = 基础代谢 {resting} × 活动系数 {factor} {change} kcal",
+    "howProtein": "蛋白质 = 体重 {weight} kg × {perKg} g/kg",
+    "apply": "用这个目标",
+    "howEnergyBalance": "热量 = 基础代谢 {resting} × 活动系数 {factor}"
   }
 }

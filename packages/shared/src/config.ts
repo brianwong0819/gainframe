@@ -65,6 +65,10 @@ export const domainConfig = {
     activityFactors: { sedentary: 1.2, light: 1.375, moderate: 1.55, high: 1.725, veryHigh: 1.9 },
     phaseKcal: { bulk: 300, maintain: 0, cut: -400 },
     proteinGPerKg: { bulk: 2.0, maintain: 1.8, cut: 2.2 },
+    // Where the calculator's steppers start before any answer: a lifter of 22,
+    // 170 cm and 65 kg; and one tap on them.
+    start: { ageYears: 22, heightCm: 170, weightKg: 65 },
+    step: { heightCm: 1, weightKg: 0.5 },
   },
 } as const
 

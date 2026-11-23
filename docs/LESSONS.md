@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-044 · 2026-11-23 · git · Conflict markers in ROADMAP and STATUS were committed and pushed
+- **What happened:** merging `main` into `m4/01-target-calculator` after #157 was squash-merged conflicted in three files. Only the code file was resolved; `git add -A` then committed `docs/ROADMAP.md` and `docs/STATUS.md` with their conflict markers, and the branch was pushed before the PR was opened.
+- **Root cause:** the merge output was cut to its last lines, so two of the three conflicts went unseen, and `pnpm check` does not read Markdown, so nothing failed.
+- **Fix:** the next commit on the same branch resolves both files (only this branch's own edits differed).
+- **Prevention:** "Git" in `docs/conventions.md`: run `git diff --check origin/main` after resolving a merge and before staging, and never stage an unfinished merge with `git add -A`.
+- **Status:** documented
+
 ### L-043 · 2026-11-22 · ui · "新建食物" did nothing when tapped right after the manual screen opened
 - **What happened:** on #154 the Device layout job failed on iPhone SE: the test opened `/food/add` and tapped "新建食物" at once, and the sheet never opened.
 - **Root cause:** a repeat of L-028. The manual screen's dock was prerendered and tappable before hydration, although `docs/conventions.md` already says a writing button renders only once its data has loaded. The rule was prose and the new screen had no delayed-chunk test. Reproduced in Chromium with the chunks delayed by 400 ms.
