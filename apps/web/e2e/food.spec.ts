@@ -72,6 +72,33 @@ test('a search finds a food table entry, and one tap adds its serving', async ({
   await expect(page.getByRole('listitem').filter({ hasText: '198 kcal' })).toContainText('烤鸡胸肉')
 })
 
+// ROADMAP M3-12: a food table entry is edited from its name, used from then on,
+// and restored to the shipped figures.
+test('an edited food table entry is used from then on and can be restored', async ({ page }) => {
+  await page.goto('/food/add')
+  await page.getByRole('searchbox', { name: '搜索食物' }).fill('乳清蛋白粉')
+  await expect(page.getByText('1 勺 · 31 g · 蛋白质 24 g · 109 kcal')).toBeVisible()
+  await page.getByRole('button', { name: '编辑乳清蛋白粉', exact: true }).click()
+
+  const sheet = page.getByRole('dialog', { name: '编辑食物' })
+  await sheet.getByRole('textbox', { name: '第 1 个份量的克数' }).fill('35')
+  await sheet.getByRole('textbox', { name: '热量 kcal' }).fill('130')
+  await expect(sheet.getByText('每 100 g：蛋白质 69.1 g · 371 kcal')).toBeVisible()
+  await sheet.getByRole('button', { name: '保存' }).click()
+  await expect(sheet).toBeHidden()
+
+  // Once the search is cleared the edit is listed under the user's foods.
+  await page.getByRole('searchbox', { name: '搜索食物' }).fill('')
+  const mine = page.getByRole('list').filter({ hasText: '已修改' })
+  await expect(mine).toContainText('1 勺 · 35 g · 蛋白质 24 g · 130 kcal')
+
+  await page.getByRole('button', { name: '编辑乳清蛋白粉', exact: true }).click()
+  await sheet.getByRole('button', { name: '恢复默认数据' }).click()
+  await sheet.getByRole('button', { name: '再点一次恢复默认' }).click()
+  await expect(sheet).toBeHidden()
+  await expect(page.getByText('已修改')).toBeHidden()
+})
+
 // The prerendered dock shows before React attaches its handlers (L-028).
 test('"新建食物" opens its sheet even when tapped as soon as it shows', async ({ page }) => {
   await page.route(/\/_next\/static\/chunks\/.+\.js$/, async (route) => {
