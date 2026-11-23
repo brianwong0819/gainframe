@@ -207,6 +207,36 @@ describe('stepWeight and stepReps', () => {
   })
 })
 
+describe('setWeight', () => {
+  it("moves a done set's later sets that are still at its old weight", async () => {
+    const workout = await session.start(ZONE)
+    const slot = await session.addExercise(workout.id, BENCH)
+    const [first] = await db.workoutSets.where('workoutExerciseId').equals(slot.id).toArray()
+    const second = await session.addSet(slot.id)
+    const third = await session.addSet(slot.id)
+    for (const { id } of [second, third]) await repos.workoutSets.update(id, { weightKg: 36.25 })
+    await repos.workoutSets.update(third.id, { weightKg: 40 })
+    await complete(first?.id ?? '', 36.25, 8)
+
+    await session.setWeight(first?.id ?? '', 38.75)
+    expect((await repos.workoutSets.get(first?.id ?? ''))?.weightKg).toBe(38.75)
+    expect((await repos.workoutSets.get(second.id))?.weightKg).toBe(38.75)
+    expect((await repos.workoutSets.get(third.id))?.weightKg).toBe(40)
+
+    await session.stepWeight(first?.id ?? '', 2.5, 1, 'kg')
+    expect((await repos.workoutSets.get(second.id))?.weightKg).toBe(40)
+  })
+
+  it('leaves later sets alone while the edited set is not done', async () => {
+    const workout = await session.start(ZONE)
+    const slot = await session.addExercise(workout.id, BENCH)
+    const [first] = await db.workoutSets.where('workoutExerciseId').equals(slot.id).toArray()
+    const second = await session.addSet(slot.id)
+    await session.setWeight(first?.id ?? '', 50)
+    expect((await repos.workoutSets.get(second.id))?.weightKg).toBe(second.weightKg)
+  })
+})
+
 describe('startFromPlanDay', () => {
   async function pushDay() {
     const plan = await repos.plans.create({ name: 'Push Pull Legs' })

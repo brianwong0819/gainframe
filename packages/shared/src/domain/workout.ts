@@ -129,6 +129,25 @@ export function setsTakingWeight(done: WorkoutSet, slotSets: readonly WorkoutSet
   )
 }
 
+// The sets that follow a done set whose weight is corrected (`before` is the
+// set as stored before the edit): the later sets of its slot that are not done
+// and still at the old weight, which they were most likely prefilled with or
+// carried from it. A set with any other weight was chosen on purpose and is
+// left alone, as is everything when the edited set is not done, because its
+// later sets are then edited one by one in the set panel.
+export function setsFollowingWeight(
+  before: WorkoutSet,
+  slotSets: readonly WorkoutSet[],
+): WorkoutSet[] {
+  if (before.completedAt === null) return []
+  return slotSets.filter(
+    (set) =>
+      set.position > before.position &&
+      set.completedAt === null &&
+      set.weightKg === before.weightKg,
+  )
+}
+
 // e1rm: a higher estimated 1RM than any earlier set. reps: more reps than any
 // earlier set at the same or a higher weight, which also covers sets above
 // `domainConfig.e1rmMaxReps` (for a bodyweight exercise, the added load is the

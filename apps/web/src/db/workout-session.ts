@@ -7,6 +7,7 @@ import {
   nextSetValues,
   previousPerformance,
   restSlotAfter,
+  setsFollowingWeight,
   setsTakingWeight,
   sharedValueChanges,
   supersetMembers,
@@ -93,6 +94,14 @@ export function createWorkoutSession(
   async function slotSets(slotId: string): Promise<WorkoutSet[]> {
     const sets = await db.workoutSets.where('workoutExerciseId').equals(slotId).toArray()
     return sets.toSorted((a, b) => a.position - b.position)
+  }
+
+  // Writes a set's weight; a done set's later sets still at its old weight
+  // follow it (`setsFollowingWeight`). Runs inside the caller's transaction.
+  async function writeWeight(set: WorkoutSet, weightKg: number): Promise<WorkoutSet> {
+    const followers = setsFollowingWeight(set, (await slotSets(set.workoutExerciseId)).filter(live))
+    for (const { id } of followers) await repos.workoutSets.update(id, { weightKg })
+    return repos.workoutSets.update(set.id, { weightKg })
   }
 
   // A slot from a plan prefills the low end of its rep range; the weight and
@@ -281,7 +290,8 @@ export function createWorkoutSession(
 
     // Steps the weight as shown in `unit` to the next multiple of `step`, so
     // taps land on whole steps (45, 50, 55 lb; 5, 7.5, 10 kg) even from a weight
-    // converted from the other unit.
+    // converted from the other unit. A done set's later sets follow it, as with
+    // `setWeight`.
     async stepWeight(
       setId: string,
       step: number,
@@ -290,9 +300,17 @@ export function createWorkoutSession(
     ): Promise<WorkoutSet> {
       return db.transaction('rw', db.workoutSets, db.outbox, async () => {
         const set = await getSet(setId)
-        const weightKg = toKg(stepToGrid(fromKg(set.weightKg, unit), step, direction), unit)
-        return repos.workoutSets.update(setId, { weightKg })
+        return writeWeight(set, toKg(stepToGrid(fromKg(set.weightKg, unit), step, direction), unit))
       })
+    },
+
+    // Stores a typed weight. When the set is done, its later sets not done yet
+    // that are still at its old weight take the new one, so correcting a set
+    // ticked at the wrong weight also fixes the sets prefilled from it.
+    async setWeight(setId: string, weightKg: number): Promise<WorkoutSet> {
+      return db.transaction('rw', db.workoutSets, db.outbox, async () =>
+        writeWeight(await getSet(setId), weightKg),
+      )
     },
 
     // Completes a set and, in the same transaction, starts the rest after it:
