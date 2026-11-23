@@ -102,3 +102,11 @@ export function spreadKcal<T extends { kcal: number }>(items: readonly T[], kcal
     kcal: Math.max(0, item.kcal + (kcal * item.kcal) / total),
   }))
 }
+
+export type PortionSize = keyof typeof domainConfig.portionSizes
+
+// The grams of a small, regular or large portion of a food whose typical
+// serving is `servingG`, to the whole gram.
+export function portionGrams(servingG: number, size: PortionSize): number {
+  return Math.max(1, Math.round(servingG * domainConfig.portionSizes[size]))
+}

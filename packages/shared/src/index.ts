@@ -19,6 +19,8 @@ export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
 export {
   oilSauceKcal,
+  portionGrams,
+  type PortionSize,
   resolveEstimate,
   spreadKcal,
   visionReplyIssues,

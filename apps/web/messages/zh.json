@@ -627,7 +627,24 @@
       "more": "多"
     },
     "oilSauceUsual": "正常的油和酱已经算在里面。",
-    "oilSauceKcal": "油和酱 {sign}{value} 千卡"
+    "oilSauceKcal": "油和酱 {sign}{value} 千卡",
+    "correct": "修改{name}",
+    "correctTitle": "修改食物",
+    "close": "关闭",
+    "seen": "AI 看到的：{seen}",
+    "alternatives": "也可能是",
+    "somethingElse": "其他食物",
+    "keepFigures": "保留估算的数据",
+    "remember": "记住这次纠正",
+    "rememberHint": "以后估算会参考这次纠正。",
+    "saveCorrection": "保存",
+    "portionSize": "{name}的分量",
+    "portion": {
+      "small": "小份",
+      "regular": "一般",
+      "large": "大份"
+    },
+    "portionGrams": "{grams} g"
   },
   "foodSheet": {
     "title": "编辑食物",

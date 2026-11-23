@@ -3,7 +3,7 @@
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
-- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen in three PRs: (1) photo pick, on-device shrink, estimating screen, its states and the basic confirm screen; (2) the oil and sauce row; (3) the name-correction sheet with "remember this correction" and the small / regular / large choice (M3-04 and M3-05 done once real Bedrock calls pass on dev). Until M3-03 adds the offline photo queue, the offline state offers Retry and Enter by hand instead of saving the meal as waiting for its estimate
+- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal, which waits on Bedrock model access like M3-04 and M3-05. Until M3-03 adds the offline photo queue, the offline state offers Retry and Enter by hand instead of saving the meal as waiting for its estimate
 - **Last updated:** 2026-11-23
 
 ## Now
@@ -84,6 +84,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Follow-ups (noticed, not in scope yet)
 
+- Photo confirm screen (M3-06), left out of the first version: the "+ Add food" row (the manual screen would need the estimate kept across pages), the line on a row that used a remembered correction (the endpoint does not say which corrections it applied), and the Undo toast on the Food tab after saving.
 - The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Check on the iPhone during M1-13 and fix in the stepper if confirmed.
 - A day's estimated length (`estimateDayS`) counts a rest after every set of a superset member, although a superset rests only after each round, so a day with supersets is estimated too long.

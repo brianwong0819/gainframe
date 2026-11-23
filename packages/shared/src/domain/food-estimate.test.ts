@@ -5,6 +5,7 @@ import type { VisionItem, VisionReply } from '../schemas/food-estimate.ts'
 import type { FoodTableEntry } from '../schemas/food-table.ts'
 import {
   oilSauceKcal,
+  portionGrams,
   resolveEstimate,
   spreadKcal,
   visionReplyIssues,
@@ -199,5 +200,13 @@ describe('spreadKcal', () => {
 
   it('leaves items without energy as they are', () => {
     expect(spreadKcal([{ kcal: 0 }], 80)).toEqual([{ kcal: 0 }])
+  })
+})
+
+describe('portionGrams', () => {
+  it('sizes a portion from the typical serving', () => {
+    expect(portionGrams(350, 'small')).toBe(245)
+    expect(portionGrams(350, 'regular')).toBe(350)
+    expect(portionGrams(350, 'large')).toBe(490)
   })
 })
