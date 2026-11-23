@@ -110,6 +110,11 @@ export {
   type MealType,
   mealTypeSchema,
 } from './schemas/food.ts'
+export {
+  type FoodTableEntry,
+  foodTableEntrySchema,
+  foodTableSourceSchema,
+} from './schemas/food-table.ts'
 export { instantSchema, type LocalDate, localDateSchema, syncedRowSchema } from './schemas/row.ts'
 export {
   type Plan,
