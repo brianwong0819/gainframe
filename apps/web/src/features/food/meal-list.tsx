@@ -141,6 +141,7 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
                         editValue={String(item.grams)}
                         inputMode="decimal"
                         label={t('gramsOf', { name: item.name })}
+                        unit="g"
                         onEnter={(text) => {
                           const grams = parseGrams(text)
                           if (grams !== null) setGrams(item, grams)

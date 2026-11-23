@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-046 · 2026-11-23 · food · A meal item's gram stepper showed "399" with no unit
+- **What happened:** bw opened a meal and asked what the 399 under 椰浆饭 meant. It was the portion in grams, but the stepper showed the bare number.
+- **Root cause:** `Stepper` was built for the workout panel, where the label beside it names the unit (kg, reps). The meal item reused it without that label, and nothing in the component asked for a unit.
+- **Fix:** PR `m3/02-grams-unit` adds an optional `unit` to `Stepper`, shown small after the number, and the meal item passes "g".
+- **Prevention:** design principle 5 ("units on every number") applies to steppers: a stepper with no label naming its unit passes `unit`.
+- **Status:** documented
+
 ### L-045 · 2026-11-23 · ui · The tab bar and dock floated over the search results while the iPhone keyboard was open
 - **What happened:** bw searched the food table on the manual screen on the iPhone. With the keyboard open, the dock and the tab bar stood above it with the tab bar's empty home-indicator inset below them, and the results had about half the space left.
 - **Root cause:** the manual screen was the first tab screen with a search field on the page itself (the exercise searches are in sheets, which follow the visual viewport since #121). The tab bar and dock were designed only for the keyboard-closed state, and the cloud's Chromium shows no on-screen keyboard, so no test saw it.

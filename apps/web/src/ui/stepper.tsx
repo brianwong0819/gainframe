@@ -18,6 +18,8 @@ interface StepperProps {
   decreaseLabel: string
   increaseLabel: string
   canDecrease: boolean
+  /** A unit shown small after the number, e.g. "g", where nothing else names it. */
+  unit?: string
 }
 
 function Sign({ plus }: { plus: boolean }) {
@@ -86,9 +88,10 @@ export function Stepper(props: StepperProps) {
         />
         <span
           aria-hidden
-          className="num pointer-events-none flex justify-center text-section peer-focus:opacity-0"
+          className="num pointer-events-none flex items-baseline justify-center gap-4 text-section peer-focus:opacity-0"
         >
           <RollingNumber value={value} />
+          {props.unit !== undefined && <span className="text-label text-ink-3">{props.unit}</span>}
         </span>
       </span>
       {button(1, props.increaseLabel, false)}
