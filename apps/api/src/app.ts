@@ -3,12 +3,14 @@ import { randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { matchedRoutes } from 'hono/route'
 
+import type { createAi } from './ai/generate.ts'
 import type { AppEnv } from './context.ts'
 import type { Database } from './db/client.ts'
 import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
 import { accountRoutes, type DeleteIdentity } from './routes/account.ts'
 import { clientErrorRoutes } from './routes/client-errors.ts'
+import { foodRoutes } from './routes/food.ts'
 import { healthRoutes } from './routes/health.ts'
 import { syncRoutes } from './routes/sync.ts'
 
@@ -18,6 +20,8 @@ export interface AppDeps {
   requireUser: MiddlewareHandler<AppEnv>
   db: Database
   deleteIdentity: DeleteIdentity
+  // The AI call pipeline (ai/generate.ts); tests pass one with the fake provider.
+  generate: ReturnType<typeof createAi>
   // The server clock for the push clock-skew check; tests fix it.
   now?: () => Date
 }
@@ -29,7 +33,7 @@ function lambdaRequestId(bindings: AppEnv['Bindings'] | undefined): string | und
 }
 
 // Dependencies are passed in so tests can run without a database and capture log lines.
-export function createApp({ log, requireUser, db, deleteIdentity, now }: AppDeps) {
+export function createApp({ log, requireUser, db, deleteIdentity, generate, now }: AppDeps) {
   const app = new Hono<AppEnv>()
 
   // Request ID and access log. Registered first, so it wraps every route,
@@ -76,6 +80,7 @@ export function createApp({ log, requireUser, db, deleteIdentity, now }: AppDeps
   app.route('/api/sync', syncRoutes(db, now))
   app.route('/api/account', accountRoutes(db, deleteIdentity, now))
   app.route('/api/client-errors', clientErrorRoutes())
+  app.route('/api/food', foodRoutes(db, generate))
 
   return app
 }
