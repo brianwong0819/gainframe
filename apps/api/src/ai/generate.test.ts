@@ -67,7 +67,7 @@ describe('createAi', () => {
       value: { name: 'chicken rice', grams: 350 },
       outcome: 'ok',
       model: 'global.anthropic.claude-haiku-5-5',
-      promptVersion: 1,
+      promptVersion: aiConfig.features.vision.promptVersion,
     })
     expect(lines).toHaveLength(1)
     expect(lines[0]).toMatchObject({
@@ -77,7 +77,7 @@ describe('createAi', () => {
       feature: 'vision',
       provider: 'fake',
       model: 'global.anthropic.claude-haiku-5-5',
-      promptVersion: 1,
+      promptVersion: aiConfig.features.vision.promptVersion,
       outcome: 'ok',
       inputTokens: 100,
       outputTokens: 20,

@@ -48,9 +48,15 @@ const visionItemSchema = z.object({
   kcalPer100G: z.number().min(0).max(900).nullable(),
 })
 
-// The model's whole reply. No items means no food was recognised.
+// Why a photo cannot be counted well (prompt v2): the device turns it into
+// advice on retaking it.
+export const photoIssueSchema = z.enum(['no_food', 'dark', 'blurry', 'cut_off'])
+
+// The model's whole reply. No items means no food could be named; then
+// `photoIssue` says why.
 export const visionReplySchema = z.object({
   dishName: z.string().min(1).max(120).nullable(),
+  photoIssue: photoIssueSchema.nullable(),
   items: z.array(visionItemSchema).max(ESTIMATE_ITEMS_MAX),
 })
 
@@ -71,6 +77,7 @@ export type VisionItem = z.infer<typeof visionItemSchema>
 export type EstimateAiRaw = z.infer<typeof estimateAiRawSchema>
 export type OilSauce = z.infer<typeof oilSauceSchema>
 export type VisionReply = z.infer<typeof visionReplySchema>
+export type PhotoIssue = z.infer<typeof photoIssueSchema>
 
 // One estimated item as the endpoint returns it: protein and energy for the
 // estimated grams, computed in code. `nutrients` says where the figures came
@@ -92,6 +99,7 @@ const foodEstimateItemSchema = z.object({
 
 export const foodEstimateResponseSchema = z.object({
   dishName: z.string().nullable(),
+  photoIssue: photoIssueSchema.nullable(),
   items: z.array(foodEstimateItemSchema),
   model: z.string(),
   promptVersion: z.int().positive(),

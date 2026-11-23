@@ -45,7 +45,11 @@ const item = (overrides: Partial<VisionItem>): VisionItem => ({
   ...overrides,
 })
 
-const reply = (...items: VisionItem[]): VisionReply => ({ dishName: 'Chicken rice', items })
+const reply = (...items: VisionItem[]): VisionReply => ({
+  dishName: 'Chicken rice',
+  photoIssue: null,
+  items,
+})
 
 describe('resolveEstimate', () => {
   it('computes protein and energy from the table entry and the grams', () => {
@@ -105,7 +109,7 @@ describe('resolveEstimate', () => {
   })
 
   it('returns no items when no food was recognised', () => {
-    expect(resolveEstimate({ dishName: null, items: [] }, table)).toEqual([])
+    expect(resolveEstimate({ dishName: null, photoIssue: 'no_food', items: [] }, table)).toEqual([])
   })
 })
 

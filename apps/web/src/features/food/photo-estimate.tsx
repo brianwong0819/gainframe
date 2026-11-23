@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  type ApiError,
   FOOD_ESTIMATES_PER_DAY,
   type FoodEstimateItem,
   foodEstimateResponseSchema,
@@ -9,6 +10,7 @@ import {
   type MealType,
   mealTypeAt,
   mealTypeSchema,
+  type PhotoIssue,
   type OilSauce,
   oilSauceKcal,
   oilSauceSchema,
@@ -56,12 +58,15 @@ function Pencil() {
   )
 }
 
-type Problem = 'signIn' | 'offline' | 'failed' | 'noFood' | 'capped'
+// Why there is no estimate to confirm. The photo issues come from the model;
+// the rest from the request ("States" in docs/design-system.md).
+type Problem =
+  'signIn' | 'offline' | 'unavailable' | 'timeout' | 'failed' | 'refused' | 'capped' | PhotoIssue
 
 type Phase =
   | { kind: 'estimating' }
   | { kind: 'problem'; problem: Problem }
-  | { kind: 'ready'; dishName: string | null; items: Row[] }
+  | { kind: 'ready'; dishName: string | null; photoIssue: PhotoIssue | null; items: Row[] }
 
 // An estimated item as the user has checked it: `remember` is set when its
 // name was corrected with "remember this correction" on.
@@ -71,9 +76,19 @@ const readSaved = () => savedFoods(db)
 const readProteinTarget = () =>
   currentProfile(db).then((profile) => (profile === undefined ? null : profile.proteinValue))
 
+// The API's AI error codes as problems; any other answer is a failed estimate.
+const API_PROBLEMS: Partial<Record<ApiError['error']['code'], Problem>> = {
+  ai_capped: 'capped',
+  ai_unavailable: 'unavailable',
+  ai_timeout: 'timeout',
+  ai_refused: 'refused',
+}
+
 function problemOf(error: unknown): Problem {
   if (error instanceof NotSignedInError) return 'signIn'
-  if (error instanceof ApiRequestError) return error.code === 'ai_capped' ? 'capped' : 'failed'
+  if (error instanceof ApiRequestError) {
+    return (error.code === null ? undefined : API_PROBLEMS[error.code]) ?? 'failed'
+  }
   return navigator.onLine ? 'failed' : 'offline'
 }
 
@@ -95,10 +110,13 @@ async function estimate(photo: EncodedPhoto): Promise<Phase> {
       path: '/api/food/estimate',
       body: { photo },
     })
-    if (response.items.length === 0) return { kind: 'problem', problem: 'noFood' }
+    if (response.items.length === 0) {
+      return { kind: 'problem', problem: response.photoIssue ?? 'no_food' }
+    }
     return {
       kind: 'ready',
       dishName: response.dishName,
+      photoIssue: response.photoIssue,
       items: response.items.map((item) => ({ ...item, remember: false })),
     }
   } catch (error) {
@@ -298,6 +316,7 @@ export function PhotoEstimate() {
           </PressableLink>
         )
       case 'failed':
+      case 'timeout':
       case 'offline':
         return (
           <Pressable
@@ -309,7 +328,11 @@ export function PhotoEstimate() {
             {t('retry')}
           </Pressable>
         )
-      case 'noFood':
+      case 'no_food':
+      case 'dark':
+      case 'blurry':
+      case 'cut_off':
+      case 'refused':
         return (
           <PhotoPicker
             onPick={retake}
@@ -318,6 +341,8 @@ export function PhotoEstimate() {
             {t('retake')}
           </PhotoPicker>
         )
+      case 'unavailable':
+        return null
       case 'capped':
         return (
           <PressableLink
@@ -405,6 +430,9 @@ export function PhotoEstimate() {
       )}
       {phase.kind === 'ready' && (
         <>
+          {phase.photoIssue !== null && phase.photoIssue !== 'no_food' && (
+            <p className="text-body text-ink-2">{t(`issueNote.${phase.photoIssue}`)}</p>
+          )}
           <section className="flex flex-col gap-4">
             <div className="flex items-end gap-28">
               <p className="flex flex-col">
@@ -463,6 +491,10 @@ export function PhotoEstimate() {
                         {' · '}
                         {t('kcal', { value: whole.format(item.kcal) })}
                         {item.nutrients === 'model' && ` · ${t('modelFigures')}`}
+                      </span>
+                      <span className="text-label text-ink-3">
+                        <span className="text-accent">{t('aiTag')}</span>{' '}
+                        {t(`confidence.${item.confidence}`)}
                       </span>
                     </span>
                     <Pressable

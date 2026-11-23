@@ -606,11 +606,7 @@
     },
     "failed": {
       "title": "The estimate did not come back",
-      "body": "Nothing was logged. Retry with the same photo, or enter the meal by hand."
-    },
-    "noFood": {
-      "title": "No food found",
-      "body": "Take the photo from above, with the whole plate in frame and good light."
+      "body": "The AI's answer could not be used. Retry with the same photo, or enter the meal by hand."
     },
     "capped": {
       "title": "Today's estimates are used up",
@@ -644,7 +640,45 @@
       "regular": "Regular",
       "large": "Large"
     },
-    "portionGrams": "{grams} g"
+    "portionGrams": "{grams} g",
+    "unavailable": {
+      "title": "The AI service is unavailable",
+      "body": "Photo estimates cannot run right now, and retrying will not help yet. Enter the meal by hand; nothing was logged."
+    },
+    "timeout": {
+      "title": "The estimate took too long",
+      "body": "The AI did not answer in time. Retry with the same photo, or enter the meal by hand."
+    },
+    "refused": {
+      "title": "The AI would not estimate this photo",
+      "body": "Take a photo of just the meal, or enter it by hand."
+    },
+    "no_food": {
+      "title": "No food in this photo",
+      "body": "Take the photo from above, with the whole plate in frame."
+    },
+    "dark": {
+      "title": "Too dark to tell the foods apart",
+      "body": "Move to better light or turn on the flash, then retake."
+    },
+    "blurry": {
+      "title": "The photo is blurry",
+      "body": "Hold the phone still and tap the food to focus, then retake."
+    },
+    "cut_off": {
+      "title": "Part of the meal is out of frame",
+      "body": "Step back so the whole plate and every side dish is in the photo."
+    },
+    "issueNote": {
+      "dark": "The photo is dark, so check the foods below.",
+      "blurry": "The photo is blurry, so check the foods below.",
+      "cut_off": "Part of the meal is out of frame; add anything missing by hand."
+    },
+    "confidence": {
+      "high": "sure",
+      "medium": "fairly sure",
+      "low": "unsure"
+    }
   },
   "foodSheet": {
     "title": "Edit food",

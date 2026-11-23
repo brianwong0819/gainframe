@@ -31,9 +31,13 @@ const FAILURES: Record<
 > = {
   capped: { status: 429, code: 'ai_capped', message: 'Daily estimate limit reached' },
   refused: { status: 422, code: 'ai_refused', message: 'The model declined this photo' },
-  timeout: { status: 504, code: 'ai_failed', message: 'The estimate took too long' },
+  timeout: { status: 504, code: 'ai_timeout', message: 'The estimate took too long' },
   invalid: { status: 502, code: 'ai_failed', message: 'The estimate was not usable' },
-  provider_error: { status: 502, code: 'ai_failed', message: 'The model could not be reached' },
+  provider_error: {
+    status: 503,
+    code: 'ai_unavailable',
+    message: 'The model could not be reached',
+  },
 }
 
 // POST /api/food/estimate (M3-05): the foods in a meal photo, with grams from
@@ -76,6 +80,7 @@ export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) 
       }
       const response: FoodEstimateResponse = {
         dishName: result.value.dishName,
+        photoIssue: result.value.photoIssue,
         items: resolveEstimate(result.value, entries),
         model: result.model,
         promptVersion: result.promptVersion,
