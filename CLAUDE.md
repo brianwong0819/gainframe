@@ -14,6 +14,7 @@ All repository content — code, comments, commit messages, branch names, PR tit
 | Writing code or tests | `docs/conventions.md` |
 | Anything AI (prompts, models, evals) | `docs/ai.md` |
 | Terraform, CI/CD, AWS | `docs/infra.md` |
+| A bug report, an alarm email, a failed request | `docs/debugging.md` |
 | Past decisions | `docs/adr/` — never contradict an accepted ADR silently |
 | Choosing a model, saving tokens | `docs/working-with-claude.md` |
 

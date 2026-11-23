@@ -72,3 +72,14 @@ module "auth" {
     "http://localhost:3000/settings",
   ]
 }
+
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  name              = local.name
+  api_function_name = module.api.function_name
+  log_groups = {
+    api         = module.api.log_group
+    pre-sign-up = module.auth.pre_sign_up_log_group
+  }
+}
