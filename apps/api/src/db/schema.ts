@@ -15,6 +15,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   uuid,
 } from 'drizzle-orm/pg-core'
@@ -211,6 +212,23 @@ export const syncState = pgTable('sync_state', {
   userId: text('user_id').primaryKey(),
   serverVersion: bigint('server_version', { mode: 'number' }).notNull().default(0),
 })
+
+// Server-only, never synced: one row per user, day and AI feature, counting
+// the calls made and their tokens. A call is counted before it is made, so the
+// daily cap holds even when calls fail (apps/api/src/ai/usage.ts). `day` is
+// the UTC date: a date sent by the client could be changed to reset the cap.
+export const aiUsage = pgTable(
+  'ai_usage',
+  {
+    userId: text('user_id').notNull(),
+    day: date('day', { mode: 'string' }).notNull(),
+    feature: text('feature').notNull(),
+    calls: integer('calls').notNull(),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    outputTokens: integer('output_tokens').notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day, table.feature] })],
+)
 
 // The synced tables, keyed by the client's table names (`SyncedTableName` in
 // the web app's Dexie schema).

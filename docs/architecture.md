@@ -84,7 +84,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |
 | nudges | kind (reminder/plateau), rule, snapshot jsonb, analysis, model, prompt_version, sent_at, read_at |
 | push_subscriptions | endpoint, keys |
-| ai_usage | user_id, local_date, feature, calls, tokens (server-only; enforces daily caps) |
+| ai_usage | user_id, day (UTC date, so a client cannot reset its cap by sending another date), feature, calls, input_tokens, output_tokens (server-only; a call is counted before it is made, which enforces the daily cap) |
 
 ## Sync rules (details in [ADR-0003](adr/0003-data-model-and-sync.md))
 
