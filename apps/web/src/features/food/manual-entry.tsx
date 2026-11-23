@@ -48,10 +48,14 @@ function Sign({ plus }: { plus: boolean }) {
 }
 
 // A food table entry as a food to pick: its name in the app's language and its
-// typical serving.
+// typical serving, with the serving's name when it has one ("1 scoop").
 function tableFood(entry: FoodTableEntry, locale: string): NewFood {
+  const zh = locale === 'zh'
   return {
-    name: locale === 'zh' ? entry.nameZh : entry.nameEn,
+    name: zh ? entry.nameZh : entry.nameEn,
+    ...(entry.servingLabel !== null && {
+      serving: zh ? entry.servingLabel.zh : entry.servingLabel.en,
+    }),
     ...scalePortion(
       { grams: 100, proteinG: entry.proteinPer100G, kcal: entry.kcalPer100G },
       entry.servingG,
@@ -119,16 +123,19 @@ export function ManualEntry() {
 
   const row = (food: NewFood, source: MealItemSource) => {
     const count = picks.get(key(food.name))?.count ?? 0
+    const portion = {
+      grams: whole.format(food.grams),
+      protein: whole.format(food.proteinG),
+      kcal: whole.format(food.kcal),
+    }
     return (
       <li key={key(food.name)} className="flex items-center justify-between gap-12 py-8">
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-body text-ink">{food.name}</span>
           <span className="text-label text-ink-3">
-            {t('portion', {
-              grams: whole.format(food.grams),
-              protein: whole.format(food.proteinG),
-              kcal: whole.format(food.kcal),
-            })}
+            {food.serving === undefined
+              ? t('portion', portion)
+              : t('servingPortion', { ...portion, serving: food.serving })}
           </span>
         </span>
         <span className="flex shrink-0 items-center">

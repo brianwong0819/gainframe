@@ -30,7 +30,20 @@ export const USDA_CURATION: Readonly<Record<string, FoodCuration>> = {
   '170886': { en: 'Yoghurt, plain, low fat', zh: '原味低脂酸奶', servingG: 170 },
   '172182': { en: 'Cottage cheese, 2% fat', zh: '茅屋芝士（2% 脂）', servingG: 110 },
   '170847': { en: 'Mozzarella, part skim', zh: '马苏里拉芝士（低脂）', servingG: 30 },
-  '173177': { en: 'Whey protein isolate powder', zh: '乳清蛋白粉（分离）', servingG: 30 },
+  '173177': {
+    en: 'Whey protein isolate powder',
+    zh: '乳清蛋白粉（分离）',
+    servingG: 30,
+    servingLabel: { en: '1 scoop', zh: '1 勺' },
+  },
+  // A typical whey powder: 24 g of protein in a 31 g scoop, as on most labels.
+  '173180': {
+    en: 'Whey protein powder',
+    zh: '乳清蛋白粉',
+    aliases: ['Protein powder', 'Whey'],
+    servingG: 31,
+    servingLabel: { en: '1 scoop', zh: '1 勺' },
+  },
   '174832': { en: 'Almond milk, unsweetened', zh: '无糖杏仁奶', servingG: 250 },
   '173904': { en: 'Oats, dry', zh: '燕麦（干）', servingG: 40 },
   '171646': { en: 'Granola', zh: '格兰诺拉麦片', servingG: 50 },

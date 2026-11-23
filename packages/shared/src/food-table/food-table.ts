@@ -89,6 +89,7 @@ export function buildFoodTable(
         proteinPer100G: round1(row.proteinG),
         kcalPer100G: Math.round(row.kcal),
         servingG: entry.servingG,
+        servingLabel: entry.servingLabel ?? null,
         source: 'myfcd',
       },
     ]
@@ -101,10 +102,11 @@ export function buildFoodTable(
         id: `usda-${String(row.fdcId)}`,
         nameEn: entry.en ?? row.description,
         nameZh: entry.zh,
-        aliases: [],
+        aliases: [...(entry.aliases ?? [])],
         proteinPer100G: round1(row.proteinG),
         kcalPer100G: Math.round(row.kcal),
         servingG: entry.servingG,
+        servingLabel: entry.servingLabel ?? null,
         source: 'usda',
       },
     ]
@@ -122,6 +124,7 @@ export function buildFoodTable(
         proteinPer100G: round1(row.proteinG),
         kcalPer100G: Math.round(row.kcal),
         servingG: entry.servingG,
+        servingLabel: entry.servingLabel ?? null,
         source: 'sgfoodid',
       },
     ]
