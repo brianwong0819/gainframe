@@ -529,6 +529,7 @@
     "noFoods": "Foods you log appear here. Search for a Malaysian or everyday food, or add one from its nutrition label.",
     "noMatch": "No food matches. Add it as a new food.",
     "portion": "{grams} g · protein {protein} g · {kcal} kcal",
+    "servingPortion": "{serving} · {grams} g · protein {protein} g · {kcal} kcal",
     "more": "Add a portion of {name}",
     "less": "Remove a portion of {name}",
     "newFood": "New food",
