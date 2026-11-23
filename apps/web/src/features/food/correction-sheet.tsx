@@ -41,7 +41,7 @@ export function CorrectionSheet({
   onClose: () => void
   onSave: (correction: Correction, remember: boolean) => void
 }) {
-  const t = useTranslations('photo')
+  const t = useTranslations('estimate')
   const locale = useLocale()
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
   const [query, setQuery] = useState('')

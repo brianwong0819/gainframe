@@ -224,8 +224,23 @@ test('a meal photo opens the estimate screen, which asks to sign in first', asyn
     .setInputFiles({ name: 'meal.png', mimeType: 'image/png', buffer: photo })
   await expect(page).toHaveURL(/\/food\/photo\/?$/)
   await expect(page.getByRole('img', { name: '这餐的照片' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: '登录后才能拍照估算' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '登录后才能用 AI 估算' })).toBeVisible()
   await expect(page.getByRole('link', { name: '登录' })).toBeVisible()
   await page.getByRole('link', { name: '不等了，手动输入' }).click()
   await expect(page).toHaveURL(/\/food\/add\/?$/)
+})
+
+// ROADMAP M3-10: a food the search does not find is described in a sentence;
+// the search text starts the description. Without sign-in the estimate
+// explains why an account is needed.
+test('a food missing from the search can be described for an AI estimate', async ({ page }) => {
+  await page.goto('/food/add')
+  await page.getByRole('searchbox', { name: '搜索食物' }).fill('妈妈煮的咖喱鸡')
+  await page.getByRole('button', { name: /写一句话来记/ }).click()
+  await expect(page).toHaveURL(/\/food\/describe\/?$/)
+  const description = page.getByRole('textbox', { name: '吃了什么？' })
+  await expect(description).toHaveValue('妈妈煮的咖喱鸡')
+  await page.getByRole('button', { name: '估算', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '登录后才能用 AI 估算' })).toBeVisible()
+  await expect(page.getByRole('link', { name: '登录' })).toBeVisible()
 })
