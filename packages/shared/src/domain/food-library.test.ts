@@ -126,10 +126,10 @@ describe('withLibraryPortions', () => {
     lastAt: '2026-11-22T08:00:00.000Z',
   }
 
-  it('gives a past food the first serving of the library food of that name, ignoring case', () => {
+  it("gives a past food the library food's figures for the amount last eaten, ignoring case", () => {
     const [item] = withLibraryPortions([past], [food({})])
-    expect(item).toMatchObject({ name: 'my WHEY', grams: 35, count: 9, lastAt: past.lastAt })
-    expect(item?.proteinG).toBeCloseTo(24.01, 2)
+    expect(item).toMatchObject({ name: 'my WHEY', grams: 30, count: 9, lastAt: past.lastAt })
+    expect(item?.proteinG).toBeCloseTo(20.58, 2)
   })
 
   it('leaves a past food without a library food as it was', () => {
