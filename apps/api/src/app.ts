@@ -8,6 +8,7 @@ import type { Database } from './db/client.ts'
 import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
 import { accountRoutes, type DeleteIdentity } from './routes/account.ts'
+import { clientErrorRoutes } from './routes/client-errors.ts'
 import { healthRoutes } from './routes/health.ts'
 import { syncRoutes } from './routes/sync.ts'
 
@@ -74,6 +75,7 @@ export function createApp({ log, requireUser, db, deleteIdentity, now }: AppDeps
   app.use('/api/*', requireUser)
   app.route('/api/sync', syncRoutes(db, now))
   app.route('/api/account', accountRoutes(db, deleteIdentity))
+  app.route('/api/client-errors', clientErrorRoutes())
 
   return app
 }
