@@ -185,4 +185,13 @@ describe('API client', () => {
     ).rejects.toEqual(new ApiRequestError(426, 'update_required', 'req-1'))
     expect(failures).toEqual(['GET /api/sync/pull answered 426 (request req-1)'])
   })
+
+  it('answers a 204 without parsing a body', async () => {
+    await saveSession(db, session)
+    stubFetch(() => new Response(null, { status: 204 }))
+
+    await expect(
+      client().request(z.undefined(), { method: 'DELETE', path: '/api/account' }),
+    ).resolves.toBeUndefined()
+  })
 })

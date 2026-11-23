@@ -17,7 +17,8 @@ import { createSyncEngine } from './engine'
 
 const config = readAuthConfig()
 
-const api =
+// The one API client, null in a build without sign-in.
+export const api =
   config === null
     ? null
     : createApiClient({
