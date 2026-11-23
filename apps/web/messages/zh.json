@@ -557,6 +557,7 @@
     "noFoods": "记过的食物会出现在这里。可以搜索马来西亚和日常食物，或按营养标签新建一个。",
     "noMatch": "没有匹配的食物，可以新建一个。",
     "portion": "{grams} g · 蛋白质 {protein} g · {kcal} kcal",
+    "servingPortion": "{serving} · {grams} g · 蛋白质 {protein} g · {kcal} kcal",
     "more": "加一份{name}",
     "less": "减一份{name}",
     "newFood": "新建食物",

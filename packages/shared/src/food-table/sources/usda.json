@@ -342,6 +342,15 @@
     "sourceUrl": "https://fdc.nal.usda.gov/food-details/173177/nutrients"
   },
   {
+    "fdcId": 173180,
+    "description": "Beverages, Protein powder whey based",
+    "kcal": 352,
+    "proteinG": 78.1,
+    "fatG": 1.56,
+    "carbG": 6.25,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173180/nutrients"
+  },
+  {
     "fdcId": 173424,
     "description": "Egg, whole, cooked, hard-boiled",
     "kcal": 155,

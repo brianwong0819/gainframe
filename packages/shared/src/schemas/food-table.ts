@@ -5,7 +5,8 @@ import { z } from 'zod'
 export const foodTableSourceSchema = z.enum(['myfcd', 'usda', 'sgfoodid'])
 
 // One food of the bundled table. Nutrients are per 100 g of edible portion;
-// `servingG` is a typical portion, only the starting grams when it is logged.
+// `servingG` is a typical portion, only the starting grams when it is logged;
+// `servingLabel` names it when it is a unit people measure by ("1 scoop").
 // An id is permanent once released: estimates and meal items refer to it.
 export const foodTableEntrySchema = z.object({
   id: z.string().regex(/^(myfcd|usda|sgfoodid)-[A-Za-z0-9]+$/),
@@ -15,6 +16,7 @@ export const foodTableEntrySchema = z.object({
   proteinPer100G: z.number().min(0).max(100),
   kcalPer100G: z.number().min(0).max(900),
   servingG: z.number().int().positive().max(2000),
+  servingLabel: z.object({ en: z.string().min(1), zh: z.string().min(1) }).nullable(),
   source: foodTableSourceSchema,
 })
 

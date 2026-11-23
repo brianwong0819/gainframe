@@ -12,6 +12,7 @@ const entry = (overrides: Partial<FoodTableEntry>): FoodTableEntry => ({
   proteinPer100G: 8,
   kcalPer100G: 180,
   servingG: 350,
+  servingLabel: null,
   source: 'sgfoodid',
   ...overrides,
 })

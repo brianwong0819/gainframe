@@ -7,11 +7,14 @@ import { useState } from 'react'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
 
+// One portion of a food to log. `serving` names the portion when it is a unit
+// ("1 scoop"); the meal item stores only the grams and figures.
 export interface NewFood {
   name: string
   grams: number
   proteinG: number
   kcal: number
+  serving?: string
 }
 
 const fieldClass =
