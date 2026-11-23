@@ -9,7 +9,11 @@ import {
   type MealType,
   mealTypeAt,
   mealTypeSchema,
+  type OilSauce,
+  oilSauceKcal,
+  oilSauceSchema,
   scalePortion,
+  spreadKcal,
   toLocalDate,
 } from '@gainframe/shared'
 import { useRouter } from 'next/navigation'
@@ -98,6 +102,7 @@ export function PhotoEstimate() {
   const [preview, setPreview] = useState<{ photo: Blob; url: string } | null>(null)
   const [result, setResult] = useState<{ run: number; phase: Phase } | null>(null)
   const phase: Phase = result?.run === shot.run ? result.phase : { kind: 'estimating' }
+  const [oilSauce, setOilSauce] = useState<OilSauce>('usual')
   const [mealType, setMealType] = useState<MealType>(() => mealTypeAt(new Date().getHours()))
   const [saving, setSaving] = useState(false)
   const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
@@ -180,7 +185,10 @@ export function PhotoEstimate() {
   const nameOf = (item: FoodEstimateItem) =>
     (item.entryId === null ? undefined : names.get(item.entryId)) ?? item.name
   const items = phase.kind === 'ready' ? phase.items : []
-  const totals = items.reduce(
+  const oilKcal = oilSauceKcal(items, oilSauce)
+  // The figures as logged: the oil and sauce energy spread over the items.
+  const logged = spreadKcal(items, oilKcal)
+  const totals = logged.reduce(
     (sum, item) => ({ proteinG: sum.proteinG + item.proteinG, kcal: sum.kcal + item.kcal }),
     { proteinG: 0, kcal: 0 },
   )
@@ -201,13 +209,13 @@ export function PhotoEstimate() {
       timeZone: deviceTimeZone(),
       mealType,
       name: phase.dishName,
-      items: items.map((item) => ({
+      items: logged.map((item) => ({
         name: nameOf(item),
         grams: item.grams,
         proteinG: item.proteinG,
         kcal: item.kcal,
         source: 'ai',
-        aiRaw: { ...item.raw, remember: false },
+        aiRaw: { ...item.raw, remember: false, oilSauce },
       })),
     })
     router.push('/food')
@@ -414,6 +422,25 @@ export function PhotoEstimate() {
                 </li>
               )
             })}
+            {items.length > 0 && (
+              <li className="flex flex-col gap-8 py-12">
+                <ChoiceGroup
+                  label={t('oilSauce')}
+                  options={oilSauceSchema.options}
+                  value={oilSauce}
+                  onChange={setOilSauce}
+                  optionLabel={(option) => t(`oilSauceChoice.${option}`)}
+                />
+                <p className="num text-label text-ink-3">
+                  {oilKcal === 0
+                    ? t('oilSauceUsual')
+                    : t('oilSauceKcal', {
+                        sign: oilKcal > 0 ? '+' : '−',
+                        value: whole.format(Math.abs(oilKcal)),
+                      })}
+                </p>
+              </li>
+            )}
           </ul>
           <div className="screen-dock flex">
             <Pressable
