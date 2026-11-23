@@ -142,7 +142,7 @@ jobs:
       - name: Validate every stack
         # The modules are validated through the stacks that call them.
         run: |
-          for stack in infra/bootstrap infra/envs/dev; do
+          for stack in infra/bootstrap infra/envs/dev infra/envs/prod; do
             terraform -chdir="${stack}" init -backend=false -input=false
             terraform -chdir="${stack}" validate
           done

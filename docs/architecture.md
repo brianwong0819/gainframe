@@ -21,7 +21,7 @@ EventBridge Scheduler → Lambda (weekly report, plateau check, one-off rest-tim
 SSM Parameter Store (secrets) · CloudWatch (logs, alarms) · AWS Budgets
 ```
 
-Region: `ap-southeast-1` for everything. Environments: `dev` (auto-deploy from `main`) and `prod` (manual approval). Neon uses branches `dev` and `prod`.
+Region: `ap-southeast-1` for everything. Environments: `dev` (auto-deploy from `main`) and `prod` (manual approval). Neon uses the branch `dev` for dev and the root branch `production` for prod.
 
 ## Repository layout
 
