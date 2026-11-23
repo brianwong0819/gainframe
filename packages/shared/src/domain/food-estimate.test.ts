@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import type { Food } from '../schemas/food.ts'
 import type { VisionItem, VisionReply } from '../schemas/food-estimate.ts'
 import type { FoodTableEntry } from '../schemas/food-table.ts'
-import { resolveEstimate, visionReplyIssues } from './food-estimate.ts'
+import { resolveEstimate, visionReplyIssues, withFoodEdits } from './food-estimate.ts'
 
 const entry = (overrides: Partial<FoodTableEntry>): FoodTableEntry => ({
   id: 'sgfoodid-F00000001',
@@ -118,5 +119,51 @@ describe('visionReplyIssues', () => {
     ])
     expect(issues[0]?.message).toContain('not a food table id')
     expect(issues[1]?.message).toContain('needs proteinPer100G')
+  })
+})
+
+describe('withFoodEdits', () => {
+  const edit = (overrides: Partial<Food>): Food => ({
+    id: '019a0000-0000-7000-8000-000000000001',
+    userId: null,
+    createdAt: '2026-11-23T10:00:00.000Z',
+    updatedAt: '2026-11-23T10:00:00.000Z',
+    deletedAt: null,
+    tableId: chickenRice.id,
+    name: 'My chicken rice',
+    proteinPer100G: 10,
+    kcalPer100G: 160,
+    servings: [{ label: null, grams: 400 }],
+    ...overrides,
+  })
+
+  it("counts an edited entry with the user's name and figures", () => {
+    const entries = withFoodEdits(table, [edit({})])
+    const [rice] = resolveEstimate(reply(item({})), entries)
+    expect(rice).toMatchObject({ name: 'My chicken rice', proteinG: 35, kcal: 560 })
+    expect(entries.get(egg.id)).toBe(egg)
+  })
+
+  it('uses the latest edit and ignores deleted edits and own foods', () => {
+    const entries = withFoodEdits(table, [
+      edit({ proteinPer100G: 9 }),
+      edit({
+        id: '019a0000-0000-7000-8000-000000000002',
+        updatedAt: '2026-11-23T11:00:00.000Z',
+        proteinPer100G: 12,
+      }),
+      edit({
+        id: '019a0000-0000-7000-8000-000000000003',
+        tableId: egg.id,
+        deletedAt: '2026-11-23T11:00:00.000Z',
+      }),
+      edit({ id: '019a0000-0000-7000-8000-000000000004', tableId: null }),
+    ])
+    expect(entries.get(chickenRice.id)?.proteinPer100G).toBe(12)
+    expect(entries.get(egg.id)).toBe(egg)
+  })
+
+  it('returns the table itself when the user has no edits', () => {
+    expect(withFoodEdits(table, [])).toBe(table)
   })
 })

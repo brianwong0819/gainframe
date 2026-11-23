@@ -1,5 +1,7 @@
+import type { Food } from '../schemas/food.ts'
 import type { FoodEstimateItem, VisionReply } from '../schemas/food-estimate.ts'
 import type { FoodTableEntry } from '../schemas/food-table.ts'
+import { currentFoods } from './food-library.ts'
 
 // What makes a model reply unusable even though it matches the output format:
 // an entry id the table does not have, or an item without an entry that lacks
@@ -55,4 +57,27 @@ export function resolveEstimate(
       raw: item,
     }
   })
+}
+
+// The table entries as this user sees them: an entry the user edited (M3-12)
+// takes the edit's name and figures, so an estimate that picks it counts what
+// the user's library says. Other entries are shared, not copied.
+export function withFoodEdits(
+  entries: ReadonlyMap<string, FoodTableEntry>,
+  foods: readonly Food[],
+): ReadonlyMap<string, FoodTableEntry> {
+  const edits = currentFoods(foods).filter((food) => food.tableId !== null)
+  if (edits.length === 0) return entries
+  const merged = new Map(entries)
+  for (const edit of edits) {
+    const entry = edit.tableId === null ? undefined : entries.get(edit.tableId)
+    if (entry === undefined) continue
+    merged.set(entry.id, {
+      ...entry,
+      nameEn: edit.name,
+      proteinPer100G: edit.proteinPer100G,
+      kcalPer100G: edit.kcalPer100G,
+    })
+  }
+  return merged
 }

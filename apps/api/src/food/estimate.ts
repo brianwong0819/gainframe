@@ -1,19 +1,22 @@
 import {
   type EstimateAiRaw,
   estimateAiRawSchema,
+  type Food,
+  foodSchema,
   type FoodTableEntry,
   visionReplyIssues,
   visionReplySchema,
+  withFoodEdits,
 } from '@gainframe/shared'
 import { FOOD_TABLE } from '@gainframe/shared/food-table'
-import { and, desc, eq, isNull, sql } from 'drizzle-orm'
+import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
 import * as visionV1 from '../../prompts/vision/v1.ts'
 import { aiConfig } from '../ai/config.ts'
 import type { Database } from '../db/client.ts'
-import { mealItems } from '../db/schema.ts'
+import { foods, mealItems } from '../db/schema.ts'
 
-export const FOOD_ENTRIES: ReadonlyMap<string, FoodTableEntry> = new Map(
+const FOOD_ENTRIES: ReadonlyMap<string, FoodTableEntry> = new Map(
   FOOD_TABLE.map((entry) => [entry.id, entry]),
 )
 
@@ -41,6 +44,24 @@ export const estimateReplySchema = visionReplySchema.superRefine((reply, ctx) =>
     ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
   }
 })
+
+// The table as this user sees it: their live edits of entries (M3-12) replace
+// the entries' names and figures. Scoped by the user from the token; a row that
+// does not parse is skipped.
+export async function userEntries(
+  db: Database,
+  userId: string,
+): Promise<ReadonlyMap<string, FoodTableEntry>> {
+  const rows = await db
+    .select()
+    .from(foods)
+    .where(and(eq(foods.userId, userId), isNull(foods.deletedAt), isNotNull(foods.tableId)))
+  const edits = rows.flatMap((row): Food[] => {
+    const food = foodSchema.safeParse(row)
+    return food.success ? [food.data] : []
+  })
+  return withFoodEdits(FOOD_ENTRIES, edits)
+}
 
 export interface Correction {
   // What the model estimated, and what the user logged instead.

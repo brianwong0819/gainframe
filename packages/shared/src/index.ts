@@ -17,7 +17,7 @@ export {
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
-export { resolveEstimate, visionReplyIssues } from './domain/food-estimate.ts'
+export { resolveEstimate, visionReplyIssues, withFoodEdits } from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
