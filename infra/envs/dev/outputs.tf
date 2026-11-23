@@ -43,3 +43,9 @@ output "auth_user_pool_id" {
 output "auth_domain_origin" {
   value = module.auth.domain_origin
 }
+
+output "alarm_topic_arn" {
+  description = "Subscribe an email address by hand (docs/debugging.md)."
+  value       = module.monitoring.alarm_topic_arn
+  sensitive   = true
+}

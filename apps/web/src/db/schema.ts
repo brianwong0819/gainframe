@@ -12,11 +12,13 @@ import {
   type Profile,
   sharedValueChanges,
   type SyncedTableName,
+  syncedTableNameSchema,
   type Workout,
   type WorkoutExercise,
   type WorkoutSet,
 } from '@gainframe/shared'
 
+import { parseSession } from './auth-session'
 import { restResolver } from './exercise-rest'
 import { newId } from './id'
 import { nextUpdatedAt } from './repositories'
@@ -43,6 +45,8 @@ export interface ErrorLogEntry extends ClientError {
 // JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the
 // account it belongs to, `lastSyncAt` the end of the last successful backup
 // (db/sync.ts). `signInCardDismissed` hides Today's sign-in card for good.
+// `errorsReportedSeq` is the last error log entry sent to the API
+// (diagnostics/error-reports.ts).
 export type DeviceSetting =
   | { key: 'activePlanId'; value: string }
   | { key: `weightUnit:${string}`; value: string }
@@ -50,6 +54,7 @@ export type DeviceSetting =
   | { key: 'syncCursor'; value: string }
   | { key: 'lastSyncAt'; value: string }
   | { key: 'signInCardDismissed'; value: string }
+  | { key: 'errorsReportedSeq'; value: string }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.
@@ -198,6 +203,29 @@ export class GainframeDb extends Dexie {
             profile.phase ??= null
           }),
       )
+    // M2-06: a row's `userId` is set once the account holds it.
+    this.version(13).stores({}).upgrade(adoptBackedUpRows)
+  }
+}
+
+// Version 13. A push now sets `userId` on each row the account accepted
+// (db/sync.ts). Rows a signed-in device pushed before that kept null: on such a
+// device, every row with no change waiting is in the account. A row the server
+// refused for good also has none and is labelled too; it stays on the device as
+// before. A signed-out device has nothing to adopt.
+export async function adoptBackedUpRows(tx: Transaction): Promise<void> {
+  const session = parseSession(await tx.table<DeviceSetting, string>('settings').get('authSession'))
+  if (session === null) return
+  const waiting = new Set(
+    (await tx.table<OutboxEntry, number>('outbox').toArray()).map(
+      (entry) => `${entry.table} ${entry.rowId}`,
+    ),
+  )
+  for (const table of syncedTableNameSchema.options) {
+    await tx
+      .table<{ id: string; userId: string | null }, string>(table)
+      .filter((row) => row.userId === null && !waiting.has(`${table} ${row.id}`))
+      .modify({ userId: session.userId })
   }
 }
 

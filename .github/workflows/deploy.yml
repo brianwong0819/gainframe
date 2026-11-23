@@ -182,6 +182,29 @@ jobs:
             echo "::error::the API cannot reach its database"
             exit 1
           fi
+          # One real model call through the AI pipeline. A warning rather than a
+          # failure: model access and credits are account settings bw changes
+          # by hand, and the rest of the app does not depend on them.
+          aws lambda invoke --function-name "${FUNCTION_NAME}" --cli-binary-format raw-in-base64-out \
+            --payload '{"check":"ai"}' --output json "${RUNNER_TEMP}/ai.json" \
+            > "${RUNNER_TEMP}/ai-invoke.json"
+          cat "${RUNNER_TEMP}/ai.json"; echo
+          if [ "$(jq -r '.FunctionError // empty' "${RUNNER_TEMP}/ai-invoke.json")" != "" ] \
+            || [ "$(jq -r '.ai' "${RUNNER_TEMP}/ai.json")" != "ok" ]; then
+            echo "::warning::the AI check did not succeed"
+            # The pipeline's own line: outcome, stop reason, and for a provider
+            # error its name and message (never the prompt or the reply). An AWS
+            # error message can name an ARN, so 12-digit account IDs are masked.
+            ai_since=$(( ($(date +%s) - 120) * 1000 ))
+            for attempt in $(seq 1 12); do
+              ai_line=$(aws logs filter-log-events --log-group-name "${LOG_GROUP}" --start-time "${ai_since}" \
+                --filter-pattern '{ $.msg = "ai call" && $.feature = "check" }' \
+                --query 'events[].message' --output json \
+                | jq -r '.[-1] // empty | fromjson | del(.stack) | tojson' | sed -E 's/[0-9]{12}/<account-id>/g')
+              if [ -n "${ai_line}" ]; then echo "${ai_line}"; break; fi
+              sleep 5
+            done
+          fi
           request_id=$(tr -d '\r' < "${RUNNER_TEMP}/health.headers" \
             | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
           if [ -z "${request_id}" ]; then

@@ -10,3 +10,7 @@ output "client_id" {
 output "domain_origin" {
   value = "https://${aws_cognito_user_pool_domain.main.domain}.auth.${data.aws_region.current.region}.amazoncognito.com"
 }
+
+output "pre_sign_up_log_group" {
+  value = aws_cloudwatch_log_group.pre_sign_up.name
+}

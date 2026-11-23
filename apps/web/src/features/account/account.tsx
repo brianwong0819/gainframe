@@ -6,12 +6,12 @@ import { useState } from 'react'
 import { Pressable, PressableLink } from '@/ui/pressable'
 
 import { BackupAction, BackupText, useLastBackupText } from './backup-summary'
+import { DeleteAccount } from './delete-account'
 import { SignOutSheet } from './sign-out-sheet'
 import { useBackup } from './use-backup'
 
 // The account page ("Accounts and backup"): the email, a backup card with the
-// same words and action as the backup sheet, and sign out. Deleting the account
-// joins it with M2-10.
+// same words and action as the backup sheet, sign out, and deleting the account.
 export function Account() {
   const t = useTranslations('account')
   const backup = useBackup()
@@ -50,6 +50,7 @@ export function Account() {
       >
         {t('signOut')}
       </Pressable>
+      <DeleteAccount />
       <SignOutSheet
         backup={backup}
         open={signingOut}

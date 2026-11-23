@@ -187,6 +187,10 @@
     "gramsDown": "减少{name}",
     "gramsUp": "增加{name}",
     "removeItem": "移除",
+    "proteinLabel": "蛋白质",
+    "kcalLabel": "热量",
+    "proteinOf": "{name}的蛋白质 g",
+    "kcalOf": "{name}的热量 kcal",
     "trainedToday": "今天练过了",
     "trainedDay": "今天练了{day}",
     "fromTraining": "训练联动",
@@ -414,6 +418,24 @@
       "linked": "你的 Google 账号已经接到邮箱账号上了，请再点一次「用 Google 继续」。"
     }
   },
+  "firstBackup": {
+    "account": "已登录",
+    "workoutsUnit": "次训练已备份",
+    "uploading": "正在备份这台手机上的记录",
+    "downloading": "{workouts, plural, =0 {正在取回账号里的记录} other {已取回 # 次训练}}",
+    "background": "在后台进行，可以先去用 App。",
+    "uploaded": "都备份好了",
+    "downloaded": "记录都取回来了",
+    "holds": "账号里现在有 {list}。",
+    "automatic": "以后的改动会自动备份。",
+    "useNow": "先去用 App",
+    "start": "开始用",
+    "holdsNothing": "账号里还没有记录。",
+    "workouts": "{count} 次训练",
+    "plans": "{count} 套计划",
+    "exercises": "{count} 个自定义动作",
+    "ready": "账号已经准备好"
+  },
   "diagnostics": {
     "release": "版本",
     "persisted": "本机存储",
@@ -514,7 +536,13 @@
     "signOutAnyway": "仍然退出，丢掉 {count} 条",
     "signOutAnywayConfirm": "再点一次，确认丢掉 {count} 条",
     "cardText": "{workouts} 次训练只存在这台手机",
-    "dismiss": "不再提醒"
+    "dismiss": "不再提醒",
+    "delete": "删除账号和全部记录",
+    "deleteConfirm": "再点一次，永久删除",
+    "deleteBody": "会永久删除账号，以及云端和这台手机上的所有训练、计划、饮食和身体记录。删除后无法恢复，需要的话先在诊断页导出。",
+    "deleting": "正在删除…",
+    "deleteOffline": "删除账号需要网络。",
+    "deleteFailed": "没删成，账号和记录都还在。请检查网络后再试。"
   },
   "manual": {
     "title": "添加食物",

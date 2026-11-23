@@ -14,7 +14,7 @@ import type { PgTable } from 'drizzle-orm/pg-core'
 import type { z } from 'zod'
 
 import type { Database } from '../db/client.ts'
-import { syncedTables, syncState } from '../db/schema.ts'
+import { deletedUsers, syncedTables, syncState } from '../db/schema.ts'
 
 type SyncedRow = z.output<(typeof syncedRowSchemas)[SyncedTableName]>
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -110,6 +110,15 @@ async function upsert(tx: Transaction, table: SyncedTableName, rows: Record<stri
     where ${target.userId} = excluded.user_id and ${target.updatedAt} < excluded.updated_at`)
 }
 
+// The pushing user's account was deleted; the route answers 401, which the
+// app treats as a sign-in that no longer works.
+export class AccountDeletedError extends Error {
+  constructor() {
+    super('account deleted')
+    this.name = 'AccountDeletedError'
+  }
+}
+
 export async function pushRows(
   db: Database,
   userId: string,
@@ -137,6 +146,14 @@ export async function pushRows(
       })
       .returning({ serverVersion: syncState.serverVersion })
     if (state === undefined) throw new Error('sync state upsert returned no row')
+    // Checked under the lock, which a deletion also takes: a token can outlive
+    // its account by up to an hour (M2-10), and the push must not bring the
+    // account's rows back.
+    const [deleted] = await tx
+      .select({ userId: deletedUsers.userId })
+      .from(deletedUsers)
+      .where(eq(deletedUsers.userId, userId))
+    if (deleted !== undefined) throw new AccountDeletedError()
     let version = state.serverVersion
 
     const stored = await storedRows(tx, candidates)

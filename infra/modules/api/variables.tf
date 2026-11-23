@@ -21,3 +21,9 @@ variable "release" {
   description = "Git SHA of the deployed build, logged on every line as `release`."
   type        = string
 }
+
+variable "ai_models" {
+  description = "Bedrock model IDs the API may call; the models in apps/api/src/ai/config.ts."
+  type        = list(string)
+  default     = ["global.anthropic.claude-haiku-5-5"]
+}
