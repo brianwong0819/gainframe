@@ -15,15 +15,23 @@ import {
 import { loadSession, saveSession } from '@/db/auth-session'
 import { db } from '@/db/client'
 import { countLocalRecords } from '@/db/local-records'
+import { pendingRowCount } from '@/db/sync'
 import { useLiveQuery } from '@/db/use-live-query'
 import { reportError } from '@/diagnostics/report'
 import { Pressable } from '@/ui/pressable'
 
+import { FirstBackup } from './first-backup'
 import { useOnline } from './use-online'
 
 const config = readAuthConfig()
 
-type Redirect = { step: 'finishing' } | { step: 'failed'; failure: SignInFailure } | null
+// signedIn: the redirect finished at `at`; `uploading` says whether the device
+// held changes for the account then, or will download what the account holds.
+type Redirect =
+  | { step: 'finishing' }
+  | { step: 'failed'; failure: SignInFailure }
+  | { step: 'signedIn'; uploading: boolean; at: number }
+  | null
 
 // Cognito's redirect back, finished once per arrival: React may run an effect
 // twice, and a second exchange of the same code would fail. Kept outside React
@@ -48,9 +56,10 @@ function finishRedirect(authConfig: AuthConfig) {
   window.history.replaceState(null, '', window.location.pathname)
   setRedirect({ step: 'finishing' })
   finishSignIn(authConfig, params)
-    .then((session) => saveSession(db, session))
-    .then(() => {
-      setRedirect(null)
+    .then(async (session) => {
+      const uploading = (await pendingRowCount(db)) > 0
+      await saveSession(db, session)
+      setRedirect({ step: 'signedIn', uploading, at: Date.now() })
     })
     .catch((error: unknown) => {
       // The accounts were just linked; the second Google sign-in succeeds.
@@ -103,6 +112,9 @@ export function SignIn() {
         {redirect === null ? null : t('finishing')}
       </p>
     )
+  }
+  if (session !== null && !session.expired && redirect?.step === 'signedIn') {
+    return <FirstBackup uploading={redirect.uploading} since={redirect.at} />
   }
   // An expired session signs in again here; the account and its changes stay.
   if (session !== null && !session.expired) {

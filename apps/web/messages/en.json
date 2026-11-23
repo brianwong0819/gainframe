@@ -418,6 +418,24 @@
       "linked": "Your Google account is now connected to your email account. Tap Continue with Google once more."
     }
   },
+  "firstBackup": {
+    "account": "Signed in",
+    "workoutsUnit": "workouts backed up",
+    "uploading": "Backing up the records on this phone",
+    "downloading": "{workouts, plural, =0 {Getting the records in your account} one {# workout downloaded} other {# workouts downloaded}}",
+    "background": "It runs in the background, so you can use the app now.",
+    "uploaded": "Everything is backed up",
+    "downloaded": "Your records are back",
+    "holds": "Your account now holds {list}.",
+    "automatic": "Later changes are backed up automatically.",
+    "useNow": "Use the app now",
+    "start": "Start",
+    "holdsNothing": "Your account holds no records yet.",
+    "workouts": "{count, plural, one {# workout} other {# workouts}}",
+    "plans": "{count, plural, one {# plan} other {# plans}}",
+    "exercises": "{count, plural, one {# custom exercise} other {# custom exercises}}",
+    "ready": "Your account is ready"
+  },
   "diagnostics": {
     "release": "Version",
     "persisted": "Storage on this device",
