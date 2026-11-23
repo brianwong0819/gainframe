@@ -23,10 +23,13 @@ export type AiFeatureConfig = z.infer<typeof featureSchema>
 export const aiConfig = z
   .object({
     region: z.string().min(1),
+    // Remembered corrections sent with a photo estimate as reference.
+    visionCorrectionsMax: z.int().min(0),
     features: z.object({ vision: featureSchema, check: featureSchema }),
   })
   .parse({
     region: 'ap-southeast-1',
+    visionCorrectionsMax: 8,
     features: {
       vision: {
         model: 'global.anthropic.claude-haiku-5-5',

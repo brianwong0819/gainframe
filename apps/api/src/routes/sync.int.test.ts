@@ -35,6 +35,7 @@ const app = createApp({
   requireUser,
   db,
   deleteIdentity: () => Promise.resolve(),
+  generate: () => Promise.reject(new Error('no AI route here')),
   now: () => NOW,
 })
 
