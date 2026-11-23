@@ -313,6 +313,21 @@
       0 calc(-1 * var(--space-8)) var(--space-28) var(--scrim);
   }
 
+  /* While a text field on a screen has focus, the iPhone keyboard covers the
+   * home indicator, and the tab bar would stand on it with its empty
+   * home-indicator inset and take a quarter of the space left for results
+   * (bw's screenshot of the manual screen's search, 2026-11-23). The tab bar is
+   * hidden while typing and the dock moves down to the keyboard. */
+  html:has(:is(input:not([type='checkbox'], [type='radio']), textarea):focus) {
+    & .tab-bar {
+      display: none;
+    }
+
+    & .screen-dock {
+      bottom: var(--space-8);
+    }
+  }
+
   /* Room for the fixed tab bar below the last content of a tab screen. */
   .tab-content {
     padding-bottom: var(--tab-bar-height);

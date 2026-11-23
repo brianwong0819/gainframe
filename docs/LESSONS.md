@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-045 · 2026-11-23 · ui · The tab bar and dock floated over the search results while the iPhone keyboard was open
+- **What happened:** bw searched the food table on the manual screen on the iPhone. With the keyboard open, the dock and the tab bar stood above it with the tab bar's empty home-indicator inset below them, and the results had about half the space left.
+- **Root cause:** the manual screen was the first tab screen with a search field on the page itself (the exercise searches are in sheets, which follow the visual viewport since #121). The tab bar and dock were designed only for the keyboard-closed state, and the cloud's Chromium shows no on-screen keyboard, so no test saw it.
+- **Fix:** PR `m3/11-keyboard-dock` hides the tab bar while a text field has focus and moves `.screen-dock` down to the keyboard; `e2e/food.spec.ts` checks the tab bar hides while searching.
+- **Prevention:** "Navigation" in `docs/design-system.md` states the keyboard-open state of the tab bar and dock; a new screen with a text field is designed for the keyboard-open state too.
+- **Status:** documented
+
 ### L-044 · 2026-11-23 · git · Conflict markers in ROADMAP and STATUS were committed and pushed
 - **What happened:** merging `main` into `m4/01-target-calculator` after #157 was squash-merged conflicted in three files. Only the code file was resolved; `git add -A` then committed `docs/ROADMAP.md` and `docs/STATUS.md` with their conflict markers, and the branch was pushed before the PR was opened.
 - **Root cause:** the merge output was cut to its last lines, so two of the three conflicts went unseen, and `pnpm check` does not read Markdown, so nothing failed.
