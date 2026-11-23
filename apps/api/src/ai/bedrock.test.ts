@@ -87,6 +87,21 @@ describe('bedrockProvider', () => {
       },
     })
     expect(JSON.stringify(requests[0]?.body)).not.toContain('$schema')
+    // Limits the output format cannot enforce leave the schema; Zod checks them.
+    const answer = z
+      .object({
+        output_config: z.object({
+          format: z.object({
+            schema: z.object({
+              properties: z.object({ answer: z.record(z.string(), z.unknown()) }),
+            }),
+          }),
+        }),
+      })
+      .parse(requests[0]?.body).output_config.format.schema.properties.answer
+    expect(answer).toMatchObject({ type: 'integer' })
+    expect(answer).not.toHaveProperty('maximum')
+    expect(answer).not.toHaveProperty('minimum')
     expect(JSON.stringify(requests[0]?.body)).not.toMatch(/temperature|top_p|top_k/)
     expect(response).toEqual({
       stopReason: 'end_turn',
@@ -102,7 +117,7 @@ describe('bedrockProvider', () => {
       maxTokens: 256,
       system: 'Answer.',
       messages: [],
-      jsonSchema: {},
+      jsonSchema: { type: 'object' },
       signal: new AbortController().signal,
     }
     const refused = await provider(message('refusal', '')).bedrock.generate(request)

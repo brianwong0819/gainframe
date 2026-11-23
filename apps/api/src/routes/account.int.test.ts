@@ -43,6 +43,7 @@ const app = createApp({
     deletedIdentities.push(username)
     return Promise.resolve()
   },
+  generate: () => Promise.reject(new Error('no AI route here')),
   now: () => NOW,
 })
 

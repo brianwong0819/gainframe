@@ -17,6 +17,7 @@ export {
 export { builtInExerciseCues } from './built-in-exercise-cues.ts'
 export { BUILT_IN_EXERCISES } from './built-in-exercises.ts'
 export { domainConfig, syncConfig } from './config.ts'
+export { resolveEstimate, visionReplyIssues } from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
@@ -120,6 +121,16 @@ export {
   type MealType,
   mealTypeSchema,
 } from './schemas/food.ts'
+export {
+  type EstimateAiRaw,
+  estimateAiRawSchema,
+  FOOD_ESTIMATE_BODY_BYTES_MAX,
+  foodEstimateRequestSchema,
+  type FoodEstimateResponse,
+  foodEstimateResponseSchema,
+  type VisionItem,
+  visionReplySchema,
+} from './schemas/food-estimate.ts'
 export {
   type FoodTableEntry,
   foodTableEntrySchema,
