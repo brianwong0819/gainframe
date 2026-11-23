@@ -7,6 +7,7 @@ import type { AppEnv } from './context.ts'
 import type { Database } from './db/client.ts'
 import { errorBody } from './error-body.ts'
 import { errorFields, type Logger } from './log.ts'
+import { clientErrorRoutes } from './routes/client-errors.ts'
 import { healthRoutes } from './routes/health.ts'
 import { syncRoutes } from './routes/sync.ts'
 
@@ -71,6 +72,7 @@ export function createApp({ log, requireUser, db, now }: AppDeps) {
   // gets 401 rather than 404, so the API's shape is not visible to strangers.
   app.use('/api/*', requireUser)
   app.route('/api/sync', syncRoutes(db, now))
+  app.route('/api/client-errors', clientErrorRoutes())
 
   return app
 }

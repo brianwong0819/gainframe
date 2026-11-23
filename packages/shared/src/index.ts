@@ -3,8 +3,13 @@
 export { type ApiError, apiErrorSchema } from './api-error.ts'
 export {
   CLIENT_ERROR_MESSAGE_MAX,
+  CLIENT_ERROR_REPORT_BYTES_MAX,
+  CLIENT_ERROR_REPORT_MAX,
   CLIENT_ERROR_STACK_MAX,
   type ClientError,
+  type ClientErrorReport,
+  clientErrorReportResponseSchema,
+  clientErrorReportSchema,
   clientErrorSchema,
   type ClientErrorSource,
   clientErrorSourceSchema,
