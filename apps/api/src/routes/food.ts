@@ -15,8 +15,8 @@ import type { Database } from '../db/client.ts'
 import { errorBody } from '../error-body.ts'
 import {
   estimateReplySchema,
-  FOOD_ENTRIES,
   recentCorrections,
+  userEntries,
   VISION_SYSTEM,
   visionRequest,
 } from '../food/estimate.ts'
@@ -37,7 +37,8 @@ const FAILURES: Record<
 }
 
 // POST /api/food/estimate (M3-05): the foods in a meal photo, with grams from
-// the model and protein and energy from the bundled food table. The user comes
+// the model and protein and energy from the bundled food table, with the
+// user's own edits of its entries applied. The user comes
 // from the token, never from the body; the photo is not stored or logged.
 export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) {
   return new Hono<AppEnv>().post(
@@ -54,7 +55,10 @@ export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) 
       if (!body.success) {
         return c.json(errorBody('invalid_request', 'Invalid photo', c.var.requestId), 400)
       }
-      const corrections = await recentCorrections(db, userId)
+      const [corrections, entries] = await Promise.all([
+        recentCorrections(db, userId),
+        userEntries(db, userId),
+      ])
       const result = await generate({
         feature: 'vision',
         userId,
@@ -72,7 +76,7 @@ export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) 
       }
       const response: FoodEstimateResponse = {
         dishName: result.value.dishName,
-        items: resolveEstimate(result.value, FOOD_ENTRIES),
+        items: resolveEstimate(result.value, entries),
         model: result.model,
         promptVersion: result.promptVersion,
       }
