@@ -107,7 +107,15 @@ test('a frequent food is logged in one tap and undone, and a meal is edited', as
   const meal = page.getByRole('dialog', { name: '鸡胸肉' })
   await meal.getByRole('button', { name: '增加鸡胸肉' }).click()
   await expect(meal.getByRole('textbox', { name: '鸡胸肉的克数' })).toHaveValue('110')
-  await expect(meal.getByText('蛋白质 34 g')).toBeVisible()
+  await expect(meal.getByRole('textbox', { name: '鸡胸肉的蛋白质 g' })).toHaveValue('34.1')
+
+  // A figure corrected by hand is kept, and the day's protein follows it.
+  const protein = meal.getByRole('textbox', { name: '鸡胸肉的蛋白质 g' })
+  await protein.fill('40')
+  await protein.press('Enter')
+  await expect(protein).toHaveValue('40')
+  await meal.getByRole('button', { name: '关闭' }).click()
+  await expect(meals.getByText('蛋白质 40 g')).toBeVisible()
 })
 
 test('Today suggests a frequent food for the protein gap and logs it in one tap', async ({
