@@ -414,6 +414,24 @@
       "linked": "你的 Google 账号已经接到邮箱账号上了，请再点一次「用 Google 继续」。"
     }
   },
+  "firstBackup": {
+    "account": "已登录",
+    "workoutsUnit": "次训练已备份",
+    "uploading": "正在备份这台手机上的记录",
+    "downloading": "{workouts, plural, =0 {正在取回账号里的记录} other {已取回 # 次训练}}",
+    "background": "在后台进行，可以先去用 App。",
+    "uploaded": "都备份好了",
+    "downloaded": "记录都取回来了",
+    "holds": "账号里现在有 {list}。",
+    "automatic": "以后的改动会自动备份。",
+    "useNow": "先去用 App",
+    "start": "开始用",
+    "holdsNothing": "账号里还没有记录。",
+    "workouts": "{count} 次训练",
+    "plans": "{count} 套计划",
+    "exercises": "{count} 个自定义动作",
+    "ready": "账号已经准备好"
+  },
   "diagnostics": {
     "release": "版本",
     "persisted": "本机存储",
