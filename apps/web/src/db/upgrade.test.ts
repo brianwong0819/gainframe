@@ -41,7 +41,7 @@ describe('Dexie schema upgrades', () => {
       { seq: 1, table: 'workouts', rowId: workout.id },
     ])
     expect(await current.errors.count()).toBe(0)
-    expect(current.verno).toBe(11)
+    expect(current.verno).toBe(12)
     current.close()
   })
 
@@ -70,7 +70,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(11)
+    expect(v3.verno).toBe(12)
     v3.close()
   })
 
@@ -174,7 +174,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(11)
+    expect(v5.verno).toBe(12)
     v5.close()
   })
 
@@ -223,7 +223,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(11)
+    expect(v6.verno).toBe(12)
     v6.close()
   })
 
@@ -288,7 +288,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(11)
+    expect(v7.verno).toBe(12)
     v7.close()
   })
 
@@ -337,7 +337,7 @@ describe('Dexie schema upgrades', () => {
       restEndsAt: null,
     })
     expect(await v8.outbox.count()).toBe(0)
-    expect(v8.verno).toBe(11)
+    expect(v8.verno).toBe(12)
     v8.close()
   })
 
@@ -425,7 +425,7 @@ describe('Dexie schema upgrades', () => {
       slot(1, 0).id,
       slot(2, 0).id,
     ])
-    expect(v9.verno).toBe(11)
+    expect(v9.verno).toBe(12)
     v9.close()
   })
 
@@ -462,7 +462,59 @@ describe('Dexie schema upgrades', () => {
     expect(await v10.meals.where('localDate').equals('2026-11-22').count()).toBe(0)
     expect(await v10.profiles.count()).toBe(0)
     expect(await v10.outbox.count()).toBe(1)
-    expect(v10.verno).toBe(11)
+    expect(v10.verno).toBe(12)
     v10.close()
+  })
+
+  it('adds a body metrics table in version 12 and empty body fields to a profile', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+    const goals = {
+      id: '01960000-0000-7000-8000-000000000002',
+      createdAt: '2026-11-22T10:00:00.000Z',
+      updatedAt: '2026-11-22T10:00:00.000Z',
+      deletedAt: null,
+      userId: null,
+      proteinMode: 'fixed',
+      proteinValue: 140,
+      kcalTarget: 2800,
+    }
+
+    const v11 = new Dexie('upgrade', options)
+    v11.version(1).stores(STORES_V1)
+    v11.version(2).stores({ errors: '++seq' })
+    v11.version(3).stores({})
+    v11.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v11.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    for (const version of [6, 7, 8, 9]) v11.version(version).stores({})
+    v11.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
+    v11.version(11).stores({ profiles: 'id' })
+    await v11.table('profiles').add(goals)
+    v11.close()
+
+    const v12 = new GainframeDb('upgrade', options)
+    expect(await v12.profiles.get(goals.id)).toEqual({
+      ...goals,
+      sex: null,
+      birthYear: null,
+      heightCm: null,
+      activityLevel: null,
+      phase: null,
+    })
+    expect(await v12.bodyMetrics.where('localDate').equals('2026-11-23').count()).toBe(0)
+    expect(await v12.outbox.count()).toBe(0)
+    expect(v12.verno).toBe(12)
+    v12.close()
   })
 })

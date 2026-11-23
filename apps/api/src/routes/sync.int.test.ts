@@ -140,6 +140,45 @@ function mealItem(mealId: string) {
   }
 }
 
+function profile() {
+  return {
+    table: 'profiles' as const,
+    row: {
+      id: uuidv7(),
+      createdAt: at(-30),
+      updatedAt: at(-30),
+      deletedAt: null,
+      proteinMode: 'fixed',
+      proteinValue: 125,
+      kcalTarget: 2750,
+      sex: 'male',
+      birthYear: 2001,
+      heightCm: 175.5,
+      activityLevel: 'moderate',
+      phase: 'bulk',
+    },
+  }
+}
+
+function bodyMetric() {
+  return {
+    table: 'bodyMetrics' as const,
+    row: {
+      id: uuidv7(),
+      createdAt: at(-30),
+      updatedAt: at(-30),
+      deletedAt: null,
+      measuredAt: at(-30),
+      localDate: '2026-11-23',
+      weightKg: 62.4,
+      bodyFatPct: null,
+      skeletalMuscleKg: null,
+      fatMassKg: null,
+      source: 'manual',
+    },
+  }
+}
+
 describe('sync (real Postgres)', () => {
   it('asks an app without a supported sync version to update', async () => {
     const res = await app.request('/api/sync/pull', {
@@ -148,7 +187,7 @@ describe('sync (real Postgres)', () => {
     expect(res.status).toBe(426)
   })
 
-  it.each(['1', '2'])(
+  it.each(['1', '2', '3'])(
     'asks a version %s app, which cannot read the newer tables, to update',
     async (version) => {
       const res = await app.request('/api/sync/pull', {
@@ -167,6 +206,19 @@ describe('sync (real Postgres)', () => {
     expect((await pull(userA)).rows).toEqual([
       { table: 'meals', row: { ...lunch.row, userId: userA } },
       { table: 'mealItems', row: { ...item.row, userId: userA } },
+    ])
+    expect((await pull(newUser())).rows).toEqual([])
+  })
+
+  it('round-trips the profile body fields and a weigh-in to their owner only', async () => {
+    const userA = newUser()
+    const goals = profile()
+    const weighIn = bodyMetric()
+    expect(await push(userA, [goals, weighIn])).toEqual(['applied', 'applied'])
+
+    expect((await pull(userA)).rows).toEqual([
+      { table: 'profiles', row: { ...goals.row, userId: userA } },
+      { table: 'bodyMetrics', row: { ...weighIn.row, userId: userA } },
     ])
     expect((await pull(newUser())).rows).toEqual([])
   })

@@ -53,6 +53,19 @@ export const domainConfig = {
   mealHours: { breakfast: 5, lunch: 11, snack: 15, dinner: 17, supper: 22 },
   // Frequent foods shown as one-tap pills on the Food tab.
   frequentFoods: 8,
+  // The target calculator (M4-01). Energy: resting energy by Mifflin-St Jeor
+  // (Mifflin et al. 1990) times a physical activity factor (the FAO/WHO/UNU
+  // 2004 PAL bands: 1.4 to 1.69 sedentary or light, 1.7 to 1.99 active, 2.0 to
+  // 2.4 vigorous, with the commonly used 1.2 to 1.9 multipliers), plus the
+  // phase's change. A surplus of 300 kcal suits a lean gain of about 0.25 to
+  // 0.5% of body weight a week (Iraki et al. 2019); 400 kcal below balance is
+  // a moderate cut. Protein in g per kg of body weight, inside the 1.6 to 2.2
+  // range of Jäger et al. 2017, higher in a cut to keep muscle.
+  estimate: {
+    activityFactors: { sedentary: 1.2, light: 1.375, moderate: 1.55, high: 1.725, veryHigh: 1.9 },
+    phaseKcal: { bulk: 300, maintain: 0, cut: -400 },
+    proteinGPerKg: { bulk: 2.0, maintain: 1.8, cut: 2.2 },
+  },
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.

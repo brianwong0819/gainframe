@@ -12,7 +12,7 @@ import { pushRows } from '../sync/push.ts'
 // change cannot be read by older apps; they then show "update the app".
 // Versions 2 and 3 (M3-01, M3-02) added tables an older app fails to parse in
 // a pull.
-const MIN_SYNC_VERSION = 3
+const MIN_SYNC_VERSION = 4
 
 // Distinct rejection paths kept in a push log line, enough to spot a pattern.
 const LOGGED_ISSUES_MAX = 20

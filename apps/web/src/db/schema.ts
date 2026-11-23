@@ -1,6 +1,7 @@
 import { Dexie, type DexieOptions, type EntityTable, type Table, type Transaction } from 'dexie'
 
 import {
+  type BodyMetric,
   type ClientError,
   type Exercise,
   type Meal,
@@ -74,6 +75,7 @@ export class GainframeDb extends Dexie {
   meals!: Table<Meal, string>
   mealItems!: Table<MealItem, string>
   profiles!: Table<Profile, string>
+  bodyMetrics!: Table<BodyMetric, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -179,6 +181,23 @@ export class GainframeDb extends Dexie {
     this.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
     // M3-02: the daily targets.
     this.version(11).stores({ profiles: 'id' })
+    // M4-01: the profile's body fields, empty until the calculator is used, and
+    // the body metrics, read by day. The server's new columns are null as well,
+    // so the change needs no sync.
+    this.version(12)
+      .stores({ bodyMetrics: 'id, localDate' })
+      .upgrade((tx) =>
+        tx
+          .table<Profile>('profiles')
+          .toCollection()
+          .modify((profile) => {
+            profile.sex ??= null
+            profile.birthYear ??= null
+            profile.heightCm ??= null
+            profile.activityLevel ??= null
+            profile.phase ??= null
+          }),
+      )
   }
 }
 
