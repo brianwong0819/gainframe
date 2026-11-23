@@ -8,16 +8,25 @@ export function PhotoPicker({
   onPick,
   className,
   children,
+  disabled = false,
+  describedBy,
 }: {
   onPick: (photo: File) => void
   className: string
   children: ReactNode
+  disabled?: boolean
+  // The id of a line explaining why the picker is disabled.
+  describedBy?: string
 }) {
   return (
-    <label className={`cursor-pointer has-focus-visible:outline-2 ${className}`}>
+    <label
+      className={`${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} has-focus-visible:outline-2 ${className}`}
+    >
       <input
         type="file"
         accept="image/*"
+        disabled={disabled}
+        aria-describedby={describedBy}
         className="sr-only"
         onChange={(event) => {
           const photo = event.target.files?.[0]

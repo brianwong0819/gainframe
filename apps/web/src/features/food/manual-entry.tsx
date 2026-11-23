@@ -26,6 +26,7 @@ import { ChoiceGroup } from '@/ui/choice-group'
 import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
 
+import { AiLockedNote, useAiAccess } from './ai-access'
 import { setPendingText } from './describe'
 import { FoodSheet, type FoodToEdit } from './food-sheet'
 import { loadFoodTable } from './food-table'
@@ -90,6 +91,7 @@ const pastToEdit = (food: NewFood): FoodToEdit => ({
 export function ManualEntry() {
   const t = useTranslations('manual')
   const tDescribe = useTranslations('describe')
+  const aiAccess = useAiAccess()
   const tEstimate = useTranslations('estimate')
   const tFood = useTranslations('food')
   const locale = useLocale()
@@ -292,18 +294,26 @@ export function ManualEntry() {
       {/* A food the lists lack is described in a sentence for the AI (M3-10);
           the search text is the start of the description. */}
       <Pressable
+        disabled={aiAccess !== 'allowed'}
+        aria-describedby="describe-locked"
         onClick={() => {
           setPendingText(query.trim())
           router.push('/food/describe')
         }}
-        className="flex items-center justify-between gap-12 rounded-group bg-surface px-16 py-12 text-left"
+        className="flex items-center justify-between gap-12 rounded-group bg-surface px-16 py-12 text-left disabled:text-ink-3"
       >
         <span className="flex flex-col">
-          <span className="text-body text-ink">
-            <span className="text-label text-accent">{tEstimate('aiTag')}</span>{' '}
+          <span className={`text-body ${aiAccess === 'allowed' ? 'text-ink' : 'text-ink-3'}`}>
+            <span className={`text-label ${aiAccess === 'allowed' ? 'text-accent' : ''}`}>
+              {tEstimate('aiTag')}
+            </span>{' '}
             {tDescribe('entry')}
           </span>
-          <span className="text-label text-ink-3">{tDescribe('entryHint')}</span>
+          {aiAccess === 'allowed' ? (
+            <span className="text-label text-ink-3">{tDescribe('entryHint')}</span>
+          ) : (
+            <AiLockedNote access={aiAccess} id="describe-locked" />
+          )}
         </span>
         <span className="text-ink-3">
           <Chevron direction="right" />

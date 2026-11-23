@@ -54,6 +54,20 @@ const TEXT_ESTIMATE_BODY_BYTES_MAX = 4096
 // from the token, never from the body; the photo is not stored or logged.
 export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) {
   return new Hono<AppEnv>()
+    .use(async (c, next) => {
+      // Only members of AI_GROUP may spend model calls ("Who can use AI" in docs/ai.md).
+      if (c.var.aiAllowed !== true) {
+        return c.json(
+          errorBody(
+            'ai_not_enabled',
+            'AI features are not enabled for this account',
+            c.var.requestId,
+          ),
+          403,
+        )
+      }
+      return next()
+    })
     .post(
       '/estimate',
       bodyLimit({

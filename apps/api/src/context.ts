@@ -8,6 +8,13 @@ export interface AppEnv {
   Bindings: { lambdaContext?: Pick<LambdaContext, 'awsRequestId'> }
   // `userId` (the Cognito `sub`) and `username` (the Cognito user name, which
   // differs from `sub` for a Google-only user) are set by `requireUser`
-  // (auth.ts) on routes that need a signed-in user.
-  Variables: { requestId: string; log: Logger; userId?: string; username?: string }
+  // (auth.ts) on routes that need a signed-in user, with `aiAllowed`: whether
+  // the token's groups include AI_GROUP.
+  Variables: {
+    requestId: string
+    log: Logger
+    userId?: string
+    username?: string
+    aiAllowed?: boolean
+  }
 }

@@ -18,6 +18,7 @@ import { formatDay } from '../history/dates'
 import { DayCard } from './day-card'
 import { FrequentFoods } from './frequent-foods'
 import { MealList } from './meal-list'
+import { AiLockedNote, useAiAccess } from './ai-access'
 import { setPendingPhoto } from './photo'
 import { PhotoPicker } from './photo-picker'
 import { TargetsSheet } from './targets-sheet'
@@ -38,6 +39,7 @@ export function FoodScreen() {
   const readDay = useCallback(() => foodDay(db, date), [date])
   const day = useLiveQuery(readDay)
   const targets = useLiveQuery(readTargets)
+  const aiAccess = useAiAccess()
   const [editingTargets, setEditingTargets] = useState(false)
   const [logged, setLogged] = useState<{ id: string; message: string } | null>(null)
   const dismissToast = useCallback(() => {
@@ -92,22 +94,27 @@ export function FoodScreen() {
             />
           )}
           {date === today && (
-            <div className="flex gap-8">
-              <PhotoPicker
-                onPick={(photo) => {
-                  setPendingPhoto(photo)
-                  router.push('/food/photo')
-                }}
-                className="min-w-0 flex-1 rounded-full bg-accent px-16 py-12 text-center text-body font-semibold text-accent-ink"
-              >
-                {t('addPhoto')}
-              </PhotoPicker>
-              <PressableLink
-                href="/food/add"
-                className="min-w-0 flex-1 rounded-full bg-surface px-16 py-12 text-center text-body font-semibold text-ink"
-              >
-                {t('addManual')}
-              </PressableLink>
+            <div className="flex flex-col gap-8">
+              <div className="flex gap-8">
+                <PhotoPicker
+                  disabled={aiAccess !== 'allowed'}
+                  describedBy="photo-locked"
+                  onPick={(photo) => {
+                    setPendingPhoto(photo)
+                    router.push('/food/photo')
+                  }}
+                  className={`min-w-0 flex-1 rounded-full px-16 py-12 text-center text-body font-semibold ${aiAccess === 'allowed' ? 'bg-accent text-accent-ink' : 'bg-surface text-ink-3'}`}
+                >
+                  {t('addPhoto')}
+                </PhotoPicker>
+                <PressableLink
+                  href="/food/add"
+                  className="min-w-0 flex-1 rounded-full bg-surface px-16 py-12 text-center text-body font-semibold text-ink"
+                >
+                  {t('addManual')}
+                </PressableLink>
+              </div>
+              <AiLockedNote access={aiAccess} id="photo-locked" />
             </div>
           )}
           {day.meals.length === 0 ? (

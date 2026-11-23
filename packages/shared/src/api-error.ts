@@ -5,6 +5,7 @@ import { z } from 'zod'
 export const apiErrorSchema = z.object({
   error: z.object({
     // update_required: the app's sync version is no longer supported.
+    // ai_not_enabled: the user is not allowed the AI features (AI_GROUP).
     // ai_capped: the user's daily AI calls for the feature are used up.
     // ai_refused: the model declined the request. ai_unavailable: the model
     // could not be reached (an outage or missing model access); a retry soon
@@ -15,6 +16,7 @@ export const apiErrorSchema = z.object({
       'unauthorized',
       'not_found',
       'update_required',
+      'ai_not_enabled',
       'ai_capped',
       'ai_refused',
       'ai_unavailable',

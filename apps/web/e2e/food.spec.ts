@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 // ROADMAP M3-02: the daily targets are set on the Food tab, from the day card.
 test.use({ locale: 'zh-CN' })
@@ -209,6 +209,58 @@ test('the calculator fills the daily targets from a few answers', async ({ page 
   await expect(sheet.getByRole('textbox', { name: '体重 · 公斤' })).toHaveValue('62')
 })
 
+// Stores a session whose access token is in the given Cognito groups, as the
+// app does after sign-in, then reloads so the screens read it. The token is
+// not signed: only the API verifies tokens, and this build has no API.
+async function signInAs(page: Page, groups: string[]) {
+  // The note appears once the app has opened its database and read the session.
+  await expect(page.getByText(/AI 功能/)).toBeVisible()
+  const payload = Buffer.from(JSON.stringify({ sub: 'e2e-user', 'cognito:groups': groups }))
+  const session = {
+    userId: 'e2e-user',
+    email: 'e2e@example.com',
+    accessToken: `header.${payload.toString('base64url')}.signature`,
+    accessExpiresAt: '2099-01-01T00:00:00.000Z',
+    refreshToken: 'refresh',
+  }
+  await page.evaluate(
+    (value) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('gainframe')
+        open.onerror = () => {
+          reject(new Error('IndexedDB did not open'))
+        }
+        open.onsuccess = () => {
+          const transaction = open.result.transaction('settings', 'readwrite')
+          transaction.objectStore('settings').put({ key: 'authSession', value })
+          transaction.oncomplete = () => {
+            open.result.close()
+            resolve()
+          }
+        }
+      }),
+    JSON.stringify(session),
+  )
+  await page.reload()
+}
+
+// The AI features are offered only to members of the AI group ("Who can use
+// AI" in docs/ai.md): signed out, or signed in outside the group, the photo
+// button and the describe row are greyed out and say how to get them.
+test('the AI entry points are greyed out outside the AI group', async ({ page }) => {
+  await page.goto('/food')
+  await expect(page.getByLabel('拍照')).toBeDisabled()
+  await expect(page.getByText('登录后，请管理员为你的账号开通 AI 功能。')).toBeVisible()
+
+  await signInAs(page, [])
+  const notEnabled = '这个账号还没开通 AI 功能，请联系管理员开通。'
+  await expect(page.getByLabel('拍照')).toBeDisabled()
+  await expect(page.getByText(notEnabled)).toBeVisible()
+  await page.getByRole('link', { name: '手动添加' }).click()
+  await expect(page.getByRole('button', { name: /写一句话来记/ })).toBeDisabled()
+  await expect(page.getByText(notEnabled)).toBeVisible()
+})
+
 // ROADMAP M3-06: a photo chosen on the Food tab opens the estimate screen,
 // shrunk on the device. This build has no sign-in, so the screen explains why
 // an account is needed and offers the manual screen instead.
@@ -219,6 +271,7 @@ const photo = Buffer.from(
 
 test('a meal photo opens the estimate screen, which asks to sign in first', async ({ page }) => {
   await page.goto('/food')
+  await signInAs(page, ['ai'])
   await page
     .getByLabel('拍照')
     .setInputFiles({ name: 'meal.png', mimeType: 'image/png', buffer: photo })
@@ -235,6 +288,7 @@ test('a meal photo opens the estimate screen, which asks to sign in first', asyn
 // explains why an account is needed.
 test('a food missing from the search can be described for an AI estimate', async ({ page }) => {
   await page.goto('/food/add')
+  await signInAs(page, ['ai'])
   await page.getByRole('searchbox', { name: '搜索食物' }).fill('妈妈煮的咖喱鸡')
   await page.getByRole('button', { name: /写一句话来记/ }).click()
   await expect(page).toHaveURL(/\/food\/describe\/?$/)

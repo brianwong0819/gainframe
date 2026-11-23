@@ -120,6 +120,15 @@ resource "aws_cognito_user_pool_client" "web" {
   enable_token_revocation       = true
 }
 
+# Members may use the AI features ("Who can use AI" in docs/ai.md); access
+# tokens list a user's groups in `cognito:groups`. Members are added by hand in
+# the console, so no user appears in this repository.
+resource "aws_cognito_user_group" "ai" {
+  name         = "ai"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "Users allowed the AI features"
+}
+
 # Managed login renders only for an app client with a style. The default style
 # for now; the design tokens are applied with the sign-in screens.
 resource "aws_cognito_managed_login_branding" "web" {

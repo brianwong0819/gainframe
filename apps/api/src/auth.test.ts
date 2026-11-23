@@ -62,7 +62,7 @@ async function setup() {
     await next()
   })
   app.use(requireUser(config, () => Promise.resolve(keys)))
-  app.get('/whoami', (c) => c.json({ userId: c.var.userId }))
+  app.get('/whoami', (c) => c.json({ userId: c.var.userId, aiAllowed: c.var.aiAllowed }))
   const call = (token: string | null) =>
     app.request('/whoami', {
       headers: token === null ? {} : { [TOKEN_HEADER]: tokenHeaderValue(token) },
@@ -84,7 +84,15 @@ describe('requireUser', () => {
     const { signingKey, call } = await setup()
     const response = await call(await sign(claims(), signingKey))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ userId: 'user-a' })
+    expect(await response.json()).toEqual({ userId: 'user-a', aiAllowed: false })
+  })
+
+  it('allows AI only for a token in the ai group', async () => {
+    const { signingKey, call } = await setup()
+    const member = await call(await sign(claims({ 'cognito:groups': ['ai'] }), signingKey))
+    expect(await member.json()).toEqual({ userId: 'user-a', aiAllowed: true })
+    const other = await call(await sign(claims({ 'cognito:groups': ['admins'] }), signingKey))
+    expect(await other.json()).toEqual({ userId: 'user-a', aiAllowed: false })
   })
 
   it('rejects a request without a token', async () => {
