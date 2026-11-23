@@ -45,6 +45,8 @@ export interface ErrorLogEntry extends ClientError {
 // JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the
 // account it belongs to, `lastSyncAt` the end of the last successful backup
 // (db/sync.ts). `signInCardDismissed` hides Today's sign-in card for good.
+// `errorsReportedSeq` is the last error log entry sent to the API
+// (diagnostics/error-reports.ts).
 export type DeviceSetting =
   | { key: 'activePlanId'; value: string }
   | { key: `weightUnit:${string}`; value: string }
@@ -52,6 +54,7 @@ export type DeviceSetting =
   | { key: 'syncCursor'; value: string }
   | { key: 'lastSyncAt'; value: string }
   | { key: 'signInCardDismissed'; value: string }
+  | { key: 'errorsReportedSeq'; value: string }
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.

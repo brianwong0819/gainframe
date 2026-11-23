@@ -25,3 +25,17 @@ export const clientErrorSchema = z.object({
 
 export type ClientError = z.infer<typeof clientErrorSchema>
 export type ClientErrorSource = z.infer<typeof clientErrorSourceSchema>
+
+// POST /api/client-errors (M2-08): a signed-in device sends the errors it
+// recorded since its last report, at most this many per request; the server logs
+// each one. The byte cap covers the largest valid request with room for JSON.
+export const CLIENT_ERROR_REPORT_MAX = 20
+export const CLIENT_ERROR_REPORT_BYTES_MAX = 128 * 1024
+
+export const clientErrorReportSchema = z.object({
+  errors: z.array(clientErrorSchema).min(1).max(CLIENT_ERROR_REPORT_MAX),
+})
+
+export const clientErrorReportResponseSchema = z.object({ received: z.int().min(0) })
+
+export type ClientErrorReport = z.infer<typeof clientErrorReportSchema>
