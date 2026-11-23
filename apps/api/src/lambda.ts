@@ -1,9 +1,15 @@
 // AWS Lambda entry point, bundled by rolldown.config.ts. CloudFront forwards
 // `/api/*` to the function URL; the same Hono app runs locally in dev.ts. A
-// direct invocation with `{ "check": "database" }` runs the database check.
+// direct invocation with `{ "check": "database" }` runs the database check,
+// and `{ "check": "ai" }` one real model call.
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 
+import { type AiCheckEvent, checkAi, isAiCheckEvent } from './ai-check.ts'
+import { bedrockProvider } from './ai/bedrock.ts'
+import { aiConfig } from './ai/config.ts'
+import { createAi } from './ai/generate.ts'
+import { usageStore } from './ai/usage.ts'
 import { createApp } from './app.ts'
 import { createKeyCache, fetchJwks, requireUser } from './auth.ts'
 import { checkDatabase, type DatabaseCheckEvent, isDatabaseCheckEvent } from './database-check.ts'
@@ -31,16 +37,27 @@ const log = createLogger({ release: readRelease(process.env) })
 const env = await loadLambdaEnv(process.env, getParameter)
 const pool = createPool(env.DATABASE_URL, log)
 
+const db = createDatabase(pool)
+const generate = createAi({
+  provider: bedrockProvider({ awsRegion: aiConfig.region }),
+  usage: usageStore(db),
+})
+
 const auth = { issuer: env.AUTH_ISSUER, clientId: env.AUTH_CLIENT_ID }
 const http = handle(
   createApp({
     log,
     requireUser: requireUser(auth, createKeyCache(fetchJwks(auth.issuer))),
-    db: createDatabase(pool),
+    db,
   }),
 )
 
-export const handler = (event: LambdaEvent | DatabaseCheckEvent, context: LambdaContext) =>
-  isDatabaseCheckEvent(event)
-    ? checkDatabase(() => pingDatabase(pool), log.child({ requestId: context.awsRequestId }))
-    : http(event, context)
+export const handler = (
+  event: LambdaEvent | DatabaseCheckEvent | AiCheckEvent,
+  context: LambdaContext,
+) => {
+  const requestLog = log.child({ requestId: context.awsRequestId })
+  if (isDatabaseCheckEvent(event)) return checkDatabase(() => pingDatabase(pool), requestLog)
+  if (isAiCheckEvent(event)) return checkAi(generate, requestLog)
+  return http(event, context)
+}
