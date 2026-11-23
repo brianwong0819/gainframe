@@ -48,7 +48,13 @@ data "aws_iam_policy_document" "ci_apply_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${local.github_repository}:ref:refs/heads/main"]
+      # Pushes to main (dev), and jobs in the prod Environment, whose subject
+      # names the Environment instead of the branch. The Environment allows
+      # only main and requires the owner's approval (infra/envs/prod/README.md).
+      values = [
+        "repo:${local.github_repository}:ref:refs/heads/main",
+        "repo:${local.github_repository}:environment:prod",
+      ]
     }
   }
 }

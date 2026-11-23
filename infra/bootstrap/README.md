@@ -7,7 +7,7 @@ The resources every other Terraform stack and CI depend on. Applied by hand by t
 | S3 bucket `gainframe-tfstate` | Remote state for all stacks (`<stack>/terraform.tfstate`). Versioned, SSE-S3, public access blocked, TLS only, S3 native locking (`use_lockfile`, no DynamoDB). `prevent_destroy`. |
 | IAM OIDC provider `token.actions.githubusercontent.com` | Lets GitHub Actions exchange its OIDC token for short-lived AWS credentials. |
 | IAM role `gainframe-ci-plan` | Assumable only by pull request workflows of `brianwong0819/gainframe`. `ReadOnlyAccess`, lock-file writes on the state bucket, no object reads outside it, and `kms:Decrypt` through SSM for `/gainframe/*` parameters (refreshing a `SecureString` parameter decrypts it). |
-| IAM role `gainframe-ci-apply` | Assumable only by workflows running on `main`. `PowerUserAccess`, IAM limited to `gainframe-*` roles and policies, and explicit denies on changing the CI roles, the OIDC provider or the state bucket's protections. |
+| IAM role `gainframe-ci-apply` | Assumable only by workflows running on `main` and by jobs in the `prod` Environment (which allows only `main` and requires the owner's approval). `PowerUserAccess`, IAM limited to `gainframe-*` roles and policies, and explicit denies on changing the CI roles, the OIDC provider or the state bucket's protections. |
 
 Outputs are names only. The ARNs contain the account ID, so CI builds them from the `AWS_ACCOUNT_ID` secret.
 

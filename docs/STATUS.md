@@ -3,7 +3,7 @@
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
-- **Current task:** M3-03 Photo upload
+- **Current task:** M2-07 prod environment (then M2-08, M2-10, M2-09); M3-03 Photo upload in parallel
 - **Last updated:** 2026-11-23
 
 ## Now
@@ -51,6 +51,8 @@ Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows
 Ticking ahead (2026-11-21, asked by bw during the field week): a check on a set of a later round than the one in progress, in a superset or a standalone exercise, asks before completing it, because it is usually a mis-tap and would end the running rest; cancelling keeps the rest (PR `m1/confirm-tick-ahead`, "Ticking ahead" in `docs/design-system.md`).
 
 Offline navigation (2026-11-22, PR `m1/offline-summary-flake`): the service worker now answers Next's RSC payload requests (it ignores the `_rsc` parameter), so offline in-app navigation stays client-side instead of reloading the page. This was the cause of the `offline.spec.ts` failures on the summary's 完成 link (L-041).
+
+M2-07 (2026-11-23, PR `m2/07-prod-environment`): `infra/envs/prod` (the dev modules with prod names, `/gainframe/prod/` parameters, 30-day logs, no developer pages or localhost sign-in URLs); the deploy steps moved into the composite action `.github/actions/deploy`, which a `prod` job runs after dev once bw approves the `prod` Environment and only if the commit is still main's tip; `plan.yml` plans both; the apply role trusts `environment:prod`. Waiting on bw: the four steps in `infra/envs/prod/README.md` (Google redirect URI, Google parameters, bootstrap apply, GitHub Environment) before merging, then the database parameter after the first approved deploy. bw's own data is in dev; prod starts empty and has its own accounts.
 
 ## Field week checklist (pending iPhone checks)
 
