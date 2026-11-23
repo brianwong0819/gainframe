@@ -70,7 +70,10 @@ jobs:
   devices:
     name: Device layout
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # On main the suite runs on six devices (about 8 minutes for 630 tests on
+    # 2026-11-23) after a browser install that took from 1 to 11 minutes; a
+    # timeout cancels the run and skips the deploy (L-049).
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

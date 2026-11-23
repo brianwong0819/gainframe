@@ -45,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-049 · 2026-11-24 · ci · Dev stopped deploying because main's device job hit its timeout
+- **What happened:** after #189, CI on `main` was cancelled for #190, #191 and #192, so `deploy.yml` skipped each of them and dev stayed on #189's build for over an hour. Nobody noticed until a Terraform plan showed the Lambda's `RELEASE` was still #189's commit.
+- **Root cause:** the Device layout job had a 15-minute timeout. On `main` it runs six devices, about 8 minutes for 630 tests, and the `playwright install --with-deps` step took 10.5 minutes on 2026-11-23 instead of about 1. Pull requests run two devices, so they stayed green.
+- **Fix:** PR `m3/ci-device-timeout` raises the timeout to 25 minutes.
+- **Prevention:** after merging, check that the `main` CI run and its deploy finished, not only the pull request's checks. Raise the device job's timeout when the suite grows past half of it.
+- **Status:** documented
+
 ### L-048 · 2026-11-23 · sync · The version 13 Dexie upgrade broke as soon as a synced table was added
 - **What happened:** adding the `foods` table (Dexie version 14) made the version 12 → 13 upgrade test fail with "Table foods not part of transaction". A device still on version 12 would have failed to open the app.
 - **Root cause:** `adoptBackedUpRows` (version 13) iterated `syncedTableNameSchema.options`, the current list of synced tables, which grows with each new table. An upgrade step only holds the tables of its own version.
