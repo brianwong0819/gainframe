@@ -109,7 +109,7 @@ describe('resolveEstimate', () => {
   })
 
   it('returns no items when no food was recognised', () => {
-    expect(resolveEstimate({ dishName: null, photoIssue: 'no_food', items: [] }, table)).toEqual([])
+    expect(resolveEstimate({ items: [] }, table)).toEqual([])
   })
 })
 

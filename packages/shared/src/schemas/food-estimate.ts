@@ -108,3 +108,54 @@ export const foodEstimateResponseSchema = z.object({
 export type FoodEstimateItem = z.infer<typeof foodEstimateItemSchema>
 export type FoodEstimateRequest = z.infer<typeof foodEstimateRequestSchema>
 export type FoodEstimateResponse = z.infer<typeof foodEstimateResponseSchema>
+
+// The text estimate (M3-10): the user describes a meal in a sentence; the
+// model names the foods and their grams the same way as for a photo, and may
+// ask up to two short questions whose answer would change the figures a lot
+// (portion, cooking method). Its items are always its best guess, so the user
+// can skip the questions; answering sends the sentence again with the answers.
+export const TEXT_MEAL_CHARS_MAX = 300
+const TEXT_QUESTIONS_MAX = 2
+
+const textAnswerSchema = z.object({
+  question: z.string().min(1).max(160),
+  answer: z.string().trim().min(1).max(80),
+})
+
+// POST /api/food/estimate-text. `locale` is the language of the questions and
+// the assumptions line.
+export const textEstimateRequestSchema = z.object({
+  text: z.string().trim().min(1).max(TEXT_MEAL_CHARS_MAX),
+  locale: z.enum(['zh', 'en']),
+  answers: z.array(textAnswerSchema).max(TEXT_QUESTIONS_MAX),
+})
+
+const textQuestionSchema = z.object({
+  question: z.string().min(1).max(160),
+  options: z.array(z.string().min(1).max(40)).min(2).max(4),
+})
+
+// The model's whole reply. `assumptions` says in one sentence what it assumed
+// where the description left something open; no items means the text named no
+// food.
+export const textMealReplySchema = z.object({
+  dishName: z.string().min(1).max(120).nullable(),
+  questions: z.array(textQuestionSchema).max(TEXT_QUESTIONS_MAX),
+  assumptions: z.string().min(1).max(240).nullable(),
+  items: z.array(visionItemSchema).max(ESTIMATE_ITEMS_MAX),
+})
+
+export const textEstimateResponseSchema = z.object({
+  dishName: z.string().nullable(),
+  questions: z.array(textQuestionSchema),
+  assumptions: z.string().nullable(),
+  items: z.array(foodEstimateItemSchema),
+  model: z.string(),
+  promptVersion: z.int().positive(),
+})
+
+export type TextAnswer = z.infer<typeof textAnswerSchema>
+export type TextQuestion = z.infer<typeof textQuestionSchema>
+export type TextEstimateRequest = z.infer<typeof textEstimateRequestSchema>
+export type TextEstimateResponse = z.infer<typeof textEstimateResponseSchema>
+export type TextMealReply = z.infer<typeof textMealReplySchema>

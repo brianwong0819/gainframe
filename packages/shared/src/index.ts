@@ -148,6 +148,15 @@ export {
   type EstimateAiRaw,
   type OilSauce,
   type PhotoIssue,
+  TEXT_MEAL_CHARS_MAX,
+  type TextAnswer,
+  type TextEstimateRequest,
+  textEstimateRequestSchema,
+  type TextEstimateResponse,
+  textEstimateResponseSchema,
+  type TextMealReply,
+  textMealReplySchema,
+  type TextQuestion,
   photoIssueSchema,
   oilSauceSchema,
   estimateAiRawSchema,
@@ -160,6 +169,7 @@ export {
   type FoodEstimateResponse,
   foodEstimateResponseSchema,
   type VisionItem,
+  type VisionReply,
   visionReplySchema,
 } from './schemas/food-estimate.ts'
 export {

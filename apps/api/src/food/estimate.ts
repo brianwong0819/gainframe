@@ -4,13 +4,18 @@ import {
   type Food,
   foodSchema,
   type FoodTableEntry,
+  type TextEstimateRequest,
+  textMealReplySchema,
+  type VisionReply,
   visionReplyIssues,
   visionReplySchema,
   withFoodEdits,
 } from '@gainframe/shared'
 import { FOOD_TABLE } from '@gainframe/shared/food-table'
 import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
+import type { z } from 'zod'
 
+import * as textMealV1 from '../../prompts/text-meal/v1.ts'
 import * as visionV2 from '../../prompts/vision/v2.ts'
 import { aiConfig } from '../ai/config.ts'
 import type { Database } from '../db/client.ts'
@@ -33,17 +38,31 @@ const prompt = visionPrompt(aiConfig.features.vision.promptVersion)
 
 // Ids and names only, never nutrients: the model picks an entry instead of
 // inventing figures ("Food estimates" in docs/ai.md).
-export const VISION_SYSTEM = prompt.system(
-  FOOD_TABLE.map((entry) => [entry.id, entry.nameEn, ...entry.aliases].join('\t')).join('\n'),
-)
+const FOOD_TABLE_LINES = FOOD_TABLE.map((entry) =>
+  [entry.id, entry.nameEn, ...entry.aliases].join('\t'),
+).join('\n')
+
+export const VISION_SYSTEM = prompt.system(FOOD_TABLE_LINES)
+
+// The prompt versions of the text estimate (M3-10); config chooses one.
+const TEXT_MEAL_PROMPTS: Readonly<Record<number, typeof textMealV1>> = { 1: textMealV1 }
+const textPrompt = TEXT_MEAL_PROMPTS[aiConfig.features.textMeal.promptVersion]
+if (textPrompt === undefined) {
+  throw new Error(`No text-meal prompt version ${String(aiConfig.features.textMeal.promptVersion)}`)
+}
+
+export const TEXT_MEAL_SYSTEM = textPrompt.system(FOOD_TABLE_LINES)
 
 // The reply format, plus the checks against the table that the output format
 // cannot express; a failed check goes back to the model for its one retry.
-export const estimateReplySchema = visionReplySchema.superRefine((reply, ctx) => {
+function tableIssues(reply: Pick<VisionReply, 'items'>, ctx: z.RefinementCtx) {
   for (const issue of visionReplyIssues(reply, (id) => FOOD_ENTRIES.has(id))) {
     ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
   }
-})
+}
+
+export const estimateReplySchema = visionReplySchema.superRefine(tableIssues)
+export const textMealReplyCheckedSchema = textMealReplySchema.superRefine(tableIssues)
 
 // The table as this user sees it: their live edits of entries (M3-12) replace
 // the entries' names and figures. Scoped by the user from the token; a row that
@@ -108,3 +127,6 @@ export function correctionLines(corrections: readonly Correction[]): string[] {
 
 export const visionRequest = (corrections: readonly Correction[]) =>
   prompt.request(correctionLines(corrections))
+
+export const textMealRequest = (request: TextEstimateRequest, corrections: readonly Correction[]) =>
+  textPrompt.request(request.text, request.locale, request.answers, correctionLines(corrections))
