@@ -57,6 +57,7 @@ packages/
   shared/             Zod schemas, inferred types, pure domain functions, config constants
     src/schemas/
     src/domain/       e1RM, volume, targets, moving averages, plateau & nudge rules
+    src/food-table/   the bundled food table (`@gainframe/shared/food-table`): source extracts in sources/, their curation, the table built from them
 infra/
   bootstrap/          state bucket, GitHub OIDC, CI roles (applied once by bw)
   modules/            site, api, auth, storage, scheduler, monitoring

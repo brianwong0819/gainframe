@@ -1,0 +1,470 @@
+[
+  {
+    "fdcId": 167535,
+    "description": "Tortillas, ready-to-bake or -fry, flour, shelf stable",
+    "kcal": 297,
+    "proteinG": 8.01,
+    "fatG": 7.58,
+    "carbG": 49.3,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/167535/nutrients"
+  },
+  {
+    "fdcId": 168250,
+    "description": "Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted",
+    "kcal": 143,
+    "proteinG": 26.2,
+    "fatG": 3.51,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168250/nutrients"
+  },
+  {
+    "fdcId": 168411,
+    "description": "Edamame, frozen, prepared",
+    "kcal": 121,
+    "proteinG": 11.9,
+    "fatG": 5.2,
+    "carbG": 8.91,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168411/nutrients"
+  },
+  {
+    "fdcId": 168463,
+    "description": "Spinach, cooked, boiled, drained, without salt",
+    "kcal": 23.0,
+    "proteinG": 2.97,
+    "fatG": 0.26,
+    "carbG": 3.75,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168463/nutrients"
+  },
+  {
+    "fdcId": 168483,
+    "description": "Sweet potato, cooked, baked in skin, flesh, without salt",
+    "kcal": 90.0,
+    "proteinG": 2.01,
+    "fatG": 0.15,
+    "carbG": 20.7,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168483/nutrients"
+  },
+  {
+    "fdcId": 168878,
+    "description": "Rice, white, long-grain, regular, enriched, cooked",
+    "kcal": 130,
+    "proteinG": 2.69,
+    "fatG": 0.28,
+    "carbG": 28.2,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168878/nutrients"
+  },
+  {
+    "fdcId": 168910,
+    "description": "Pasta, whole-wheat, cooked (Includes foods for USDA's Food Distribution Program)",
+    "kcal": 149,
+    "proteinG": 5.99,
+    "fatG": 1.71,
+    "carbG": 30.1,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168910/nutrients"
+  },
+  {
+    "fdcId": 168917,
+    "description": "Quinoa, cooked",
+    "kcal": 120,
+    "proteinG": 4.4,
+    "fatG": 1.92,
+    "carbG": 21.3,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/168917/nutrients"
+  },
+  {
+    "fdcId": 169097,
+    "description": "Oranges, raw, all commercial varieties",
+    "kcal": 47.0,
+    "proteinG": 0.94,
+    "fatG": 0.12,
+    "carbG": 11.8,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/169097/nutrients"
+  },
+  {
+    "fdcId": 169704,
+    "description": "Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program)",
+    "kcal": 123,
+    "proteinG": 2.74,
+    "fatG": 0.97,
+    "carbG": 25.6,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/169704/nutrients"
+  },
+  {
+    "fdcId": 169737,
+    "description": "Pasta, cooked, enriched, without added salt",
+    "kcal": 158,
+    "proteinG": 5.8,
+    "fatG": 0.93,
+    "carbG": 30.9,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/169737/nutrients"
+  },
+  {
+    "fdcId": 169967,
+    "description": "Broccoli, cooked, boiled, drained, without salt",
+    "kcal": 35.0,
+    "proteinG": 2.38,
+    "fatG": 0.41,
+    "carbG": 7.18,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/169967/nutrients"
+  },
+  {
+    "fdcId": 169999,
+    "description": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
+    "kcal": 96.0,
+    "proteinG": 3.41,
+    "fatG": 1.5,
+    "carbG": 21.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/169999/nutrients"
+  },
+  {
+    "fdcId": 170440,
+    "description": "Potatoes, boiled, cooked without skin, flesh, without salt",
+    "kcal": 86.0,
+    "proteinG": 1.71,
+    "fatG": 0.1,
+    "carbG": 20.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170440/nutrients"
+  },
+  {
+    "fdcId": 170554,
+    "description": "Seeds, chia seeds, dried",
+    "kcal": 486,
+    "proteinG": 16.5,
+    "fatG": 30.7,
+    "carbG": 42.1,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170554/nutrients"
+  },
+  {
+    "fdcId": 170585,
+    "description": "Nuts, mixed nuts, dry roasted, with peanuts, without salt added",
+    "kcal": 607,
+    "proteinG": 19.5,
+    "fatG": 53.5,
+    "carbG": 22.4,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170585/nutrients"
+  },
+  {
+    "fdcId": 170847,
+    "description": "Cheese, mozzarella, part skim milk",
+    "kcal": 254,
+    "proteinG": 24.3,
+    "fatG": 15.9,
+    "carbG": 2.77,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170847/nutrients"
+  },
+  {
+    "fdcId": 170872,
+    "description": "Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D",
+    "kcal": 42.0,
+    "proteinG": 3.37,
+    "fatG": 0.97,
+    "carbG": 4.99,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170872/nutrients"
+  },
+  {
+    "fdcId": 170886,
+    "description": "Yogurt, plain, low fat",
+    "kcal": 63.0,
+    "proteinG": 5.25,
+    "fatG": 1.55,
+    "carbG": 7.04,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170886/nutrients"
+  },
+  {
+    "fdcId": 170894,
+    "description": "Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program)",
+    "kcal": 59.0,
+    "proteinG": 10.2,
+    "fatG": 0.39,
+    "carbG": 3.6,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/170894/nutrients"
+  },
+  {
+    "fdcId": 171269,
+    "description": "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",
+    "kcal": 34.0,
+    "proteinG": 3.37,
+    "fatG": 0.08,
+    "carbG": 4.96,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171269/nutrients"
+  },
+  {
+    "fdcId": 171413,
+    "description": "Oil, olive, salad or cooking",
+    "kcal": 884,
+    "proteinG": 0.0,
+    "fatG": 100,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171413/nutrients"
+  },
+  {
+    "fdcId": 171477,
+    "description": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+    "kcal": 165,
+    "proteinG": 31.0,
+    "fatG": 3.57,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171477/nutrients"
+  },
+  {
+    "fdcId": 171496,
+    "description": "Turkey, whole, breast, meat only, cooked, roasted",
+    "kcal": 147,
+    "proteinG": 30.1,
+    "fatG": 2.08,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171496/nutrients"
+  },
+  {
+    "fdcId": 171534,
+    "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, cooked, grilled",
+    "kcal": 151,
+    "proteinG": 30.5,
+    "fatG": 3.17,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171534/nutrients"
+  },
+  {
+    "fdcId": 171646,
+    "description": "Cereals ready-to-eat, granola, homemade",
+    "kcal": 489,
+    "proteinG": 13.7,
+    "fatG": 24.3,
+    "carbG": 53.9,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171646/nutrients"
+  },
+  {
+    "fdcId": 171688,
+    "description": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
+    "kcal": 52.0,
+    "proteinG": 0.26,
+    "fatG": 0.17,
+    "carbG": 13.8,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171688/nutrients"
+  },
+  {
+    "fdcId": 171711,
+    "description": "Blueberries, raw",
+    "kcal": 57.0,
+    "proteinG": 0.74,
+    "fatG": 0.33,
+    "carbG": 14.5,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171711/nutrients"
+  },
+  {
+    "fdcId": 171986,
+    "description": "Fish, tuna, light, canned in water, without salt, drained solids",
+    "kcal": 116,
+    "proteinG": 25.5,
+    "fatG": 0.82,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/171986/nutrients"
+  },
+  {
+    "fdcId": 172182,
+    "description": "Cheese, cottage, lowfat, 2% milkfat",
+    "kcal": 81.0,
+    "proteinG": 10.4,
+    "fatG": 2.27,
+    "carbG": 4.76,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172182/nutrients"
+  },
+  {
+    "fdcId": 172183,
+    "description": "Egg, white, raw, fresh",
+    "kcal": 52.0,
+    "proteinG": 10.9,
+    "fatG": 0.17,
+    "carbG": 0.73,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172183/nutrients"
+  },
+  {
+    "fdcId": 172204,
+    "description": "Egg, white, dried",
+    "kcal": 382,
+    "proteinG": 81.1,
+    "fatG": 0.0,
+    "carbG": 7.8,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172204/nutrients"
+  },
+  {
+    "fdcId": 172388,
+    "description": "Chicken, broilers or fryers, thigh, meat only, cooked, roasted",
+    "kcal": 179,
+    "proteinG": 24.8,
+    "fatG": 8.15,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172388/nutrients"
+  },
+  {
+    "fdcId": 172421,
+    "description": "Lentils, mature seeds, cooked, boiled, without salt",
+    "kcal": 116,
+    "proteinG": 9.02,
+    "fatG": 0.38,
+    "carbG": 20.1,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172421/nutrients"
+  },
+  {
+    "fdcId": 172448,
+    "description": "Tofu, firm, prepared with calcium sulfate and magnesium chloride (nigari)",
+    "kcal": 78.0,
+    "proteinG": 9.04,
+    "fatG": 4.17,
+    "carbG": 2.85,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172448/nutrients"
+  },
+  {
+    "fdcId": 172467,
+    "description": "Tempeh, cooked",
+    "kcal": 195,
+    "proteinG": 19.9,
+    "fatG": 11.4,
+    "carbG": 7.62,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172467/nutrients"
+  },
+  {
+    "fdcId": 172470,
+    "description": "Peanut butter, smooth style, without salt",
+    "kcal": 598,
+    "proteinG": 22.2,
+    "fatG": 51.4,
+    "carbG": 22.3,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/172470/nutrients"
+  },
+  {
+    "fdcId": 173177,
+    "description": "Beverages, Whey protein powder isolate",
+    "kcal": 359,
+    "proteinG": 58.1,
+    "fatG": 1.16,
+    "carbG": 29.1,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173177/nutrients"
+  },
+  {
+    "fdcId": 173424,
+    "description": "Egg, whole, cooked, hard-boiled",
+    "kcal": 155,
+    "proteinG": 12.6,
+    "fatG": 10.6,
+    "carbG": 1.12,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173424/nutrients"
+  },
+  {
+    "fdcId": 173735,
+    "description": "Beans, black, mature seeds, cooked, boiled, without salt",
+    "kcal": 132,
+    "proteinG": 8.86,
+    "fatG": 0.54,
+    "carbG": 23.7,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173735/nutrients"
+  },
+  {
+    "fdcId": 173757,
+    "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+    "kcal": 164,
+    "proteinG": 8.86,
+    "fatG": 2.59,
+    "carbG": 27.4,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173757/nutrients"
+  },
+  {
+    "fdcId": 173806,
+    "description": "Peanuts, all types, dry-roasted, without salt",
+    "kcal": 587,
+    "proteinG": 24.4,
+    "fatG": 49.7,
+    "carbG": 21.3,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173806/nutrients"
+  },
+  {
+    "fdcId": 173904,
+    "description": "Cereals, oats, regular and quick, not fortified, dry",
+    "kcal": 379,
+    "proteinG": 13.2,
+    "fatG": 6.52,
+    "carbG": 67.7,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173904/nutrients"
+  },
+  {
+    "fdcId": 173944,
+    "description": "Bananas, raw",
+    "kcal": 89.0,
+    "proteinG": 1.09,
+    "fatG": 0.33,
+    "carbG": 22.8,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/173944/nutrients"
+  },
+  {
+    "fdcId": 174031,
+    "description": "Beef, ground, 90% lean meat / 10% fat, patty, cooked, broiled",
+    "kcal": 217,
+    "proteinG": 26.1,
+    "fatG": 11.8,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/174031/nutrients"
+  },
+  {
+    "fdcId": 174054,
+    "description": "Beef, top sirloin, steak, separable lean only, trimmed to 1/8\" fat, all grades, cooked, broiled",
+    "kcal": 178,
+    "proteinG": 29.4,
+    "fatG": 5.84,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/174054/nutrients"
+  },
+  {
+    "fdcId": 174832,
+    "description": "Beverages, almond milk, unsweetened, shelf stable",
+    "kcal": 15.0,
+    "proteinG": 0.4,
+    "fatG": 0.96,
+    "carbG": 1.31,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/174832/nutrients"
+  },
+  {
+    "fdcId": 174916,
+    "description": "Bread, pita, whole-wheat",
+    "kcal": 262,
+    "proteinG": 9.8,
+    "fatG": 1.71,
+    "carbG": 55.9,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/174916/nutrients"
+  },
+  {
+    "fdcId": 175139,
+    "description": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+    "kcal": 208,
+    "proteinG": 24.6,
+    "fatG": 11.4,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/175139/nutrients"
+  },
+  {
+    "fdcId": 175168,
+    "description": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+    "kcal": 206,
+    "proteinG": 22.1,
+    "fatG": 12.4,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/175168/nutrients"
+  },
+  {
+    "fdcId": 175177,
+    "description": "Fish, tilapia, cooked, dry heat",
+    "kcal": 128,
+    "proteinG": 26.2,
+    "fatG": 2.65,
+    "carbG": 0.0,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/175177/nutrients"
+  },
+  {
+    "fdcId": 175180,
+    "description": "Crustaceans, shrimp, cooked",
+    "kcal": 99.0,
+    "proteinG": 24.0,
+    "fatG": 0.28,
+    "carbG": 0.2,
+    "sourceUrl": "https://fdc.nal.usda.gov/food-details/175180/nutrients"
+  }
+]
