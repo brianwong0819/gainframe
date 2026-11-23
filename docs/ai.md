@@ -13,7 +13,7 @@ Plan reviewed 2026-11-22 (bw chose every recommendation): food estimates take th
 - Check `stop_reason` before reading content: `refusal` and `max_tokens` are outcomes, not crashes.
 - Timeouts on every call. One `info` log line per call with `requestId`, feature, provider, model, prompt version, latency, tokens in/out (including cache reads and writes) and outcome (`ok`, `retried`, `invalid`, `refused`, `timeout`, `capped`, `provider_error`). On invalid output, log the Zod issue paths, not the output. Never log the image, prompts or model text.
 - Bedrock model invocation logging stays off: it would store images and prompts. To debug a bad answer, use what the product already keeps (`meal_items.ai_raw`, `weekly_summaries`, `nudges.analysis`), each stored with model and prompt version.
-- Daily caps are enforced server-side in `ai_usage` before the call is made.
+- Daily caps are enforced server-side in `ai_usage` before the call is made: one statement counts the call only while the count is under the cap, per user, feature and UTC day. A failed call still counts. Entry point: `createAi` in `apps/api/src/ai/generate.ts`.
 - The coach's tools are read-only and get `userId` from the server context; the model can never choose whose data to read.
 - Health safety: injury, medication, eating-disorder or extreme-diet topics → suggest a professional. UI states "not medical advice".
 - Photos are re-encoded on the device before upload (long edge ≤ 1600 px), which drops EXIF data such as location. The image sent to the model may be smaller still; its size is set in config and chosen with `pnpm eval:vision`.
