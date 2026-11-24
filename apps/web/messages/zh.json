@@ -196,7 +196,14 @@
     "trainedDay": "今天练了{day}",
     "fromTraining": "训练联动",
     "fillHeading": "用你常吃的补上",
-    "fillSum": "合计 蛋白质 {protein} g · {kcal} kcal"
+    "fillSum": "合计 蛋白质 {protein} g · {kcal} kcal",
+    "keptPhotos": "待估算",
+    "keptState": {
+      "waiting": "联网后自动估算",
+      "ready": "估算好了，点开确认",
+      "stopped": "估算没有完成，点开看看"
+    },
+    "keptNotCounted": "还没计入"
   },
   "language": {
     "label": "语言",
@@ -602,7 +609,7 @@
     },
     "offline": {
       "title": "现在离线",
-      "body": "AI 估算在服务器上进行。联网后重试，或者手动输入这餐。"
+      "body": "AI 估算在服务器上进行。照片可以先存在手机上，联网后自动估算，再请你确认。"
     },
     "failed": {
       "title": "估算没有完成",
@@ -690,7 +697,11 @@
     "no_text_food": {
       "title": "描述里没有食物",
       "body": "写出吃了什么、大概多少，比如「鸡饭，多加鸡肉」。"
-    }
+    },
+    "keep": "先存着，联网后估算",
+    "keptGone": "这张照片已经记过或删掉了。",
+    "discard": "删掉这张照片",
+    "discardConfirm": "再点一次删掉"
   },
   "describe": {
     "title": "用一句话记",

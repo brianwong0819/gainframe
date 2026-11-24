@@ -84,6 +84,21 @@ export const domainConfig = {
     start: { ageYears: 22, heightCm: 170, weightKg: 65 },
     step: { heightCm: 1, weightKg: 0.5 },
   },
+  // Body weight (M4-02). The trend is the average of the weigh-ins of the seven
+  // days ending on each weigh-in; it, the weekly rate and the target range are
+  // shown once this many weigh-ins exist. Target rates are % of body weight a
+  // week: 0.25 to 0.5 for a lean gain (Iraki et al. 2019, off-season
+  // recommendations for bodybuilders), 0.5 to 1 for a cut (Helms et al. 2014,
+  // contest preparation), and within the gain's lower bound either side to
+  // maintain.
+  bodyWeight: {
+    trendMinWeighIns: 7,
+    targetRatePct: {
+      bulk: { min: 0.25, max: 0.5 },
+      maintain: { min: -0.25, max: 0.25 },
+      cut: { min: -1, max: -0.5 },
+    },
+  },
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.

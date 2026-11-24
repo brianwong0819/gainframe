@@ -5,8 +5,13 @@ import {
   type ClientError,
   type Exercise,
   type Food,
+  type FoodEstimateRequest,
+  type FoodEstimateResponse,
+  type LocalDate,
   type Meal,
   type MealItem,
+  type MealType,
+  type PhotoIssue,
   type Plan,
   type PlanDay,
   type PlanItem,
@@ -56,6 +61,23 @@ export type DeviceSetting =
   | { key: 'signInCardDismissed'; value: string }
   | { key: 'errorsReportedSeq'; value: string }
 
+// A meal photo taken while offline (M3-03), kept on this device only and never
+// synced or exported: the photo is personal and only the estimate needs it. It
+// is estimated when the app is next online and backed up (food/photo-queue.ts);
+// the user then confirms it, which logs the meal at `takenAt` and deletes the
+// row. `estimate` is the result once there is one; `stoppedBy` is why the
+// estimate stopped when retrying would not help: the model could not count the
+// photo or refused it, or the account has no AI features.
+export interface PendingPhoto {
+  id: string
+  takenAt: string
+  localDate: LocalDate
+  mealType: MealType
+  photo: FoodEstimateRequest['photo']
+  estimate: FoodEstimateResponse | null
+  stoppedBy: PhotoIssue | 'refused' | 'notEnabled' | null
+}
+
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.
 export const STORES_V1 = {
@@ -82,6 +104,7 @@ export class GainframeDb extends Dexie {
   profiles!: Table<Profile, string>
   bodyMetrics!: Table<BodyMetric, string>
   foods!: Table<Food, string>
+  pendingPhotos!: Table<PendingPhoto, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -208,6 +231,8 @@ export class GainframeDb extends Dexie {
     this.version(13).stores({}).upgrade(adoptBackedUpRows)
     // M3-12: the user's foods and edits of food table entries, found by entry.
     this.version(14).stores({ foods: 'id, tableId' })
+    // M3-03: photos taken offline that wait for their estimate, read by day.
+    this.version(15).stores({ pendingPhotos: 'id, localDate' })
   }
 }
 

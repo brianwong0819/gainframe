@@ -298,3 +298,77 @@ test('a food missing from the search can be described for an AI estimate', async
   await expect(page.getByRole('heading', { name: '登录后才能用 AI 估算' })).toBeVisible()
   await expect(page.getByRole('link', { name: '登录' })).toBeVisible()
 })
+
+// ROADMAP M3-03: a photo taken offline waits on the device and is estimated
+// once the app is online again (unit tests in photo-queue.test.ts). Here its
+// estimate has arrived: the Food tab lists it as not counted yet, and
+// confirming it logs the meal at the time the photo was taken.
+test('a photo kept offline is confirmed from the Food tab once estimated', async ({ page }) => {
+  await page.goto('/food')
+  await expect(page.getByText(/AI 功能/)).toBeVisible()
+  await page.evaluate(
+    (base64) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('gainframe')
+        open.onerror = () => {
+          reject(new Error('IndexedDB did not open'))
+        }
+        open.onsuccess = () => {
+          const takenAt = new Date(Date.now() - 60_000)
+          const pad = (value: number) => String(value).padStart(2, '0')
+          const localDate = `${String(takenAt.getFullYear())}-${pad(takenAt.getMonth() + 1)}-${pad(takenAt.getDate())}`
+          const item = {
+            name: 'Nasi lemak',
+            entryId: null,
+            grams: 300,
+            proteinG: 18,
+            kcal: 640,
+            nutrients: 'model',
+            confidence: 'medium',
+            alternativeIds: [],
+            raw: {
+              seen: 'nasi lemak with egg',
+              entryId: null,
+              grams: 300,
+              confidence: 'medium',
+              alternativeIds: [],
+              proteinPer100G: 6,
+              kcalPer100G: 213,
+            },
+          }
+          const transaction = open.result.transaction('pendingPhotos', 'readwrite')
+          transaction.objectStore('pendingPhotos').put({
+            id: '01960000-0000-7000-8000-0000000000aa',
+            takenAt: takenAt.toISOString(),
+            localDate,
+            mealType: 'dinner',
+            photo: { type: 'image/png', base64 },
+            estimate: {
+              dishName: 'Nasi lemak',
+              photoIssue: null,
+              items: [item],
+              model: 'fake',
+              promptVersion: 2,
+            },
+            stoppedBy: null,
+          })
+          transaction.oncomplete = () => {
+            open.result.close()
+            resolve()
+          }
+        }
+      }),
+    photo.toString('base64'),
+  )
+  await page.reload()
+  const kept = page.getByRole('link', { name: /估算好了，点开确认/ })
+  await expect(kept).toContainText('晚餐')
+  await expect(kept).toContainText('还没计入')
+  await kept.click()
+  await expect(page).toHaveURL(/\/food\/photo\/?#/)
+  await expect(page.getByRole('img', { name: '这餐的照片' })).toBeVisible()
+  await page.getByRole('button', { name: '记入晚餐' }).click()
+  await expect(page).toHaveURL(/\/food\/?$/)
+  await expect(page.getByRole('button', { name: /晚餐 Nasi lemak 蛋白质 18/ })).toBeVisible()
+  await expect(page.getByText('待估算', { exact: true })).toHaveCount(0)
+})

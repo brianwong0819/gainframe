@@ -118,7 +118,8 @@ export type NewMealItem = Omit<NewRow<MealItem>, 'mealId' | 'position'>
  * Logs a meal and its items in one transaction, so a meal never syncs without
  * its items. The day it counts for is computed in `timeZone` at `eatenAt`.
  * `name` is the dish name an estimate gave; without one the first item names
- * the meal.
+ * the meal. `pendingPhotoId` is the kept photo the meal was estimated from,
+ * deleted in the same transaction so the photo is never logged twice.
  */
 export async function logMeal(
   db: GainframeDb,
@@ -129,9 +130,10 @@ export async function logMeal(
     mealType: MealType
     name?: string | null
     items: NewMealItem[]
+    pendingPhotoId?: string
   },
 ): Promise<Meal> {
-  return db.transaction('rw', db.meals, db.mealItems, db.outbox, async () => {
+  return db.transaction('rw', [db.meals, db.mealItems, db.outbox, db.pendingPhotos], async () => {
     const meal = await repos.meals.create({
       eatenAt: values.eatenAt,
       localDate: toLocalDate(values.eatenAt, values.timeZone),
@@ -142,6 +144,7 @@ export async function logMeal(
     for (const [position, item] of values.items.entries()) {
       await repos.mealItems.create({ ...item, mealId: meal.id, position })
     }
+    if (values.pendingPhotoId !== undefined) await db.pendingPhotos.delete(values.pendingPhotoId)
     return meal
   })
 }
