@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react'
 
 import { db, repositories } from '@/db/client'
 import { foodDay } from '@/db/food'
+import { pendingPhotosOn } from '@/db/pending-photos'
 import { currentProfile } from '@/db/profile'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
@@ -17,6 +18,7 @@ import { Toast } from '@/ui/toast'
 import { formatDay } from '../history/dates'
 import { DayCard } from './day-card'
 import { FrequentFoods } from './frequent-foods'
+import { KeptPhotos } from './kept-photos'
 import { MealList } from './meal-list'
 import { AiLockedNote, useAiAccess } from './ai-access'
 import { setPendingPhoto } from './photo'
@@ -38,6 +40,8 @@ export function FoodScreen() {
   const [date, setDate] = useState<LocalDate>(today)
   const readDay = useCallback(() => foodDay(db, date), [date])
   const day = useLiveQuery(readDay)
+  const readKept = useCallback(() => pendingPhotosOn(db, date), [date])
+  const kept = useLiveQuery(readKept) ?? []
   const targets = useLiveQuery(readTargets)
   const aiAccess = useAiAccess()
   const [editingTargets, setEditingTargets] = useState(false)
@@ -117,8 +121,11 @@ export function FoodScreen() {
               <AiLockedNote access={aiAccess} id="photo-locked" />
             </div>
           )}
+          <KeptPhotos rows={kept} />
           {day.meals.length === 0 ? (
-            <p className="text-body text-ink-2">{date === today ? t('empty') : t('emptyDay')}</p>
+            kept.length === 0 && (
+              <p className="text-body text-ink-2">{date === today ? t('empty') : t('emptyDay')}</p>
+            )
           ) : (
             <MealList meals={day.meals} />
           )}

@@ -1,28 +1,33 @@
 'use client'
 
 import {
-  foodEstimateResponseSchema,
+  type FoodEstimateResponse,
   type MealType,
   mealTypeAt,
   mealTypeSchema,
   type PhotoIssue,
 } from '@gainframe/shared'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 
+import { db } from '@/db/client'
+import { discardPhoto, keepPhoto, recordPhotoEstimate } from '@/db/pending-photos'
+import type { PendingPhoto } from '@/db/schema'
+import { useLiveQuery } from '@/db/use-live-query'
+import { deviceTimeZone } from '@/i18n/time-zone'
 import { api } from '@/sync/backup'
 import { ChoiceGroup } from '@/ui/choice-group'
+import { ConfirmButton } from '@/ui/confirm-button'
 import { Pressable, PressableLink } from '@/ui/pressable'
+import { useIdFromHash } from '@/ui/use-id-from-hash'
 
 import { EstimateConfirm, type EstimateRow, toRows } from './estimate-confirm'
-import {
-  type EstimateProblem,
-  ProblemNotice,
-  problemActionClass,
-  problemOf,
-} from './estimate-problem'
+import { type EstimateProblem, problemOf } from './estimate-error'
+import { ProblemNotice, problemActionClass } from './estimate-problem'
 import { type EncodedPhoto, encodePhoto, pendingPhoto, setPendingPhoto } from './photo'
 import { PhotoPicker } from './photo-picker'
+import { requestPhotoEstimate } from './photo-request'
 
 type Phase =
   | { kind: 'estimating' }
@@ -39,38 +44,44 @@ function encodeOnce(photo: Blob): Promise<EncodedPhoto> {
   return next
 }
 
+const dataUrl = (photo: EncodedPhoto) => `data:${photo.type};base64,${photo.base64}`
+
+const retryable = (problem: EstimateProblem) =>
+  problem === 'failed' || problem === 'timeout' || problem === 'offline'
+
+const readyPhase = ({ dishName, photoIssue, items }: FoodEstimateResponse): Phase => ({
+  kind: 'ready',
+  dishName,
+  photoIssue,
+  items: toRows(items),
+})
+
 async function estimate(photo: EncodedPhoto): Promise<Phase> {
-  if (api === null) return { kind: 'problem', problem: 'signIn' }
-  try {
-    const response = await api.request(foodEstimateResponseSchema, {
-      method: 'POST',
-      path: '/api/food/estimate',
-      body: { photo },
-    })
-    if (response.items.length === 0) {
-      return { kind: 'problem', problem: response.photoIssue ?? 'no_food' }
-    }
-    return {
-      kind: 'ready',
-      dishName: response.dishName,
-      photoIssue: response.photoIssue,
-      items: toRows(response.items),
-    }
-  } catch (error) {
-    return { kind: 'problem', problem: problemOf(error) }
-  }
+  const result = await requestPhotoEstimate(api, photo)
+  return result.kind === 'problem' ? result : readyPhase(result.response)
 }
 
 // The photo estimate (/food/photo, M3-06): the chosen photo with a scan line
 // while the estimate runs, then the estimated items to check and log. The meal
 // type can be chosen while waiting. Each failure replaces the skeleton rows
 // with what happened and a way on ("Photo flow" in docs/design-system.md).
+// `/food/photo#<id>` opens a photo kept while offline (M3-03).
 export function PhotoEstimate() {
+  const keptId = useIdFromHash()
+  if (keptId === undefined) return null
+  return keptId === null ? <NewPhotoEstimate /> : <KeptPhotoEstimate key={keptId} id={keptId} />
+}
+
+function NewPhotoEstimate() {
   const t = useTranslations('estimate')
-  const tFood = useTranslations('food')
-  // The photo and the run of its estimate: a retake or a retry starts a new
-  // run, and only the current run's result is shown.
-  const [shot, setShot] = useState(() => ({ photo: pendingPhoto(), run: 0 }))
+  const router = useRouter()
+  // The photo, when it was chosen and the run of its estimate: a retake or a
+  // retry starts a new run, and only the current run's result is shown.
+  const [shot, setShot] = useState(() => ({
+    photo: pendingPhoto(),
+    takenAt: new Date().toISOString(),
+    run: 0,
+  }))
   const { photo } = shot
   const [preview, setPreview] = useState<{ photo: Blob; url: string } | null>(null)
   const [result, setResult] = useState<{ run: number; phase: Phase } | null>(null)
@@ -89,10 +100,10 @@ export function PhotoEstimate() {
     void encodeOnce(photo)
       .then((jpeg) => {
         // The shrunk photo is the preview: no object URL to revoke.
-        if (current) setPreview({ photo, url: `data:${jpeg.type};base64,${jpeg.base64}` })
+        if (current) setPreview({ photo, url: dataUrl(jpeg) })
         return estimate(jpeg)
       })
-      .catch((): Phase => ({ kind: 'problem', problem: 'failed' }))
+      .catch((error: unknown): Phase => ({ kind: 'problem', problem: problemOf(error) }))
       .then((next) => {
         if (current) setResult({ run, phase: next })
       })
@@ -102,7 +113,7 @@ export function PhotoEstimate() {
   }, [photo, shot])
 
   const retake = (next: Blob) => {
-    setShot((current) => ({ photo: next, run: current.run + 1 }))
+    setShot((current) => ({ photo: next, takenAt: new Date().toISOString(), run: current.run + 1 }))
   }
 
   if (photo === null) {
@@ -126,18 +137,45 @@ export function PhotoEstimate() {
     )
   }
 
+  const retry = (
+    <Pressable
+      onClick={() => {
+        setShot((current) => ({ ...current, run: current.run + 1 }))
+      }}
+      className={problemActionClass}
+    >
+      {t('retry')}
+    </Pressable>
+  )
+  // Offline, the photo can wait on the device for the next connection.
+  const keep = (
+    <Pressable
+      onClick={() => {
+        void encodeOnce(photo)
+          .then((jpeg) =>
+            keepPhoto(db, {
+              takenAt: shot.takenAt,
+              timeZone: deviceTimeZone(),
+              mealType,
+              photo: jpeg,
+            }),
+          )
+          .then(() => {
+            router.push('/food')
+          })
+      }}
+      className={problemActionClass}
+    >
+      {t('keep')}
+    </Pressable>
+  )
   // What a problem offers besides signing in and the frequent foods: a retry
   // for a failed request, a retake for a photo the model could not count.
   const problemAction = (problem: EstimateProblem) =>
-    problem === 'failed' || problem === 'timeout' || problem === 'offline' ? (
-      <Pressable
-        onClick={() => {
-          setShot((current) => ({ ...current, run: current.run + 1 }))
-        }}
-        className={problemActionClass}
-      >
-        {t('retry')}
-      </Pressable>
+    problem === 'offline' ? (
+      keep
+    ) : retryable(problem) ? (
+      retry
     ) : (
       <PhotoPicker onPick={retake} className={problemActionClass}>
         {t('retake')}
@@ -145,24 +183,155 @@ export function PhotoEstimate() {
     )
 
   return (
+    <PhotoEstimateView
+      previewUrl={preview?.photo === photo ? preview.url : null}
+      phase={phase}
+      onItemsChange={(items) => {
+        if (phase.kind === 'ready') setResult({ run: shot.run, phase: { ...phase, items } })
+      }}
+      mealType={mealType}
+      onMealType={setMealType}
+      headerAction={
+        <PhotoPicker
+          onPick={retake}
+          className="shrink-0 rounded-full bg-surface px-16 py-8 text-body font-semibold text-ink"
+        >
+          {t('retake')}
+        </PhotoPicker>
+      }
+      problemAction={problemAction}
+    />
+  )
+}
+
+// What a kept photo shows before a run on this screen: its stored estimate,
+// why its estimate stopped, or nothing yet.
+function storedPhase(row: PendingPhoto): Phase | null {
+  if (row.estimate !== null) return readyPhase(row.estimate)
+  return row.stoppedBy === null ? null : { kind: 'problem', problem: row.stoppedBy }
+}
+
+// A photo kept while offline (M3-03), opened from its row on the Food tab. Its
+// estimate usually ran in the background; when it has not, it runs here. The
+// meal is logged at the time the photo was taken, and the photo can be
+// discarded instead.
+function KeptPhotoEstimate({ id }: { id: string }) {
+  const t = useTranslations('estimate')
+  const router = useRouter()
+  const read = useCallback(() => db.pendingPhotos.get(id).then((row) => row ?? null), [id])
+  const row = useLiveQuery(read)
+  // Run 0 shows what the row holds; each retry is a further run.
+  const [run, setRun] = useState(0)
+  const [result, setResult] = useState<{ run: number; phase: Phase } | null>(null)
+  const [mealType, setMealType] = useState<MealType | null>(null)
+  const stored = row ? storedPhase(row) : null
+  const needsRun = run > 0 || (row !== undefined && row !== null && stored === null)
+
+  useEffect(() => {
+    if (!needsRun) return
+    let current = true
+    void db.pendingPhotos
+      .get(id)
+      .then(async (kept): Promise<Phase | null> => {
+        if (kept === undefined) return null
+        const result = await requestPhotoEstimate(api, kept.photo)
+        if (result.kind === 'problem') return result
+        await recordPhotoEstimate(db, id, { estimate: result.response, stoppedBy: null })
+        return readyPhase(result.response)
+      })
+      .then((next) => {
+        if (current && next !== null) setResult({ run, phase: next })
+      })
+    return () => {
+      current = false
+    }
+  }, [id, run, needsRun])
+
+  if (row === undefined) return null
+  if (row === null) {
+    return (
+      <div className="flex flex-col gap-20">
+        <h1 className="text-title">{t('title')}</h1>
+        <p className="text-body text-ink-2">{t('keptGone')}</p>
+      </div>
+    )
+  }
+
+  const phase: Phase =
+    result?.run === run ? result.phase : ((run === 0 ? stored : null) ?? { kind: 'estimating' })
+  const discard = () => {
+    void discardPhoto(db, id).then(() => {
+      router.push('/food')
+    })
+  }
+  return (
+    <PhotoEstimateView
+      previewUrl={dataUrl(row.photo)}
+      phase={phase}
+      onItemsChange={(items) => {
+        if (phase.kind === 'ready') setResult({ run, phase: { ...phase, items } })
+      }}
+      mealType={mealType ?? row.mealType}
+      onMealType={setMealType}
+      problemAction={(problem) =>
+        retryable(problem) ? (
+          <Pressable
+            onClick={() => {
+              setRun((current) => current + 1)
+            }}
+            className={problemActionClass}
+          >
+            {t('retry')}
+          </Pressable>
+        ) : null
+      }
+      kept={{ id, takenAt: row.takenAt }}
+      footer={
+        <ConfirmButton
+          label={t('discard')}
+          confirmLabel={t('discardConfirm')}
+          onConfirm={discard}
+        />
+      }
+    />
+  )
+}
+
+function PhotoEstimateView({
+  previewUrl,
+  phase,
+  onItemsChange,
+  mealType,
+  onMealType,
+  headerAction,
+  problemAction,
+  kept,
+  footer,
+}: {
+  previewUrl: string | null
+  phase: Phase
+  onItemsChange: (items: EstimateRow[]) => void
+  mealType: MealType
+  onMealType: (mealType: MealType) => void
+  headerAction?: ReactNode
+  problemAction: (problem: EstimateProblem) => ReactNode
+  kept?: { id: string; takenAt: string }
+  footer?: ReactNode
+}) {
+  const t = useTranslations('estimate')
+  const tFood = useTranslations('food')
+  return (
     <div className="flex flex-col gap-20">
       <header className="flex items-start justify-between gap-12">
         <h1 className="text-title">{t('title')}</h1>
-        {phase.kind !== 'estimating' && (
-          <PhotoPicker
-            onPick={retake}
-            className="shrink-0 rounded-full bg-surface px-16 py-8 text-body font-semibold text-ink"
-          >
-            {t('retake')}
-          </PhotoPicker>
-        )}
+        {phase.kind !== 'estimating' && headerAction}
       </header>
       <div className="relative aspect-video overflow-hidden rounded-group bg-sunk">
-        {preview?.photo === photo && (
+        {previewUrl !== null && (
           <div
             role="img"
             aria-label={t('photoAlt')}
-            style={{ backgroundImage: `url(${preview.url})` }}
+            style={{ backgroundImage: `url(${previewUrl})` }}
             className="size-full bg-cover bg-center"
           />
         )}
@@ -181,7 +350,7 @@ export function PhotoEstimate() {
         label={t('mealType')}
         options={mealTypeSchema.options}
         value={mealType}
-        onChange={setMealType}
+        onChange={onMealType}
         optionLabel={(option) => tFood(`mealType.${option}`)}
       />
       {phase.kind === 'estimating' && (
@@ -205,9 +374,7 @@ export function PhotoEstimate() {
         <EstimateConfirm
           dishName={phase.dishName}
           items={phase.items}
-          onItemsChange={(items) => {
-            setResult({ run: shot.run, phase: { ...phase, items } })
-          }}
+          onItemsChange={onItemsChange}
           mealType={mealType}
           notice={
             phase.photoIssue !== null &&
@@ -215,8 +382,10 @@ export function PhotoEstimate() {
               <p className="text-body text-ink-2">{t(`issueNote.${phase.photoIssue}`)}</p>
             )
           }
+          {...(kept === undefined ? {} : { kept })}
         />
       )}
+      {footer}
     </div>
   )
 }
