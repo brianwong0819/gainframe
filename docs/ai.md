@@ -72,7 +72,7 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 
 | Command | Data | Metric |
 |---|---|---|
-| `pnpm eval:vision` | 30–50 labelled food photos (private S3 / local, not in git) + labels JSON; from M3-10 also the same meals described in a sentence | per prompt version and model: mean absolute error and signed bias for protein g and kcal, share within ±20 %, cost per call; photo and text reported separately; baseline: table lookup at the default serving, no AI |
+| `pnpm eval:vision` | 30–50 labelled food photos (on the owner's computer, not in git) + labels JSON; from M3-10 also the same meals described in a sentence | per prompt version and model: mean absolute error and signed bias for protein g and kcal, share within ±20 %, cost per call; photo and text reported separately; baseline: table lookup at the default serving, no AI |
 | `pnpm eval:summary` | fixed stats snapshots | every reference resolves to a snapshot field; no digits outside references |
 | `pnpm eval:coach` | fixed user data + questions, including ≥ 50 in-scope and out-of-scope questions | correct tool chosen, cites real numbers, off-topic accuracy and false-refusal rate |
 

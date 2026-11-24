@@ -70,6 +70,7 @@ export function EstimateConfirm({
   onItemsChange,
   mealType,
   notice,
+  kept,
 }: {
   dishName: string | null
   items: readonly EstimateRow[]
@@ -77,6 +78,9 @@ export function EstimateConfirm({
   mealType: MealType
   // A line above the totals: a photo issue, or a text estimate's assumptions.
   notice?: ReactNode
+  // A photo kept while offline: the meal is logged at the time it was taken
+  // and replaces it.
+  kept?: { id: string; takenAt: string }
 }) {
   const t = useTranslations('estimate')
   const tFood = useTranslations('food')
@@ -89,8 +93,10 @@ export function EstimateConfirm({
   const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
   const saved = useLiveQuery(readSaved)
   const proteinTarget = useLiveQuery(readProteinTarget)
-  const [today] = useState(() => toLocalDate(new Date().toISOString(), deviceTimeZone()))
-  const readToday = useCallback(() => foodDay(db, today), [today])
+  const [mealDay] = useState(() =>
+    toLocalDate(kept?.takenAt ?? new Date().toISOString(), deviceTimeZone()),
+  )
+  const readToday = useCallback(() => foodDay(db, mealDay), [mealDay])
   const day = useLiveQuery(readToday)
 
   // Names in the user's language come from the food table, with their edits.
@@ -163,7 +169,7 @@ export function EstimateConfirm({
   const save = async () => {
     setSaving(true)
     await logMeal(db, repositories, {
-      eatenAt: new Date().toISOString(),
+      eatenAt: kept?.takenAt ?? new Date().toISOString(),
       timeZone: deviceTimeZone(),
       mealType,
       name: dishName,
@@ -175,6 +181,7 @@ export function EstimateConfirm({
         source: 'ai',
         aiRaw: { ...item.raw, remember: item.remember, oilSauce },
       })),
+      ...(kept === undefined ? {} : { pendingPhotoId: kept.id }),
     })
     router.push('/food')
   }
