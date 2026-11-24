@@ -34,6 +34,9 @@ function visionPrompt(version: number): typeof visionV2 {
   return prompt
 }
 
+// The prompt versions `pnpm eval:vision` can compare.
+export const VISION_PROMPT_VERSIONS: readonly number[] = Object.keys(VISION_PROMPTS).map(Number)
+
 const prompt = visionPrompt(aiConfig.features.vision.promptVersion)
 
 // Ids and names only, never nutrients: the model picks an entry instead of
@@ -43,6 +46,13 @@ const FOOD_TABLE_LINES = FOOD_TABLE.map((entry) =>
 ).join('\n')
 
 export const VISION_SYSTEM = prompt.system(FOOD_TABLE_LINES)
+
+// A photo prompt version's system prompt and request text without
+// corrections, for the eval.
+export function visionPromptFor(version: number): { system: string; request: string } {
+  const chosen = visionPrompt(version)
+  return { system: chosen.system(FOOD_TABLE_LINES), request: chosen.request([]) }
+}
 
 // The prompt versions of the text estimate (M3-10); config chooses one.
 const TEXT_MEAL_PROMPTS: Readonly<Record<number, typeof textMealV1>> = { 1: textMealV1 }

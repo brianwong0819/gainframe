@@ -7,7 +7,8 @@
     "typecheck": "tsc",
     "build": "rolldown -c rolldown.config.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --env-file-if-exists=.env src/db/migrate-cli.ts"
+    "db:migrate": "node --env-file-if-exists=.env src/db/migrate-cli.ts",
+    "eval:vision": "node --env-file-if-exists=.env evals/vision/run.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "1.1.3",

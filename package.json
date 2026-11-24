@@ -16,7 +16,8 @@
     "test:e2e": "pnpm --filter @gainframe/web test:e2e",
     "build": "pnpm -r build",
     "db:up": "docker compose up -d --wait",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "eval:vision": "pnpm --filter @gainframe/api eval:vision"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
