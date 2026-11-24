@@ -91,6 +91,22 @@ export {
   type WeekSummary,
   weekDates,
 } from './domain/week.ts'
+export {
+  compositionChange,
+  type CompositionChange,
+  dailyWeights,
+  type DailyWeight,
+  type RangePoint,
+  rateStatus,
+  type RateStatus,
+  targetRange,
+  targetRate,
+  type TrendPoint,
+  weeklyRate,
+  type WeeklyRate,
+  weighInsNeeded,
+  weightTrend,
+} from './domain/body-weight.ts'
 export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,
