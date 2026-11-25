@@ -47,9 +47,9 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 _Newest first._
 
 ### L-050 · 2026-11-25 · ci · A code comment naming a model ID tripped the secret scan
-- **What happened:** the first push of the Anthropic provider failed CI's Secret scan: gitleaks' `generic-api-key` rule matched a comment in `apps/api/src/ai/config.ts` that put the word "API" next to a model ID in backticks. The scan covers the branch's whole history, so a follow-up commit could not clear it; the work moved to a fresh branch with one commit (no force-push).
+- **What happened:** the first push of the Anthropic provider failed CI's Secret scan: gitleaks' `generic-api-key` rule matched a comment in `apps/api/src/ai/config.ts` that put the word "API" next to a model ID in backticks. The scan covers every branch's history (`fetch-depth: 0`), so neither a follow-up commit nor a fresh branch cleared it while the old branch existed, and the proxy refuses branch deletion.
 - **Root cause:** the scan ran only in CI; nothing ran it locally before the first push.
-- **Fix:** PR `m3/04-anthropic-api` (comment reworded).
+- **Fix:** PR `m3/04-anthropic-api`: comment reworded, and the finding's fingerprint added to `.gitleaksignore` (the commit stays reachable from the closed PR #199).
 - **Prevention:** before the first push of a branch, run gitleaks on the branch (`gitleaks git . --config .gitleaks.toml --log-opts="origin/main..HEAD"`; version and checksum in `.github/workflows/ci.yml`). Added under "Active rules".
 - **Status:** documented
 
