@@ -7,6 +7,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 Rules from recent lessons that have not yet moved into `CLAUDE.md`, a `docs/*` file or an automated check. Each links to the lesson that created it. At each milestone retro, rules that have proved themselves move into the matching doc (and leave this list); rules that turned out wrong are deleted.
 
 - A value one app writes and the other parses (header format, query parameter, body shape) is defined once in `packages/shared` with a round-trip test; tests on either side import it rather than writing the literal. ([L-042](#l-042--2026-11-22--sync--every-push-was-refused-with-401-the-client-sent-the-token-without-bearer-))
+- Run gitleaks on a branch's commits before its first push; the CI scan covers history, so a later commit cannot clear a finding. ([L-050](#l-050--2026-11-25--ci--a-code-comment-naming-a-model-id-tripped-the-secret-scan))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
 
 Promoted at the M1 retro (2026-11-16), so read them where they now live:
@@ -44,6 +45,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 ## Log
 
 _Newest first._
+
+### L-050 · 2026-11-25 · ci · A code comment naming a model ID tripped the secret scan
+- **What happened:** the first push of the Anthropic provider failed CI's Secret scan: gitleaks' `generic-api-key` rule matched a comment in `apps/api/src/ai/config.ts` that put the word "API" next to a model ID in backticks. The scan covers the branch's whole history, so a follow-up commit could not clear it; the work moved to a fresh branch with one commit (no force-push).
+- **Root cause:** the scan ran only in CI; nothing ran it locally before the first push.
+- **Fix:** PR `m3/04-anthropic-api` (comment reworded).
+- **Prevention:** before the first push of a branch, run gitleaks on the branch (`gitleaks git . --config .gitleaks.toml --log-opts="origin/main..HEAD"`; version and checksum in `.github/workflows/ci.yml`). Added under "Active rules".
+- **Status:** documented
 
 ### L-049 · 2026-11-24 · ci · Dev stopped deploying because main's device job hit its timeout
 - **What happened:** after #189, CI on `main` was cancelled for #190, #191 and #192, so `deploy.yml` skipped each of them and dev stayed on #189's build for over an hour. Nobody noticed until a Terraform plan showed the Lambda's `RELEASE` was still #189's commit.
