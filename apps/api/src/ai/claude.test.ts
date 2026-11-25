@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
-import { bedrockProvider } from './bedrock.ts'
+import { type ClaudeClient, claudeProvider, configuredProvider } from './claude.ts'
 
-// Signs with fixed keys and answers from a fake `fetch`, so the test shows the
-// request the provider sends and how it reads the reply, without AWS.
-function provider(reply: object) {
+// Answers from a fake `fetch` (Bedrock signs with fixed keys), so the test
+// shows the request the provider sends and how it reads the reply.
+function provider(reply: object, client: 'anthropic' | 'bedrock' = 'bedrock') {
   const requests: { url: string; body: unknown; headers: Headers }[] = []
   const fetch = (input: string | URL | Request, init?: RequestInit) => {
     const body = init?.body
@@ -18,14 +18,20 @@ function provider(reply: object) {
       new Response(JSON.stringify(reply), { headers: { 'content-type': 'application/json' } }),
     )
   }
-  const bedrock = bedrockProvider({
-    awsRegion: 'ap-southeast-1',
-    awsAccessKey: 'AKIDEXAMPLE',
-    awsSecretAccessKey: 'secret',
-    fetch,
-    maxRetries: 0,
-  })
-  return { bedrock, requests }
+  const options: ClaudeClient =
+    client === 'anthropic'
+      ? { provider: 'anthropic', options: { apiKey: 'sk-test', fetch, maxRetries: 0 } }
+      : {
+          provider: 'bedrock',
+          options: {
+            awsRegion: 'ap-southeast-1',
+            awsAccessKey: 'AKIDEXAMPLE',
+            awsSecretAccessKey: 'secret',
+            fetch,
+            maxRetries: 0,
+          },
+        }
+  return { claude: claudeProvider(options), requests }
 }
 
 const message = (stop_reason: string, text: string) => ({
@@ -44,9 +50,9 @@ const message = (stop_reason: string, text: string) => ({
   },
 })
 
-describe('bedrockProvider', () => {
+describe('claudeProvider', () => {
   it('sends a signed Messages request with effort and the JSON schema as the output format', async () => {
-    const { bedrock, requests } = provider(message('end_turn', '{"answer":5}'))
+    const { claude: bedrock, requests } = provider(message('end_turn', '{"answer":5}'))
     const response = await bedrock.generate({
       model: 'anthropic.claude-haiku-5-5',
       effort: 'low',
@@ -120,9 +126,42 @@ describe('bedrockProvider', () => {
       jsonSchema: { type: 'object' },
       signal: new AbortController().signal,
     }
-    const refused = await provider(message('refusal', '')).bedrock.generate(request)
+    const refused = await provider(message('refusal', '')).claude.generate(request)
     expect(refused.stopReason).toBe('refusal')
-    const other = await provider(message('tool_use', '')).bedrock.generate(request)
+    const other = await provider(message('tool_use', '')).claude.generate(request)
     expect(other.stopReason).toBe('other')
+  })
+  it('sends the same request to the Anthropic API with the API key', async () => {
+    const { claude: anthropic, requests } = provider(
+      message('end_turn', '{"answer":5}'),
+      'anthropic',
+    )
+    const response = await anthropic.generate({
+      model: 'claude-haiku-5-5',
+      effort: 'low',
+      maxTokens: 256,
+      system: 'Answer.',
+      messages: [{ role: 'user', content: [{ type: 'text', text: 'What is 2 + 3?' }] }],
+      jsonSchema: z.toJSONSchema(z.object({ answer: z.int() })),
+      signal: new AbortController().signal,
+    })
+    expect(anthropic.name).toBe('anthropic')
+    expect(requests[0]?.url).toBe('https://api.anthropic.com/v1/messages')
+    expect(requests[0]?.headers.get('authorization')).toBe('Bearer sk-test')
+    expect(requests[0]?.body).toMatchObject({
+      model: 'claude-haiku-5-5',
+      output_config: { effort: 'low', format: { type: 'json_schema' } },
+    })
+    expect(response.text).toBe('{"answer":5}')
+  })
+
+  it('builds the configured provider', () => {
+    const region = 'ap-southeast-1'
+    expect(configuredProvider({ provider: 'anthropic', region, anthropicApiKey: 'k' }).name).toBe(
+      'anthropic',
+    )
+    expect(
+      configuredProvider({ provider: 'bedrock', region, anthropicApiKey: undefined }).name,
+    ).toBe('bedrock')
   })
 })

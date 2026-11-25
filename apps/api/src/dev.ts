@@ -2,7 +2,7 @@
 import { serve } from '@hono/node-server'
 
 import { cognitoIdentityDeleter } from './account/identity.ts'
-import { bedrockProvider } from './ai/bedrock.ts'
+import { configuredProvider } from './ai/claude.ts'
 import { aiConfig } from './ai/config.ts'
 import { createAi } from './ai/generate.ts'
 import { usageStore } from './ai/usage.ts'
@@ -26,9 +26,14 @@ const app = createApp({
   db,
   // Needs AWS credentials allowed to delete users in the dev pool.
   deleteIdentity: cognitoIdentityDeleter(auth.issuer),
-  // Needs AWS credentials allowed to call Bedrock (docs/ai.md).
+  // Needs ANTHROPIC_API_KEY in .env, or AWS credentials allowed to call
+  // Bedrock when that is the provider (docs/ai.md).
   generate: createAi({
-    provider: bedrockProvider({ awsRegion: aiConfig.region }),
+    provider: configuredProvider({
+      provider: aiConfig.provider,
+      region: aiConfig.region,
+      anthropicApiKey: env.ANTHROPIC_API_KEY,
+    }),
     usage: usageStore(db),
   }),
 })

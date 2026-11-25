@@ -40,20 +40,26 @@ describe('loadLambdaEnv', () => {
   const names = {
     DATABASE_URL_PARAMETER: '/gainframe/dev/database-url',
     AUTH_CONFIG_PARAMETER: '/gainframe/dev/auth-config',
+    ANTHROPIC_API_KEY_PARAMETER: '/gainframe/dev/anthropic-api-key',
   }
   const authConfig = JSON.stringify({ issuer: auth.AUTH_ISSUER, clientId: auth.AUTH_CLIENT_ID })
 
-  it('reads the database URL and the auth settings from the SSM parameters named in the environment', async () => {
+  it('reads the database URL, the auth settings and the Anthropic API key from the SSM parameters named in the environment', async () => {
     const values: Record<string, string> = {
       '/gainframe/dev/database-url': url,
       '/gainframe/dev/auth-config': authConfig,
+      '/gainframe/dev/anthropic-api-key': 'sk-test',
     }
     const getParameter = (name: string) =>
       values[name] === undefined
         ? Promise.reject(new Error(`unexpected parameter ${name}`))
         : Promise.resolve(values[name])
 
-    expect(await loadLambdaEnv(names, getParameter)).toEqual({ DATABASE_URL: url, ...auth })
+    expect(await loadLambdaEnv(names, getParameter)).toEqual({
+      DATABASE_URL: url,
+      ...auth,
+      ANTHROPIC_API_KEY: 'sk-test',
+    })
   })
 
   it('rejects a parameter name outside the project prefix', async () => {

@@ -41,6 +41,29 @@ Remove-Variable url
 aws s3 sync ../../../apps/web/out "s3://$(terraform output -raw site_bucket)" --delete
 ```
 
+## Anthropic API key (owner, once)
+
+The AI features call Claude through Anthropic's API ([ADR-0008](../../../docs/adr/0008-anthropic-api-provider.md)). Terraform creates `/gainframe/dev/anthropic-api-key` with a placeholder; until the real key is set, AI requests answer `ai_unavailable` and everything else works. In the [Anthropic Console](https://platform.claude.com): Billing, buy the smallest credit amount with auto-reload off; then API keys, create a key named `gainframe-dev` and copy it (it is shown once). Then, in PowerShell (check `aws --version` first):
+
+```powershell
+cd C:\dev\gainframe
+$env:AWS_PROFILE = "gainframe"
+aws login --profile gainframe
+$key = Read-Host "Anthropic API key"
+aws ssm put-parameter --name /gainframe/dev/anthropic-api-key --type SecureString --overwrite --value $key
+Remove-Variable key
+aws lambda update-function-configuration --function-name gainframe-dev-api --description "key set $(Get-Date -Format s)" --query LastUpdateStatus
+```
+
+The last command makes the function start fresh instances, which read the new key. Then run the deploy's AI call, which should print `{"ai":"ok"}`:
+
+```powershell
+Set-Content -NoNewline payload.json '{"check":"ai"}'
+aws lambda invoke --function-name gainframe-dev-api --payload fileb://payload.json out.json
+Get-Content out.json
+Remove-Item payload.json, out.json
+```
+
 ## Verify
 
 From `C:\dev\gainframe\infra\envs\dev`. `-4` forces IPv4 (see "Connection reset" below).
