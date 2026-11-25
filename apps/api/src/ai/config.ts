@@ -4,10 +4,11 @@ import { z } from 'zod'
 // Per-feature model settings ("Models and cost" in docs/ai.md). Each feature's
 // model is chosen with its eval; prompt versions are files in
 // `apps/api/prompts/<feature>/v<N>.ts`.
-// A model added here is also added to `ai_models` in infra/modules/api, which
-// the Lambda's permission to call Bedrock is limited to.
+// With the `bedrock` provider, a model added here is also added to `ai_models`
+// in infra/modules/api, which the Lambda's permission to call Bedrock is limited to.
 const featureSchema = z.object({
-  // A Bedrock model ID; see "Bedrock model availability" in docs/ai.md.
+  // A model ID of the configured provider; Bedrock's carry the `anthropic.`
+  // prefix ("Providers" in docs/ai.md).
   model: z.string().min(1),
   effort: z.enum(['low', 'medium', 'high']),
   maxTokens: z.int().positive(),
@@ -23,17 +24,21 @@ export type AiFeatureConfig = z.infer<typeof featureSchema>
 
 export const aiConfig = z
   .object({
+    // Anthropic's API while Bedrock does not offer Claude Haiku 5.5 to the
+    // account (ADR-0008); `bedrock` switches back, with Bedrock model IDs.
+    provider: z.enum(['anthropic', 'bedrock']),
     region: z.string().min(1),
     // Remembered corrections sent with a photo estimate as reference.
     visionCorrectionsMax: z.int().min(0),
     features: z.object({ vision: featureSchema, textMeal: featureSchema, check: featureSchema }),
   })
   .parse({
+    provider: 'anthropic',
     region: 'ap-southeast-1',
     visionCorrectionsMax: 8,
     features: {
       vision: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'claude-haiku-5-5',
         effort: 'low',
         maxTokens: 2048,
         timeoutMs: 12_000,
@@ -42,7 +47,7 @@ export const aiConfig = z
       },
       // A description costs far less than a photo; the cap is the same number.
       textMeal: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'claude-haiku-5-5',
         effort: 'low',
         maxTokens: 2048,
         timeoutMs: 12_000,
@@ -51,7 +56,7 @@ export const aiConfig = z
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.
       check: {
-        model: 'anthropic.claude-haiku-5-5',
+        model: 'claude-haiku-5-5',
         effort: 'low',
         maxTokens: 256,
         timeoutMs: 12_000,
