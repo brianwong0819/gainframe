@@ -4,7 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
 - **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal, which waits on Bedrock model access like M3-04 and M3-05.; M3-03 offline photos built (PR `m3/03-offline-photos`), its airplane-mode check also waits on Bedrock access; next M3-08 `pnpm eval:vision` against the fake provider
-- **Last updated:** 2026-11-24
+- **Last updated:** 2026-11-26
 
 ## Now
 
@@ -58,6 +58,8 @@ Exercise library expansion (2026-11-17, asked by bw): the built-in catalog grows
 
 Ticking ahead (2026-11-21, asked by bw during the field week): a check on a set of a later round than the one in progress, in a superset or a standalone exercise, asks before completing it, because it is usually a mis-tap and would end the running rest; cancelling keeps the rest (PR `m1/confirm-tick-ahead`, "Ticking ahead" in `docs/design-system.md`).
 
+Current plan synced (2026-11-26, PR `m2/active-plan-sync`, reported by bw): the current plan was a device setting and was lost whenever the device downloaded the account again. It is now the plan's synced `activatedAt` (ADR-0003 amended, Dexie version 16, migration `0007_plan_activated_at.sql`, sync version 7, L-050). An installed app from before this change gets "update the app" until it reloads.
+
 Correcting a done set (2026-11-23, asked by bw): a tap on a ticked set's row in a workout opens its weight and reps with its kind and RPE; a corrected weight moves the later sets still at the old weight (PR `m1/edit-done-set`, "Correcting a done set" in `docs/design-system.md`).
 
 Offline navigation (2026-11-22, PR `m1/offline-summary-flake`): the service worker now answers Next's RSC payload requests (it ignores the `_rsc` parameter), so offline in-app navigation stays client-side instead of reloading the page. This was the cause of the `offline.spec.ts` failures on the summary's 完成 link (L-041).
@@ -94,7 +96,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 - A kept photo confirmed on a later day says "记入后今天蛋白质…" with the figures of the photo's day; the line should name that day.
 - Photo confirm screen (M3-06), left out of the first version: the "+ Add food" row (the manual screen would need the estimate kept across pages), the line on a row that used a remembered correction (the endpoint does not say which corrections it applied), and the Undo toast on the Food tab after saving.
-- The per-exercise weight unit is a device setting, so a second device starts in kg. Decide in M2-05 whether it syncs.
+- The per-exercise weight unit is a device setting, so a second device, a sign-out and sign-in or a cleared device starts in kg again (the same defect as the current plan, L-050). Sync it as a column on custom exercises and a synced row for built-in ones.
 - Stepper typing (`src/ui/stepper.tsx`) selects the value on focus, but in WebKit the tap that focused the field may clear that selection, so typed digits are appended ("8" then "5" gives "85"). Check on the iPhone during M1-13 and fix in the stepper if confirmed.
 - A day's estimated length (`estimateDayS`) counts a rest after every set of a superset member, although a superset rests only after each round, so a day with supersets is estimated too long.
 - Plan days keep the order they were added in; exercises can be reordered, days cannot yet.

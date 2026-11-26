@@ -246,7 +246,7 @@ describe('remove', () => {
   })
 
   it("soft-deletes a plan's days and items, and a day's items", async () => {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const plan = await repos.plans.create({ name: 'Push Pull Legs', activatedAt: null })
     const newDay = (name: string, position: number) =>
       repos.planDays.create({ planId: plan.id, name, position })
     const newItem = (planDayId: string) =>

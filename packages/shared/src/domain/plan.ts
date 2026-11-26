@@ -1,4 +1,4 @@
-import type { PlanDay, PlanItem } from '../schemas/plan.ts'
+import type { Plan, PlanDay, PlanItem } from '../schemas/plan.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
 
 // The day of a plan to train next: the day after the one followed by the plan's
@@ -76,4 +76,13 @@ export function planItemsFromWorkout(
       ]
     })
     .map((item, position) => ({ ...item, position }))
+}
+
+// The active plan: of the live plans, the one made active most recently.
+// Undefined when no live plan has been made active.
+export function activePlanOf(plans: readonly Plan[]): Plan | undefined {
+  return plans.reduce<Plan | undefined>((latest, plan) => {
+    if (plan.deletedAt !== null || plan.activatedAt === null) return latest
+    return latest?.activatedAt != null && latest.activatedAt >= plan.activatedAt ? latest : plan
+  }, undefined)
 }
