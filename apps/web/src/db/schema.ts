@@ -43,7 +43,7 @@ export interface ErrorLogEntry extends ClientError {
 }
 
 // A setting that belongs to this device and never syncs, so it is lost when
-// the device is emptied and downloads the account again (L-050).
+// the device is emptied and downloads the account again (L-051).
 // `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
 // it is not kg (db/weight-units.ts). `authSession` is the signed-in session as
 // JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the

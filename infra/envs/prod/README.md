@@ -41,6 +41,29 @@ The order matters: the Environment must exist with its protection before the wor
 
 4. In the failed run, "Re-run failed jobs" and approve again. The job migrates the prod database and the smoke test passes. The run's summary shows the prod site URL in the Apply step's outputs ("site_url").
 
+## Anthropic API key (owner, once)
+
+The AI features call Claude through Anthropic's API ([ADR-0008](../../../docs/adr/0008-anthropic-api-provider.md)). Terraform creates `/gainframe/prod/anthropic-api-key` with a placeholder; until the real key is set, AI requests answer `ai_unavailable` and everything else works. In the [Anthropic Console](https://platform.claude.com): Billing, buy the smallest credit amount with auto-reload off; then API keys, create a key named `gainframe-prod` and copy it (it is shown once). Then, in PowerShell (check `aws --version` first):
+
+```powershell
+cd C:\dev\gainframe
+$env:AWS_PROFILE = "gainframe"
+aws login --profile gainframe
+$key = Read-Host "Anthropic API key"
+aws ssm put-parameter --name /gainframe/prod/anthropic-api-key --type SecureString --overwrite --value $key
+Remove-Variable key
+aws lambda update-function-configuration --function-name gainframe-prod-api --description "key set $(Get-Date -Format s)" --query LastUpdateStatus
+```
+
+The last command makes the function start fresh instances, which read the new key. Then run the deploy's AI call, which should print `{"ai":"ok"}`:
+
+```powershell
+Set-Content -NoNewline payload.json '{"check":"ai"}'
+aws lambda invoke --function-name gainframe-prod-api --payload fileb://payload.json out.json
+Get-Content out.json
+Remove-Item payload.json, out.json
+```
+
 ## Verify
 
 Merges update dev without waiting; prod waits for approval, then serves the same release (`<meta name="release">` on its page equals the commit). On the iPhone, prod is a separate Home Screen app with its own data: open the prod URL in Safari, Share → Add to Home Screen.
