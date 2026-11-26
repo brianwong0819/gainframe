@@ -7,7 +7,7 @@ Plan reviewed 2026-11-22 (bw chose every recommendation): food estimates take th
 ## Rules
 
 - All provider calls go through `apps/api/src/ai`. Nothing else imports a provider SDK.
-- One provider: Claude on Amazon Bedrock through Anthropic's TypeScript Bedrock SDK (`@anthropic-ai/bedrock-sdk`, the `AnthropicBedrockMantle` client, which exposes the Messages API). The `AiProvider` interface has two implementations, Bedrock and the fake used by unit tests and evals of the pipeline code. Another provider can be added behind the same interface after the MVP.
+- One model family, Claude, through the Messages API, from one of two endpoints chosen by `aiConfig.provider`: Anthropic's API (`Anthropic` from `@anthropic-ai/sdk`, the current choice, [ADR-0008](adr/0008-anthropic-api-provider.md)) or Amazon Bedrock (`AnthropicBedrockMantle` from `@anthropic-ai/bedrock-sdk`). Both are built by `claudeProvider` in `apps/api/src/ai/claude.ts`; the `AiProvider` interface's other implementation is the fake used by unit tests and evals of the pipeline code.
 - Model IDs, effort, max tokens, timeouts and daily caps live in config (`apps/api/src/ai/config.ts`), never inline. No `temperature`, `top_p` or `top_k`: current models reject them. Look up current model IDs and Bedrock inference-profile IDs in the docs (context7 / AWS console); do not guess.
 - Responses that code consumes use structured outputs (`output_config.format` with a JSON schema generated from the Zod schema in `packages/shared`, passed through the SDK's `transformJSONSchema`, which moves limits the format does not support, such as `maximum` and `maxLength`, into descriptions), and are still validated with Zod. On validation failure: retry once with the error message, then fail cleanly. Do not force a tool call to get JSON (`tool_choice` `any` / `tool` is rejected by current models).
 - Check `stop_reason` before reading content: `refusal` and `max_tokens` are outcomes, not crashes.
@@ -29,12 +29,12 @@ AI calls cost money per call, so the AI features are open only to members of the
 
 ## Models and cost
 
-Each feature's model is chosen with its eval, comparing accuracy and cost per call; the eval report has a cost column. Rough cost per food photo at first-party list prices (check Bedrock pricing before relying on them): with the food table in the prompt (about 35,000 input tokens), Claude Haiku 5.5 about $0.004, Claude Sonnet 5.5 about $0.075, Claude Opus 5.5 about $0.15. At four photos a day that is roughly $0.5, $9 or $18 a month against the $5 budget, so the cheapest model that holds the eval's accuracy wins. The weekly report and plateau analysis run once a week per user and can use a larger model.
+Each feature's model is chosen with its eval, comparing accuracy and cost per call; the eval report has a cost column. Rough cost per food photo at Anthropic's list prices (Bedrock's may differ): with the food table in the prompt (about 35,000 input tokens), Claude Haiku 5.5 about $0.004, Claude Sonnet 5.5 about $0.075, Claude Opus 5.5 about $0.15. At four photos a day that is roughly $0.5, $9 or $18 a month against the $5 budget, so the cheapest model that holds the eval's accuracy wins. The weekly report and plateau analysis run once a week per user and can use a larger model.
 
 - Effort: `low` for food estimates (latency matters, the task is short), the default for the coach, report and analysis. Set effort explicitly; defaults differ by model.
 - Prompt caching: only where requests repeat within five minutes, which is the coach's tool loop (cache the system prompt and tool definitions). Meals are hours apart, so food estimates are not designed around caching.
-- Bedrock has no server-side refusal fallback; a refusal is logged as `refused` and the user sees the manual entry path.
-- Check whether the account's AWS promotional credits cover Anthropic models on Bedrock (Billing → Credits, applicable products) before assuming they pay for AI calls.
+- Neither endpoint gets a refusal fallback for Claude Haiku 5.5; a refusal is logged as `refused` and the user sees the manual entry path.
+- AWS promotional credits do not pay for Anthropic's API; on Bedrock, check whether they cover Anthropic models (sold through AWS Marketplace) before assuming they do.
 
 ## Food estimates: the model looks, the table counts
 
@@ -50,6 +50,11 @@ The photo (M3-05) and text (M3-10) estimates return, per item: a food table entr
 - Oil and sauce stay a choice the user makes (`docs/design-system.md`, "Food logging"); the model cannot see them.
 - The user's own and frequent foods are the most accurate path and stay one tap away.
 
+## Providers
+
+- **Anthropic's API** (`provider: 'anthropic'`, since 2026-11-25, ADR-0008). Model IDs without a prefix, for example `claude-haiku-5-5`. The key is the SecureString `/gainframe/<env>/anthropic-api-key`, read at cold start (`loadLambdaEnv`); locally `ANTHROPIC_API_KEY` in `apps/api/.env`. Without a key, or with Terraform's placeholder, every call fails as `provider_error` and the device shows `ai_unavailable`. The account is prepaid with auto-reload off, so the balance caps spend; check usage in the Anthropic Console.
+- **Amazon Bedrock** (`provider: 'bedrock'`). Not usable while the account lacks Claude Haiku 5.5 (below). To switch back: set the provider, prefix the model IDs with `anthropic.`, keep `ai_models` in `infra/modules/api` equal to them, redeploy and confirm the deploy's AI check.
+
 ## Bedrock model availability (ap-southeast-1)
 
 Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload account. Anthropic use-case details were submitted once (Bedrock console), which unlocks Anthropic models for the account.
@@ -58,7 +63,7 @@ Checked 2026-11-02 with `aws bedrock list-inference-profiles` in the workload ac
 - The `global.` and `apac.` inference-profile IDs belong to `bedrock-runtime` (InvokeModel, Converse) and are not used.
 - IAM: `bedrock-mantle:CreateInference` on `project/*`, with the condition key `bedrock-mantle:Model` limiting the role to the configured models (AWS Service Authorization Reference, "Amazon Bedrock powered by AWS Mantle"). `bedrock:InvokeModel` does not apply to this endpoint.
 - The deploy smoke test makes one call (`{ "check": "ai" }`, feature `check`); a failure is a warning, because model access and credits are account settings.
-- 2026-11-23: dev calls to Claude Haiku 5.5 answered 404 "model does not exist" with both the `anthropic.` and the `global.` ID. In the Bedrock playground every Anthropic model first failed with `INVALID_PAYMENT_INSTRUMENT`: Anthropic models are sold through AWS Marketplace, which subscribes the account on first use and needs a payment method on the organization's payer account. With one added, Claude Haiku 4.5 answered, while Claude Haiku 5.5 and Claude Sonnet 5.5 answered "not available for this account", which an AWS Support case (Account and billing) asks to lift. Config keeps the documented `anthropic.claude-haiku-5-5`.
+- 2026-11-23: dev calls to Claude Haiku 5.5 answered 404 "model does not exist" with both the `anthropic.` and the `global.` ID. In the Bedrock playground every Anthropic model first failed with `INVALID_PAYMENT_INSTRUMENT`: Anthropic models are sold through AWS Marketplace, which subscribes the account on first use and needs a payment method on the organization's payer account. With one added, Claude Haiku 4.5 answered, while Claude Haiku 5.5 and Claude Sonnet 5.5 answered "not available for this account", which an AWS Support case (Account and billing) asks to lift. With no answer by 2026-11-25, the config moved to Anthropic's API (ADR-0008); `anthropic.claude-haiku-5-5` is the ID to return to.
 - Claude Haiku 4.5 is not a stopgap: it is served only on `bedrock-runtime` (Anthropic's "Claude on Amazon Bedrock (legacy)" page), and Bedrock accepts the SDK's API version `2026-10-21` only for Claude 4.7 and later, so it would need a second client, other IAM actions and a version override.
 - Re-check the model table before changing a model ID; models launch and retire.
 

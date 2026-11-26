@@ -1,9 +1,10 @@
 import { AnthropicBedrockMantle } from '@anthropic-ai/bedrock-sdk'
+import Anthropic from '@anthropic-ai/sdk'
 import { transformJSONSchema } from '@anthropic-ai/sdk/lib/transform-json-schema'
 
 import type { AiContent, AiProvider, AiResponse } from './provider.ts'
 
-type CreateParams = Parameters<AnthropicBedrockMantle['messages']['create']>[0]
+type CreateParams = Parameters<Anthropic['messages']['create']>[0]
 type Message = CreateParams['messages'][number]
 
 function toBlocks(content: readonly AiContent[]): Exclude<Message['content'], string> {
@@ -21,24 +22,35 @@ function stopReason(reason: string | null): AiResponse['stopReason'] {
   return reason === 'end_turn' || reason === 'max_tokens' || reason === 'refusal' ? reason : 'other'
 }
 
-// Claude on Amazon Bedrock through the Messages API (the `bedrock-mantle`
-// endpoint), signed with the Lambda role's credentials. Model IDs carry the
-// `anthropic.` prefix ("Bedrock model availability" in docs/ai.md).
-// Tests pass the client options to sign with fixed keys and a fake `fetch`.
-export function bedrockProvider(
-  options: ConstructorParameters<typeof AnthropicBedrockMantle>[0],
-): AiProvider {
+// Where Claude is called ("Providers" in docs/ai.md). Both take the same
+// Messages request; only the client and its authentication differ.
+// - `anthropic`: Anthropic's API, with an API key read from SSM.
+// - `bedrock`: Amazon Bedrock's Messages API endpoint (`bedrock-mantle`),
+//   signed with the Lambda role's credentials; model IDs carry the
+//   `anthropic.` prefix.
+// Tests pass client options with a fake `fetch` (and fixed keys).
+export type ClaudeClient =
+  | { provider: 'anthropic'; options: NonNullable<ConstructorParameters<typeof Anthropic>[0]> }
+  | {
+      provider: 'bedrock'
+      options: NonNullable<ConstructorParameters<typeof AnthropicBedrockMantle>[0]>
+    }
+
+export function claudeProvider(client: ClaudeClient): AiProvider {
   // Retries are left to the SDK (2, for throttling and 5xx), inside the
   // caller's timeout; the pipeline's own retry is for invalid replies only.
-  const client = new AnthropicBedrockMantle(options)
+  const { messages } =
+    client.provider === 'anthropic'
+      ? new Anthropic(client.options)
+      : new AnthropicBedrockMantle(client.options)
   return {
-    name: 'bedrock',
+    name: client.provider,
     generate: async (request) => {
       // The output format supports a subset of JSON Schema: the SDK's own
       // transform drops the dialect line and moves limits it cannot enforce,
       // such as `maximum` and `maxLength`, into descriptions. Zod still checks them.
       const schema = transformJSONSchema(request.jsonSchema)
-      const message = await client.messages.create(
+      const message = await messages.create(
         {
           model: request.model,
           max_tokens: request.maxTokens,
@@ -62,4 +74,16 @@ export function bedrockProvider(
       }
     },
   }
+}
+
+// The provider `aiConfig.provider` names. Without a key the Anthropic client
+// still starts, and each call fails as `provider_error` (local runs without one).
+export function configuredProvider(config: {
+  provider: ClaudeClient['provider']
+  region: string
+  anthropicApiKey: string | undefined
+}): AiProvider {
+  return config.provider === 'anthropic'
+    ? claudeProvider({ provider: 'anthropic', options: { apiKey: config.anthropicApiKey ?? null } })
+    : claudeProvider({ provider: 'bedrock', options: { awsRegion: config.region } })
 }

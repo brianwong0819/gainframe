@@ -23,7 +23,7 @@ variable "release" {
 }
 
 variable "ai_models" {
-  description = "Bedrock model IDs the API may call; the models in apps/api/src/ai/config.ts."
+  description = "Bedrock model IDs the API may call when Bedrock is the AI provider (apps/api/src/ai/config.ts)."
   type        = list(string)
   default     = ["anthropic.claude-haiku-5-5"]
 }
