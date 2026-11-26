@@ -7,6 +7,7 @@ The project's memory of mistakes. Read "Active rules" before every task. Add an 
 Rules from recent lessons that have not yet moved into `CLAUDE.md`, a `docs/*` file or an automated check. Each links to the lesson that created it. At each milestone retro, rules that have proved themselves move into the matching doc (and leave this list); rules that turned out wrong are deleted.
 
 - A value one app writes and the other parses (header format, query parameter, body shape) is defined once in `packages/shared` with a round-trip test; tests on either side import it rather than writing the literal. ([L-042](#l-042--2026-11-22--sync--every-push-was-refused-with-401-the-client-sent-the-token-without-bearer-))
+- A choice the user makes that the app cannot work out again is a synced row, not a device setting: device settings are lost whenever the device downloads the account again. ([L-051](#l-051--2026-11-26--sync--the-current-plan-disappeared-after-the-device-downloaded-the-account-again))
 - Run gitleaks on a branch's commits before its first push; the CI scan covers history, so a later commit cannot clear a finding. ([L-050](#l-050--2026-11-25--ci--a-code-comment-naming-a-model-id-tripped-the-secret-scan))
 - Write deny patterns for secret files with `**/` so they cover every workspace, and re-check them when a task adds a new secret file. ([L-006](#l-006--2026-11-02--tooling--claude-code-could-read-appsapienv))
 
@@ -46,6 +47,12 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-051 · 2026-11-26 · sync · The current plan disappeared after the device downloaded the account again
+- **What happened:** bw reported that a plan set as the current plan later had no current plan, and had to set it again.
+- **Root cause:** M1-09 kept the active plan as the device setting `activePlanId`, on purpose, so two devices could not both mark a plan active. M2 added backup and download without revisiting it: every path that empties the device and downloads the account again (sign out and in, "Clear all data" while signed in, a second device, a reinstall) brought the plans back without the choice. M2's review listed the synced tables, not the device settings that point into them.
+- **Fix:** PR `m2/active-plan-sync`: the plan's synced `activatedAt` replaces the setting; the active plan is the live plan made active most recently (`activePlanOf`). Dexie version 16 moves the setting onto the plan and queues it for backup; sync version 7.
+- **Prevention:** `plans.test.ts` clears a signed-in device, applies the account's rows as a pull would and expects the same active plan. Rule: a choice the user makes that the app cannot work out again belongs in a synced row, not a device setting; the per-exercise weight unit has the same defect and is a follow-up in `docs/STATUS.md`.
+- **Status:** guarded
 ### L-050 · 2026-11-25 · ci · A code comment naming a model ID tripped the secret scan
 - **What happened:** the first push of the Anthropic provider failed CI's Secret scan: gitleaks' `generic-api-key` rule matched a comment in `apps/api/src/ai/config.ts` that put the word "API" next to a model ID in backticks. The scan covers every branch's history (`fetch-depth: 0`), so neither a follow-up commit nor a fresh branch cleared it while the old branch existed, and the proxy refuses branch deletion.
 - **Root cause:** the scan ran only in CI; nothing ran it locally before the first push.
