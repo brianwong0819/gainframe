@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-054 · 2026-11-27 · ci · The weight chart drag test failed main on one 51 ms frame
+- **What happened:** after #208 and #209, `e2e/weight-chart.spec.ts` failed Device layout on main for iPhone SE (WebKit): one frame of 41 took 51 ms against a 50 ms limit, while the others took 7 to 23 ms. Every PR rebased on main inherited the red check.
+- **Root cause:** the test failed on the single longest frame. On a shared CI runner a stray frame over 50 ms happens without any work from the app, so the check measured the runner as much as the chart.
+- **Fix:** PR `m4/04-frame-p95`, agreed by bw: the 95th percentile must stay under 34 ms (two frames at 60 Hz) and no frame may reach 100 ms. A redraw of the page on each move, the defect the test was written for, makes most frames long and still fails.
+- **Prevention:** "Tests" in `docs/conventions.md`: a frame-time test judges a percentile plus a hard stall limit, never the single longest frame.
+- **Status:** documented
+
 ### L-053 · 2026-11-27 · infra · The first prod apply failed on a parameter the owner had already stored, and printed the new user pool ID
 - **What happened:** the first `Deploy prod` job (2026-11-27) failed with `ParameterAlreadyExists` on `/gainframe/prod/database-url`: bw had stored the Neon connection string before the first deploy, while the README expected Terraform to create the parameter first. The same apply printed the new Cognito user pool ID in the public job log.
 - **Root cause:** a Terraform-owned parameter that the owner fills by hand only works in one order, and the README's order was the only guard. `mask-cognito-ids.sh` masks IDs read from the state, which has none before the apply that creates them.

@@ -173,6 +173,8 @@ The sheet lists the account, the last successful backup and the number of change
 
 **Clear all data (Diagnostics).** Three versions of the existing card. Signed out: unchanged, with the advice to export first. Signed in with everything backed up: "只清空这台手机", stating what stays in the account and that it is downloaded again. Signed in with changes waiting: the same count, main button and two-tap override as sign out. Diagnostics also shows the outbox size and the last successful sync in the internal terms.
 
+**Import from a file (Diagnostics).** A secondary button under "Export all data" opens the file picker. Nothing is written until the sheet has shown the file's name, export date, what it holds and how many records are new or newer than on the device; the main button names that count ("导入 12 条记录"). A refused file says why in the sheet and offers another file. After importing, the sheet states the count and whether the records back up now (signed in) or stay on this phone (signed out).
+
 ## Progress charts
 
 Designed ahead of M4 (2026-11-17); the reference is the design canvas at https://claude.ai/artifact/RCf9ZXeSkKPwyCNzpLSwvd (thirteen artboards: the entry from Today in two options, the Progress page, its first-days state, the weight, exercise and volume pages, the weigh-in sheet, and dark versions). Where the canvas and the older prototype disagree on charts, the canvas wins. bw chose the recommended option of each choice (2026-11-17): the Progress page below Today, estimated 1RM and working sets as the default measures.

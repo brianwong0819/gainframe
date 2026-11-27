@@ -124,3 +124,54 @@ test('clears all data after a second tap and reopens at Today', async ({ page })
   await page.goto('/settings/diagnostics')
   await expect(page.getByTestId('export-counts')).toHaveText('0 次训练 · 0 个计划 · 0 个自定义动作')
 })
+
+// "Import from a file" reads an export back, for moving the records to another
+// environment or phone. The sheet summarises the file before anything changes.
+test('imports an exported file after showing what it holds', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'canShare', { value: undefined })
+  })
+  await page.goto('/workout')
+  await page.getByRole('button', { name: '开始训练' }).click()
+  await expect(page).toHaveURL(/\/workout\/session\/?$/)
+
+  await page.goto('/settings/diagnostics')
+  await expect(page.getByTestId('export-counts')).toHaveText('1 次训练 · 0 个计划 · 0 个自定义动作')
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: '导出全部数据（JSON）' }).click()
+  const exported = await (await download).path()
+  await page.getByRole('button', { name: '清空全部数据' }).click()
+  await page.getByRole('button', { name: '再点一次确认清空' }).click()
+  await expect(page).toHaveURL(/\/$/)
+
+  await page.goto('/settings/diagnostics')
+  await expect(page.getByTestId('export-counts')).toHaveText('0 次训练 · 0 个计划 · 0 个自定义动作')
+  await page.getByTestId('import-file').setInputFiles(exported)
+  const sheet = page.getByRole('dialog', { name: '从文件导入' })
+  await expect(sheet.getByTestId('import-counts')).toHaveText(
+    '1 次训练 · 0 个计划 · 0 个自定义动作 · 0 餐 · 0 次体重',
+  )
+  await sheet.getByRole('button', { name: /^导入 \d+ 条记录$/ }).click()
+  await expect(sheet.getByTestId('import-result')).toHaveText(/^已导入 \d+ 条记录$/)
+  await expect(sheet.getByText('目前只在这台手机上。登录后就能备份。')).toBeVisible()
+  await sheet.getByRole('button', { name: '关闭' }).last().click()
+  await expect(sheet).toBeHidden()
+  await expect(page.getByTestId('export-counts')).toHaveText('1 次训练 · 0 个计划 · 0 个自定义动作')
+
+  await page.getByTestId('import-file').setInputFiles(exported)
+  await expect(sheet.getByText('文件里的记录这台手机上都已经有了。')).toBeVisible()
+})
+
+test('refuses a file that is not an export and writes nothing', async ({ page }) => {
+  await page.goto('/settings/diagnostics')
+  await page.getByTestId('import-file').setInputFiles({
+    name: 'notes.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"hello":"world"}'),
+  })
+  const sheet = page.getByRole('dialog', { name: '从文件导入' })
+  await expect(sheet.getByText('这不是积肌导出的文件。', { exact: false })).toBeVisible()
+  await expect(sheet.getByRole('button', { name: '选择其他文件' })).toBeVisible()
+  await sheet.getByRole('button', { name: '关闭' }).click()
+  await expect(sheet).toBeHidden()
+})
