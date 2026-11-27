@@ -47,6 +47,11 @@ export const domainConfig = {
   // al. 2017); 2,800 kcal is a modest surplus for a young man of that weight.
   // M4-01 replaces both with values calculated from the profile.
   targets: { startProteinG: 140, startKcal: 2800, proteinStepG: 5, kcalStep: 50 },
+  // The weight page's comparison with the food log ("Progress charts" in
+  // docs/design-system.md): the days it looks back over, ending yesterday; the
+  // logged days below which it asks for more instead of averaging; and the gap
+  // from the energy target that still reads as on target.
+  foodCheck: { days: 14, minLoggedDays: 4, closeKcal: 50 },
   // The meal type a new meal gets from the hour it is logged, on the device's
   // clock: each type starts at its hour and runs to the next. Hours before
   // breakfast count as a snack (supper).

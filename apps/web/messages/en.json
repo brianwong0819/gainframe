@@ -906,6 +906,22 @@
     "weightNeedMore": "{count, plural, one {Log # more day} other {Log # more days}} to see your 7-day average and weekly change.",
     "weightChartLabel": "Body weight 7-day average and target range over 12 weeks",
     "logToday": "Log today's weight",
-    "rowHint": "How your body weight is trending"
+    "rowHint": "How your body weight is trending",
+    "foodCheck": {
+      "heading": "Compare with the food log",
+      "source": "From the food log",
+      "energy": {
+        "above": "Over the last two weeks you ate {kcal} kcal a day above your energy target, ",
+        "below": "Over the last two weeks you ate {kcal} kcal a day below your energy target, ",
+        "close": "Over the last two weeks your energy was close to the target, "
+      },
+      "protein": "and met the protein target on {met} of {logged} days.",
+      "causeOnTarget": "You are eating enough, and your weight is rising as planned.",
+      "causeEatMore": "Not eating enough is the likely reason the weight is rising slowly; one more of your usual portions a day should do.",
+      "causeUnlogged": "Energy is on target but the weight is rising slowly: some meals may be unlogged, or the daily target may need raising.",
+      "causeTooFast": "Your weight is rising fast; consider lowering the daily energy target a little.",
+      "notEnough": "{logged, plural, one {Only # day} other {Only # days}} of food logged in the last two weeks. Log {min} to compare it with your weight.",
+      "openFood": "Open the food log"
+    }
   }
 }
