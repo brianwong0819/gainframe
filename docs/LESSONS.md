@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-053 · 2026-11-27 · infra · The first prod apply failed on a parameter the owner had already stored, and printed the new user pool ID
+- **What happened:** the first `Deploy prod` job (2026-11-27) failed with `ParameterAlreadyExists` on `/gainframe/prod/database-url`: bw had stored the Neon connection string before the first deploy, while the README expected Terraform to create the parameter first. The same apply printed the new Cognito user pool ID in the public job log.
+- **Root cause:** a Terraform-owned parameter that the owner fills by hand only works in one order, and the README's order was the only guard. `mask-cognito-ids.sh` masks IDs read from the state, which has none before the apply that creates them.
+- **Fix:** PR `m2/07-prod-first-deploy`: an `import` block adopts the existing parameter, `ignore_changes = [value_wo_version]` keeps Terraform from ever writing the placeholder over an owner's value, and `redact-cognito-ids.sed` filters plan and apply output by the ID pattern.
+- **Prevention:** a parameter that the owner sets ignores its write-only version after creation (comment in `infra/modules/api/main.tf`); Terraform output in CI goes through the pattern filter, not only the state-based mask.
+- **Status:** guarded
+
 ### L-052 · 2026-11-27 · docs · A PowerShell step for bw used a parameter Windows PowerShell 5.1 lacks
 - **What happened:** the AI check steps in `infra/envs/*/README.md` wrote the payload with `Set-Content -NoNewline`; on bw's computer it failed ("A parameter cannot be found that matches parameter name 'NoNewline'"), so the invoke found no file.
 - **Root cause:** the step was written for PowerShell 7; bw runs Windows PowerShell 5.1, and the "Steps written for bw" rule does not name the version.

@@ -30,6 +30,14 @@ locals {
   name = "gainframe-prod"
 }
 
+# The owner stored the connection string before the first apply, so the
+# parameter is adopted rather than created (the first apply failed with
+# ParameterAlreadyExists). Without effect once it is in state.
+import {
+  to = module.api.aws_ssm_parameter.database_url
+  id = "/gainframe/prod/database-url"
+}
+
 module "api" {
   source = "../../modules/api"
 

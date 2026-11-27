@@ -9,12 +9,19 @@ data "archive_file" "handler" {
 
 # Terraform writes a placeholder once; the owner sets the real value with the
 # AWS CLI. A write-only argument keeps the value out of the Terraform state.
+# value_wo_version is ignored after creation: an imported parameter has none in
+# state, and a planned change would overwrite the owner's value with the
+# placeholder.
 resource "aws_ssm_parameter" "database_url" {
   name             = "${var.ssm_prefix}/database-url"
   description      = "Postgres connection string for the API (Neon, pooled)."
   type             = "SecureString"
   value_wo         = "placeholder"
   value_wo_version = 1
+
+  lifecycle {
+    ignore_changes = [value_wo_version]
+  }
 }
 
 # The key the API calls Claude with on Anthropic's API (apps/api/src/ai/claude.ts,
@@ -25,6 +32,10 @@ resource "aws_ssm_parameter" "anthropic_api_key" {
   type             = "SecureString"
   value_wo         = "placeholder"
   value_wo_version = 1
+
+  lifecycle {
+    ignore_changes = [value_wo_version]
+  }
 }
 
 resource "aws_cloudwatch_log_group" "api" {
