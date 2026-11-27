@@ -87,6 +87,9 @@ test('dragging along the weight chart reads each day without a long frame', asyn
       requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
+    // -1 marks where the finger came down, so a failure shows whether the
+    // long frame belongs to the first read or to the drag itself.
+    window.addEventListener('pointerdown', () => frames.push(-1), { capture: true })
     Object.assign(window, { chartFrames: frames })
   })
   await page.mouse.move(box.x + box.width - 2, y)
@@ -107,9 +110,11 @@ test('dragging along the weight chart reads each day without a long frame', asyn
     .array(z.number())
     .parse(await page.evaluate((): unknown => Reflect.get(window, 'chartFrames')))
     .slice(1)
-  expect(frames.length).toBeGreaterThanOrEqual(DRAG_STEPS)
+  const durations = frames.filter((frame) => frame >= 0)
+  expect(durations.length).toBeGreaterThanOrEqual(DRAG_STEPS)
   // The message lists every frame, so a failure shows where the long one fell.
-  expect(Math.max(...frames), frames.map(Math.round).join(' ')).toBeLessThan(LONG_FRAME_MS)
+  const log = frames.map((frame) => (frame < 0 ? 'down' : String(Math.round(frame)))).join(' ')
+  expect(Math.max(...durations), log).toBeLessThan(LONG_FRAME_MS)
 })
 
 // Before seven weigh-ins the Progress page shows the first-days card: the
