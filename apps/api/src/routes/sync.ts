@@ -17,8 +17,9 @@ import { AccountDeletedError, pushRows } from '../sync/push.ts'
 // change cannot be read by older apps; they then show "update the app".
 // Versions 2 to 6 (M3-01, M3-02, M4-01, M3-11, M3-12) added tables, columns or
 // values an older app fails to parse in a pull; version 7 the plan's
-// `activatedAt`, which an older app would drop in a push.
-const MIN_SYNC_VERSION = 7
+// `activatedAt`, which an older app would drop in a push; version 8 the
+// exercise units table, which an older app fails to parse in a pull.
+const MIN_SYNC_VERSION = 8
 
 // Distinct rejection paths kept in a push log line, enough to spot a pattern.
 const LOGGED_ISSUES_MAX = 20

@@ -1,6 +1,7 @@
 import {
   bodyMetricSchema,
   exerciseSchema,
+  exerciseUnitSchema,
   foodSchema,
   mealItemSchema,
   mealSchema,
@@ -37,6 +38,11 @@ const mirrors = [
   { name: 'profiles', table: syncedTables.profiles, schema: profileSchema },
   { name: 'bodyMetrics', table: syncedTables.bodyMetrics, schema: bodyMetricSchema },
   { name: 'foods', table: syncedTables.foods, schema: foodSchema },
+  {
+    name: 'exerciseUnits',
+    table: syncedTables.exerciseUnits,
+    schema: exerciseUnitSchema,
+  },
 ] satisfies { name: keyof typeof syncedTables; table: PgTable; schema: ZodObject }[]
 
 const snakeCase = (key: string) => key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)

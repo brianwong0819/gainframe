@@ -1,29 +1,43 @@
-import { type WeightUnit, weightUnitSchema } from '@gainframe/shared'
+import { type ExerciseUnit, type WeightUnit } from '@gainframe/shared'
 
+import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
-const PREFIX = 'weightUnit:'
-
-// The unit each exercise is shown and typed in, as device settings: a machine
-// labelled in pounds stays in pounds next time. Exercises without a setting use
-// kg, so only pounds is stored.
-export function createWeightUnitStore(db: GainframeDb) {
+// The unit each exercise is shown and typed in, as synced rows so it follows
+// the account to a new device (L-051): a machine labelled in pounds stays in
+// pounds. Exercises without a row use kg.
+export function createWeightUnitStore(db: GainframeDb, repositories: Repositories) {
   return {
     // Exercise ID to unit, for every exercise not in kg.
     async all(): Promise<Map<string, WeightUnit>> {
-      const settings = await db.settings.where('key').startsWith(PREFIX).toArray()
       const units = new Map<string, WeightUnit>()
-      for (const { key, value } of settings) {
-        const unit = weightUnitSchema.safeParse(value)
-        if (unit.success) units.set(key.slice(PREFIX.length), unit.data)
+      for (const [exerciseId, row] of await latestRows(db)) {
+        if (row.weightUnit !== 'kg') units.set(exerciseId, row.weightUnit)
       }
       return units
     },
 
+    // The row for the exercise is kept when the unit goes back to kg, so the
+    // change reaches other devices as an update; the latest change wins.
     async set(exerciseId: string, unit: WeightUnit): Promise<void> {
-      const key: `weightUnit:${string}` = `${PREFIX}${exerciseId}`
-      if (unit === 'kg') await db.settings.delete(key)
-      else await db.settings.put({ key, value: unit })
+      const current = (await latestRows(db)).get(exerciseId)
+      if (current === undefined) {
+        if (unit !== 'kg') await repositories.exerciseUnits.create({ exerciseId, weightUnit: unit })
+      } else if (current.weightUnit !== unit) {
+        await repositories.exerciseUnits.update(current.id, { weightUnit: unit })
+      }
     },
   }
+}
+
+// Two devices that set a unit before their first sync can each create a row for
+// the same exercise; the most recently updated one counts.
+async function latestRows(db: GainframeDb): Promise<Map<string, ExerciseUnit>> {
+  const rows = await db.exerciseUnits.filter((row) => row.deletedAt === null).toArray()
+  const latest = new Map<string, ExerciseUnit>()
+  for (const row of rows) {
+    const other = latest.get(row.exerciseId)
+    if (other === undefined || row.updatedAt > other.updatedAt) latest.set(row.exerciseId, row)
+  }
+  return latest
 }
