@@ -47,6 +47,12 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-052 · 2026-11-27 · ai · The food prompt was twice the size the docs said
+- **What happened:** while cutting the tokens per estimate, Anthropic's token-counting endpoint put the photo prompt at 74,718 input tokens. `docs/ai.md`, the eval's price notes and ADR-0008 said about 35,000, so the cost per photo was about twice the planned USD 0.004.
+- **Root cause:** the figure was estimated from the character count (about 3.7 characters per token). Ids such as `sgfoodid-F05040011` and local names split into far more tokens than English prose, and no rule asked for a measured count.
+- **Fix:** PR `claude/project-thread-rbn4l0`: the prompt names entries by position (vision v3, text-meal v2), 48,034 tokens; the docs carry the measured counts.
+- **Prevention:** "Models and cost" in `docs/ai.md`: token figures for a prompt come from the counting endpoint (`messages.count_tokens`, free), never from a character count, and are re-measured when a prompt version or the food table changes.
+
 ### L-051 · 2026-11-26 · sync · The current plan disappeared after the device downloaded the account again
 - **What happened:** bw reported that a plan set as the current plan later had no current plan, and had to set it again.
 - **Root cause:** M1-09 kept the active plan as the device setting `activePlanId`, on purpose, so two devices could not both mark a plan active. M2 added backup and download without revisiting it: every path that empties the device and downloads the account again (sign out and in, "Clear all data" while signed in, a second device, a reinstall) brought the plans back without the choice. M2's review listed the synced tables, not the device settings that point into them.

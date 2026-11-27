@@ -20,9 +20,11 @@ import {
   recentCorrections,
   TEXT_MEAL_SYSTEM,
   textMealReplyCheckedSchema,
+  textMealReplyToTable,
   textMealRequest,
   userEntries,
   VISION_SYSTEM,
+  visionReplyToTable,
   visionRequest,
 } from '../food/estimate.ts'
 
@@ -101,10 +103,11 @@ export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) 
           const failure = FAILURES[result.outcome]
           return c.json(errorBody(failure.code, failure.message, c.var.requestId), failure.status)
         }
+        const reply = visionReplyToTable(result.value)
         const response: FoodEstimateResponse = {
-          dishName: result.value.dishName,
-          photoIssue: result.value.photoIssue,
-          items: resolveEstimate(result.value, entries),
+          dishName: reply.dishName,
+          photoIssue: reply.photoIssue,
+          items: resolveEstimate(reply, entries),
           model: result.model,
           promptVersion: result.promptVersion,
         }
@@ -143,12 +146,13 @@ export function foodRoutes(db: Database, generate: ReturnType<typeof createAi>) 
           const failure = FAILURES[result.outcome]
           return c.json(errorBody(failure.code, failure.message, c.var.requestId), failure.status)
         }
+        const reply = textMealReplyToTable(result.value)
         const response: TextEstimateResponse = {
-          dishName: result.value.dishName,
+          dishName: reply.dishName,
           // Questions are asked once: after answers, the estimate is final.
-          questions: body.data.answers.length > 0 ? [] : result.value.questions,
-          assumptions: result.value.assumptions,
-          items: resolveEstimate(result.value, entries),
+          questions: body.data.answers.length > 0 ? [] : reply.questions,
+          assumptions: reply.assumptions,
+          items: resolveEstimate(reply, entries),
           model: result.model,
           promptVersion: result.promptVersion,
         }

@@ -24,6 +24,7 @@ import type { AppEnv } from '../context.ts'
 import { createDatabase, createPool } from '../db/client.ts'
 import { aiUsage, foods, mealItems } from '../db/schema.ts'
 import { parseDatabaseUrl } from '../env.ts'
+import { visionIds } from '../food/estimate.ts'
 import { createLogger } from '../log.ts'
 
 const pool = createPool(parseDatabaseUrl(process.env), createLogger({ release: 'test' }))
@@ -65,12 +66,14 @@ const uuidv7 = () => randomUUID().replace(/^(.{14})4/, '$17')
 const [rice, egg] = [FOOD_TABLE[0], FOOD_TABLE[1]]
 if (rice === undefined || egg === undefined) throw new Error('food table is empty')
 
+// An item as the model returns it, naming entries as the served prompts do
+// (by position since vision v3 and text-meal v2).
 const item = (overrides: Partial<VisionItem>): VisionItem => ({
   seen: 'white rice',
-  entryId: rice.id,
+  entryId: visionIds.toPrompt(rice.id),
   grams: 200,
   confidence: 'high',
-  alternativeIds: [egg.id],
+  alternativeIds: [visionIds.toPrompt(egg.id)],
   proteinPer100G: null,
   kcalPer100G: null,
   ...overrides,
@@ -139,10 +142,12 @@ describe('POST /api/food/estimate', () => {
         alternativeIds: [egg.id],
       }),
     ])
+    // The stored model item carries table ids, not the prompt's names.
+    expect(body.items[0]?.raw).toMatchObject({ entryId: rice.id, alternativeIds: [egg.id] })
     const request = provider.requests[0]
-    // Ids and names only: the entry's line carries no figures.
+    // Prompt names and food names only: the entry's line carries no figures.
     expect(request?.system.split('\n')).toContain(
-      [rice.id, rice.nameEn, ...rice.aliases].join('\t'),
+      [visionIds.toPrompt(rice.id), rice.nameEn, ...rice.aliases].join('\t'),
     )
     expect(request?.messages[0]?.content[0]).toEqual({
       type: 'image',
@@ -152,9 +157,9 @@ describe('POST /api/food/estimate', () => {
     expect(aiLine()).toMatchObject({ feature: 'vision', outcome: 'ok' })
   })
 
-  it('retries once when the model names an id the table does not have', async () => {
+  it('retries once when the model names an entry the table does not have', async () => {
     const { app, provider, aiLine } = setup([
-      modelReply(item({ entryId: 'usda-0' })),
+      modelReply(item({ entryId: String(FOOD_TABLE.length + 1) })),
       modelReply(item({})),
     ])
     const res = await estimate(app, newUser())
@@ -167,7 +172,7 @@ describe('POST /api/food/estimate', () => {
   it("sends the user's own remembered corrections, and no one else's", async () => {
     const [user, other] = [newUser(), newUser()]
     const remembered: EstimateAiRaw = {
-      ...item({ seen: 'yellow rice' }),
+      ...item({ seen: 'yellow rice', entryId: rice.id, alternativeIds: [] }),
       remember: true,
       oilSauce: 'usual',
     }
@@ -179,7 +184,9 @@ describe('POST /api/food/estimate', () => {
     await estimate(app, user)
 
     const text = textOf(provider.requests[0] ?? { messages: [] })
-    expect(text).toContain('you saw \\"yellow rice\\"')
+    expect(text).toContain(
+      `you saw \\"yellow rice\\" and estimated ${visionIds.toPrompt(rice.id)} \\"${rice.nameEn}\\"`,
+    )
     expect(text).toContain('Nasi minyak')
     expect(text).not.toMatch(/Forgotten|Deleted|Not mine/)
   })

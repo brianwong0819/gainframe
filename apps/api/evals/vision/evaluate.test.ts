@@ -24,8 +24,9 @@ const meal = (id: string, extra: Partial<EvalCase> = {}): EvalCase => ({
   ...extra,
 })
 
-// A model reply naming the first table entry at `grams`.
-const estimate = (grams: number) =>
+// A model reply naming the first table entry at `grams`: by its table id
+// (vision v2) or by its position, as vision v3 and text-meal v2 name entries.
+const estimate = (grams: number, entryId = rice.id) =>
   reply(
     JSON.stringify({
       dishName: null,
@@ -33,7 +34,7 @@ const estimate = (grams: number) =>
       items: [
         {
           seen: 'rice',
-          entryId: rice.id,
+          entryId,
           grams,
           confidence: 'high',
           alternativeIds: [],
@@ -47,7 +48,7 @@ const estimate = (grams: number) =>
 const textEstimate = (grams: number) =>
   reply(
     JSON.stringify({
-      ...JSON.parse(estimate(grams).text),
+      ...JSON.parse(estimate(grams, '1').text),
       assumptions: 'One plate.',
       questions: [],
     }),
@@ -80,6 +81,8 @@ describe('pnpm eval:vision', () => {
       reply('still not json'),
       estimate(100),
       estimate(100),
+      // Haiku, photo with vision v3, which names entries by position.
+      ...[200, 250, 300, 100, 100, 100].map((grams) => estimate(grams, '1')),
       // Haiku, text: case b only has a description.
       textEstimate(150),
       textEstimate(150),
@@ -90,18 +93,22 @@ describe('pnpm eval:vision', () => {
       readPhoto: () => Promise.resolve(photo),
       provider,
       models: ['anthropic.claude-haiku-5-5'],
-      promptVersions: [2],
+      promptVersions: [2, 3],
       runs: 3,
       log,
     })
 
     expect(rows.map((row) => row.label)).toEqual([
       'Photo · anthropic.claude-haiku-5-5 · vision v2',
+      'Photo · anthropic.claude-haiku-5-5 · vision v3',
       'Text · anthropic.claude-haiku-5-5',
       'Baseline · default servings, no AI',
     ])
-    const [photoRow, textRow, baselineRow] = rows
+    const [photoRow, positionRow, textRow, baselineRow] = rows
     expect(photoRow?.summary).toMatchObject({ cases: 2, runs: 6, failedRuns: 1 })
+    // Position names map back to the same entry and figures.
+    expect(positionRow?.summary).toMatchObject({ cases: 2, runs: 6, failedRuns: 0 })
+    expect(positionRow?.summary.protein?.spread).toBeCloseTo(photoRow?.summary.protein?.spread ?? 0)
     // Each call names the chosen model and carries the photo.
     expect(
       provider.requests.every((request) => request.model === 'anthropic.claude-haiku-5-5'),

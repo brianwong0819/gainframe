@@ -45,6 +45,8 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Follow-ups (noticed, not in scope yet)
 
+- AI tokens (2026-11-27): the first `pnpm eval:vision` run compares vision v3 (entries named by position) with v2 (`--prompts 2,3`) and the text set; v3 is served before it, by bw's choice. The image size sent to the model (about 1,000 to 2,500 tokens of the 48,000 per photo) is chosen in the same run.
+- Seven foods appear twice under the same name from two sources with different figures (Langsat, Salak, Mysore pak, Idli, Beef burger, Coleslaw, Samosa); the SG FoodID curation meant to leave out foods MyFCD already has. Decide per pair which to keep.
 - A kept photo confirmed on a later day says "记入后今天蛋白质…" with the figures of the photo's day; the line should name that day.
 - Photo confirm screen (M3-06), left out of the first version: the "+ Add food" row (the manual screen would need the estimate kept across pages), the line on a row that used a remembered correction (the endpoint does not say which corrections it applied), and the Undo toast on the Food tab after saving.
 - The per-exercise weight unit is a device setting, so a second device, a sign-out and sign-in or a cleared device starts in kg again (the same defect as the current plan, L-051). Sync it as a column on custom exercises and a synced row for built-in ones.
