@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-053 · 2026-11-27 · infra · The first prod apply failed on a parameter the owner had already stored, and printed the new user pool ID
+- **What happened:** the first `Deploy prod` job (2026-11-27) failed with `ParameterAlreadyExists` on `/gainframe/prod/database-url`: bw had stored the Neon connection string before the first deploy, while the README expected Terraform to create the parameter first. The same apply printed the new Cognito user pool ID in the public job log.
+- **Root cause:** a Terraform-owned parameter that the owner fills by hand only works in one order, and the README's order was the only guard. `mask-cognito-ids.sh` masks IDs read from the state, which has none before the apply that creates them.
+- **Fix:** PR `m2/07-prod-first-deploy`: an `import` block adopts the existing parameter, `ignore_changes = [value_wo_version]` keeps Terraform from ever writing the placeholder over an owner's value, and `redact-cognito-ids.sed` filters plan and apply output by the ID pattern.
+- **Prevention:** a parameter that the owner sets ignores its write-only version after creation (comment in `infra/modules/api/main.tf`); Terraform output in CI goes through the pattern filter, not only the state-based mask.
+- **Status:** guarded
+
 ### L-052 · 2026-11-27 · docs · A PowerShell step for bw used a parameter Windows PowerShell 5.1 lacks
 - **What happened:** the AI check steps in `infra/envs/*/README.md` wrote the payload with `Set-Content -NoNewline`; on bw's computer it failed ("A parameter cannot be found that matches parameter name 'NoNewline'"), so the invoke found no file.
 - **Root cause:** the step was written for PowerShell 7; bw runs Windows PowerShell 5.1, and the "Steps written for bw" rule does not name the version.
@@ -58,7 +65,7 @@ _Newest first._
 - **What happened:** bw reported that a plan set as the current plan later had no current plan, and had to set it again.
 - **Root cause:** M1-09 kept the active plan as the device setting `activePlanId`, on purpose, so two devices could not both mark a plan active. M2 added backup and download without revisiting it: every path that empties the device and downloads the account again (sign out and in, "Clear all data" while signed in, a second device, a reinstall) brought the plans back without the choice. M2's review listed the synced tables, not the device settings that point into them.
 - **Fix:** PR `m2/active-plan-sync`: the plan's synced `activatedAt` replaces the setting; the active plan is the live plan made active most recently (`activePlanOf`). Dexie version 16 moves the setting onto the plan and queues it for backup; sync version 7.
-- **Prevention:** `plans.test.ts` clears a signed-in device, applies the account's rows as a pull would and expects the same active plan. Rule: a choice the user makes that the app cannot work out again belongs in a synced row, not a device setting; the per-exercise weight unit has the same defect and is a follow-up in `docs/STATUS.md`.
+- **Prevention:** `plans.test.ts` clears a signed-in device, applies the account's rows as a pull would and expects the same active plan. Rule: a choice the user makes that the app cannot work out again belongs in a synced row, not a device setting; the per-exercise weight unit had the same defect and moved to the synced `exerciseUnits` table (Dexie version 17, migration 0008, sync version 8) on 2026-11-27; no device setting that points into synced data remains.
 - **Status:** guarded
 ### L-050 · 2026-11-25 · ci · A code comment naming a model ID tripped the secret scan
 - **What happened:** the first push of the Anthropic provider failed CI's Secret scan: gitleaks' `generic-api-key` rule matched a comment in `apps/api/src/ai/config.ts` that put the word "API" next to a model ID in backticks. The scan covers every branch's history (`fetch-depth: 0`), so neither a follow-up commit nor a fresh branch cleared it while the old branch existed, and the proxy refuses branch deletion.

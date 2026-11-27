@@ -76,7 +76,10 @@ runs:
       run: |
         terraform init
         ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt"
-        terraform apply -no-color -auto-approve -lock-timeout=5m "-var=release=${RELEASE}"
+        # The script masks only IDs already in the state; the filter covers
+        # an apply that creates them (bash runs steps with pipefail).
+        terraform apply -no-color -auto-approve -lock-timeout=5m "-var=release=${RELEASE}" \
+          | sed -E -f ../../../.github/scripts/redact-cognito-ids.sed
         {
           echo "SITE_URL=$(terraform output -raw site_url)"
           echo "SITE_BUCKET=$(terraform output -raw site_bucket)"

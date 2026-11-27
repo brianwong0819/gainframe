@@ -236,6 +236,7 @@ export {
   type WeightUnit,
   weightUnitSchema,
 } from './schemas/workout.ts'
+export { type ExerciseUnit, exerciseUnitSchema } from './schemas/exercise-unit.ts'
 export {
   type PullResponse,
   pullResponseSchema,

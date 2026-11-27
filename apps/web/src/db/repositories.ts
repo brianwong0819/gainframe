@@ -4,6 +4,7 @@ import type { z } from 'zod'
 import {
   bodyMetricSchema,
   exerciseSchema,
+  exerciseUnitSchema,
   foodSchema,
   mealItemSchema,
   mealSchema,
@@ -170,6 +171,7 @@ export function createRepositories(db: GainframeDb, now: () => Date = () => new 
     profiles: repository(context, 'profiles', db.profiles, profileSchema),
     bodyMetrics: repository(context, 'bodyMetrics', db.bodyMetrics, bodyMetricSchema),
     foods: repository(context, 'foods', db.foods, foodSchema),
+    exerciseUnits: repository(context, 'exerciseUnits', db.exerciseUnits, exerciseUnitSchema),
   }
 }
 

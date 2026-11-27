@@ -22,6 +22,7 @@ describe('migrations (real Postgres)', () => {
       'ai_usage',
       'body_metrics',
       'deleted_users',
+      'exercise_units',
       'exercises',
       'foods',
       'meal_items',

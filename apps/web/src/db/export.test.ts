@@ -81,6 +81,7 @@ describe('exportData', () => {
     expect(data.tables.settings).toEqual([{ key: 'signInCardDismissed', value: 'true' }])
     expect(Object.keys(data.tables).sort()).toEqual([
       'bodyMetrics',
+      'exerciseUnits',
       'exercises',
       'foods',
       'mealItems',

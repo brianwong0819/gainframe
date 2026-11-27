@@ -8,6 +8,7 @@ test.use({ locale: 'zh-CN' })
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const LONG_FRAME_MS = 50
+const DRAG_STEPS = 40
 
 // A UUIDv7 for a seeded row: the millisecond time, the version and variant
 // bits, and random bits.
@@ -90,7 +91,12 @@ test('dragging along the weight chart reads each day without a long frame', asyn
   })
   await page.mouse.move(box.x + box.width - 2, y)
   await page.mouse.down()
-  await page.mouse.move(box.x + 2, y, { steps: 40 })
+  // One move per animation frame, as a finger reports them, from the right
+  // edge to the left.
+  for (let step = 1; step <= DRAG_STEPS; step += 1) {
+    await page.mouse.move(box.x + box.width - 2 - ((box.width - 4) * step) / DRAG_STEPS, y)
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)))
+  }
   // At the left edge the hairline is on the first day of the range.
   await expect(heading).not.toHaveText('今天 · 7 日平均')
   await expect(card).toContainText('当天称重')
@@ -101,8 +107,9 @@ test('dragging along the weight chart reads each day without a long frame', asyn
     .array(z.number())
     .parse(await page.evaluate((): unknown => Reflect.get(window, 'chartFrames')))
     .slice(1)
-  expect(frames.length).toBeGreaterThan(10)
-  expect(Math.max(...frames)).toBeLessThan(LONG_FRAME_MS)
+  expect(frames.length).toBeGreaterThanOrEqual(DRAG_STEPS)
+  // The message lists every frame, so a failure shows where the long one fell.
+  expect(Math.max(...frames), frames.map(Math.round).join(' ')).toBeLessThan(LONG_FRAME_MS)
 })
 
 // Before seven weigh-ins the Progress page shows the first-days card: the
