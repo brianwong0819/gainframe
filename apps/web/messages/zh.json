@@ -867,6 +867,7 @@
     "save": "记下 {weight} kg"
   },
   "progress": {
+    "title": "进度",
     "weight": {
       "title": "体重",
       "rangeLabel": "时间范围",
@@ -897,6 +898,14 @@
       "compositionNote": "体脂秤的读数受喝水和测量时间影响，只比较两次测量，不画每天的曲线。",
       "logToday": "记今天体重",
       "editToday": "修改今天体重"
-    }
+    },
+    "today": "今天",
+    "weightLatest": "体重 · 最近一次",
+    "daysLogged": "已记 {count} 天",
+    "weightDotsLabel": "已记的 {count} 次体重",
+    "weightNeedMore": "再记 {count} 天，就能算出 7 日平均和每周涨了多少。",
+    "weightChartLabel": "近 12 周体重的 7 日平均和目标范围",
+    "logToday": "记今天体重",
+    "rowHint": "体重的变化趋势"
   }
 }

@@ -867,6 +867,7 @@
     "save": "Log {weight} kg"
   },
   "progress": {
+    "title": "Progress",
     "weight": {
       "title": "Body weight",
       "rangeLabel": "Range",
@@ -897,6 +898,14 @@
       "compositionNote": "Scale readings depend on hydration and the time of measuring, so only two scans are compared, never a daily line.",
       "logToday": "Log today's weight",
       "editToday": "Change today's weight"
-    }
+    },
+    "today": "Today",
+    "weightLatest": "Body weight · latest",
+    "daysLogged": "{count, plural, one {# day logged} other {# days logged}}",
+    "weightDotsLabel": "{count, plural, one {# weigh-in so far} other {# weigh-ins so far}}",
+    "weightNeedMore": "{count, plural, one {Log # more day} other {Log # more days}} to see your 7-day average and weekly change.",
+    "weightChartLabel": "Body weight 7-day average and target range over 12 weeks",
+    "logToday": "Log today's weight",
+    "rowHint": "How your body weight is trending"
   }
 }

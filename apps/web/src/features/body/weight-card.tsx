@@ -135,7 +135,7 @@ export function WeightCard() {
 
   return (
     <section className="flex flex-col gap-8 rounded-group bg-surface p-16">
-      <Link href="/progress/weight" className="-my-12 flex items-center justify-between py-12">
+      <Link href="/progress" className="-my-12 flex items-center justify-between py-12">
         <h2 className="text-label text-ink-3">
           {latest !== undefined && needed === 0 ? t('averageHeading') : t('heading')}
         </h2>
