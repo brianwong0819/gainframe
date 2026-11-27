@@ -71,11 +71,13 @@ export function FoodCheckCard({
         <span className="rounded-full bg-sunk px-8 text-label text-ink-2">{t('source')}</span>
       </div>
       {enough ? (
-        <p className="text-body">
-          {t(`energy.${energy}`, { kcal: whole.format(gap) })}
-          {t('protein', { met: check.proteinMetDays, logged: check.loggedDays })}
-          {cause !== null && ` ${cause}`}
-        </p>
+        <>
+          <p className="text-body">
+            {t(`energy.${energy}`, { kcal: whole.format(gap) })}
+            {t('protein', { met: check.proteinMetDays, logged: check.loggedDays })}
+          </p>
+          {cause !== null && <p className="text-body">{cause}</p>}
+        </>
       ) : (
         <p className="text-body text-ink-2">
           {t('notEnough', { logged: check.loggedDays, min: minLoggedDays })}
