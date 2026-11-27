@@ -4,6 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
 - **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal; M3-03 offline photos built (PR `m3/03-offline-photos`). The real AI checks of M3-03 to M3-06 and M3-10 now wait only on bw storing the Anthropic API key (PR `m3/04-anthropic-api`, ADR-0008; steps in `infra/envs/dev/README.md`, "Anthropic API key"); M3-08 `pnpm eval:vision` built (PR `m3/08-eval-vision`), its first real run waits on the M3-09 photos
+- **M4 in parallel** (no AI needed): M4-02 weigh-ins done (weigh-in sheet and weight card on Today); next M4-04, the Progress page and weight chart with visx
 - **Last updated:** 2026-11-27
 
 ## Now

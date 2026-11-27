@@ -93,6 +93,12 @@ export const domainConfig = {
   // maintain.
   bodyWeight: {
     trendMinWeighIns: 7,
+    // One tap on the weigh-in sheet's steppers: kg, body fat %, muscle kg.
+    step: { weightKg: 0.1, bodyFatPct: 0.1, skeletalMuscleKg: 0.1 },
+    // Where the optional scan fields start before a first scan: a lean young
+    // man's body fat, and skeletal muscle as a share of body weight (about 45%
+    // in InBody results for trained men). The user corrects both from their result sheet.
+    scanStart: { bodyFatPct: 15, skeletalMuscleShare: 0.45 },
     targetRatePct: {
       bulk: { min: 0.25, max: 0.5 },
       maintain: { min: -0.25, max: 0.25 },

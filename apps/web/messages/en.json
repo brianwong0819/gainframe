@@ -802,5 +802,48 @@
     "howProtein": "Protein = weight {weight} kg × {perKg} g/kg",
     "apply": "Use these targets",
     "howEnergyBalance": "Energy = resting {resting} × activity {factor}"
+  },
+  "weight": {
+    "heading": "Body weight",
+    "averageHeading": "Body weight · 7-day average",
+    "empty": "Weigh yourself once a day after waking up. After 7 days this shows your 7-day average and weekly change.",
+    "needMore": "{count, plural, one {Weigh in # more day} other {Weigh in # more days}} to see your 7-day average.",
+    "noRate": "The weekly change needs a weigh-in last week too.",
+    "rate": "{rate} kg a week",
+    "targetRate": "target {min} to {max} kg",
+    "status": {
+      "onTarget": "On target",
+      "tooSlow": "Too slow",
+      "tooFast": "Too fast",
+      "offTarget": "Off target"
+    },
+    "today": "Today {weight} kg",
+    "notToday": "Not weighed today",
+    "log": "Log weight",
+    "edit": "Change"
+  },
+  "weighIn": {
+    "title": "Log weight",
+    "close": "Close",
+    "when": "Today · {date}",
+    "weight": "Body weight (kg)",
+    "weightDown": "0.1 kg less",
+    "weightUp": "0.1 kg more",
+    "typeHint": "Tap the number to type it.",
+    "lastHint": "Filled in from last time, {weight} kg ({date}). Tap the number to type it.",
+    "todayHint": "You logged {weight} kg today; saving again replaces it.",
+    "addScan": "Add body fat and muscle mass",
+    "optional": "Optional",
+    "scanHeading": "Body composition (InBody or a smart scale)",
+    "removeScan": "Remove",
+    "bodyFat": "Body fat · %",
+    "bodyFatDown": "Body fat 0.1 less",
+    "bodyFatUp": "Body fat 0.1 more",
+    "muscle": "Skeletal muscle · kg",
+    "muscleDown": "Skeletal muscle 0.1 kg less",
+    "muscleUp": "Skeletal muscle 0.1 kg more",
+    "scanNote": "Copy them from the result sheet. Readings depend on hydration and the time of day, so only the change between two scans is compared.",
+    "tip": "Weigh in after waking up, before eating, for the steadiest number. Ignore day-to-day swings and watch the 7-day average.",
+    "save": "Log {weight} kg"
   }
 }
