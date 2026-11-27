@@ -12,6 +12,8 @@ import { deviceTimeZone } from '@/i18n/time-zone'
 import { release } from '@/release'
 import { Pressable } from '@/ui/pressable'
 
+import { ImportData } from './import-data'
+
 // Read ahead and kept current, so the tap can hand the file to the share sheet
 // at once: Safari allows `navigator.share` only while the tap's user activation
 // lasts, which awaiting IndexedDB could outlast.
@@ -32,8 +34,9 @@ function download(file: File) {
   })
 }
 
-// "Export all data (JSON)": a backup while the data lives only on this device
-// (until sync in M2). On the iPhone it opens the share sheet ("Save to Files").
+// "Export all data (JSON)": a copy of the data in a file, which "Import from a
+// file" reads back on another device or environment. On the iPhone it opens
+// the share sheet ("Save to Files").
 export function ExportData() {
   const t = useTranslations('diagnostics')
   const signedIn = (useBackup()?.state ?? 'signedOut') !== 'signedOut'
@@ -86,6 +89,7 @@ export function ExportData() {
           </>
         )}
         {failed && <p className="text-label text-ink-2">{t('exportFailed')}</p>}
+        <ImportData />
       </div>
     </section>
   )

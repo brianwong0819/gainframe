@@ -37,6 +37,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Blocked on bw
 
+- Move the dev records to prod: on dev, Settings → Diagnostics → Export all data; on prod (signed in), Settings → Diagnostics → Import from a file (M2-11). Also check that the iPhone's file picker shows the exported JSON.
 - Install the prod app on the iPhone (Safari, the prod URL from the Deploy run's Apply step, Share → Add to Home Screen) and add your account to prod's Cognito group `ai` to use AI there.
 - Log a real meal by photo, by a sentence and by a photo taken in airplane mode on dev (ticks M3-03, M3-05, M3-06, M3-10).
 - If not done yet: add your account to the Cognito group `ai` (User pool, Groups, `ai`, Add user) and sign out and in once (M3-13); subscribe an email to each alarm topic (M2-08, `docs/debugging.md`).

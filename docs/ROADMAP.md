@@ -105,6 +105,8 @@ Done when: signing in on a second device shows all data.
 - [x] **M2-09 Security pass**: `/security-review`; optionally a Strix scan of dev (see [tooling.md](tooling.md)); findings become issues and get fixed.
   Verify: no open high-severity findings.
 
+- [x] **M2-11 Import from an export file** (added 2026-11-27, PR `m2/11-import-export-file`): dev and prod have separate origins, user pools and databases, so the export file (M1-11) is the only way to move records between them, and it also helps when changing phones. Diagnostics gains "Import from a file": the whole file is checked against the shared schemas first (a file from a newer database version or with any invalid row is refused), a sheet shows what it holds and how many rows are new or newer, and Import writes those rows in one transaction with an outbox entry each, exercises first, so the next push files them under the signed-in account. Rows are matched by ID and the newer `updatedAt` wins, as in a pull (ADR-0003); rows only on the device stay, and importing the same file again changes nothing. Imported rows lose their `userId`; device settings in the file are not read. Verify: unit tests in `db/import.test.ts`, e2e export, clear and import in `e2e/diagnostics.spec.ts`; 👤 bw exports on dev and imports on prod on the iPhone.
+
 ## M3 Food logging + AI vision (weeks 8–10)
 
 Done when: a meal is logged in under 30 seconds and the eval script reports mean protein error.
