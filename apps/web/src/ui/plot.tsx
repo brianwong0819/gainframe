@@ -1,7 +1,7 @@
 'use client'
 
 import { scaleLinear } from '@visx/scale'
-import { type PointerEvent, type ReactNode, useLayoutEffect, useRef, useState } from 'react'
+import { type PointerEvent, type ReactNode, useCallback, useState } from 'react'
 
 type Scale = ReturnType<typeof scaleLinear<number>>
 
@@ -28,6 +28,25 @@ export function nearestIndex(positions: readonly number[], value: number): numbe
       Math.abs(position - value) < Math.abs((positions[best] ?? Infinity) - value) ? index : best,
     0,
   )
+}
+
+// The width of an element, measured once it is on screen and again when it
+// changes; 0 until then, so a chart draws nothing during prerendering.
+// A callback ref, so an element that appears after the first render (once
+// its data has loaded) is measured too.
+export function useWidth() {
+  const [width, setWidth] = useState(0)
+  const ref = useCallback((element: HTMLDivElement | null) => {
+    if (element === null) return
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry !== undefined) setWidth(entry.contentRect.width)
+    })
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+  return [ref, width] as const
 }
 
 /**
@@ -62,19 +81,7 @@ export function Plot({
   onRead: (index: number | null) => void
   children: (scales: { x: Scale; y: Scale }) => ReactNode
 }) {
-  const box = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(0)
-  useLayoutEffect(() => {
-    const element = box.current
-    if (element === null) return
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry !== undefined) setWidth(entry.contentRect.width)
-    })
-    observer.observe(element)
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
+  const [box, width] = useWidth()
 
   const plotW = Math.max(0, width - AXIS_W)
   const [low, high] = yDomain

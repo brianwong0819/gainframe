@@ -65,7 +65,8 @@ async function seedWeighIns(page: Page) {
 
 test('dragging along the weight chart reads each day without a long frame', async ({ page }) => {
   await seedWeighIns(page)
-  await page.getByRole('link', { name: /趋势/ }).click()
+  await page.getByRole('link', { name: /^进度/ }).click()
+  await page.getByRole('link', { name: /体重 · 7 日平均/ }).click()
   await expect(page).toHaveURL(/\/progress\/weight$/)
   const card = page.locator('section').filter({ has: page.getByRole('img', { name: /体重趋势/ }) })
   const heading = card.getByRole('heading')
@@ -102,4 +103,16 @@ test('dragging along the weight chart reads each day without a long frame', asyn
     .slice(1)
   expect(frames.length).toBeGreaterThan(10)
   expect(Math.max(...frames)).toBeLessThan(LONG_FRAME_MS)
+})
+
+// Before seven weigh-ins the Progress page shows the first-days card: the
+// latest weigh-in, how many more days the average needs, and the button.
+test('the Progress page counts down to the 7-day average', async ({ page }) => {
+  await page.goto('/progress')
+  const card = page.locator('section').filter({ has: page.getByRole('heading', { name: '体重' }) })
+  await card.getByRole('button', { name: '记今天体重' }).click()
+  await page.getByRole('dialog', { name: '记体重' }).getByRole('button', { name: /^记下/ }).click()
+  await expect(page.getByRole('heading', { name: '体重 · 最近一次' })).toBeVisible()
+  await expect(page.getByText('已记 1 天')).toBeVisible()
+  await expect(page.getByText('再记 6 天，就能算出 7 日平均和每周涨了多少。')).toBeVisible()
 })
