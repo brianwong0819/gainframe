@@ -57,9 +57,19 @@ function finishRedirect(authConfig: AuthConfig) {
   setRedirect({ step: 'finishing' })
   finishSignIn(authConfig, params)
     .then(async (session) => {
-      const uploading = (await pendingRowCount(db)) > 0
-      await saveSession(db, session)
-      setRedirect({ step: 'signedIn', uploading, at: Date.now() })
+      // How long storing took tells a hung IndexedDB from a refused write.
+      const exchangedAt = Date.now()
+      try {
+        const uploading = (await pendingRowCount(db)) > 0
+        await saveSession(db, session)
+        setRedirect({ step: 'signedIn', uploading, at: Date.now() })
+      } catch (error) {
+        const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+        throw new Error(
+          `storing the session failed after ${String(Date.now() - exchangedAt)} ms: ${reason}`,
+          { cause: error },
+        )
+      }
     })
     .catch((error: unknown) => {
       // The accounts were just linked; the second Google sign-in succeeds.
@@ -70,7 +80,11 @@ function finishRedirect(authConfig: AuthConfig) {
         })
         return
       }
-      if (!(error instanceof SignInError)) reportError('unhandledrejection', error)
+      // A refused or failed exchange is recorded with what Cognito answered, so
+      // Diagnostics shows why; a cancelled sign-in is not an error.
+      if (!(error instanceof SignInError) || error.failure === 'exchange') {
+        reportError('unhandledrejection', error)
+      }
       setRedirect({
         step: 'failed',
         failure: error instanceof SignInError ? error.failure : 'exchange',
