@@ -11,8 +11,6 @@ test.use({ locale: 'zh-CN' })
 // DIAGNOSTIC ONLY, never merged: where do the slow frames of the drag come from?
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const P95_FRAME_MS = 34
-const STALL_FRAME_MS = 100
 const DRAG_STEPS = 40
 
 // A UUIDv7 for a seeded row: the millisecond time, the version and variant
