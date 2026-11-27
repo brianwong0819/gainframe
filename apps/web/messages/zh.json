@@ -802,5 +802,48 @@
     "howProtein": "蛋白质 = 体重 {weight} kg × {perKg} g/kg",
     "apply": "用这个目标",
     "howEnergyBalance": "热量 = 基础代谢 {resting} × 活动系数 {factor}"
+  },
+  "weight": {
+    "heading": "体重",
+    "averageHeading": "体重 · 7 日平均",
+    "empty": "每天起床后称一次。称满 7 天，这里显示 7 日平均和每周变化。",
+    "needMore": "再称 {count} 天就能看到 7 日平均。",
+    "noRate": "上周也有称重，才能算每周变化。",
+    "rate": "每周 {rate} kg",
+    "targetRate": "目标 {min} 到 {max} kg",
+    "status": {
+      "onTarget": "在目标范围",
+      "tooSlow": "偏慢",
+      "tooFast": "偏快",
+      "offTarget": "不在目标范围"
+    },
+    "today": "今天 {weight} kg",
+    "notToday": "今天还没称",
+    "log": "记体重",
+    "edit": "修改"
+  },
+  "weighIn": {
+    "title": "记体重",
+    "close": "关闭",
+    "when": "今天 · {date}",
+    "weight": "体重（公斤）",
+    "weightDown": "减 0.1 公斤",
+    "weightUp": "加 0.1 公斤",
+    "typeHint": "点数字可以直接输入。",
+    "lastHint": "已填上次的 {weight} kg（{date}）。点数字可以直接输入。",
+    "todayHint": "今天已记 {weight} kg，再记一次会改掉它。",
+    "addScan": "加体脂率、骨骼肌量",
+    "optional": "选填",
+    "scanHeading": "体成分（InBody 或体脂秤）",
+    "removeScan": "不加",
+    "bodyFat": "体脂率 · %",
+    "bodyFatDown": "体脂率减 0.1",
+    "bodyFatUp": "体脂率加 0.1",
+    "muscle": "骨骼肌量 · kg",
+    "muscleDown": "骨骼肌量减 0.1 公斤",
+    "muscleUp": "骨骼肌量加 0.1 公斤",
+    "scanNote": "照结果单填。读数受喝水和测量时间影响，只比较两次测量之间的变化。",
+    "tip": "每天起床后、吃东西前称，数字最稳。一天的高低不用在意，看 7 日平均。",
+    "save": "记下 {weight} kg"
   }
 }
