@@ -3,7 +3,7 @@
 The handover note between sessions: where the project is now, what waits on bw, and what was noticed but not done. It is not a changelog. What each task built is in its PR and its ROADMAP entry; where code lives is in `docs/architecture.md`. Keep this file under 100 lines: replace the "Now" section at the end of each task instead of appending to it.
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
-- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal; M3-03 offline photos built (PR `m3/03-offline-photos`). The real AI checks of M3-03 to M3-06 and M3-10 now wait only on bw storing the Anthropic API key (PR `m3/04-anthropic-api`, ADR-0008; steps in `infra/envs/dev/README.md`, "Anthropic API key"); next M3-08 `pnpm eval:vision` against the fake provider
+- **Current task:** M2-07 prod environment (waits on bw's account steps); M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal; M3-03 offline photos built (PR `m3/03-offline-photos`). M3-04 is done: dev calls Claude Haiku 5.5 through Anthropic's API (ADR-0008), first real call ok on 2026-11-27; prod still needs its own key (`infra/envs/prod/README.md`). The real checks of M3-03, M3-05, M3-06 and M3-10 are now bw logging real meals; next M3-08 `pnpm eval:vision` against the fake provider
 - **Last updated:** 2026-11-26
 
 ## Now
@@ -94,6 +94,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Follow-ups (noticed, not in scope yet)
 
+- The first AI call after the dev database had been idle failed in `ai_usage.reserve` with "Failed query" (Lambda request c9a791c8, 2026-11-27); the same call a minute later succeeded. Probably a connection dropped while Neon's compute was suspended. Measure first (log the pg error's `code` and `cause`, which Drizzle's wrapper hides), then decide on a retry for connection errors in `createPool` or the AI pipeline (L-023).
 - A kept photo confirmed on a later day says "记入后今天蛋白质…" with the figures of the photo's day; the line should name that day.
 - Photo confirm screen (M3-06), left out of the first version: the "+ Add food" row (the manual screen would need the estimate kept across pages), the line on a row that used a remembered correction (the endpoint does not say which corrections it applied), and the Undo toast on the Food tab after saving.
 - The per-exercise weight unit is a device setting, so a second device, a sign-out and sign-in or a cleared device starts in kg again (the same defect as the current plan, L-051). Sync it as a column on custom exercises and a synced row for built-in ones.

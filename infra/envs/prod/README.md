@@ -58,7 +58,8 @@ aws lambda update-function-configuration --function-name gainframe-prod-api --de
 The last command makes the function start fresh instances, which read the new key. Then run the deploy's AI call, which should print `{"ai":"ok"}`:
 
 ```powershell
-Set-Content -NoNewline payload.json '{"check":"ai"}'
+# Windows PowerShell 5.1 has no Set-Content -NoNewline; .NET writes the file without a BOM.
+[IO.File]::WriteAllText("$PWD\payload.json", '{"check":"ai"}')
 aws lambda invoke --function-name gainframe-prod-api --payload fileb://payload.json out.json
 Get-Content out.json
 Remove-Item payload.json, out.json
