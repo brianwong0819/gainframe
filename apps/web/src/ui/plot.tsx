@@ -134,6 +134,16 @@ export function Plot({
                 />
               ))}
               {drawn}
+            </svg>
+            {/* The reading draws on its own compositing layer, so moving it
+                repaints only the hairline and its dot, not the series
+                beneath (WebKit repainted the whole chart on each read). */}
+            <svg
+              aria-hidden
+              width={plotW}
+              height={height}
+              className="pointer-events-none absolute top-0 left-0 block will-change-transform"
+            >
               {readX !== undefined && (
                 <line
                   x1={x(readX)}
