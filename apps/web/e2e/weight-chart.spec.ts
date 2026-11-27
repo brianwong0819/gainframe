@@ -3,11 +3,15 @@ import { z } from 'zod'
 
 // ROADMAP M4-04: reading along the weight chart. bw has no Mac for the
 // Safari timeline, so the drag is measured here: every animation frame during
-// the drag is timed, and a long one fails the test (WebKit in CI).
+// the drag is timed (WebKit in CI). A shared CI runner drops a stray frame now
+// and then, so the test judges the 95th percentile and fails outright only on
+// a frame a person would see as a stall (L-054). A redraw of the page on each
+// move makes most frames long and fails the percentile.
 test.use({ locale: 'zh-CN' })
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const LONG_FRAME_MS = 50
+const P95_FRAME_MS = 34
+const STALL_FRAME_MS = 100
 const DRAG_STEPS = 40
 
 // A UUIDv7 for a seeded row: the millisecond time, the version and variant
@@ -112,9 +116,12 @@ test('dragging along the weight chart reads each day without a long frame', asyn
     .slice(1)
   const durations = frames.filter((frame) => frame >= 0)
   expect(durations.length).toBeGreaterThanOrEqual(DRAG_STEPS)
-  // The message lists every frame, so a failure shows where the long one fell.
+  // The messages list every frame, so a failure shows where the long ones fell.
   const log = frames.map((frame) => (frame < 0 ? 'down' : String(Math.round(frame)))).join(' ')
-  expect(Math.max(...durations), log).toBeLessThan(LONG_FRAME_MS)
+  const sorted = durations.toSorted((a, b) => a - b)
+  const p95 = sorted[Math.ceil(sorted.length * 0.95) - 1] ?? Infinity
+  expect(p95, log).toBeLessThan(P95_FRAME_MS)
+  expect(Math.max(...durations), log).toBeLessThan(STALL_FRAME_MS)
 })
 
 // Before seven weigh-ins the Progress page shows the first-days card: the
