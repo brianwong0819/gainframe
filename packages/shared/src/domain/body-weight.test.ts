@@ -6,6 +6,7 @@ import {
   dailyWeights,
   rateStatus,
   targetRange,
+  weeklyAverages,
   weeklyRate,
   weighInsNeeded,
   weightTrend,
@@ -79,6 +80,39 @@ describe('weighInsNeeded and weeklyRate', () => {
   it('reports no rate when the week before has no weigh-in', () => {
     const lastWeekOnly = twoWeeks.slice(7)
     expect(weeklyRate(lastWeekOnly)).toBeNull()
+  })
+})
+
+describe('weeklyAverages', () => {
+  it('lists seven-day spans ending on the last weigh-in, newest first', () => {
+    const weeks = weeklyAverages(twoWeeks, 5)
+    expect(weeks).toHaveLength(2)
+    expect(weeks[0]).toMatchObject({ from: '2026-11-08', to: '2026-11-14' })
+    expect(weeks[0]?.averageKg).toBeCloseTo(60.3)
+    expect(weeks[0]?.changeKg).toBeCloseTo(0.3)
+    expect(weeks[1]).toEqual({
+      from: '2026-11-01',
+      to: '2026-11-07',
+      averageKg: 60,
+      changeKg: null,
+    })
+  })
+
+  it('stops at the count and leaves out a span without a weigh-in', () => {
+    const gap = dailyWeights([
+      weighIn('2026-10-20', 59),
+      weighIn('2026-11-03', 60),
+      weighIn('2026-11-10', 61),
+    ])
+    expect(weeklyAverages(gap, 1).map(({ to }) => to)).toEqual(['2026-11-10'])
+    const weeks = weeklyAverages(gap, 5)
+    expect(weeks.map(({ to }) => to)).toEqual(['2026-11-10', '2026-11-03', '2026-10-20'])
+    // The span before 3 November has no weigh-in, so its change is unknown.
+    expect(weeks.map(({ changeKg }) => changeKg)).toEqual([1, null, null])
+  })
+
+  it('is empty before the first weigh-in', () => {
+    expect(weeklyAverages([], 5)).toEqual([])
   })
 })
 

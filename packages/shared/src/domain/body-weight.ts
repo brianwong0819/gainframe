@@ -2,6 +2,7 @@ import { domainConfig } from '../config.ts'
 import type { BodyMetric } from '../schemas/body-metric.ts'
 import type { Phase } from '../schemas/profile.ts'
 import type { LocalDate } from '../schemas/row.ts'
+import { addDays } from './nutrition.ts'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const { trendMinWeighIns, targetRatePct } = domainConfig.bodyWeight
@@ -30,6 +31,14 @@ export interface RangePoint {
   localDate: LocalDate
   lowKg: number
   highKg: number
+}
+
+export interface WeekAverage {
+  from: LocalDate
+  to: LocalDate
+  averageKg: number
+  // Against the seven days before; null when they have no weigh-in.
+  changeKg: number | null
 }
 
 export interface CompositionChange {
@@ -105,6 +114,39 @@ export function weeklyRate(days: readonly DailyWeight[]): WeeklyRate | null {
   const before = mean(previous)
   const kgPerWeek = mean(inWeek(0)) - before
   return { kgPerWeek, pctPerWeek: (kgPerWeek / before) * 100 }
+}
+
+// The averages of the last `count` seven-day spans, newest first, each ending
+// a whole number of weeks before the last weigh-in, so the newest span is the
+// one the weekly rate reads. A span without a weigh-in is left out.
+export function weeklyAverages(days: readonly DailyWeight[], count: number): WeekAverage[] {
+  const last = days.at(-1)
+  if (last === undefined) return []
+  const spanAverage = (weeksBack: number) => {
+    const inSpan = days.filter(({ localDate }) => {
+      const back = daysBetween(localDate, last.localDate)
+      return back >= weeksBack * 7 && back < (weeksBack + 1) * 7
+    })
+    return inSpan.length === 0 ? null : mean(inSpan.map(({ weightKg }) => weightKg))
+  }
+  const firstDate = days[0]?.localDate ?? last.localDate
+  const spans = Math.floor(daysBetween(firstDate, last.localDate) / 7) + 1
+  return Array.from({ length: Math.min(count, spans) }, (_, weeksBack) => weeksBack).flatMap(
+    (weeksBack) => {
+      const averageKg = spanAverage(weeksBack)
+      if (averageKg === null) return []
+      const before = spanAverage(weeksBack + 1)
+      const to = addDays(last.localDate, -7 * weeksBack)
+      return [
+        {
+          from: addDays(to, -6),
+          to,
+          averageKg,
+          changeKg: before === null ? null : averageKg - before,
+        },
+      ]
+    },
+  )
 }
 
 // The target rate for the user's phase; a profile without one is gaining,

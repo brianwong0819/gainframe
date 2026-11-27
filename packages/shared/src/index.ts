@@ -107,8 +107,10 @@ export {
   targetRange,
   targetRate,
   type TrendPoint,
+  weeklyAverages,
   weeklyRate,
   type WeeklyRate,
+  type WeekAverage,
   weighInsNeeded,
   weightTrend,
 } from './domain/body-weight.ts'

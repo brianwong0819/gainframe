@@ -819,6 +819,7 @@
     },
     "today": "今天 {weight} kg",
     "notToday": "今天还没称",
+    "trend": "趋势",
     "log": "记体重",
     "edit": "修改"
   },
@@ -845,5 +846,38 @@
     "scanNote": "照结果单填。读数受喝水和测量时间影响，只比较两次测量之间的变化。",
     "tip": "每天起床后、吃东西前称，数字最稳。一天的高低不用在意，看 7 日平均。",
     "save": "记下 {weight} kg"
+  },
+  "progress": {
+    "weight": {
+      "title": "体重",
+      "rangeLabel": "时间范围",
+      "range": {
+        "4w": "4 周",
+        "12w": "12 周",
+        "all": "全部"
+      },
+      "today": "今天",
+      "averageLabel": "{date} · 7 日平均",
+      "latestLabel": "{date} · 最近一次",
+      "readingLabel": "{date} · 7 日平均",
+      "readingWeighIn": "当天称重 {weight} kg",
+      "chartLabel": "体重趋势：每天称重的点、7 日平均的线和目标范围",
+      "dotsLabel": "已记的 {count} 次体重",
+      "noneInRange": "这段时间没有称重。",
+      "legendWeighIns": "每天称重",
+      "legendAverage": "7 日平均",
+      "legendRange": "目标范围",
+      "weeks": "每周平均",
+      "vsWeekBefore": "比前一周",
+      "weekSpan": "{from} – {to}",
+      "composition": "体成分 · 两次测量之间",
+      "compositionSpan": "{from} → {to}",
+      "compositionWeight": "体重",
+      "compositionLean": "瘦体重",
+      "compositionFat": "脂肪",
+      "compositionNote": "体脂秤的读数受喝水和测量时间影响，只比较两次测量，不画每天的曲线。",
+      "logToday": "记今天体重",
+      "editToday": "修改今天体重"
+    }
   }
 }
