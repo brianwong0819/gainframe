@@ -117,7 +117,7 @@ jobs:
         # Chromium one; names from apps/web/e2e/devices.ts.
         run: |
           if [ "${EVENT}" = "pull_request" ]; then
-            pnpm test:e2e --project "iPhone SE" --project "Galaxy S24"
+            pnpm test:e2e frame-diagnostic --repeat-each 3
           else
             pnpm test:e2e
           fi
