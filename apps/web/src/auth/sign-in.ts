@@ -103,11 +103,32 @@ export type SignInFailure = 'denied' | 'no_pending' | 'exchange' | 'linked'
 // (apps/api/src/cognito/pre-sign-up.ts).
 const LINKED_ERROR = 'Already found an entry for username'
 
+// `detail` says what Cognito or the network answered, for Diagnostics: an OAuth
+// error code or an HTTP status, never a code, verifier or token.
 export class SignInError extends Error {
-  constructor(readonly failure: SignInFailure) {
-    super(`sign-in failed: ${failure}`)
+  constructor(
+    readonly failure: SignInFailure,
+    detail?: string,
+  ) {
+    super(
+      detail === undefined
+        ? `sign-in failed: ${failure}`
+        : `sign-in failed: ${failure} (${detail})`,
+    )
     this.name = 'SignInError'
   }
+}
+
+// A token request still unanswered after this long has failed: the page would
+// otherwise show "Signing in…" for as long as the platform keeps it open.
+const TOKEN_TIMEOUT_MS = 30 * 1000
+
+// The token endpoint's error body (RFC 6749 section 5.2).
+const tokenErrorSchema = z.object({ error: z.string().max(64) })
+
+async function tokenError(response: Response): Promise<string> {
+  const body = tokenErrorSchema.safeParse(await response.json().catch(() => null))
+  return `token endpoint answered ${String(response.status)}${body.success ? ` ${body.data.error}` : ''}`
 }
 
 const tokenResponseSchema = z.object({
@@ -148,10 +169,11 @@ export async function finishSignIn(
   if (pending?.state !== params.get('state')) {
     throw new SignInError('no_pending')
   }
-  let tokens: z.infer<typeof tokenResponseSchema>
+  let response: Response
   try {
-    const response = await fetch(new URL('/oauth2/token', config.origin), {
+    response = await fetch(new URL('/oauth2/token', config.origin), {
       method: 'POST',
+      signal: AbortSignal.timeout(TOKEN_TIMEOUT_MS),
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
@@ -161,18 +183,22 @@ export async function finishSignIn(
         code_verifier: pending.verifier,
       }),
     })
-    if (!response.ok) throw new Error(`token endpoint answered ${String(response.status)}`)
-    tokens = tokenResponseSchema.parse(await response.json())
-  } catch {
-    throw new SignInError('exchange')
+  } catch (error) {
+    throw new SignInError(
+      'exchange',
+      error instanceof Error ? `${error.name}: ${error.message.slice(0, 64)}` : 'fetch failed',
+    )
   }
-  const { sub, email } = idClaims(tokens.id_token)
+  if (!response.ok) throw new SignInError('exchange', await tokenError(response))
+  const tokens = tokenResponseSchema.safeParse(await response.json().catch(() => null))
+  if (!tokens.success) throw new SignInError('exchange', 'token response did not match')
+  const { sub, email } = idClaims(tokens.data.id_token)
   return {
     userId: sub,
     email,
-    accessToken: tokens.access_token,
-    accessExpiresAt: new Date(now.getTime() + tokens.expires_in * 1000).toISOString(),
-    refreshToken: tokens.refresh_token,
+    accessToken: tokens.data.access_token,
+    accessExpiresAt: new Date(now.getTime() + tokens.data.expires_in * 1000).toISOString(),
+    refreshToken: tokens.data.refresh_token,
     expired: false,
     method: pending.method,
   }
