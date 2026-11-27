@@ -887,6 +887,22 @@
     "weightNeedMore": "再记 {count} 天，就能算出 7 日平均和每周涨了多少。",
     "weightChartLabel": "近 12 周体重的 7 日平均和目标范围",
     "logToday": "记今天体重",
-    "rowHint": "体重的变化趋势"
+    "rowHint": "体重的变化趋势",
+    "foodCheck": {
+      "heading": "和饮食对一下",
+      "source": "来自饮食记录",
+      "energy": {
+        "above": "这两周平均每天比热量目标多吃 {kcal} kcal，",
+        "below": "这两周平均每天比热量目标少吃 {kcal} kcal，",
+        "close": "这两周平均每天的热量和目标差不多，"
+      },
+      "protein": "蛋白质 {met} / {logged} 天达标。",
+      "causeOnTarget": "吃得够，体重也在按计划涨。",
+      "causeEatMore": "体重偏慢很可能是热量没吃够，每天再加一份常吃的就够了。",
+      "causeUnlogged": "热量够了体重还偏慢：可能有几餐没记，或者每日目标该调高一点。",
+      "causeTooFast": "体重涨得偏快，可以把每日热量目标调低一点。",
+      "notEnough": "这两周只记了 {logged} 天饮食，记满 {min} 天就能和体重对一下。",
+      "openFood": "看饮食记录"
+    }
   }
 }

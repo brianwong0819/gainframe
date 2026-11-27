@@ -4,6 +4,7 @@ import {
   addDays,
   compositionChange,
   dailyWeights,
+  rateStatus,
   type LocalDate,
   targetRange,
   toLocalDate,
@@ -23,6 +24,7 @@ import { formatShortDay } from '@/features/history/dates'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { SegmentedControl } from '@/ui/segmented-control'
 
+import { FoodCheckCard } from './food-check-card'
 import { WeightReadingCard } from './weight-reading-card'
 
 const readWeight = () => weightData(db)
@@ -34,8 +36,8 @@ const WEEKS_LISTED = 5
 
 /**
  * The weight page ("Progress charts" in docs/design-system.md): the range
- * control, the card with the 7-day average and the chart, the weekly
- * averages, the change between two scans, and "Log today's weight" docked at
+ * control, the card with the 7-day average and the chart, the comparison
+ * with the food log, the weekly averages, the change between two scans, and "Log today's weight" docked at
  * the bottom.
  */
 export function WeightProgress() {
@@ -103,6 +105,13 @@ export function WeightProgress() {
         today={today}
         draw={!ranged}
       />
+      {trend.length > 0 && (
+        <FoodCheckCard
+          today={today}
+          status={weekly === null || !showTrend ? null : rateStatus(weekly.pctPerWeek, data.phase)}
+          phase={data.phase}
+        />
+      )}
 
       {weeks.length > 0 && (
         <section className="rounded-group bg-surface px-16 pt-16 pb-4">
