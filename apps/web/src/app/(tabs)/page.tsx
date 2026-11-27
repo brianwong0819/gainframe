@@ -4,6 +4,7 @@ import { domainConfig, recentRecords, summarizeWeek } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 
+import { WeightCard } from '@/features/body/weight-card'
 import { BackupCard, BackupStatus } from '@/features/account/backup-status'
 import { SignInCard } from '@/features/account/sign-in-card'
 import { formatDay } from '@/features/history/dates'
@@ -25,7 +26,7 @@ const devPages = [
 ] as const
 
 // Today: the workout to do now, the day's protein (with the foods that would
-// fill the gap), this week and the latest records. Body weight joins in M4.
+// fill the gap), body weight, this week and the latest records.
 export default function TodayPage() {
   const t = useTranslations('today')
   const locale = useLocale()
@@ -51,6 +52,7 @@ export default function TodayPage() {
               overview.history.find(({ workout }) => workout.localDate === overview.today)?.dayName
             }
           />
+          <WeightCard />
           {overview.history.length === 0 ? (
             <p className="text-body text-ink-2">{t('empty')}</p>
           ) : (
