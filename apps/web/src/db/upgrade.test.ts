@@ -42,7 +42,7 @@ describe('Dexie schema upgrades', () => {
     ])
     expect(await current.errors.count()).toBe(0)
     expect(await current.foods.count()).toBe(0)
-    expect(current.verno).toBe(16)
+    expect(current.verno).toBe(17)
     current.close()
   })
 
@@ -71,7 +71,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(16)
+    expect(v3.verno).toBe(17)
     v3.close()
   })
 
@@ -175,7 +175,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(16)
+    expect(v5.verno).toBe(17)
     v5.close()
   })
 
@@ -224,7 +224,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(16)
+    expect(v6.verno).toBe(17)
     v6.close()
   })
 
@@ -289,7 +289,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(16)
+    expect(v7.verno).toBe(17)
     v7.close()
   })
 
@@ -338,7 +338,7 @@ describe('Dexie schema upgrades', () => {
       restEndsAt: null,
     })
     expect(await v8.outbox.count()).toBe(0)
-    expect(v8.verno).toBe(16)
+    expect(v8.verno).toBe(17)
     v8.close()
   })
 
@@ -426,7 +426,7 @@ describe('Dexie schema upgrades', () => {
       slot(1, 0).id,
       slot(2, 0).id,
     ])
-    expect(v9.verno).toBe(16)
+    expect(v9.verno).toBe(17)
     v9.close()
   })
 
@@ -463,7 +463,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v10.meals.where('localDate').equals('2026-11-22').count()).toBe(0)
     expect(await v10.profiles.count()).toBe(0)
     expect(await v10.outbox.count()).toBe(1)
-    expect(v10.verno).toBe(16)
+    expect(v10.verno).toBe(17)
     v10.close()
   })
 
@@ -515,7 +515,7 @@ describe('Dexie schema upgrades', () => {
     })
     expect(await v12.bodyMetrics.where('localDate').equals('2026-11-23').count()).toBe(0)
     expect(await v12.outbox.count()).toBe(0)
-    expect(v12.verno).toBe(16)
+    expect(v12.verno).toBe(17)
     v12.close()
   })
 
@@ -607,7 +607,7 @@ describe('Dexie schema upgrades', () => {
     const v15 = new GainframeDb('upgrade', options)
     expect(await v15.pendingPhotos.where('localDate').equals('2026-11-24').count()).toBe(0)
     expect(await v15.foods.count()).toBe(1)
-    expect(v15.verno).toBe(16)
+    expect(v15.verno).toBe(17)
     v15.close()
   })
 
@@ -688,5 +688,44 @@ describe('Dexie schema upgrades', () => {
     expect(await v16.outbox.count()).toBe(0)
     expect(await v16.settings.count()).toBe(0)
     v16.close()
+  })
+
+  it('moves the weight unit settings into synced rows in version 17 and queues them for backup', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v16 = new Dexie('upgrade', options)
+    v16.version(1).stores(STORES_V1)
+    v16.version(2).stores({ errors: '++seq' })
+    v16.version(3).stores({})
+    v16.version(4).stores({})
+    v16.version(5).stores({ templates: null, templateItems: null, plans: 'id', settings: 'key' })
+    for (const version of [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]) {
+      v16.version(version).stores({})
+    }
+    await v16.table('settings').bulkAdd([
+      { key: 'weightUnit:00000000-0000-7000-8000-000000000001', value: 'lb' },
+      { key: 'weightUnit:00000000-0000-7000-8000-000000000002', value: 'stone' },
+      { key: 'lastSyncAt', value: '2026-11-22T11:00:00.000Z' },
+    ])
+    v16.close()
+
+    const v17 = new GainframeDb('upgrade', options)
+    const rows = await v17.exerciseUnits.toArray()
+    expect(rows).toEqual([
+      expect.objectContaining({
+        userId: null,
+        deletedAt: null,
+        exerciseId: '00000000-0000-7000-8000-000000000001',
+        weightUnit: 'lb',
+      }),
+    ])
+    expect(await v17.outbox.toArray()).toEqual([
+      { seq: 1, table: 'exerciseUnits', rowId: rows[0]?.id },
+    ])
+    expect(await v17.settings.toArray()).toEqual([
+      { key: 'lastSyncAt', value: '2026-11-22T11:00:00.000Z' },
+    ])
+    v17.close()
   })
 })

@@ -4,6 +4,7 @@ import {
   type BodyMetric,
   type ClientError,
   type Exercise,
+  type ExerciseUnit,
   type Food,
   type FoodEstimateRequest,
   type FoodEstimateResponse,
@@ -19,6 +20,7 @@ import {
   sharedValueChanges,
   type SyncedTableName,
   type Workout,
+  weightUnitSchema,
   type WorkoutExercise,
   type WorkoutSet,
 } from '@gainframe/shared'
@@ -44,15 +46,13 @@ export interface ErrorLogEntry extends ClientError {
 
 // A setting that belongs to this device and never syncs, so it is lost when
 // the device is emptied and downloads the account again (L-051).
-// `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
-// it is not kg (db/weight-units.ts). `authSession` is the signed-in session as
+// `authSession` is the signed-in session as
 // JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the
 // account it belongs to, `lastSyncAt` the end of the last successful backup
 // (db/sync.ts). `signInCardDismissed` hides Today's sign-in card for good.
 // `errorsReportedSeq` is the last error log entry sent to the API
 // (diagnostics/error-reports.ts).
 export type DeviceSetting =
-  | { key: `weightUnit:${string}`; value: string }
   | { key: 'authSession'; value: string }
   | { key: 'syncCursor'; value: string }
   | { key: 'lastSyncAt'; value: string }
@@ -102,6 +102,7 @@ export class GainframeDb extends Dexie {
   profiles!: Table<Profile, string>
   bodyMetrics!: Table<BodyMetric, string>
   foods!: Table<Food, string>
+  exerciseUnits!: Table<ExerciseUnit, string>
   pendingPhotos!: Table<PendingPhoto, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
@@ -234,6 +235,35 @@ export class GainframeDb extends Dexie {
     // The active plan moves from the device setting `activePlanId` to the
     // plan's synced `activatedAt`, so it survives a cleared device.
     this.version(16).stores({}).upgrade(moveActivePlanToPlans)
+    // The per-exercise weight unit moves from device settings to synced rows.
+    this.version(17).stores({ exerciseUnits: 'id, exerciseId' }).upgrade(moveWeightUnitsToRows)
+  }
+}
+
+// Version 17. Each `weightUnit:<exerciseId>` setting becomes an `exerciseUnits`
+// row with an outbox entry, so the next backup carries the choice to the account.
+// Only pounds was stored; kg was the absence of a setting.
+export async function moveWeightUnitsToRows(tx: Transaction): Promise<void> {
+  const prefix = 'weightUnit:'
+  const settings = tx.table<{ key: string; value: string }, string>('settings')
+  const at = new Date()
+  for (const { key, value } of await settings.where('key').startsWith(prefix).toArray()) {
+    const unit = weightUnitSchema.safeParse(value)
+    const exerciseId = key.slice(prefix.length)
+    if (unit.success && unit.data === 'lb') {
+      const row: ExerciseUnit = {
+        id: newId(at.getTime()),
+        userId: null,
+        createdAt: at.toISOString(),
+        updatedAt: at.toISOString(),
+        deletedAt: null,
+        exerciseId,
+        weightUnit: unit.data,
+      }
+      await tx.table('exerciseUnits').add(row)
+      await tx.table('outbox').add({ table: 'exerciseUnits', rowId: row.id })
+    }
+    await settings.delete(key)
   }
 }
 

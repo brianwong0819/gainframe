@@ -819,6 +819,7 @@
     },
     "today": "Today {weight} kg",
     "notToday": "Not weighed today",
+    "trend": "Trend",
     "log": "Log weight",
     "edit": "Change"
   },
@@ -845,5 +846,38 @@
     "scanNote": "Copy them from the result sheet. Readings depend on hydration and the time of day, so only the change between two scans is compared.",
     "tip": "Weigh in after waking up, before eating, for the steadiest number. Ignore day-to-day swings and watch the 7-day average.",
     "save": "Log {weight} kg"
+  },
+  "progress": {
+    "weight": {
+      "title": "Body weight",
+      "rangeLabel": "Range",
+      "range": {
+        "4w": "4 weeks",
+        "12w": "12 weeks",
+        "all": "All"
+      },
+      "today": "Today",
+      "averageLabel": "{date} · 7-day average",
+      "latestLabel": "{date} · latest weigh-in",
+      "readingLabel": "{date} · 7-day average",
+      "readingWeighIn": "Weighed {weight} kg that day",
+      "chartLabel": "Body weight trend: daily weigh-ins as dots, the 7-day average as a line, and the target range",
+      "dotsLabel": "{count, plural, one {# weigh-in so far} other {# weigh-ins so far}}",
+      "noneInRange": "No weigh-ins in this range.",
+      "legendWeighIns": "Daily weigh-in",
+      "legendAverage": "7-day average",
+      "legendRange": "Target range",
+      "weeks": "Weekly averages",
+      "vsWeekBefore": "vs week before",
+      "weekSpan": "{from} – {to}",
+      "composition": "Body composition · between two scans",
+      "compositionSpan": "{from} → {to}",
+      "compositionWeight": "Weight",
+      "compositionLean": "Lean mass",
+      "compositionFat": "Fat",
+      "compositionNote": "Scale readings depend on hydration and the time of measuring, so only two scans are compared, never a daily line.",
+      "logToday": "Log today's weight",
+      "editToday": "Change today's weight"
+    }
   }
 }

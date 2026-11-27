@@ -34,3 +34,12 @@ export function formatTime(instant: string, locale: string): string {
 export function formatWeekday(date: LocalDate, locale: string, width: 'narrow' | 'long'): string {
   return new Intl.DateTimeFormat(locale, { weekday: width, timeZone: 'UTC' }).format(asDay(date))
 }
+
+// "Nov 17": month and day, for a chart axis or a span of days.
+export function formatShortDay(date: LocalDate, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(asDay(date))
+}

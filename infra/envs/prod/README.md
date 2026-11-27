@@ -28,7 +28,7 @@ The order matters: the Environment must exist with its protection before the wor
 ## First deploy
 
 1. Merge the pull request. Dev deploys as usual; the run then shows "Deploy prod" waiting for review. Open the run, "Review deployments", tick `prod`, "Approve and deploy".
-2. The first apply creates everything, including `/gainframe/prod/database-url` with a placeholder, so the smoke test fails at the database check. This is expected.
+2. The first apply creates everything, including `/gainframe/prod/database-url` with a placeholder, so the smoke test fails at the database check. This is expected. If the parameter was stored before the first deploy, Terraform adopts it (the `import` block in `main.tf`) and never overwrites its value.
 3. **Database connection string.** In the [Neon console](https://console.neon.tech), project `gainframe`, **Connect**: select the `production` branch, turn on connection pooling and copy the connection string (its host contains `-pooler`). Then:
 
    ```powershell
@@ -58,7 +58,8 @@ aws lambda update-function-configuration --function-name gainframe-prod-api --de
 The last command makes the function start fresh instances, which read the new key. Then run the deploy's AI call, which should print `{"ai":"ok"}`:
 
 ```powershell
-Set-Content -NoNewline payload.json '{"check":"ai"}'
+# Windows PowerShell 5.1 has no Set-Content -NoNewline; .NET writes the file without a BOM.
+[IO.File]::WriteAllText("$PWD\payload.json", '{"check":"ai"}')
 aws lambda invoke --function-name gainframe-prod-api --payload fileb://payload.json out.json
 Get-Content out.json
 Remove-Item payload.json, out.json

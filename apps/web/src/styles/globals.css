@@ -310,6 +310,24 @@
      sets scroll under it. */
   /* A dock kept above the tab bar in the thumb zone: the rest pill and set
      panel in a workout, the save button on the Food tab's manual screen. */
+  /* A chart line drawing itself once when its card first appears, with
+     `soft` ("Progress charts" in docs/design-system.md). The path sets
+     pathLength="1", so one dash covers the whole line. Reduce Motion ends the
+     animation at once (below). */
+  .chart-draw {
+    stroke-dasharray: 1;
+    animation: chart-draw var(--dur-soft) var(--ease-soft) both;
+  }
+
+  @keyframes chart-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
   .screen-dock {
     position: sticky;
     bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + var(--space-8));

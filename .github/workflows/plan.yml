@@ -12,6 +12,7 @@ on:
       - pnpm-lock.yaml
       - .github/workflows/plan.yml
       - .github/scripts/mask-cognito-ids.sh
+      - .github/scripts/redact-cognito-ids.sed
 
 permissions:
   contents: read
@@ -57,11 +58,15 @@ jobs:
         working-directory: infra/envs
         env:
           RELEASE: ${{ github.event.pull_request.head.sha }}
+        # A step without an explicit shell runs without pipefail, and a failed
+        # plan must not pass through the filter unnoticed.
         run: |
+          set -o pipefail
           for env in dev prod; do
             terraform -chdir="${env}" init
             (cd "${env}" && ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt")
-            terraform -chdir="${env}" plan -no-color -lock-timeout=5m "-var=release=${RELEASE}" -out=plan.tfplan
+            terraform -chdir="${env}" plan -no-color -lock-timeout=5m "-var=release=${RELEASE}" -out=plan.tfplan \
+              | sed -E -f ../../.github/scripts/redact-cognito-ids.sed
           done
       - name: Comment the plans
         working-directory: infra/envs
@@ -93,7 +98,7 @@ jobs:
               echo '```'
               echo "</details>"
             done
-          } | sed "s/${ACCOUNT_ID}/<account-id>/g" > comment.md
+          } | sed "s/${ACCOUNT_ID}/<account-id>/g" | sed -E -f ../../.github/scripts/redact-cognito-ids.sed > comment.md
           touch "${RUNNER_TEMP}/redact.txt"
           while read -r value; do
             sed -i "s/${value}/<cognito-id>/g" comment.md

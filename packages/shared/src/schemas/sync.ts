@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { syncConfig } from '../config.ts'
 import { bodyMetricSchema } from './body-metric.ts'
 import { exerciseSchema } from './exercise.ts'
+import { exerciseUnitSchema } from './exercise-unit.ts'
 import { foodSchema, mealItemSchema, mealSchema } from './food.ts'
 import { planDaySchema, planItemSchema, planSchema } from './plan.ts'
 import { profileSchema } from './profile.ts'
@@ -16,8 +17,9 @@ import { workoutExerciseSchema, workoutSchema, workoutSetSchema } from './workou
 // older app cannot read in a pull and would clear in a push. Version 5 (M3-11)
 // adds the meal item source `table`, which an older app fails to parse.
 // Version 6 (M3-12) adds the user's foods. Version 7 adds the plan's
-// `activatedAt`, which an older app would clear in a push.
-export const SYNC_VERSION = 7
+// `activatedAt`, which an older app would clear in a push. Version 8 adds the
+// per-exercise weight units, which an older app fails to parse in a pull.
+export const SYNC_VERSION = 8
 export const SYNC_VERSION_HEADER = 'x-gainframe-sync-version'
 
 // Synced tables by their Dexie names; the server's Drizzle tables use the same keys.
@@ -34,6 +36,7 @@ export const syncedRowSchemas = {
   profiles: profileSchema,
   bodyMetrics: bodyMetricSchema,
   foods: foodSchema,
+  exerciseUnits: exerciseUnitSchema,
 }
 
 export const syncedTableNameSchema = z.object(syncedRowSchemas).keyof()

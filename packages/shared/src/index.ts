@@ -107,8 +107,10 @@ export {
   targetRange,
   targetRate,
   type TrendPoint,
+  weeklyAverages,
   weeklyRate,
   type WeeklyRate,
+  type WeekAverage,
   weighInsNeeded,
   weightTrend,
 } from './domain/body-weight.ts'
@@ -234,6 +236,7 @@ export {
   type WeightUnit,
   weightUnitSchema,
 } from './schemas/workout.ts'
+export { type ExerciseUnit, exerciseUnitSchema } from './schemas/exercise-unit.ts'
 export {
   type PullResponse,
   pullResponseSchema,
