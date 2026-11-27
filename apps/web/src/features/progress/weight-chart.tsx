@@ -3,8 +3,9 @@
 import type { LocalDate, RangePoint, RateStatus, TrendPoint } from '@gainframe/shared'
 import { Area, LinePath } from '@visx/shape'
 import { useTranslations } from 'next-intl'
+import { useCallback } from 'react'
 
-import { niceDomain, Plot } from '@/ui/plot'
+import { niceDomain, Plot, type Scales } from '@/ui/plot'
 
 const HEIGHT = 190
 
@@ -58,9 +59,61 @@ export function WeightChart({
   const start = at(from)
   const end = Math.max(at(to), start + 24 * 60 * 60 * 1000)
   const snaps = points.map(({ localDate }) => at(localDate))
-  const latest = points.at(-1)
   const read = reading === null ? undefined : points[reading]
-  const dotR = points.length > 100 ? 1.5 : showTrend ? 2.5 : 4
+
+  // The series do not change while the chart is read, so they are drawn once
+  // per data and size, and a drag re-renders only the hairline and its dot.
+  const series = useCallback(
+    ({ x, y }: Scales) => {
+      const latest = points.at(-1)
+      const dotR = points.length > 100 ? 1.5 : showTrend ? 2.5 : 4
+      const mark = showTrend ? (latest?.averageKg ?? 0) : (latest?.weightKg ?? 0)
+      return (
+        <>
+          {range !== null && (
+            <Area
+              data={[...range]}
+              x={({ localDate }) => x(at(localDate))}
+              y0={({ lowKg }) => y(lowKg)}
+              y1={({ highKg }) => y(highKg)}
+              className="fill-accent-wash"
+            />
+          )}
+          {points.map(({ localDate, weightKg }) => (
+            <circle
+              key={localDate}
+              cx={x(at(localDate))}
+              cy={y(weightKg)}
+              r={dotR}
+              className="fill-ink-3"
+            />
+          ))}
+          {showTrend && (
+            <LinePath
+              data={[...points]}
+              x={({ localDate }) => x(at(localDate))}
+              y={({ averageKg }) => y(averageKg)}
+              pathLength={1}
+              className={`fill-none stroke-ink ${draw ? 'chart-draw' : ''}`}
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          {latest !== undefined && (
+            <circle
+              cx={x(at(latest.localDate))}
+              cy={y(mark)}
+              r={5}
+              className={`stroke-surface ${status === null ? 'fill-ink' : endDotClass[status]}`}
+              strokeWidth={2}
+            />
+          )}
+        </>
+      )
+    },
+    [points, range, showTrend, status, draw],
+  )
 
   return (
     <Plot
@@ -73,62 +126,19 @@ export function WeightChart({
       snaps={snaps}
       reading={reading}
       onRead={onRead}
-    >
-      {({ x, y }) => {
-        const mark = showTrend ? (latest?.averageKg ?? 0) : (latest?.weightKg ?? 0)
-        return (
-          <>
-            {range !== null && (
-              <Area
-                data={[...range]}
-                x={({ localDate }) => x(at(localDate))}
-                y0={({ lowKg }) => y(lowKg)}
-                y1={({ highKg }) => y(highKg)}
-                className="fill-accent-wash"
-              />
-            )}
-            {points.map(({ localDate, weightKg }) => (
-              <circle
-                key={localDate}
-                cx={x(at(localDate))}
-                cy={y(weightKg)}
-                r={dotR}
-                className="fill-ink-3"
-              />
-            ))}
-            {showTrend && (
-              <LinePath
-                data={[...points]}
-                x={({ localDate }) => x(at(localDate))}
-                y={({ averageKg }) => y(averageKg)}
-                pathLength={1}
-                className={`fill-none stroke-ink ${draw ? 'chart-draw' : ''}`}
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-            {latest !== undefined && (
-              <circle
-                cx={x(at(latest.localDate))}
-                cy={y(mark)}
-                r={5}
-                className={`stroke-surface ${status === null ? 'fill-ink' : endDotClass[status]}`}
-                strokeWidth={2}
-              />
-            )}
-            {read !== undefined && (
-              <circle
-                cx={x(at(read.localDate))}
-                cy={y(showTrend ? read.averageKg : read.weightKg)}
-                r={5}
-                className="fill-ink stroke-surface"
-                strokeWidth={2}
-              />
-            )}
-          </>
+      overlay={({ x, y }) =>
+        read !== undefined && (
+          <circle
+            cx={x(at(read.localDate))}
+            cy={y(showTrend ? read.averageKg : read.weightKg)}
+            r={5}
+            className="fill-ink stroke-surface"
+            strokeWidth={2}
+          />
         )
-      }}
+      }
+    >
+      {series}
     </Plot>
   )
 }
