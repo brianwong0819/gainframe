@@ -1,8 +1,9 @@
 // `pnpm eval:vision --data <folder>` (ROADMAP M3-08): runs the labelled meals
-// through the photo and text estimates on Bedrock and writes a Markdown report
-// beside the labels. Needs AWS credentials allowed to call Bedrock, e.g.
-// `$env:AWS_PROFILE = "gainframe"` after `aws login --profile gainframe`.
-// Options: --models a,b (Bedrock model IDs; default: the served model),
+// through the photo and text estimates on the configured provider
+// (`aiConfig.provider`) and writes a Markdown report beside the labels. Needs
+// ANTHROPIC_API_KEY in the environment for Anthropic's API, or AWS credentials
+// allowed to call Bedrock (`$env:AWS_PROFILE = "gainframe"`) for `bedrock`.
+// Options: --models a,b (model IDs of that provider; default: the served model),
 // --prompts 2,3 (photo prompt versions; default: the served one), --runs 3,
 // --split test|dev|all (default test), --out <file> (default
 // <data>/vision-report-<date>.md). Usage: "Evals" in docs/ai.md.
@@ -11,8 +12,9 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { foodEstimateRequestSchema } from '@gainframe/shared'
+import { z } from 'zod'
 
-import { bedrockProvider } from '../../src/ai/bedrock.ts'
+import { configuredProvider } from '../../src/ai/claude.ts'
 import { aiConfig } from '../../src/ai/config.ts'
 import { createLogger } from '../../src/log.ts'
 import { evaluate } from './evaluate.ts'
@@ -69,7 +71,11 @@ async function readPhoto(file: string) {
 const rows = await evaluate({
   cases,
   readPhoto,
-  provider: bedrockProvider({ awsRegion: aiConfig.region }),
+  provider: configuredProvider({
+    provider: aiConfig.provider,
+    region: aiConfig.region,
+    anthropicApiKey: z.string().min(1).optional().parse(process.env.ANTHROPIC_API_KEY),
+  }),
   models,
   promptVersions,
   runs,

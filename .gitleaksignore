@@ -1,0 +1,4 @@
+# Findings reviewed as false positives (gitleaks fingerprints: commit:file:rule:line).
+# A code comment naming a model ID next to the word "API" (L-050); the commit
+# stays reachable from the closed pull request #199.
+a3b8b8eed96f1a0a1c45d5b2993c42ee4d168fbe:apps/api/src/ai/config.ts:generic-api-key:11

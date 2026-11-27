@@ -9,11 +9,20 @@ export interface ModelPrice {
   output: number
 }
 
-export const MODEL_PRICES: Readonly<Record<string, ModelPrice>> = {
-  'anthropic.claude-haiku-5-5': { input: 0.1, output: 0.5 },
-  'anthropic.claude-sonnet-5-5': { input: 2, output: 10 },
-  'anthropic.claude-opus-5-5': { input: 4, output: 20 },
+const FIRST_PARTY: Readonly<Record<string, ModelPrice>> = {
+  'claude-haiku-5-5': { input: 0.1, output: 0.5 },
+  'claude-sonnet-5-5': { input: 2, output: 10 },
+  'claude-opus-5-5': { input: 4, output: 20 },
 }
+
+// Keyed by the model IDs of both providers: Anthropic's API and Bedrock's
+// `anthropic.` IDs (config.ts).
+export const MODEL_PRICES: Readonly<Record<string, ModelPrice>> = Object.fromEntries(
+  Object.entries(FIRST_PARTY).flatMap(([id, price]) => [
+    [id, price],
+    [`anthropic.${id}`, price],
+  ]),
+)
 
 export interface CallTokens {
   inputTokens: number

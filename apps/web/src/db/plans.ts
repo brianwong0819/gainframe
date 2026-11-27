@@ -1,4 +1,5 @@
 import {
+  activePlanOf,
   domainConfig,
   linkWithNext,
   moveItem,
@@ -13,7 +14,7 @@ import {
 } from '@gainframe/shared'
 
 import { restResolver } from './exercise-rest'
-import type { Repositories } from './repositories'
+import { nextUpdatedAt, type Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
 export interface PlanDayState {
@@ -54,16 +55,19 @@ function nextPosition(rows: readonly { position: number }[]): number {
 }
 
 // Plans, their days and items, the active plan and the day it offers next.
-// Which plan is active is a device setting (`DeviceSetting`), so it is read and
-// written here, not through the synced repositories. The reads run inside
+// The active plan is the live plan with the latest `activatedAt`
+// (`activePlanOf`), a synced field, so the choice survives a cleared device and
+// reaches the account's other devices. The reads run inside
 // `useLiveQuery`, which only sees the tables a query reads while Dexie can track
 // its async context: they call Dexie directly and never await another async
 // helper first, which lost that context and left the editor stale (L-026).
-export function createPlanStore(db: GainframeDb, repos: Repositories) {
+export function createPlanStore(
+  db: GainframeDb,
+  repos: Repositories,
+  now: () => Date = () => new Date(),
+) {
   async function activePlan(): Promise<Plan | undefined> {
-    const setting = await db.settings.get('activePlanId')
-    const plan = setting && (await db.plans.get(setting.value))
-    return plan?.deletedAt === null ? plan : undefined
+    return activePlanOf(await db.plans.toArray())
   }
 
   // The live items of the day an item belongs to.
@@ -81,26 +85,27 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
     // Undefined when no plan is active or the active plan has been deleted.
     activePlan,
 
-    // Makes a plan the active one; null leaves no plan active.
-    async setActivePlan(planId: string | null): Promise<void> {
-      if (planId === null) {
-        await db.settings.delete('activePlanId')
-        return
-      }
-      if ((await repos.plans.get(planId)) === undefined) throw new Error(`No plan ${planId}`)
-      await db.settings.put({ key: 'activePlanId', value: planId })
+    // Makes a plan the active one. Its `activatedAt` always passes the current
+    // active plan's, even when the device clock has gone back.
+    async setActivePlan(planId: string): Promise<void> {
+      await db.transaction('rw', db.plans, db.outbox, async () => {
+        const current = await activePlan()
+        const activatedAt = current?.activatedAt
+        const at = activatedAt == null ? now().toISOString() : nextUpdatedAt(activatedAt, now())
+        await repos.plans.update(planId, { activatedAt: at })
+      })
     },
 
     // Every plan, oldest first.
     async list(): Promise<PlanSummary[]> {
       const plans = await db.plans.filter(live).toArray()
       const days = await db.planDays.filter(live).toArray()
-      const setting = await db.settings.get('activePlanId')
+      const active = activePlanOf(plans)
       return plans
         .toSorted((a, b) => a.createdAt.localeCompare(b.createdAt))
         .map((plan) => ({
           plan,
-          active: plan.id === setting?.value,
+          active: plan.id === active?.id,
           days: days.filter((day) => day.planId === plan.id).toSorted(byPosition),
         }))
     },
@@ -110,11 +115,11 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
       const plan = await db.plans.get(planId)
       const days = await db.planDays.where('planId').equals(planId).filter(live).toArray()
       const items = await db.planItems.where('planId').equals(planId).filter(live).toArray()
-      const setting = await db.settings.get('activePlanId')
+      const active = activePlanOf(await db.plans.toArray())
       if (plan?.deletedAt !== null) return null
       return {
         plan,
-        active: setting?.value === planId,
+        active: active?.id === planId,
         days: days.toSorted(byPosition).map((day) => ({
           day,
           items: items.filter((item) => item.planDayId === day.id).toSorted(byPosition),
@@ -124,13 +129,13 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
 
     // A new plan with its first day. The first plan a user makes becomes active.
     async create(name: string, firstDayName: string): Promise<Plan> {
-      const tables = [db.plans, db.planDays, db.outbox, db.settings]
-      return db.transaction('rw', tables, async () => {
-        const plan = await repos.plans.create({ name })
+      return db.transaction('rw', db.plans, db.planDays, db.outbox, async () => {
+        const first = (await activePlan()) === undefined
+        const plan = await repos.plans.create({
+          name,
+          activatedAt: first ? now().toISOString() : null,
+        })
         await repos.planDays.create({ planId: plan.id, name: firstDayName, position: 0 })
-        if ((await activePlan()) === undefined) {
-          await db.settings.put({ key: 'activePlanId', value: plan.id })
-        }
         return plan
       })
     },
@@ -215,16 +220,16 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
       workoutId: string,
       names: { plan: string; day: (n: number) => string },
     ): Promise<PlanDay> {
-      const tables = [db.plans, db.planDays, db.planItems, db.outbox, db.settings]
+      const tables = [db.plans, db.planDays, db.planItems, db.outbox]
       const reads = [db.workoutExercises, db.workoutSets]
       return db.transaction('rw', [...tables, ...reads], async () => {
         const slots = await db.workoutExercises.where('workoutId').equals(workoutId).toArray()
         const sets = await db.workoutSets.where('workoutId').equals(workoutId).toArray()
         let plan = await activePlan()
-        if (plan === undefined) {
-          plan = await repos.plans.create({ name: names.plan })
-          await db.settings.put({ key: 'activePlanId', value: plan.id })
-        }
+        plan ??= await repos.plans.create({
+          name: names.plan,
+          activatedAt: now().toISOString(),
+        })
         const days = await db.planDays.where('planId').equals(plan.id).toArray()
         const day = await repos.planDays.create({
           planId: plan.id,
@@ -242,9 +247,8 @@ export function createPlanStore(db: GainframeDb, repos: Repositories) {
     // its place in the rotation and its exercises. Null without an active plan
     // or when the plan has no days.
     async upNext(): Promise<UpNext | null> {
-      const setting = await db.settings.get('activePlanId')
-      const plan = setting && (await db.plans.get(setting.value))
-      if (plan?.deletedAt !== null) return null
+      const plan = activePlanOf(await db.plans.toArray())
+      if (plan === undefined) return null
       const days = await db.planDays.where('planId').equals(plan.id).toArray()
       const workouts = await db.workouts
         .where('planDayId')

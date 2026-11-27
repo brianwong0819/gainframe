@@ -29,8 +29,8 @@ describe('weight units', () => {
     expect(await db.settings.count()).toBe(1)
   })
 
-  it('leaves the active plan setting alone', async () => {
-    await db.settings.put({ key: 'activePlanId', value: 'plan' })
+  it('leaves other device settings alone', async () => {
+    await db.settings.put({ key: 'signInCardDismissed', value: 'true' })
     await units.set(BENCH, 'lb')
     expect(await units.all()).toEqual(new Map([[BENCH, 'lb']]))
   })

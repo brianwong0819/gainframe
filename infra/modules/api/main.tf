@@ -17,6 +17,16 @@ resource "aws_ssm_parameter" "database_url" {
   value_wo_version = 1
 }
 
+# The key the API calls Claude with on Anthropic's API (apps/api/src/ai/claude.ts,
+# ADR-0008). Set by the owner in the same way as the database URL.
+resource "aws_ssm_parameter" "anthropic_api_key" {
+  name             = "${var.ssm_prefix}/anthropic-api-key"
+  description      = "Anthropic API key for the API's AI calls."
+  type             = "SecureString"
+  value_wo         = "placeholder"
+  value_wo_version = 1
+}
+
 resource "aws_cloudwatch_log_group" "api" {
   name              = "/aws/lambda/${var.name}-api"
   retention_in_days = var.log_retention_days
@@ -50,7 +60,7 @@ data "aws_iam_policy_document" "api" {
   statement {
     sid       = "ReadOwnParameters"
     actions   = ["ssm:GetParameter"]
-    resources = [aws_ssm_parameter.database_url.arn]
+    resources = [aws_ssm_parameter.database_url.arn, aws_ssm_parameter.anthropic_api_key.arn]
   }
 
   # Written by the auth module; named here rather than referenced (see its comment).
@@ -60,8 +70,8 @@ data "aws_iam_policy_document" "api" {
     resources = ["arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/auth-config"]
   }
 
-  # Claude through Bedrock's Messages API endpoint (apps/api/src/ai/bedrock.ts),
-  # limited to the models apps/api/src/ai/config.ts names.
+  # Claude through Bedrock's Messages API endpoint when it is the configured
+  # provider (apps/api/src/ai/claude.ts), limited to the models in `ai_models`.
   statement {
     sid       = "CallClaude"
     actions   = ["bedrock-mantle:CreateInference"]
@@ -100,10 +110,11 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      DATABASE_URL_PARAMETER = aws_ssm_parameter.database_url.name
-      AUTH_CONFIG_PARAMETER  = "${var.ssm_prefix}/auth-config"
-      NODE_OPTIONS           = "--enable-source-maps"
-      RELEASE                = var.release
+      DATABASE_URL_PARAMETER      = aws_ssm_parameter.database_url.name
+      AUTH_CONFIG_PARAMETER       = "${var.ssm_prefix}/auth-config"
+      ANTHROPIC_API_KEY_PARAMETER = aws_ssm_parameter.anthropic_api_key.name
+      NODE_OPTIONS                = "--enable-source-maps"
+      RELEASE                     = var.release
     }
   }
 
