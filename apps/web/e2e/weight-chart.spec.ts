@@ -107,5 +107,6 @@ test('dragging along the weight chart reads each day without a long frame', asyn
     .parse(await page.evaluate((): unknown => Reflect.get(window, 'chartFrames')))
     .slice(1)
   expect(frames.length).toBeGreaterThanOrEqual(DRAG_STEPS)
-  expect(Math.max(...frames)).toBeLessThan(LONG_FRAME_MS)
+  // The message lists every frame, so a failure shows where the long one fell.
+  expect(Math.max(...frames), frames.map(Math.round).join(' ')).toBeLessThan(LONG_FRAME_MS)
 })
