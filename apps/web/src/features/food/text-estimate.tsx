@@ -18,12 +18,8 @@ import { Pressable } from '@/ui/pressable'
 
 import { pendingText, setPendingText } from './describe'
 import { EstimateConfirm, type EstimateRow, toRows } from './estimate-confirm'
-import {
-  type EstimateProblem,
-  ProblemNotice,
-  problemActionClass,
-  problemOf,
-} from './estimate-problem'
+import { type EstimateProblem, problemOf } from './estimate-error'
+import { ProblemNotice, problemActionClass } from './estimate-problem'
 import { EstimateSkeleton } from './photo-estimate'
 
 type Phase =

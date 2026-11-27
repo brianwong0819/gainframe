@@ -26,7 +26,7 @@ describe('clearAllData', () => {
       equipment: 'dumbbell',
       defaultRestS: 120,
     })
-    await db.settings.put({ key: 'activePlanId', value: 'plan-1' })
+    await db.settings.put({ key: 'signInCardDismissed', value: 'true' })
     await db.errors.add({
       source: 'error',
       message: 'boom',
@@ -42,7 +42,7 @@ describe('clearAllData', () => {
     const counts = await Promise.all(db.tables.map((table) => table.count()))
     expect(counts.every((count) => count === 0)).toBe(true)
     expect(db.verno).toBeGreaterThan(1)
-    await db.settings.put({ key: 'activePlanId', value: 'plan-2' })
+    await db.settings.put({ key: 'signInCardDismissed', value: 'false' })
     expect(await db.settings.count()).toBe(1)
   })
 
@@ -50,7 +50,7 @@ describe('clearAllData', () => {
     await db.settings.bulkPut([
       { key: 'authSession', value: '{"userId":"sub-1"}' },
       { key: 'syncCursor', value: '{"userId":"sub-1","cursor":9}' },
-      { key: 'activePlanId', value: 'plan-1' },
+      { key: 'signInCardDismissed', value: 'true' },
     ])
     await db.outbox.add({ table: 'exercises', rowId: 'row-1' })
 

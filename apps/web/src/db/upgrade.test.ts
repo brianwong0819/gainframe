@@ -42,7 +42,7 @@ describe('Dexie schema upgrades', () => {
     ])
     expect(await current.errors.count()).toBe(0)
     expect(await current.foods.count()).toBe(0)
-    expect(current.verno).toBe(14)
+    expect(current.verno).toBe(16)
     current.close()
   })
 
@@ -71,7 +71,7 @@ describe('Dexie schema upgrades', () => {
     const v3 = new GainframeDb('upgrade', options)
     expect(await v3.exercises.get(exercise.id)).toEqual({ ...exercise, secondaryMuscles: [] })
     expect(await v3.outbox.count()).toBe(0)
-    expect(v3.verno).toBe(14)
+    expect(v3.verno).toBe(16)
     v3.close()
   })
 
@@ -175,7 +175,7 @@ describe('Dexie schema upgrades', () => {
     expect(v5.tables.map((table) => table.name)).not.toContain('templates')
     expect(await v5.settings.count()).toBe(0)
     expect(await v5.outbox.count()).toBe(0)
-    expect(v5.verno).toBe(14)
+    expect(v5.verno).toBe(16)
     v5.close()
   })
 
@@ -224,7 +224,7 @@ describe('Dexie schema upgrades', () => {
       planNote: null,
     })
     expect(await v6.outbox.count()).toBe(0)
-    expect(v6.verno).toBe(14)
+    expect(v6.verno).toBe(16)
     v6.close()
   })
 
@@ -289,7 +289,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v7.planItems.get(item.id)).toEqual({ ...item, note: null })
     expect(await v7.workoutExercises.get(slot.id)).toEqual({ ...slot, planNote: null })
     expect(await v7.outbox.count()).toBe(0)
-    expect(v7.verno).toBe(14)
+    expect(v7.verno).toBe(16)
     v7.close()
   })
 
@@ -338,7 +338,7 @@ describe('Dexie schema upgrades', () => {
       restEndsAt: null,
     })
     expect(await v8.outbox.count()).toBe(0)
-    expect(v8.verno).toBe(14)
+    expect(v8.verno).toBe(16)
     v8.close()
   })
 
@@ -426,7 +426,7 @@ describe('Dexie schema upgrades', () => {
       slot(1, 0).id,
       slot(2, 0).id,
     ])
-    expect(v9.verno).toBe(14)
+    expect(v9.verno).toBe(16)
     v9.close()
   })
 
@@ -463,7 +463,7 @@ describe('Dexie schema upgrades', () => {
     expect(await v10.meals.where('localDate').equals('2026-11-22').count()).toBe(0)
     expect(await v10.profiles.count()).toBe(0)
     expect(await v10.outbox.count()).toBe(1)
-    expect(v10.verno).toBe(14)
+    expect(v10.verno).toBe(16)
     v10.close()
   })
 
@@ -515,7 +515,7 @@ describe('Dexie schema upgrades', () => {
     })
     expect(await v12.bodyMetrics.where('localDate').equals('2026-11-23').count()).toBe(0)
     expect(await v12.outbox.count()).toBe(0)
-    expect(v12.verno).toBe(14)
+    expect(v12.verno).toBe(16)
     v12.close()
   })
 
@@ -572,5 +572,121 @@ describe('Dexie schema upgrades', () => {
     expect((await v13.exercises.get('backed-up'))?.updatedAt).toBe('2026-11-22T10:00:00.000Z')
     expect(await v13.outbox.count()).toBe(1)
     v13.close()
+  })
+
+  it('adds an empty table for photos kept offline in version 15, keeping the foods', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v14 = new Dexie('upgrade', options)
+    v14.version(1).stores(STORES_V1)
+    v14.version(2).stores({ errors: '++seq' })
+    v14.version(3).stores({})
+    v14.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v14.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    for (const version of [6, 7, 8, 9]) v14.version(version).stores({})
+    v14.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
+    v14.version(11).stores({ profiles: 'id' })
+    v14.version(12).stores({ bodyMetrics: 'id, localDate' })
+    v14.version(13).stores({})
+    v14.version(14).stores({ foods: 'id, tableId' })
+    await v14.table('foods').add({ id: 'food-1', tableId: null })
+    v14.close()
+
+    const v15 = new GainframeDb('upgrade', options)
+    expect(await v15.pendingPhotos.where('localDate').equals('2026-11-24').count()).toBe(0)
+    expect(await v15.foods.count()).toBe(1)
+    expect(v15.verno).toBe(16)
+    v15.close()
+  })
+
+  it('moves the active plan setting onto the plan in version 16 and queues it for backup', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+    const plan = (id: string, deletedAt: string | null = null) => ({
+      id,
+      userId: 'sub-1',
+      createdAt: '2026-11-22T10:00:00.000Z',
+      updatedAt: '2026-11-22T10:00:00.000Z',
+      deletedAt,
+      name: id,
+    })
+
+    const v15 = new Dexie('upgrade', options)
+    v15.version(1).stores(STORES_V1)
+    v15.version(2).stores({ errors: '++seq' })
+    v15.version(3).stores({})
+    v15.version(4).stores({
+      workoutExercises: 'id, workoutId, exerciseId',
+      workoutSets: 'id, workoutId, exerciseId, workoutExerciseId',
+    })
+    v15.version(5).stores({
+      templates: null,
+      templateItems: null,
+      plans: 'id',
+      planDays: 'id, planId',
+      planItems: 'id, planId, planDayId',
+      workouts: 'id, startedAt, planDayId',
+      settings: 'key',
+    })
+    for (const version of [6, 7, 8, 9]) v15.version(version).stores({})
+    v15.version(10).stores({ meals: 'id, localDate', mealItems: 'id, mealId' })
+    v15.version(11).stores({ profiles: 'id' })
+    v15.version(12).stores({ bodyMetrics: 'id, localDate' })
+    v15.version(13).stores({})
+    v15.version(14).stores({ foods: 'id, tableId' })
+    v15.version(15).stores({ pendingPhotos: 'id, localDate' })
+    await v15.table('plans').bulkAdd([plan('active'), plan('other')])
+    await v15.table('settings').bulkAdd([
+      { key: 'activePlanId', value: 'active' },
+      { key: 'lastSyncAt', value: '2026-11-22T11:00:00.000Z' },
+    ])
+    v15.close()
+
+    const v16 = new GainframeDb('upgrade', options)
+    const active = await v16.plans.get('active')
+    expect(active?.activatedAt).toEqual(expect.any(String))
+    expect(Date.parse(active?.updatedAt ?? '')).toBeGreaterThan(
+      Date.parse('2026-11-22T10:00:00.000Z'),
+    )
+    expect(await v16.plans.get('other')).toEqual({ ...plan('other'), activatedAt: null })
+    expect(await v16.outbox.toArray()).toEqual([{ seq: 1, table: 'plans', rowId: 'active' }])
+    expect(await v16.settings.toArray()).toEqual([
+      { key: 'lastSyncAt', value: '2026-11-22T11:00:00.000Z' },
+    ])
+    v16.close()
+  })
+
+  it('leaves no plan active in version 16 when the setting named a deleted plan', async () => {
+    const indexedDB = new IDBFactory()
+    const options = { indexedDB, IDBKeyRange }
+
+    const v15 = new Dexie('upgrade', options)
+    v15.version(1).stores(STORES_V1)
+    v15.version(2).stores({ errors: '++seq' })
+    v15.version(3).stores({})
+    v15.version(4).stores({})
+    v15.version(5).stores({ templates: null, templateItems: null, plans: 'id', settings: 'key' })
+    for (const version of [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) v15.version(version).stores({})
+    await v15.table('plans').add({ id: 'gone', deletedAt: '2026-11-23T10:00:00.000Z' })
+    await v15.table('settings').add({ key: 'activePlanId', value: 'gone' })
+    v15.close()
+
+    const v16 = new GainframeDb('upgrade', options)
+    expect((await v16.plans.get('gone'))?.activatedAt).toBeNull()
+    expect(await v16.outbox.count()).toBe(0)
+    expect(await v16.settings.count()).toBe(0)
+    v16.close()
   })
 })

@@ -239,7 +239,7 @@ describe('setWeight', () => {
 
 describe('startFromPlanDay', () => {
   async function pushDay() {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const plan = await repos.plans.create({ name: 'Push Pull Legs', activatedAt: null })
     const day = await repos.planDays.create({ planId: plan.id, name: 'Push', position: 0 })
     const item = (exerciseId: string, position: number, targetSets: number, restS: number | null) =>
       repos.planItems.create({

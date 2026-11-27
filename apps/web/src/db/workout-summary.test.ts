@@ -91,7 +91,7 @@ describe('loadWorkoutSummary', () => {
   })
 
   it('carries the last time the same plan day was done', async () => {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const plan = await repos.plans.create({ name: 'Push Pull Legs', activatedAt: null })
     const day = await repos.planDays.create({ planId: plan.id, name: 'Push', position: 0 })
     await repos.planItems.create({
       planId: plan.id,

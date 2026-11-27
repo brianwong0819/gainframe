@@ -55,7 +55,12 @@ export {
   estimateTargets,
   type TargetEstimate,
 } from './domain/target-estimate.ts'
-export { nextPlanDay, planItemsFromWorkout, type PlanItemValues } from './domain/plan.ts'
+export {
+  activePlanOf,
+  nextPlanDay,
+  planItemsFromWorkout,
+  type PlanItemValues,
+} from './domain/plan.ts'
 export {
   adjustRestEnd,
   type RestState,

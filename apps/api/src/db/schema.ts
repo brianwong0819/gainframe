@@ -64,6 +64,7 @@ export const plans = pgTable(
   {
     ...syncedColumns,
     name: text('name').notNull(),
+    activatedAt: instant('activated_at'),
   },
   pullIndex('plans'),
 )

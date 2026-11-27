@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import type { PlanDay } from '../schemas/plan.ts'
+import type { Plan, PlanDay } from '../schemas/plan.ts'
 import { localDateSchema } from '../schemas/row.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { nextPlanDay, planItemsFromWorkout } from './plan.ts'
+import { activePlanOf, nextPlanDay, planItemsFromWorkout } from './plan.ts'
 
 const PLAN = '01960000-0000-7000-8000-0000000000f1'
 const DELETED = '2026-11-03T09:00:00.000Z'
@@ -183,5 +183,35 @@ describe('planItemsFromWorkout', () => {
         note: null,
       },
     ])
+  })
+})
+
+describe('activePlanOf', () => {
+  function plan(n: number, activatedAt: string | null, fields: Partial<Plan> = {}): Plan {
+    return {
+      ...row,
+      id: `01960000-0000-7000-8000-00000000010${String(n)}`,
+      name: `Plan ${String(n)}`,
+      activatedAt,
+      ...fields,
+    }
+  }
+
+  it('is undefined when no plan has been made active', () => {
+    expect(activePlanOf([])).toBeUndefined()
+    expect(activePlanOf([plan(1, null), plan(2, null)])).toBeUndefined()
+  })
+
+  it('picks the plan made active most recently', () => {
+    const first = plan(1, '2026-11-02T10:00:00.000Z')
+    const later = plan(2, '2026-11-05T10:00:00.000Z')
+    expect(activePlanOf([later, first, plan(3, null)])).toBe(later)
+    expect(activePlanOf([first, later])).toBe(later)
+  })
+
+  it('skips a deleted plan', () => {
+    const kept = plan(1, '2026-11-02T10:00:00.000Z')
+    const deleted = plan(2, '2026-11-05T10:00:00.000Z', { deletedAt: DELETED })
+    expect(activePlanOf([kept, deleted])).toBe(kept)
   })
 })

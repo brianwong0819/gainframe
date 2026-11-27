@@ -196,7 +196,14 @@
     "trainedDay": "Trained {day} today",
     "fromTraining": "From training",
     "fillHeading": "Fill it with your usual",
-    "fillSum": "Together {protein} g protein · {kcal} kcal"
+    "fillSum": "Together {protein} g protein · {kcal} kcal",
+    "keptPhotos": "Waiting for an estimate",
+    "keptState": {
+      "waiting": "Estimated once you are online",
+      "ready": "Estimate ready, tap to confirm",
+      "stopped": "No estimate, tap to see why"
+    },
+    "keptNotCounted": "Not counted yet"
   },
   "language": {
     "label": "Language",
@@ -602,7 +609,7 @@
     },
     "offline": {
       "title": "No connection",
-      "body": "AI estimates run on the server. Retry once you are online, or enter the meal by hand."
+      "body": "AI estimates run on the server. Keep the photo on this phone: it is estimated when you are back online, and then you confirm it."
     },
     "failed": {
       "title": "The estimate did not come back",
@@ -690,7 +697,11 @@
     "no_text_food": {
       "title": "No food in the description",
       "body": "Name what you ate and roughly how much, for example \"chicken rice, extra chicken\"."
-    }
+    },
+    "keep": "Keep it for later",
+    "keptGone": "This photo has already been logged or deleted.",
+    "discard": "Delete this photo",
+    "discardConfirm": "Tap again to delete"
   },
   "describe": {
     "title": "Describe a meal",

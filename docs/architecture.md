@@ -7,15 +7,15 @@ The approved shape of the system. Anything not described here needs bw's OK (and
 ```
 iPhone PWA (Next.js static export)
   ├─ UI reads/writes Dexie (IndexedDB)  ← source of truth on the device
-  ├─ Sync engine: outbox → POST /api/sync/push, GET /api/sync/pull
-  └─ Photos: PUT directly to S3 with a presigned URL
+  └─ Sync engine: outbox → POST /api/sync/push, GET /api/sync/pull
+     (meal photos go only to the estimate request; none is stored on the server)
         │
 CloudFront (one domain)
   ├─ /*      → S3 (static site, OAC)
   └─ /api/*  → Lambda Function URL (Hono, Node.js, zip)
                  ├─ Cognito JWT verification
                  ├─ Neon Postgres (Drizzle over the `pg` driver)
-                 ├─ AI service layer → Bedrock (Claude)
+                 ├─ AI service layer → Claude (Anthropic API; Bedrock when enabled)
                  └─ Web Push
 EventBridge Scheduler → Lambda (weekly report, plateau check, one-off rest-timer push)
 SSM Parameter Store (secrets) · CloudWatch (logs, alarms) · AWS Budgets
@@ -76,16 +76,18 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 | profiles | protein_mode (fixed) + protein_value, kcal_target (M3-02, the daily targets set from the Food tab); sex, birth_year, height_cm, activity_level (sedentary/light/moderate/high/veryHigh), phase (bulk/maintain/cut), all nullable, for the target calculator (M4-01, sync version 4); the g/kg protein mode follows with M4-01's remaining parts; later default_rest_s, locale, timezone. One per user in meaning; the device reads the most recently updated row (ADR-0003). Sync version 3 added it |
 | body_metrics | measured_at, local_date, weight_kg, body_fat_pct, skeletal_muscle_kg, fat_mass_kg (the last three nullable), source (manual/scan/health). Sync version 4 added it; the target calculator writes the first row |
 | exercises | name_zh, name_en, muscle, equipment, default_rest_s (custom exercises only; built-ins are the constant `BUILT_IN_EXERCISES` in `packages/shared/src/built-in-exercises.ts` with fixed IDs) |
-| plans / plan_days / plan_items | name; plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s, note (no weight; which plan is active is a device setting, not a column; the members of a superset share one target_sets, its rounds, and one rest_s, taken after each round) |
+| plans / plan_days / plan_items | name, activated_at (the active plan is the live one with the latest); plan_id, name, position (the rotation order); plan_id, plan_day_id, exercise_id, position, superset_group, target_sets, reps_min, reps_max, rest_s, note (no weight; the members of a superset share one target_sets, its rounds, and one rest_s, taken after each round) |
 | workouts | started_at, ended_at, plan_day_id (the plan day followed, if any), local_date, note, rest_started_at, rest_ends_at (the rest in progress, so a relaunch shows it) |
 | workout_exercises | workout_id, exercise_id, position, superset_group, note, plan_note (copied from the plan item), reps_min, reps_max, rest_s (one exercise slot in a workout, mirroring plan_items; a slot started from a plan copies the item's rep range and rest, all null for an exercise added by hand; the members of a superset share one rest_s; the same exercise may take two slots) |
 | workout_sets | workout_exercise_id, workout_id, exercise_id (both copied from the slot at creation, never changed), position (within the slot), kind (warmup/working/drop/failure), weight_kg, reps, rpe, completed_at |
-| meals / meal_items | eaten_at, local_date, meal_type (breakfast/lunch/dinner/snack), name (the dish name a model gave, else null), photo_key; meal_id, position, name, grams, protein_g, kcal (for the portion eaten), source (ai/manual/frequent/table; sync version 5 added table), ai_raw jsonb (the model's own estimate of the item before correction). A meal's figures are the sum of its live items (`nutritionTotals`); deleting a meal soft-deletes its items. Sync version 2 added both tables |
+| meals / meal_items | eaten_at, local_date, meal_type (breakfast/lunch/dinner/snack), name (the dish name a model gave, else null), photo_key (always null: photos are not stored on the server, bw 2026-11-24); meal_id, position, name, grams, protein_g, kcal (for the portion eaten), source (ai/manual/frequent/table; sync version 5 added table), ai_raw jsonb (the model's own estimate of the item before correction). A meal's figures are the sum of its live items (`nutritionTotals`); deleting a meal soft-deletes its items. Sync version 2 added both tables |
 | foods | table_id (the food table entry this row edits, else null for the user's own food), name, protein_per100_g, kcal_per100_g, servings jsonb (`[{ label, grams }]`, the first is the one a tap adds). An edit replaces its entry for the user wherever the table is read (`foodLibrary`); deleting it restores the entry; the device keeps the latest edit per entry. Meal items copy a portion's figures, so an edit never changes a logged meal. Sync version 6 added it (M3-12) |
 | weekly_summaries | week_start, stats jsonb, body, model, tokens_in, tokens_out |
 | nudges | kind (reminder/plateau), rule, snapshot jsonb, analysis, model, prompt_version, sent_at, read_at |
 | push_subscriptions | endpoint, keys |
 | ai_usage | user_id, day (UTC date, so a client cannot reset its cap by sending another date), feature, calls, input_tokens, output_tokens (server-only; a call is counted before it is made, which enforces the daily cap) |
+
+Device-only Dexie tables, never synced or exported: `outbox`, `errors`, `settings`, and `pendingPhotos` (M3-03): a meal photo taken offline (the shrunk JPEG as base64, time, day, meal type) with its estimate once the app is online again; confirming it logs the meal and deletes the row in one transaction (`src/db/pending-photos.ts`, `src/features/food/photo-queue.ts`).
 
 ## Sync rules (details in [ADR-0003](adr/0003-data-model-and-sync.md))
 
@@ -101,7 +103,7 @@ All synced tables: `id uuid` (client-generated UUIDv7), `user_id`, `created_at`,
 CloudFront adds the same response headers policy (`infra/modules/site`) to every response, the API's included: `Content-Security-Policy`, `Strict-Transport-Security` (two years, subdomains, no preload on the default `*.cloudfront.net` name), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: same-origin`.
 
 - **Content-Security-Policy.** The header is built from `infra/modules/site/content-security-policy.txt`, one directive per line; everything is `'self'`, plugins are off, `<base>` is forbidden and no site may frame the app. A static export renders the React Server Components payload and the Turbopack bootstrap as inline scripts, and no request exists to give them a nonce, so the header must allow `'unsafe-inline'` scripts. `scripts/csp-hashes.ts` closes that gap after `next build`: each page gets a `<meta>` policy `script-src 'self' 'sha256-…'` with the hashes of its own inline scripts. The browser enforces both policies, so only those scripts run. Inline styles stay allowed (React `style` attributes, the Next.js error page); they cannot run code.
-- **Adding an origin.** A feature that talks to another origin adds it to the policy file in the same PR: Cognito's token endpoint (M2-02) under `connect-src` as `https://*.auth.ap-southeast-1.amazoncognito.com`, which covers every environment's prefix domain (managed login is a top-level navigation, which the policy does not restrict, and its forms are governed by Cognito's own policy), the photo bucket's presigned `PUT` (M3-03) under `connect-src`, and `blob:` under `img-src` for a local photo preview.
+- **Adding an origin.** A feature that talks to another origin adds it to the policy file in the same PR: Cognito's token endpoint (M2-02) under `connect-src` as `https://*.auth.ap-southeast-1.amazoncognito.com`, which covers every environment's prefix domain (managed login is a top-level navigation, which the policy does not restrict, and its forms are governed by Cognito's own policy), and nothing for photos: the estimate request is same-origin and the previews are `data:` URLs, which `img-src` already allows.
 - **Zod.** Zod tries `new Function` whenever a `z.object()` is created, which the policy blocks and the browser reports as a violation. `src/zod-config.ts` sets `z.config({ jitless: true })` and is the first import of `src/instrumentation-client.ts`, which Next.js runs before the rest of the client code (a module imported before it could build a schema first); the server keeps the faster compiled parsers.
 - **Tests.** The e2e server (`apps/web/e2e/serve.ts`) sends the same header from the same file, and `e2e/csp.spec.ts` fails on any policy violation on every device in the matrix.
 
@@ -133,7 +135,7 @@ Goal: any problem bw sees on the phone can be traced to a log line in minutes, w
 - **Next.js static export** limits — see CLAUDE.md.
 - **Service worker build.** Serwist's Next.js integrations need webpack (`@serwist/next`) or a route handler (`@serwist/turbopack`); neither fits a Turbopack static export. `scripts/build-sw.ts` instead bundles `src/sw/sw.ts` with rolldown after `next build` and injects the list of files in `out/` with `@serwist/build`. The worker precaches the whole export and caches nothing at runtime; `/api/*` always goes to the network. It does not call `skipWaiting` on its own, so a release takes over only after every window of the previous one is closed, or when the user taps "Update" on Today: `src/pwa/update.ts` notices the waiting worker (also checking on each return to the foreground), posts Serwist's `SKIP_WAITING` message and reloads on `controllerchange`. The prompt is hidden while a workout is in progress.
 - **Neon free tier** auto-suspends; the first query after idle is slower. Use the pooled connection string from Lambda. An external caller that queries the database keeps the compute awake and spends free-tier compute hours, so the public `GET /api/health` never touches it; the database check runs only when the function is invoked directly with `{ "check": "database" }`, which needs `lambda:InvokeFunction` (`apps/api/src/database-check.ts`). The deploy smoke test invokes it with the apply role.
-- **Bedrock in ap-southeast-1**: the API calls Claude through Bedrock's Messages API endpoint (`bedrock-mantle`), which in this Region routes requests globally to any commercial Region. Accepted for this project (no data-residency requirement). See "Bedrock model availability" in `docs/ai.md`. Model IDs live in config, never in code.
+- **Claude**: the API calls Claude through Anthropic's API while Bedrock does not offer Claude Haiku 5.5 to the account ([ADR-0008](adr/0008-anthropic-api-provider.md)); Bedrock's Messages API endpoint (`bedrock-mantle`), which in ap-southeast-1 routes requests globally, stays as the other provider. Neither keeps data in one Region; accepted for this project (no data-residency requirement). See "Providers" in `docs/ai.md`. Model IDs live in config, never in code.
 
 ## Not in this architecture (on purpose)
 

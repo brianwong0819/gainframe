@@ -8,6 +8,8 @@ const envSchema = databaseEnvSchema.extend({
   // The Cognito user pool's issuer and the web app's client (auth.ts).
   AUTH_ISSUER: z.url({ protocol: /^https$/ }),
   AUTH_CLIENT_ID: z.string().min(1),
+  // For the `anthropic` AI provider (src/ai/config.ts); without it AI calls fail.
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -38,6 +40,7 @@ export function parseDatabaseUrl(source: Record<string, string | undefined>): st
 const lambdaEnvSchema = z.object({
   DATABASE_URL_PARAMETER: z.string().startsWith('/gainframe/'),
   AUTH_CONFIG_PARAMETER: z.string().startsWith('/gainframe/'),
+  ANTHROPIC_API_KEY_PARAMETER: z.string().startsWith('/gainframe/'),
 })
 
 // Written by infra/modules/auth as JSON.
@@ -51,15 +54,17 @@ export async function loadLambdaEnv(
   if (!result.success) {
     throw new Error(`Invalid Lambda environment:\n${z.prettifyError(result.error)}`)
   }
-  const [databaseUrl, authConfig] = await Promise.all([
+  const [databaseUrl, authConfig, anthropicApiKey] = await Promise.all([
     getParameter(result.data.DATABASE_URL_PARAMETER),
     getParameter(result.data.AUTH_CONFIG_PARAMETER),
+    getParameter(result.data.ANTHROPIC_API_KEY_PARAMETER),
   ])
   const auth = authParameterSchema.parse(JSON.parse(authConfig))
   return parseEnv({
     DATABASE_URL: databaseUrl,
     AUTH_ISSUER: auth.issuer,
     AUTH_CLIENT_ID: auth.clientId,
+    ANTHROPIC_API_KEY: anthropicApiKey,
   })
 }
 

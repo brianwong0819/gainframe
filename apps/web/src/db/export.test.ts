@@ -31,7 +31,7 @@ function newExercise(nameZh: string) {
 
 describe('exportData', () => {
   it('leaves out the signed-in session, whose tokens must not leave the app, and the sync settings', async () => {
-    await db.settings.put({ key: 'activePlanId', value: 'plan-1' })
+    await db.settings.put({ key: 'signInCardDismissed', value: 'true' })
     await db.settings.put({ key: 'syncCursor', value: '{"userId":"sub-1","cursor":3}' })
     await db.settings.put({ key: 'lastSyncAt', value: '2026-11-16T03:00:00.000Z' })
     await saveSession(db, {
@@ -46,14 +46,14 @@ describe('exportData', () => {
 
     const data = await exportData(db, 'abc1234', '2026-11-16T03:05:00.000Z')
 
-    expect(data.tables.settings).toEqual([{ key: 'activePlanId', value: 'plan-1' }])
+    expect(data.tables.settings).toEqual([{ key: 'signInCardDismissed', value: 'true' }])
   })
 
   it('copies every data table, deleted rows included, and leaves out the outbox and error log', async () => {
     const kept = await newExercise('上斜哑铃卧推')
     const removed = await newExercise('哑铃飞鸟')
     await repos.exercises.remove(removed.id)
-    await db.settings.put({ key: 'activePlanId', value: 'plan-1' })
+    await db.settings.put({ key: 'signInCardDismissed', value: 'true' })
     await db.errors.add({
       source: 'error',
       message: 'boom',
@@ -78,7 +78,7 @@ describe('exportData', () => {
         [removed.id, true],
       ]),
     )
-    expect(data.tables.settings).toEqual([{ key: 'activePlanId', value: 'plan-1' }])
+    expect(data.tables.settings).toEqual([{ key: 'signInCardDismissed', value: 'true' }])
     expect(Object.keys(data.tables).sort()).toEqual([
       'bodyMetrics',
       'exercises',

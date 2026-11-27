@@ -3,13 +3,25 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { toLocalDate } from '@gainframe/shared'
 
-import { createWorkoutSession } from './workout-session'
+import { clearAllData } from './clear'
 import { createPlanStore, type PlanStore } from './plans'
 import { createRepositories, type Repositories } from './repositories'
 import { GainframeDb } from './schema'
+import { applyPulledPage } from './sync'
+import { createWorkoutSession } from './workout-session'
 
 const BENCH = '00000000-0000-7000-8000-000000000001'
 const SQUAT = '00000000-0000-7000-8000-000000000002'
+
+const SESSION = {
+  userId: 'sub-1',
+  email: 'someone@example.com',
+  accessToken: 'access',
+  accessExpiresAt: '2026-11-09T11:00:00.000Z',
+  refreshToken: 'refresh',
+  expired: false,
+  method: 'email',
+}
 
 let db: GainframeDb
 let repos: Repositories
@@ -20,7 +32,7 @@ beforeEach(() => {
   db = new GainframeDb('test', { indexedDB: new IDBFactory(), IDBKeyRange })
   clock = new Date('2026-11-09T10:00:00.000Z')
   repos = createRepositories(db, () => clock)
-  plans = createPlanStore(db, repos)
+  plans = createPlanStore(db, repos, () => clock)
 })
 
 afterEach(() => {
@@ -43,31 +55,52 @@ async function finishedWorkout(planDayId: string) {
 
 describe('plan store', () => {
   it('keeps one active plan and switches it', async () => {
-    const ppl = await repos.plans.create({ name: 'Push Pull Legs' })
-    const upperLower = await repos.plans.create({ name: 'Upper Lower' })
+    const ppl = await repos.plans.create({ name: 'Push Pull Legs', activatedAt: null })
+    const upperLower = await repos.plans.create({ name: 'Upper Lower', activatedAt: null })
     expect(await plans.activePlan()).toBeUndefined()
 
     await plans.setActivePlan(ppl.id)
-    expect(await plans.activePlan()).toEqual(ppl)
+    expect((await plans.activePlan())?.id).toBe(ppl.id)
+    clock = new Date(clock.getTime() + 60_000)
     await plans.setActivePlan(upperLower.id)
-    expect(await plans.activePlan()).toEqual(upperLower)
-    await plans.setActivePlan(null)
-    expect(await plans.activePlan()).toBeUndefined()
+    expect((await plans.activePlan())?.id).toBe(upperLower.id)
+    const listed = await plans.list()
+    expect(listed.filter(({ active }) => active).map(({ plan }) => plan.id)).toEqual([
+      upperLower.id,
+    ])
+    expect((await plans.load(ppl.id))?.active).toBe(false)
   })
 
   it('has no active plan once the active plan is deleted', async () => {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
+    const plan = await repos.plans.create({ name: 'Push Pull Legs', activatedAt: null })
     await plans.setActivePlan(plan.id)
     await repos.plans.remove(plan.id)
     expect(await plans.activePlan()).toBeUndefined()
     await expect(plans.setActivePlan(plan.id)).rejects.toThrow()
   })
 
-  it('does not sync which plan is active', async () => {
-    const plan = await repos.plans.create({ name: 'Push Pull Legs' })
-    const outbox = await db.outbox.count()
-    await plans.setActivePlan(plan.id)
-    expect(await db.outbox.count()).toBe(outbox)
+  // The choice used to be a device setting, so a device cleared and downloaded
+  // again (sign out and in, "Clear all data", a second device) lost it.
+  it('backs up which plan is active, so a device that downloads the account again keeps it', async () => {
+    await plans.create('Push Pull Legs', 'Push')
+    const upperLower = await plans.create('Upper Lower', 'Upper')
+    await db.outbox.clear()
+    await plans.setActivePlan(upperLower.id)
+    expect(await db.outbox.toArray()).toEqual([
+      expect.objectContaining({ table: 'plans', rowId: upperLower.id }),
+    ])
+
+    const account = [
+      ...(await db.plans.toArray()).map((row) => ({ table: 'plans' as const, row })),
+      ...(await db.planDays.toArray()).map((row) => ({ table: 'planDays' as const, row })),
+    ]
+    await db.settings.put({ key: 'authSession', value: JSON.stringify(SESSION) })
+    await clearAllData(db, { keepSession: true })
+    expect(await plans.activePlan()).toBeUndefined()
+
+    expect(await applyPulledPage(db, SESSION.userId, account, 1)).toEqual([])
+    expect((await plans.activePlan())?.id).toBe(upperLower.id)
+    expect((await plans.upNext())?.plan.id).toBe(upperLower.id)
   })
 
   it("offers the active plan's day after its latest finished workout", async () => {

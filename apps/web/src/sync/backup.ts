@@ -2,7 +2,8 @@
 // returning, the app coming back to the foreground, a sign-in, and each change
 // written to the outbox (after a short delay, so a burst of sets goes in one
 // push). Null in a build without sign-in. After each successful run the
-// recorded errors go to the API too (diagnostics/error-reports.ts).
+// recorded errors go to the API too (diagnostics/error-reports.ts), and the
+// photos kept while offline are estimated (features/food/photo-queue.ts).
 import { syncConfig } from '@gainframe/shared'
 import { liveQuery } from 'dexie'
 
@@ -12,6 +13,7 @@ import { db } from '../db/client'
 import { readBackupState } from '../db/sync'
 import { sendErrorReports } from '../diagnostics/error-reports'
 import { reportError } from '../diagnostics/report'
+import { estimateKeptPhotos } from '../features/food/photo-queue'
 
 import { createSyncEngine } from './engine'
 
@@ -102,12 +104,27 @@ export function startBackup(): () => void {
         reporting = false
       })
   })
+  // One run of the kept photos at a time; its own problems leave each photo
+  // waiting, so only an unexpected error is recorded.
+  let estimating = false
+  const stopEstimates = engine.subscribe(() => {
+    if (engine.getStatus().phase !== 'idle' || estimating) return
+    estimating = true
+    estimateKeptPhotos(db, api)
+      .catch((error: unknown) => {
+        reportError('api', error)
+      })
+      .finally(() => {
+        estimating = false
+      })
+  })
   window.addEventListener('online', run)
   document.addEventListener('visibilitychange', onVisible)
   return () => {
     clearTimeout(pushTimer)
     changes.unsubscribe()
     stopReports()
+    stopEstimates()
     window.removeEventListener('online', run)
     document.removeEventListener('visibilitychange', onVisible)
   }

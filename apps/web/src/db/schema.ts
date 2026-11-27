@@ -5,8 +5,13 @@ import {
   type ClientError,
   type Exercise,
   type Food,
+  type FoodEstimateRequest,
+  type FoodEstimateResponse,
+  type LocalDate,
   type Meal,
   type MealItem,
+  type MealType,
+  type PhotoIssue,
   type Plan,
   type PlanDay,
   type PlanItem,
@@ -37,9 +42,8 @@ export interface ErrorLogEntry extends ClientError {
   seq: number
 }
 
-// A setting that belongs to this device and never syncs. `activePlanId` names
-// the plan the Workout tab offers; keeping it here rather than as a flag on plan
-// rows means two devices can never both mark a plan active.
+// A setting that belongs to this device and never syncs, so it is lost when
+// the device is emptied and downloads the account again (L-051).
 // `weightUnit:<exerciseId>` is the unit that exercise is shown and typed in when
 // it is not kg (db/weight-units.ts). `authSession` is the signed-in session as
 // JSON (db/auth-session.ts, ADR-0007). `syncCursor` is the pull cursor and the
@@ -48,13 +52,29 @@ export interface ErrorLogEntry extends ClientError {
 // `errorsReportedSeq` is the last error log entry sent to the API
 // (diagnostics/error-reports.ts).
 export type DeviceSetting =
-  | { key: 'activePlanId'; value: string }
   | { key: `weightUnit:${string}`; value: string }
   | { key: 'authSession'; value: string }
   | { key: 'syncCursor'; value: string }
   | { key: 'lastSyncAt'; value: string }
   | { key: 'signInCardDismissed'; value: string }
   | { key: 'errorsReportedSeq'; value: string }
+
+// A meal photo taken while offline (M3-03), kept on this device only and never
+// synced or exported: the photo is personal and only the estimate needs it. It
+// is estimated when the app is next online and backed up (food/photo-queue.ts);
+// the user then confirms it, which logs the meal at `takenAt` and deletes the
+// row. `estimate` is the result once there is one; `stoppedBy` is why the
+// estimate stopped when retrying would not help: the model could not count the
+// photo or refused it, or the account has no AI features.
+export interface PendingPhoto {
+  id: string
+  takenAt: string
+  localDate: LocalDate
+  mealType: MealType
+  photo: FoodEstimateRequest['photo']
+  estimate: FoodEstimateResponse | null
+  stoppedBy: PhotoIssue | 'refused' | 'notEnabled' | null
+}
 
 // Version 1 (M1-02), kept as written: Dexie upgrades an existing database from
 // it, and db/upgrade.test.ts opens it to build the old database.
@@ -82,6 +102,7 @@ export class GainframeDb extends Dexie {
   profiles!: Table<Profile, string>
   bodyMetrics!: Table<BodyMetric, string>
   foods!: Table<Food, string>
+  pendingPhotos!: Table<PendingPhoto, string>
   outbox!: EntityTable<OutboxEntry, 'seq'>
   errors!: EntityTable<ErrorLogEntry, 'seq'>
   settings!: EntityTable<DeviceSetting, 'key'>
@@ -208,7 +229,34 @@ export class GainframeDb extends Dexie {
     this.version(13).stores({}).upgrade(adoptBackedUpRows)
     // M3-12: the user's foods and edits of food table entries, found by entry.
     this.version(14).stores({ foods: 'id, tableId' })
+    // M3-03: photos taken offline that wait for their estimate, read by day.
+    this.version(15).stores({ pendingPhotos: 'id, localDate' })
+    // The active plan moves from the device setting `activePlanId` to the
+    // plan's synced `activatedAt`, so it survives a cleared device.
+    this.version(16).stores({}).upgrade(moveActivePlanToPlans)
   }
+}
+
+// Version 16. Every plan gains `activatedAt`, null except on the plan the
+// removed setting named, which is changed like any edit: a later `updatedAt`
+// and an outbox entry, so the next backup carries the choice to the account.
+export async function moveActivePlanToPlans(tx: Transaction): Promise<void> {
+  const settings = tx.table<{ key: string; value: string }, string>('settings')
+  const plans = tx.table<StoredRow, string>('plans')
+  const activeId = (await settings.get('activePlanId'))?.value
+  await plans.toCollection().modify((plan) => {
+    plan.activatedAt ??= null
+  })
+  const active = activeId === undefined ? undefined : await plans.get(activeId)
+  if (active?.deletedAt === null) {
+    const at = new Date()
+    await plans.update(active.id, {
+      activatedAt: at.toISOString(),
+      updatedAt: nextUpdatedAt(text(active, 'updatedAt'), at),
+    })
+    await tx.table('outbox').add({ table: 'plans', rowId: active.id })
+  }
+  await settings.delete('activePlanId')
 }
 
 // Version 13. A push now sets `userId` on each row the account accepted

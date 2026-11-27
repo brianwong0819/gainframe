@@ -7,7 +7,7 @@ import { handle, type LambdaContext, type LambdaEvent } from '@hono/aws-lambda'
 
 import { cognitoIdentityDeleter } from './account/identity.ts'
 import { type AiCheckEvent, checkAi, isAiCheckEvent } from './ai-check.ts'
-import { bedrockProvider } from './ai/bedrock.ts'
+import { configuredProvider } from './ai/claude.ts'
 import { aiConfig } from './ai/config.ts'
 import { createAi } from './ai/generate.ts'
 import { usageStore } from './ai/usage.ts'
@@ -40,7 +40,11 @@ const pool = createPool(env.DATABASE_URL, log)
 
 const db = createDatabase(pool)
 const generate = createAi({
-  provider: bedrockProvider({ awsRegion: aiConfig.region }),
+  provider: configuredProvider({
+    provider: aiConfig.provider,
+    region: aiConfig.region,
+    anthropicApiKey: env.ANTHROPIC_API_KEY,
+  }),
   usage: usageStore(db),
 })
 

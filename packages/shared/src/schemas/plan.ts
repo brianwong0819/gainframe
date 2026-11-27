@@ -1,16 +1,18 @@
 import { z } from 'zod'
 
 import { restSecondsSchema } from './exercise.ts'
-import { syncedRowSchema } from './row.ts'
+import { instantSchema, syncedRowSchema } from './row.ts'
 
 // A note kept with a plan item and copied into each workout slot started from it.
 export const planNoteSchema = z.string().max(500)
 
 // A training plan: a split of days done in rotation (for example push, pull,
-// legs). A user may keep several; which one is active is a device setting, not a
-// field here, so two devices can never both mark a plan active.
+// legs). A user may keep several; the active one is the live plan made active
+// most recently (`activatedAt`), so the choice syncs with the account and two
+// devices that each pick a plan agree on the later pick. Null: never made active.
 export const planSchema = syncedRowSchema.extend({
   name: z.string().trim().min(1).max(80),
+  activatedAt: instantSchema.nullable(),
 })
 
 // One day of a plan's rotation, ordered by `position`.
