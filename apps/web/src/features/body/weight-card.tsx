@@ -3,36 +3,82 @@
 import {
   dailyWeights,
   type LocalDate,
+  type Phase,
   rateStatus,
   type RateStatus,
   targetRate,
   toLocalDate,
+  type WeeklyRate,
   weeklyRate,
   weighInsNeeded,
   weightTrend,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useState } from 'react'
 
-import { liveBodyMetrics } from '@/db/body-metrics'
+import { weightData } from '@/db/body-metrics'
 import { db } from '@/db/client'
-import { currentProfile } from '@/db/profile'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
-import { Pressable } from '@/ui/pressable'
+import { Chevron } from '@/ui/chevron'
 
-import { WeighInSheet } from './weigh-in-sheet'
+import { WeighInButton } from './weigh-in-button'
 
-const readWeight = async () => {
-  const [rows, profile] = await Promise.all([liveBodyMetrics(db), currentProfile(db)])
-  return { rows, phase: profile?.phase ?? null }
-}
+const readWeight = () => weightData(db)
 
 const tagClass: Record<RateStatus, string> = {
   onTarget: 'bg-accent-wash text-accent',
   tooSlow: 'bg-short-wash text-short',
   tooFast: 'bg-sunk text-ink-2',
   offTarget: 'bg-sunk text-ink-2',
+}
+
+// Whether the weekly rate is on target, as a tag; `--short` only for too slow.
+export function RateTag({ status }: { status: RateStatus }) {
+  const t = useTranslations('weight')
+  return (
+    <span className={`rounded-full px-8 text-label ${tagClass[status]}`}>
+      {t(`status.${status}`)}
+    </span>
+  )
+}
+
+// "+0.25 kg a week · target +0.15 to +0.31 kg", the target in kg at the
+// current average.
+export function RateLine({
+  weekly,
+  averageKg,
+  phase,
+}: {
+  weekly: WeeklyRate | null
+  averageKg: number
+  phase: Phase | null
+}) {
+  const t = useTranslations('weight')
+  const locale = useLocale()
+  const rate = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    signDisplay: 'exceptZero',
+  })
+  const target = targetRate(phase)
+  const perWeek = (pct: number) => rate.format((averageKg * pct) / 100)
+  return (
+    <p className="text-label text-ink-2">
+      {weekly === null ? (
+        t('noRate')
+      ) : (
+        <>
+          <span className="num text-ink">{t('rate', { rate: rate.format(weekly.kgPerWeek) })}</span>
+          {' · '}
+          <span className="num">
+            {t('targetRate', { min: perWeek(target.min), max: perWeek(target.max) })}
+          </span>
+        </>
+      )}
+    </p>
+  )
 }
 
 // Body weight on Today: the seven-day average, the weekly rate against the
@@ -46,14 +92,8 @@ export function WeightCard() {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })
-  const rate = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    signDisplay: 'exceptZero',
-  })
   const [today] = useState<LocalDate>(() => toLocalDate(new Date().toISOString(), deviceTimeZone()))
   const data = useLiveQuery(readWeight)
-  const [sheet, setSheet] = useState({ open: false, key: 0 })
   if (data === undefined) return null
 
   const days = dailyWeights(data.rows)
@@ -61,15 +101,7 @@ export function WeightCard() {
   const latest = trend.at(-1)
   const needed = weighInsNeeded(days)
   const weekly = weeklyRate(days)
-  const target = targetRate(data.phase)
   const last = data.rows.at(-1)
-  const scanRow = data.rows.findLast(
-    (row) => row.bodyFatPct !== null && row.skeletalMuscleKg !== null,
-  )
-  const lastScan =
-    scanRow?.bodyFatPct == null || scanRow.skeletalMuscleKg === null
-      ? null
-      : { bodyFatPct: scanRow.bodyFatPct, skeletalMuscleKg: scanRow.skeletalMuscleKg }
   const loggedToday = last?.localDate === today
 
   let body
@@ -87,7 +119,6 @@ export function WeightCard() {
     )
   } else {
     const status = weekly === null ? null : rateStatus(weekly.pctPerWeek, data.phase)
-    const perWeek = (pct: number) => rate.format((latest.averageKg * pct) / 100)
     body = (
       <>
         <div className="flex items-end justify-between gap-12">
@@ -95,60 +126,37 @@ export function WeightCard() {
             <span className="num text-display">{tenth.format(latest.averageKg)}</span>
             <span className="text-section text-ink-2">kg</span>
           </p>
-          {status !== null && (
-            <span className={`rounded-full px-8 text-label ${tagClass[status]}`}>
-              {t(`status.${status}`)}
-            </span>
-          )}
+          {status !== null && <RateTag status={status} />}
         </div>
-        <p className="text-label text-ink-2">
-          {weekly === null ? (
-            t('noRate')
-          ) : (
-            <>
-              <span className="num text-ink">
-                {t('rate', { rate: rate.format(weekly.kgPerWeek) })}
-              </span>
-              {' · '}
-              <span className="num">
-                {t('targetRate', { min: perWeek(target.min), max: perWeek(target.max) })}
-              </span>
-            </>
-          )}
-        </p>
+        <RateLine weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />
       </>
     )
   }
 
   return (
     <section className="flex flex-col gap-8 rounded-group bg-surface p-16">
-      <h2 className="text-label text-ink-3">
-        {latest !== undefined && needed === 0 ? t('averageHeading') : t('heading')}
-      </h2>
+      <Link href="/progress/weight" className="-my-12 flex items-center justify-between py-12">
+        <h2 className="text-label text-ink-3">
+          {latest !== undefined && needed === 0 ? t('averageHeading') : t('heading')}
+        </h2>
+        <span className="flex items-center gap-4 text-body text-ink-2">
+          {t('trend')}
+          <Chevron direction="right" />
+        </span>
+      </Link>
       {body}
       <div className="mt-4 flex items-center justify-between gap-12 border-t border-line pt-8">
         <span className="num text-label text-ink-2">
           {loggedToday ? t('today', { weight: tenth.format(last.weightKg) }) : t('notToday')}
         </span>
-        <Pressable
-          onClick={() => {
-            setSheet(({ key }) => ({ open: true, key: key + 1 }))
-          }}
+        <WeighInButton
+          rows={data.rows}
+          today={today}
           className="rounded-full bg-sunk px-16 py-12 text-body font-semibold text-ink"
         >
           {loggedToday ? t('edit') : t('log')}
-        </Pressable>
+        </WeighInButton>
       </div>
-      <WeighInSheet
-        key={sheet.key}
-        open={sheet.open}
-        onClose={() => {
-          setSheet(({ key }) => ({ open: false, key }))
-        }}
-        today={today}
-        last={last}
-        lastScan={lastScan}
-      />
     </section>
   )
 }

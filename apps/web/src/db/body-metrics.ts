@@ -1,5 +1,6 @@
 import { type BodyMetric, toLocalDate } from '@gainframe/shared'
 
+import { currentProfile } from './profile'
 import type { Repositories } from './repositories'
 import type { GainframeDb } from './schema'
 
@@ -7,6 +8,12 @@ import type { GainframeDb } from './schema'
 export async function liveBodyMetrics(db: GainframeDb): Promise<BodyMetric[]> {
   const live = await db.bodyMetrics.filter((metric) => metric.deletedAt === null).toArray()
   return live.toSorted((a, b) => Date.parse(a.measuredAt) - Date.parse(b.measuredAt))
+}
+
+/** The weigh-ins with the phase their target rate depends on, for the weight card and page. */
+export async function weightData(db: GainframeDb) {
+  const [rows, profile] = await Promise.all([liveBodyMetrics(db), currentProfile(db)])
+  return { rows, phase: profile?.phase ?? null }
 }
 
 export interface WeighIn {
