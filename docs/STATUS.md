@@ -13,7 +13,7 @@ State on 2026-11-27, after the global review (PR `m3/review-thread-rules`). What
 
 - **M0, M1 (except M1-13 and M1-14), M2-01 to M2-06 and M2-08 to M2-10** are merged. The app works offline on the device, with optional sign-in (email or Google, Cognito managed login with PKCE, ADR-0007) and backup through `/api/sync/push` and `/api/sync/pull` (ADR-0003). The current plan is synced as `plans.activatedAt` (L-051).
 - **M1-13** ended on 2026-11-22 by bw's choice: problems found in daily use are fixed as they come up; the field week checklist below stays as the open iPhone checks. **M1-14** (timed and cardio logging) comes after M2.
-- **M2-07 prod**: `infra/envs/prod` is merged but nothing exists in AWS yet (its plan shows 41 resources to add). The Deploy run's `prod` job waits for bw's approval; the owner's steps are in `infra/envs/prod/README.md`.
+- **M2-07 prod**: the first prod apply (2026-11-27) created most resources and stopped on the database URL parameter the owner had stored first; PR #206 adopts it (L-053). Prod deploys automatically after dev once `m2/auto-prod-deploy` is merged (ADR-0009).
 - **M3**: M3-01, M3-02, M3-04, M3-11, M3-12 and M3-13 are done. M3-03 (offline photos), M3-05 (photo estimate), M3-06 (confirm screen) and M3-10 (text estimate) are built and ticked after bw logs real meals on dev. M3-08 `pnpm eval:vision` is built; its first real run waits on the M3-09 photos. AI calls go to Anthropic's API (ADR-0008) and only for the Cognito group `ai` (M3-13).
 - **M4**: M4-02 (weigh-ins and the weight card on Today) is done; M4-01 part (a) is merged. Next is M4-04, the Progress page and weight chart.
 - **Design decisions made ahead of their milestones** are in `docs/design-system.md`: "Food logging", "Accounts and backup", "Progress charts", "Correcting a done set", "Ticking ahead".
@@ -37,7 +37,7 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Blocked on bw
 
-- Approve the `prod` job of the pending Deploy run (M2-07), after the prod database URL and Anthropic key are stored (`infra/envs/prod/README.md`).
+- Approve the `prod` job of the Deploy run for PR #206 (M2-07; the prod database URL and Anthropic key are stored). Then, before merging `m2/auto-prod-deploy`: create the `prod-approval` Environment and untick "Required reviewers" on `prod` ("Automatic deploys" in `infra/envs/prod/README.md`, ADR-0009).
 - Log a real meal by photo, by a sentence and by a photo taken in airplane mode on dev (ticks M3-03, M3-05, M3-06, M3-10).
 - If not done yet: add your account to the Cognito group `ai` (User pool, Groups, `ai`, Add user) and sign out and in once (M3-13); subscribe an email to each alarm topic (M2-08, `docs/debugging.md`).
 - The black flash when returning to the app: in light mode, is the flash white (an iOS limit, no change) or black (an app cause)?

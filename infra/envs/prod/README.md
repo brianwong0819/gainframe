@@ -2,7 +2,16 @@
 
 The prod environment: the same modules as [dev](../dev/README.md) (`api`, `site`, `auth`) with prod names (`gainframe-prod-*`), the `/gainframe/prod/` SSM parameters, 30-day log retention, no developer pages, and no localhost sign-in URLs. Its database is the Neon project's root branch, `production`.
 
-CI applies it from `.github/workflows/deploy.yml` after the dev deploy of the same commit, once the owner approves the `prod` Environment in GitHub. Pull requests get its plan next to dev's. No local apply.
+CI applies it from `.github/workflows/deploy.yml` after the dev deploy of the same commit, without approval unless the change is risky ([ADR-0009](../../../docs/adr/0009-automatic-prod-deploy.md)). Pull requests get its plan next to dev's. No local apply.
+
+## Automatic deploys (owner, once)
+
+Before merging the pull request that adds `prod-approval` to `deploy.yml`, in that order:
+
+1. Repository Settings → Environments → New environment `prod-approval`. Tick "Required reviewers", add yourself, and "Save protection rules". Under "Deployment branches and tags", choose "Selected branches and tags" and add `main`.
+2. Environments → `prod` → untick "Required reviewers" → "Save protection rules". Leave the `main` branch rule.
+
+If step 1 is missed, GitHub creates `prod-approval` unprotected the first time a run needs it; the job then fails instead of passing. If step 2 is missed, prod keeps waiting for approval as before.
 
 ## Before the first deploy (owner, once)
 
