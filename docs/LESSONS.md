@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-052 · 2026-11-27 · docs · A PowerShell step for bw used a parameter Windows PowerShell 5.1 lacks
+- **What happened:** the AI check steps in `infra/envs/*/README.md` wrote the payload with `Set-Content -NoNewline`; on bw's computer it failed ("A parameter cannot be found that matches parameter name 'NoNewline'"), so the invoke found no file.
+- **Root cause:** the step was written for PowerShell 7; bw runs Windows PowerShell 5.1, and the "Steps written for bw" rule does not name the version.
+- **Fix:** PR `m3/04-ai-check-docs` (`[IO.File]::WriteAllText`, which both versions have).
+- **Prevention:** "Environment notes" in `CLAUDE.md`: steps for bw must run in Windows PowerShell 5.1. Proposed in this PR for bw's review.
+- **Status:** documented
+
 ### L-051 · 2026-11-26 · sync · The current plan disappeared after the device downloaded the account again
 - **What happened:** bw reported that a plan set as the current plan later had no current plan, and had to set it again.
 - **Root cause:** M1-09 kept the active plan as the device setting `activePlanId`, on purpose, so two devices could not both mark a plan active. M2 added backup and download without revisiting it: every path that empties the device and downloads the account again (sign out and in, "Clear all data" while signed in, a second device, a reinstall) brought the plans back without the choice. M2's review listed the synced tables, not the device settings that point into them.
