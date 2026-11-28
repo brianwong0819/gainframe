@@ -38,6 +38,7 @@ export {
   type NutritionTotals,
   type PastFood,
   pastFoods,
+  reestimatedFigures,
   scalePortion,
 } from './domain/nutrition.ts'
 export {
