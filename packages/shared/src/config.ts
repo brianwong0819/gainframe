@@ -63,6 +63,10 @@ export const domainConfig = {
   // `minDays` different days within the last `windowDays` days (today
   // included). A food eaten once or twice is not a habit yet.
   habitFoods: { minDays: 3, windowDays: 30 },
+  // The protein line under the day card's number: a straight line from nothing
+  // at `fromHour` to the target at `toHour` on the device's clock; eaten
+  // protein within `marginShare` of the target below that line is on pace.
+  proteinPace: { fromHour: 7, toHour: 21, marginShare: 0.1 },
   // Food table matches shown on the manual screen for one search, best first.
   foodTableResults: 20,
   // The oil and sauce row on the photo confirm screen (M3-06). Table figures

@@ -109,7 +109,9 @@
     "setsUnit": "组",
     "allDone": "{done} 组全部完成",
     "completeValues": "完成",
-    "nextSet": "下一组：{name} · 组 {n}"
+    "nextSet": "下一组：{name} · 组 {n}",
+    "remainingSets": "还剩 {count} 组",
+    "remainingTime": "约 {minutes} 分钟"
   },
   "summary": {
     "title": "训练完成",
@@ -206,7 +208,15 @@
       "ready": "估算好了，点开确认",
       "stopped": "估算没有完成，点开看看"
     },
-    "keptNotCounted": "还没计入"
+    "keptNotCounted": "还没计入",
+    "pace": {
+      "onPace": "进度正常",
+      "keepUp": "照这样吃，晚上就够",
+      "behind": "比进度慢",
+      "expected": "这个时间大约该到 {value} g",
+      "missed": "没达标",
+      "reached": "吃到目标的 {share, number, percent}"
+    }
   },
   "language": {
     "label": "语言",

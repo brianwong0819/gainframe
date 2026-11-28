@@ -86,6 +86,7 @@ export function FoodScreen() {
             meals={day.meals}
             totals={day.totals}
             targets={targets}
+            past={date < today}
             onEditTargets={() => {
               setEditingTargets(true)
             }}

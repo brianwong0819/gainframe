@@ -2,6 +2,7 @@
 
 import {
   earlierRoundToDo,
+  estimateDurationS,
   type Exercise,
   findPersonalRecords,
   setOrder,
@@ -145,6 +146,12 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
   )
   const doneSets = state.slots.flatMap(({ sets }) => sets.filter((set) => set.completedAt !== null))
   const done = doneSets.length
+  const remainingS = estimateDurationS(
+    state.slots.map(({ slot, sets }) => ({
+      sets: sets.filter((set) => set.completedAt === null).length,
+      restS: itemRestS(slot, custom),
+    })),
+  )
   const recordIds = new Set(findPersonalRecords(doneSets, earlier, isBodyweight).keys())
   const wouldBeRecord = (set: WorkoutSet) =>
     findPersonalRecords(
@@ -319,6 +326,7 @@ export function ActiveWorkout({ state }: { state: ActiveWorkoutState }) {
         workout={workout}
         done={done}
         total={total}
+        remainingS={remainingS}
         onFinish={() => {
           open({ kind: 'finish' })
         }}

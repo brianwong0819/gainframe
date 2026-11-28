@@ -109,7 +109,9 @@
     "setsUnit": "sets",
     "allDone": "{done, plural, one {# set} other {All # sets}} done",
     "completeValues": "Complete",
-    "nextSet": "Next: {name} · set {n}"
+    "nextSet": "Next: {name} · set {n}",
+    "remainingSets": "{count, plural, one {# set} other {# sets}} left",
+    "remainingTime": "about {minutes} min"
   },
   "summary": {
     "title": "Workout done",
@@ -206,7 +208,15 @@
       "ready": "Estimate ready, tap to confirm",
       "stopped": "No estimate, tap to see why"
     },
-    "keptNotCounted": "Not counted yet"
+    "keptNotCounted": "Not counted yet",
+    "pace": {
+      "onPace": "On pace",
+      "keepUp": "keep this up and you'll get there tonight",
+      "behind": "Behind pace",
+      "expected": "about {value} g by now",
+      "missed": "Missed",
+      "reached": "{share, number, percent} of the target"
+    }
   },
   "language": {
     "label": "Language",

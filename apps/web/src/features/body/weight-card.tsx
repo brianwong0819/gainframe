@@ -22,31 +22,23 @@ import { db } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import { deviceTimeZone } from '@/i18n/time-zone'
 import { Chevron } from '@/ui/chevron'
+import { Verdict, type VerdictTone } from '@/ui/verdict'
 
 import { WeighInButton } from './weigh-in-button'
 
 const readWeight = () => weightData(db)
 
-const tagClass: Record<RateStatus, string> = {
-  onTarget: 'bg-accent-wash text-accent',
-  tooSlow: 'bg-short-wash text-short',
-  tooFast: 'bg-sunk text-ink-2',
-  offTarget: 'bg-sunk text-ink-2',
+const toneOf: Record<RateStatus, VerdictTone> = {
+  onTarget: 'ok',
+  tooSlow: 'attention',
+  tooFast: 'plain',
+  offTarget: 'plain',
 }
 
-// Whether the weekly rate is on target, as a tag; `--short` only for too slow.
-export function RateTag({ status }: { status: RateStatus }) {
-  const t = useTranslations('weight')
-  return (
-    <span className={`rounded-full px-8 text-label ${tagClass[status]}`}>
-      {t(`status.${status}`)}
-    </span>
-  )
-}
-
-// "+0.25 kg a week · target +0.15 to +0.31 kg", the target in kg at the
-// current average.
-export function RateLine({
+// The weekly rate as a verdict line: whether it is on target, then "+0.25 kg a
+// week · target +0.15 to +0.31 kg", the target in kg at the current average.
+// `--short` only for too slow.
+export function RateVerdict({
   weekly,
   averageKg,
   phase,
@@ -62,22 +54,16 @@ export function RateLine({
     maximumFractionDigits: 2,
     signDisplay: 'exceptZero',
   })
+  if (weekly === null) return <p className="text-label text-ink-2">{t('noRate')}</p>
+  const status = rateStatus(weekly.pctPerWeek, phase)
   const target = targetRate(phase)
   const perWeek = (pct: number) => rate.format((averageKg * pct) / 100)
   return (
-    <p className="text-label text-ink-2">
-      {weekly === null ? (
-        t('noRate')
-      ) : (
-        <>
-          <span className="num text-ink">{t('rate', { rate: rate.format(weekly.kgPerWeek) })}</span>
-          {' · '}
-          <span className="num">
-            {t('targetRate', { min: perWeek(target.min), max: perWeek(target.max) })}
-          </span>
-        </>
-      )}
-    </p>
+    <Verdict tone={toneOf[status]} word={t(`status.${status}`)}>
+      {t('rate', { rate: rate.format(weekly.kgPerWeek) })}
+      {' · '}
+      {t('targetRate', { min: perWeek(target.min), max: perWeek(target.max) })}
+    </Verdict>
   )
 }
 
@@ -118,17 +104,13 @@ export function WeightCard() {
       </>
     )
   } else {
-    const status = weekly === null ? null : rateStatus(weekly.pctPerWeek, data.phase)
     body = (
       <>
-        <div className="flex items-end justify-between gap-12">
-          <p className="flex items-baseline gap-4">
-            <span className="num text-display">{tenth.format(latest.averageKg)}</span>
-            <span className="text-section text-ink-2">kg</span>
-          </p>
-          {status !== null && <RateTag status={status} />}
-        </div>
-        <RateLine weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />
+        <p className="flex items-baseline gap-4">
+          <span className="num text-display">{tenth.format(latest.averageKg)}</span>
+          <span className="text-section text-ink-2">kg</span>
+        </p>
+        <RateVerdict weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />
       </>
     )
   }

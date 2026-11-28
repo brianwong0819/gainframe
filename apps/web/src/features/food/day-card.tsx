@@ -1,12 +1,13 @@
 'use client'
 
 import type { MealWithItems } from '@/db/food'
-import type { NutritionTotals } from '@gainframe/shared'
+import { type NutritionTotals, proteinPace } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import { Chevron } from '@/ui/chevron'
 import { Pressable } from '@/ui/pressable'
+import { Verdict } from '@/ui/verdict'
 
 export interface Targets {
   proteinG: number
@@ -16,12 +17,15 @@ export interface Targets {
 // The day at a glance (design-system.md, "Food logging"): protein still to go
 // as the large number, eaten / target beside it, a bar with one segment per
 // meal, then energy. Without targets it shows what was eaten and offers
-// to set them; with targets, a tap on eaten / target changes them. A gap is never shown as a failure during the day.
+// to set them; with targets, a tap on eaten / target changes them, and a
+// verdict line says whether protein is on pace for the hour. A gap is never
+// shown as a failure during the day: only a past day that missed uses `--short`.
 export function DayCard({
   meals,
   totals,
   targets,
   onEditTargets,
+  past = false,
   heading,
   children,
 }: {
@@ -29,6 +33,8 @@ export function DayCard({
   totals: NutritionTotals
   targets: Targets | null
   onEditTargets: () => void
+  /** A day before today, which is over: its verdict is met or missed. */
+  past?: boolean
   /** Replaces the "Protein" label, e.g. Today's line about the day's workout. */
   heading?: ReactNode
   /** Rows that continue the card, e.g. Today's suggestion. */
@@ -37,11 +43,17 @@ export function DayCard({
   const t = useTranslations('food')
   const locale = useLocale()
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
+  const [hour] = useState(() => {
+    const now = new Date()
+    return now.getHours() + now.getMinutes() / 60
+  })
   const eaten = Math.round(totals.proteinG)
   const toGo = targets === null ? null : Math.max(0, Math.round(targets.proteinG - totals.proteinG))
   const met = toGo === 0
   // Each meal's share of the bar, capped at the target so the bar stays full.
   const scale = targets === null ? 0 : Math.max(targets.proteinG, totals.proteinG)
+  const pace =
+    targets === null ? null : proteinPace(totals.proteinG, targets.proteinG, past ? null : hour)
   return (
     <section className="flex flex-col gap-12 rounded-group bg-surface p-16">
       <div className="flex items-baseline justify-between gap-12">
@@ -85,6 +97,21 @@ export function DayCard({
             </>
           )}
         </p>
+      )}
+      {pace?.status === 'onPace' && (
+        <Verdict tone="ok" word={t('pace.onPace')}>
+          {t('pace.keepUp')}
+        </Verdict>
+      )}
+      {pace?.status === 'behind' && (
+        <Verdict tone="plain" word={t('pace.behind')}>
+          {t('pace.expected', { value: whole.format(pace.expectedG) })}
+        </Verdict>
+      )}
+      {pace?.status === 'missed' && (
+        <Verdict tone="attention" word={t('pace.missed')}>
+          {t('pace.reached', { share: pace.share })}
+        </Verdict>
       )}
       {targets !== null && (
         <div aria-hidden className="flex h-8 gap-4 overflow-hidden rounded-full bg-sunk">
