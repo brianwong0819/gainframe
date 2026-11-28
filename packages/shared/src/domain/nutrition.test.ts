@@ -4,6 +4,7 @@ import { localDateSchema } from '../schemas/row.ts'
 import {
   addDays,
   fillProteinGap,
+  habitualFoods,
   mealTypeAt,
   nutritionTotals,
   pastFoods,
@@ -100,6 +101,60 @@ describe('pastFoods', () => {
 
   it('is empty without items', () => {
     expect(pastFoods([], 'frequent')).toEqual([])
+  })
+})
+
+describe('habitualFoods', () => {
+  const today = localDateSchema.parse('2026-11-28')
+  const item = (name: string, localDate: string, deletedAt: string | null = null) => ({
+    name,
+    grams: 100,
+    proteinG: 10,
+    kcal: 100,
+    createdAt: `${localDate}T04:00:00.000Z`,
+    deletedAt,
+    localDate: localDateSchema.parse(localDate),
+  })
+
+  it('keeps foods eaten on at least three different days, not three meals on one day', () => {
+    const items = [
+      item('Egg', '2026-11-20'),
+      item('Egg', '2026-11-24'),
+      item('egg', '2026-11-28'),
+      item('Milo', '2026-11-28'),
+      item('Milo', '2026-11-28'),
+      item('Milo', '2026-11-28'),
+      item('Tofu', '2026-11-27'),
+    ]
+    expect(habitualFoods(items, today).map((food) => food.name)).toEqual(['egg'])
+  })
+
+  it('looks back 30 days including today, and skips deleted items', () => {
+    const items = [
+      item('Oats', '2026-10-29'),
+      item('Oats', '2026-11-10'),
+      item('Oats', '2026-11-11'),
+      item('Rice', '2026-10-30'),
+      item('Rice', '2026-11-10'),
+      item('Rice', '2026-11-11'),
+      item('Fish', '2026-11-10'),
+      item('Fish', '2026-11-11'),
+      item('Fish', '2026-11-12', '2026-11-12T05:00:00.000Z'),
+    ]
+    expect(habitualFoods(items, today).map((food) => food.name)).toEqual(['Rice'])
+  })
+
+  it('orders by days eaten, then by how recently', () => {
+    const items = [
+      ...['2026-11-01', '2026-11-02', '2026-11-03'].map((d) => item('Rice', d)),
+      ...['2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'].map((d) => item('Egg', d)),
+      ...['2026-11-25', '2026-11-26', '2026-11-27'].map((d) => item('Milo', d)),
+    ]
+    expect(habitualFoods(items, today).map((food) => food.name)).toEqual(['Egg', 'Milo', 'Rice'])
+  })
+
+  it('is empty without items', () => {
+    expect(habitualFoods([], today)).toEqual([])
   })
 })
 

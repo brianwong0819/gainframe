@@ -56,8 +56,13 @@ export const domainConfig = {
   // clock: each type starts at its hour and runs to the next. Hours before
   // breakfast count as a snack (supper).
   mealHours: { breakfast: 5, lunch: 11, snack: 15, dinner: 17, supper: 22 },
-  // Frequent foods shown as one-tap pills on the Food tab.
+  // Foods listed as frequent: one-tap pills on the Food tab and the lists on
+  // the manual screen.
   frequentFoods: 8,
+  // What makes a food a habit, for the Food tab's pills: eaten on at least
+  // `minDays` different days within the last `windowDays` days (today
+  // included). A food eaten once or twice is not a habit yet.
+  habitFoods: { minDays: 3, windowDays: 30 },
   // Food table matches shown on the manual screen for one search, best first.
   foodTableResults: 20,
   // The oil and sauce row on the photo confirm screen (M3-06). Table figures

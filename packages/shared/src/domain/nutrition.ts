@@ -77,6 +77,33 @@ export function pastFoods(
   )
 }
 
+// The foods eaten often enough to be habits (the Food tab's frequent row): on
+// at least `minDays` different local days within the last `windowDays` days
+// ending `today`. Ordered by the days eaten, then by how recently; each food
+// has the portion and figures of its latest use in the window. Days come from
+// the meal's `localDate`, never from a timestamp.
+export function habitualFoods(
+  items: readonly (Pick<
+    MealItem,
+    'name' | 'grams' | 'proteinG' | 'kcal' | 'createdAt' | 'deletedAt'
+  > & { localDate: LocalDate })[],
+  today: LocalDate,
+): PastFood[] {
+  const { minDays, windowDays } = domainConfig.habitFoods
+  const from = addDays(today, 1 - windowDays)
+  const inWindow = items.filter((item) => item.localDate >= from && item.localDate <= today)
+  const days = new Map<string, Set<LocalDate>>()
+  for (const item of inWindow) {
+    if (item.deletedAt !== null) continue
+    const key = foodKey(item.name)
+    days.set(key, (days.get(key) ?? new Set()).add(item.localDate))
+  }
+  const daysOf = (food: PastFood) => days.get(foodKey(food.name))?.size ?? 0
+  return pastFoods(inWindow, 'frequent')
+    .filter((food) => daysOf(food) >= minDays)
+    .sort((a, b) => daysOf(b) - daysOf(a) || b.lastAt.localeCompare(a.lastAt))
+}
+
 // The calendar day `days` after `date` (before, when negative). Arithmetic on
 // a date that is already local, in UTC, so no time zone can move it.
 export function addDays(date: LocalDate, days: number): LocalDate {
