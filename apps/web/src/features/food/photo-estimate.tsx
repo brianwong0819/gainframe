@@ -344,7 +344,7 @@ function PhotoEstimateView({
             className="absolute inset-0 animate-scan border-t-2 border-accent motion-reduce:hidden"
           />
         )}
-        <span className="absolute top-8 left-8 flex items-center gap-8 rounded-full bg-surface px-8 text-label text-ink">
+        <span className="layer-opaque absolute top-8 left-8 flex items-center gap-8 rounded-full bg-surface px-8 text-label text-ink">
           <span className="text-accent">{t('aiTag')}</span>
           {phase.kind === 'ready' && t('itemCount', { count: phase.items.length })}
         </span>

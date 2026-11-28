@@ -122,6 +122,22 @@
   }
 
   /*
+   * Dark mode's glow at the top of the page ground (--glow; none in light).
+   * It is fixed to the screen and never moves, so iOS paints it once. Its
+   * height is given in lvh, the unit .status-bar-fill sizes the same image
+   * with, so the two line up.
+   */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: 100lvh;
+    background: var(--glow);
+    pointer-events: none;
+  }
+
+  /*
    * iOS 26+ blurs the top of a home-screen app well below the status bar
    * ("scroll pocket") unless an opaque fixed element touches the top edge
    * across most of the width. This strip is that element; it covers only the
@@ -132,7 +148,9 @@
     inset: 0 0 auto;
     z-index: 40;
     height: max(var(--safe-top), var(--space-8));
-    background: var(--bg);
+    background:
+      var(--glow) 0 0 / 100% 100lvh no-repeat,
+      var(--bg);
   }
 
   /* Celebrations draw above the page and the tab bar, never taking a tap. */
@@ -263,6 +281,16 @@
     touch-action: none;
     inset: 0;
     background: var(--scrim);
+  }
+
+  /* A layer above other content keeps opaque groups and tracks, so what lies
+   * beneath never shows through it (dark --surface and --sunk are
+   * translucent). */
+  .layer-opaque,
+  .sheet-panel,
+  .dock-panel {
+    --surface: var(--surface-opaque);
+    --sunk: var(--sunk-opaque);
   }
 
   .sheet-panel {
