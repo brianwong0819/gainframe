@@ -29,8 +29,9 @@ import { useWidth } from '@/ui/plot'
 
 const readWeight = () => weightData(db)
 
-// The Progress page shows the last twelve weeks, like the weight page's default.
+// The Progress page shows the last twelve weeks, or four while the history is shorter, like the weight page.
 const SPAN_DAYS = 84
+const SHORT_SPAN_DAYS = 28
 const HEIGHT = 84
 const DOTS_HEIGHT = 56
 const PAD = 6
@@ -120,9 +121,12 @@ export function WeightSummary() {
     )
   }
 
-  const from = addDays(today, 1 - SPAN_DAYS)
-  const points = trend.filter(({ localDate }) => localDate >= from)
+  const firstDate = trend[0]?.localDate ?? today
+  const spanDays = firstDate > addDays(today, 1 - SHORT_SPAN_DAYS) ? SHORT_SPAN_DAYS : SPAN_DAYS
+  const points = trend.filter(({ localDate }) => localDate >= addDays(today, 1 - spanDays))
   const first = points[0] ?? latest
+  // The axis starts at the first weigh-in in the span, not at an empty edge.
+  const from = first.localDate
   const weekly = weeklyRate(days)
   const status = weekly === null ? null : rateStatus(weekly.pctPerWeek, data.phase)
   const range = targetRange(first.averageKg, first.localDate, [first.localDate, today], data.phase)
