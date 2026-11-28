@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-055 · 2026-11-28 · ui · The weight chart's frame test hid that every new reading is slow in WebKit
+- **What happened:** after L-054 the drag test failed main on iPhone 17 Pro Max (p95 37 ms). A diagnostic run on all six devices (#213) showed that in CI WebKit each move that changes the reading takes 25 to 60 ms, while a drag over an empty part of the page and every Chromium device stay at 16 to 17 ms. The steady frames later in the drag were moves past the last weigh-in, where the reading does not change.
+- **Root cause:** not found yet. Drawing the hairline and its dot on their own layer did not help, so it is not a repaint of the series; the header text that changes on each reading is being measured next.
+- **Fix:** none yet. bw chose to unblock main: the 95th percentile limit is 50 ms until the fix, which brings it back to 34 ms.
+- **Prevention:** a frame-time test drags only over positions where every move changes what is drawn, so its frames measure the work it is meant to measure.
+- **Status:** open
+
 ### L-054 · 2026-11-27 · ci · The weight chart drag test failed main on one 51 ms frame
 - **What happened:** after #208 and #209, `e2e/weight-chart.spec.ts` failed Device layout on main for iPhone SE (WebKit): one frame of 41 took 51 ms against a 50 ms limit, while the others took 7 to 23 ms. Every PR rebased on main inherited the red check.
 - **Root cause:** the test failed on the single longest frame. On a shared CI runner a stray frame over 50 ms happens without any work from the app, so the check measured the runner as much as the chart.
