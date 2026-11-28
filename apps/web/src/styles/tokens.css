@@ -23,8 +23,17 @@
   --chalk: #b9bdb6;
   /* The white disc a third-party mark must sit on (Google's sign-in button), in both themes. */
   --logo-disc: #ffffff;
-  /* The tab bar's translucent ground; nothing else is translucent. */
+  /* The tab bar's translucent ground, with a backdrop blur. */
   --glass: rgb(238 239 235 / 0.82);
+  /*
+   * Groups and tracks on a layer above other content (sheets, the workout
+   * dock, a tag over a photo): opaque in both themes, because dark --surface
+   * and --sunk are translucent. Used through .layer-opaque in globals.css.
+   */
+  --surface-opaque: #ffffff;
+  --sunk-opaque: #e3e5e0;
+  /* The page ground's one glow: dark mode only. */
+  --glow: none;
 
   --font-ui:
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB',
@@ -108,8 +117,6 @@
     color-scheme: dark;
 
     --bg: #0a0b0d;
-    --surface: #141619;
-    --sunk: #1d2024;
     --ink: #f0f1ee;
     --ink-2: #9ba1a9;
     --ink-3: #5e646c;
@@ -123,6 +130,26 @@
     --scrim: rgb(0 0 0 / 0.5);
     --chalk: #e9eae5;
     --glass: rgb(10 11 13 / 0.8);
+    /* Translucent, so the glow behind the page shows through the groups. */
+    --surface: rgb(255 255 255 / 0.045);
+    --sunk: rgb(255 255 255 / 0.07);
+    --surface-opaque: #141619;
+    --sunk-opaque: #1d2024;
+    --glow: radial-gradient(
+      ellipse 85% 38% at 50% 14%,
+      rgb(115 137 255 / 0.22),
+      rgb(115 137 255 / 0.06) 55%,
+      transparent 80%
+    );
+  }
+
+  /* Reduce Transparency or Increase Contrast: opaque groups, no glow. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    :root:not([data-theme='light']) {
+      --surface: var(--surface-opaque);
+      --sunk: var(--sunk-opaque);
+      --glow: none;
+    }
   }
 }
 
@@ -130,8 +157,6 @@
   color-scheme: dark;
 
   --bg: #0a0b0d;
-  --surface: #141619;
-  --sunk: #1d2024;
   --ink: #f0f1ee;
   --ink-2: #9ba1a9;
   --ink-3: #5e646c;
@@ -145,4 +170,23 @@
   --scrim: rgb(0 0 0 / 0.5);
   --chalk: #e9eae5;
   --glass: rgb(10 11 13 / 0.8);
+  /* Translucent, so the glow behind the page shows through the groups. */
+  --surface: rgb(255 255 255 / 0.045);
+  --sunk: rgb(255 255 255 / 0.07);
+  --surface-opaque: #141619;
+  --sunk-opaque: #1d2024;
+  --glow: radial-gradient(
+    ellipse 85% 38% at 50% 14%,
+    rgb(115 137 255 / 0.22),
+    rgb(115 137 255 / 0.06) 55%,
+    transparent 80%
+  );
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :root[data-theme='dark'] {
+    --surface: var(--surface-opaque);
+    --sunk: var(--sunk-opaque);
+    --glow: none;
+  }
 }
