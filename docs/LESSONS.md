@@ -47,6 +47,12 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-058 · 2026-11-28 · e2e · A new card's button broke another page's test
+- **What happened:** PR `m4/06-strength-chart` added the strength card's first-days button "去训练" to the Progress page; `muscle-volume.spec.ts` looked up "去训练" on the whole page and failed in CI's strict mode (two matches).
+- **Root cause:** the test located a button by its label alone on a page that gathers cards from several features, so any card with the same label breaks it.
+- **Fix:** the test looks inside the volume card (PR `m4/06-strength-chart`).
+- **Prevention:** "Tests" in `docs/conventions.md`: on a page made of cards (Today, Progress), locate an element inside its card (a `section` filtered by its heading), not on the whole page.
+
 ### L-057 · 2026-11-27 · ai · The food prompt was twice the size the docs said
 - **What happened:** while cutting the tokens per estimate, Anthropic's token-counting endpoint put the photo prompt at 74,718 input tokens. `docs/ai.md`, the eval's price notes and ADR-0008 said about 35,000, so the cost per photo was about twice the planned USD 0.004.
 - **Root cause:** the figure was estimated from the character count (about 3.7 characters per token). Ids such as `sgfoodid-F05040011` and local names split into far more tokens than English prose, and no rule asked for a measured count.

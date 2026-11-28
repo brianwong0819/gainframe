@@ -42,6 +42,7 @@ Short on purpose. If a rule here is enforceable by ESLint, TypeScript or CI, it 
   - While a modal sheet is open, WebKit hides the page behind it from role queries: check the page after the sheet has closed (L-027).
   - Swipes and drags dispatch touch pointer events (`swipeLeft` in `e2e/history.spec.ts`); Playwright's mouse in emulated WebKit ends a drag as a click (L-029).
   - Offline is a server the test owns being shut down (`e2e/site-server.ts`); in WebKit `context.setOffline` and `context.route` also block navigations the service worker would answer (L-033).
+  - On a page made of cards from several features (Today, Progress), locate an element inside its card (a `section` filtered by its heading), not by its label on the whole page: another card may use the same label (L-058).
   - Run a new or changed spec locally with `--repeat-each 5` before pushing (L-024).
   - A spec that fails and then passes on a re-run is a defect, not noise: log its requests and navigations (`page.on('request')`, `framenavigated`, `load`) to find what differed before changing the test (L-041).
   - A spec that needs an exercise missing from the library, or a set number of search results, says so in a comment; a change to the built-in catalog runs the specs that search it (`grep -l searchbox apps/web/e2e`) before pushing (L-036).
