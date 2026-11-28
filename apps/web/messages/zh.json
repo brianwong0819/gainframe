@@ -641,6 +641,7 @@
       "body": "拍照和文字估算每天各可用 {count} 次，{time} 后恢复。"
     },
     "aiTag": "AI",
+    "confidenceLabel": "把握",
     "proteinLabel": "蛋白质",
     "kcalLabel": "热量",
     "unitKcal": "千卡",
@@ -711,9 +712,9 @@
       "cut_off": "有部分食物没拍进去，缺的请手动补上。"
     },
     "confidence": {
-      "high": "把握高",
-      "medium": "把握中",
-      "low": "把握低"
+      "high": "高",
+      "medium": "中",
+      "low": "低"
     },
     "no_text_food": {
       "title": "描述里没有食物",
