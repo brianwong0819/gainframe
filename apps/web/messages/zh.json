@@ -815,8 +815,8 @@
       "cut": "减脂"
     },
     "result": "建议",
-    "proteinResult": "蛋白质 {protein} g",
-    "energyResult": "热量 {kcal} kcal",
+    "proteinResult": "蛋白质 <num>{protein}</num> g",
+    "energyResult": "热量 <num>{kcal}</num> kcal",
     "howEnergy": "热量 = 基础代谢 {resting} × 活动系数 {factor} {change} kcal",
     "howProtein": "蛋白质 = 体重 {weight} kg × {perKg} g/kg",
     "apply": "用这个目标",

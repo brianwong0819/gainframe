@@ -815,8 +815,8 @@
       "cut": "Lose fat"
     },
     "result": "Suggested",
-    "proteinResult": "Protein {protein} g",
-    "energyResult": "Energy {kcal} kcal",
+    "proteinResult": "Protein <num>{protein}</num> g",
+    "energyResult": "Energy <num>{kcal}</num> kcal",
     "howEnergy": "Energy = resting {resting} × activity {factor} {change} kcal",
     "howProtein": "Protein = weight {weight} kg × {perKg} g/kg",
     "apply": "Use these targets",
