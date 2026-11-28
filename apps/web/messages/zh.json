@@ -170,6 +170,7 @@
       "snack": "加餐"
     },
     "proteinShort": "蛋白质 {value} g",
+    "proteinRich": "蛋白质 <figure>{value} g</figure>",
     "kcalShort": "{value} kcal",
     "grams": "{value} g",
     "delete": "删除",

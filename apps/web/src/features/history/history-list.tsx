@@ -104,7 +104,7 @@ function HistoryCard({
               {dayName ?? t('untitled')}
             </span>
             {summary.recordCount > 0 && (
-              <span className="shrink-0 rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
+              <span className="shrink-0 rounded-full bg-accent-soft px-8 text-label font-semibold text-ink">
                 {t('records', { count: summary.recordCount })}
               </span>
             )}
