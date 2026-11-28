@@ -380,6 +380,7 @@
     "planNotePlaceholder": "每次练这个动作都会看到：座椅高度、握距、要点…",
     "removeItem": "从这一天移除",
     "upNext": "第 {n}/{count} 天 · {plan}",
+    "startShort": "开始",
     "startDay": "开始「{day}」",
     "otherDay": "换一天",
     "emptyWorkout": "空白训练",
