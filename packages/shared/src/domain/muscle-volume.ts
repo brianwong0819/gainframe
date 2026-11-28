@@ -1,6 +1,6 @@
 import { domainConfig } from '../config.ts'
 import { type MuscleGroup, muscleGroupSchema } from '../schemas/exercise.ts'
-import { type LocalDate, localDateSchema } from '../schemas/row.ts'
+import type { LocalDate } from '../schemas/row.ts'
 import type { Workout, WorkoutSet } from '../schemas/workout.ts'
 
 /** The groups a set can count for; a full-body exercise counts only through its secondary muscles. */
@@ -28,14 +28,6 @@ export interface MuscleVolume {
 }
 
 export type MuscleZone = 'none' | 'indirect' | 'low' | 'effective' | 'target' | 'high'
-
-const DAY_MS = 24 * 60 * 60 * 1000
-
-/** The first date of the `days` days that end on `today` (today included). */
-export function rangeStart(today: LocalDate, days: number): LocalDate {
-  const noon = Date.parse(`${today}T12:00:00.000Z`)
-  return localDateSchema.parse(new Date(noon - (days - 1) * DAY_MS).toISOString().slice(0, 10))
-}
 
 /**
  * Sets per muscle group for the workouts dated `from` to `to` (both included).

@@ -124,7 +124,6 @@ export {
   muscleVolume,
   type MuscleZone,
   muscleZone,
-  rangeStart,
   startingMuscle,
   TRAINED_MUSCLES,
   trainedDirectly,

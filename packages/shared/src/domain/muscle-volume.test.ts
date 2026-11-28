@@ -7,7 +7,6 @@ import {
   muscleHeat,
   muscleVolume,
   muscleZone,
-  rangeStart,
   startingMuscle,
   trainedDirectly,
   type TrainedMuscle,
@@ -47,13 +46,6 @@ function sets(
 }
 
 const week = { from: date('2026-11-22'), to: date('2026-11-28') }
-
-describe('rangeStart', () => {
-  it('counts today as the last of the days', () => {
-    expect(rangeStart(date('2026-11-28'), 7)).toBe('2026-11-22')
-    expect(rangeStart(date('2026-03-01'), 28)).toBe('2026-02-02')
-  })
-})
 
 describe('muscleVolume', () => {
   it('counts a primary muscle as one set and a secondary one as half', () => {
