@@ -201,28 +201,39 @@
 }
 
 @layer components {
-  /* Muscle map (features/exercises/muscle-map.tsx), drawn on --bg. Regions are
-   * separated by gaps in that colour; worked muscles take the accent. */
-  .muscle-map path {
-    stroke: var(--bg);
-    stroke-width: 1.4;
-    stroke-linejoin: round;
-    fill: var(--sunk);
+  /* Muscle map (features/exercises/muscle-map.tsx): solid fills by level, never
+   * opacity, so a tint does not mix with the grey beneath. The gaps between
+   * muscles show the silhouette. */
+  .muscle-map-body {
+    fill: var(--heat-sil);
   }
 
-  .muscle-map .body-part {
-    fill: var(--line);
+  .muscle-map [data-level='0'] {
+    fill: var(--heat-0);
   }
 
-  .muscle-map [data-role='primary'] {
+  .muscle-map [data-level='1'] {
+    fill: var(--heat-1);
+  }
+
+  .muscle-map [data-level='2'] {
+    fill: var(--heat-2);
+  }
+
+  .muscle-map [data-level='3'] {
     fill: var(--accent);
   }
 
-  .muscle-map [data-role='secondary'] {
-    fill: var(--accent-soft);
+  .muscle-map-outline {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2px;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
   }
 
-  .muscle-map[data-pickable] path:not(.body-part) {
+  .muscle-map[data-pickable] [data-muscle] {
     cursor: pointer;
   }
 

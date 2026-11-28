@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 
 import { formatRest, type LibraryEntry } from './library'
-import { MuscleMap } from './muscle-map'
+import { MuscleMap, roleLevels } from './muscle-map'
 
 // The detail of an exercise: where it works and how it is set up, followed by
 // the caller's actions (`children`). A custom exercise has no mechanic or cues.
@@ -36,11 +36,10 @@ export function ExerciseDetail({
 
   return (
     <div className="flex flex-col gap-20">
-      <div className="flex flex-col items-center gap-12 rounded-group bg-bg px-40 py-20">
+      <div className="flex flex-col items-center gap-12 px-20">
         <div className="flex w-full flex-col gap-12">
           <MuscleMap
-            primary={exercise.muscle}
-            secondary={secondaryMuscles}
+            levels={roleLevels(exercise.muscle, secondaryMuscles)}
             label={t('mapLabel', { primary, secondary })}
           />
           <p className="flex justify-around text-label text-ink-3" aria-hidden>
