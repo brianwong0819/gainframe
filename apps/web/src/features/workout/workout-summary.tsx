@@ -106,6 +106,22 @@ export function WorkoutSummaryView({
             return `${withUnit} × ${String(set.reps)}`
           }
           const topDeltaKg = comparison?.topWeightDeltaKg.get(slot.exerciseId) ?? 0
+          // The top set is shown once: a record on it adds the tag beside it and
+          // its reasons to the second line; records on other sets keep a row.
+          const topRecord = topSet ? records.find(({ set }) => set.id === topSet.id) : undefined
+          const otherRecords = records.filter(({ set }) => set.id !== topSet?.id)
+          const details = [
+            t('exerciseLine', { sets: setsDone, volume: number.format(volumeKg) }),
+            ...(topDeltaKg === 0
+              ? []
+              : [
+                  t('topDelta', {
+                    delta: `${topDeltaKg > 0 ? '+' : '−'}${formatWeight(Math.abs(topDeltaKg), unit)} ${unitLabel}`,
+                  }),
+                ]),
+            ...(topRecord?.kinds.map((kind) => recordText(kind, topRecord.set, unit, unitLabel)) ??
+              []),
+          ]
           return (
             <li key={slot.id} className="flex flex-col gap-8 rounded-group bg-surface p-16">
               <div className="flex flex-col gap-4">
@@ -114,20 +130,21 @@ export function WorkoutSummaryView({
                     {exerciseName(exercise, locale)}
                   </h2>
                   {topSet && (
-                    <p className="shrink-0 text-label text-ink-3">
-                      {t('top')} <span className="num text-body text-ink">{setText(topSet)}</span>
+                    <p className="flex shrink-0 items-baseline gap-8 text-label text-ink-3">
+                      {topRecord && (
+                        <span className="rounded-full bg-accent px-8 font-semibold text-accent-ink">
+                          {t('newRecord')}
+                        </span>
+                      )}
+                      <span>
+                        {t('top')} <span className="num text-body text-ink">{setText(topSet)}</span>
+                      </span>
                     </p>
                   )}
                 </div>
-                <p className="text-label text-ink-3">
-                  {t('exerciseLine', { sets: setsDone, volume: number.format(volumeKg) })}
-                  {topDeltaKg !== 0 &&
-                    ` · ${t('topDelta', {
-                      delta: `${topDeltaKg > 0 ? '+' : '−'}${formatWeight(Math.abs(topDeltaKg), unit)} ${unitLabel}`,
-                    })}`}
-                </p>
+                <p className="text-label text-ink-3">{details.join(' · ')}</p>
               </div>
-              {records.map(({ set, kinds }) => (
+              {otherRecords.map(({ set, kinds }) => (
                 <div key={set.id} className="flex flex-wrap items-center gap-8">
                   <span className="rounded-full bg-accent px-8 text-label font-semibold text-accent-ink">
                     {t('newRecord')}

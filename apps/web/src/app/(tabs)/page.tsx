@@ -11,8 +11,9 @@ import { formatDay } from '@/features/history/dates'
 import { TodayProteinCard } from '@/features/food/today-protein-card'
 import { SettingsLink } from '@/features/settings/settings-link'
 import { ProgressRow } from '@/features/progress/progress-row'
-import { NextWorkout, useWorkoutOverview } from '@/features/workout/next-workout'
+import { useWorkoutOverview } from '@/features/workout/next-workout'
 import { RecentRecords } from '@/features/workout/recent-records'
+import { TodayWorkout } from '@/features/workout/today-workout'
 import { WeekCard } from '@/features/workout/week-card'
 import { UpdatePrompt } from '@/pwa/update-prompt'
 
@@ -26,8 +27,8 @@ const devPages = [
   { href: '/dev/database', label: 'Local database' },
 ] as const
 
-// Today: the workout to do now, the day's protein (with the foods that would
-// fill the gap), body weight, this week and the latest records.
+// Today: the day's protein (with the foods that would fill the gap), the
+// workout to do now as one row, body weight, this week and the latest records.
 export default function TodayPage() {
   const t = useTranslations('today')
   const locale = useLocale()
@@ -47,12 +48,12 @@ export default function TodayPage() {
       <UpdatePrompt />
       {overview && (
         <>
-          <NextWorkout overview={overview} />
           <TodayProteinCard
             trainedDay={
               overview.history.find(({ workout }) => workout.localDate === overview.today)?.dayName
             }
           />
+          <TodayWorkout overview={overview} />
           <WeightCard />
           <ProgressRow />
           {overview.history.length === 0 ? (

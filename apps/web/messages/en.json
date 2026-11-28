@@ -381,6 +381,7 @@
     "planNotePlaceholder": "Shown every time you do this exercise: seat height, grip, a cue…",
     "removeItem": "Remove from this day",
     "upNext": "Day {n} of {count} · {plan}",
+    "startShort": "Start",
     "startDay": "Start “{day}”",
     "otherDay": "Another day",
     "emptyWorkout": "Empty workout",
