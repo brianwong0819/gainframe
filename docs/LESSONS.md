@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-056 · 2026-11-28 · ui · The weight chart's frame test hid that every new reading is slow in WebKit
+- **What happened:** after L-054 the drag test failed main on iPhone 17 Pro Max (p95 37 ms). A diagnostic run on all six devices (#213) showed that in CI WebKit each move that changes the reading takes 25 to 60 ms, while a drag over an empty part of the page and every Chromium device stay at 16 to 17 ms. The steady frames later in the drag were moves past the last weigh-in, where the reading does not change.
+- **Root cause:** not found yet. Drawing the hairline and its dot on their own layer did not help, so it is not a repaint of the series; the header text that changes on each reading is being measured next.
+- **Fix:** none yet. bw chose to unblock main: the 95th percentile limit is 50 ms until the fix, which brings it back to 34 ms.
+- **Prevention:** a frame-time test drags only over positions where every move changes what is drawn, so its frames measure the work it is meant to measure.
+- **Status:** open
+
 ### L-055 · 2026-11-28 · auth · Google sign-in on the iPhone stayed on "Signing in…" in dev and prod
 - **What happened:** bw (2026-11-28) could not sign in with Google in the installed app or in Safari, in dev or in prod: the page stayed on "Signing in…" until bw left the app, then said to check the network. Diagnostics held only `Transaction aborted` and, later, `Attempt to open a cursor in database without an in-progress transaction`. Email sign-in, which Cognito answered at once from its own session, worked.
 - **Root cause:** after the redirect back through Google, WebKit left the page's IndexedDB transactions pending, the reported behaviour of WebKit bugs 324058 (transactions never start after a cross-site round trip with a service worker, fixed in WebKit nightly 2026-09) and 315804 (a readwrite transaction never completes in an installed PWA, fixed in Safari 26). The sign-in page waited on that write with no limit, and the exchange swallowed its own errors, so nothing recorded which step hung.
