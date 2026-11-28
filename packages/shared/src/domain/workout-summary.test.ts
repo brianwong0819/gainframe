@@ -7,6 +7,7 @@ import {
   compareSummaries,
   recentRecords,
   summarizeHistory,
+  strengthHistory,
   summarizeWorkout,
 } from './workout-summary.ts'
 
@@ -292,5 +293,99 @@ describe('bestSets', () => {
 
   it('has no entry for an exercise with only warm-ups', () => {
     expect(bestSets([set({ weightKg: 40, reps: 10, kind: 'warmup' })]).has(BENCH)).toBe(false)
+  })
+})
+
+describe('strengthHistory', () => {
+  function on(id: string, day: number, fields: Partial<Workout> = {}): Workout {
+    const date = `2026-11-${String(day).padStart(2, '0')}`
+    return {
+      ...workout,
+      id,
+      startedAt: `${date}T10:00:00.000Z`,
+      endedAt: `${date}T11:00:00.000Z`,
+      localDate: localDateSchema.parse(date),
+      ...fields,
+    }
+  }
+  const workouts = [on('w3', 9), on('w1', 2), on('w2', 5)]
+  const sets = [
+    set({ id: 'a', workoutId: 'w1', weightKg: 60, reps: 8 }),
+    set({ id: 'b', workoutId: 'w1', weightKg: 65, reps: 5 }),
+    set({ id: 'c', workoutId: 'w2', weightKg: 62.5, reps: 8 }),
+    set({ id: 'd', workoutId: 'w2', weightKg: 70, reps: 3, kind: 'warmup' }),
+    set({ id: 'e', workoutId: 'w3', weightKg: 62.5, reps: 7 }),
+  ]
+
+  it('takes each workout’s best set by estimated 1RM, oldest first, and marks records', () => {
+    const points = strengthHistory({ exerciseId: BENCH, workouts, sets, measure: 'e1rm' })
+    expect(points.map(({ workoutId, set: { id }, record }) => [workoutId, id, record])).toEqual([
+      ['w1', 'a', false],
+      ['w2', 'c', true],
+      ['w3', 'e', false],
+    ])
+    expect(points[0]?.value).toBeCloseTo(76)
+    expect(points[0]?.localDate).toBe('2026-11-02')
+  })
+
+  it('takes the heaviest set by weight, ignoring warm-ups', () => {
+    const points = strengthHistory({ exerciseId: BENCH, workouts, sets, measure: 'heaviest' })
+    expect(points.map(({ set: { id }, value, record }) => [id, value, record])).toEqual([
+      ['b', 65, false],
+      ['c', 62.5, false],
+      ['e', 62.5, false],
+    ])
+  })
+
+  it('counts the most reps for a bodyweight exercise, heavier first among equal reps', () => {
+    const dips = [
+      set({ id: 'p', workoutId: 'w1', exerciseId: DIP, weightKg: 0, reps: 10 }),
+      set({ id: 'q', workoutId: 'w2', exerciseId: DIP, weightKg: 0, reps: 12 }),
+      set({ id: 'r', workoutId: 'w2', exerciseId: DIP, weightKg: 5, reps: 12 }),
+      set({ id: 's', workoutId: 'w3', exerciseId: DIP, weightKg: 0, reps: 15 }),
+    ]
+    const points = strengthHistory({ exerciseId: DIP, workouts, sets: dips, measure: 'reps' })
+    expect(points.map(({ set: { id }, value, record }) => [id, value, record])).toEqual([
+      ['p', 10, false],
+      ['r', 12, true],
+      ['s', 15, true],
+    ])
+  })
+
+  it('gives an exercise done once a single point that is not a record', () => {
+    const points = strengthHistory({
+      exerciseId: BENCH,
+      workouts,
+      sets: sets.filter(({ workoutId }) => workoutId === 'w1'),
+      measure: 'e1rm',
+    })
+    expect(points).toHaveLength(1)
+    expect(points[0]?.record).toBe(false)
+  })
+
+  it('skips deleted workouts and sets, unfinished sets and sets the measure cannot use', () => {
+    const points = strengthHistory({
+      exerciseId: BENCH,
+      workouts: [on('w1', 2), on('w2', 5, { deletedAt: '2026-11-06T00:00:00.000Z' }), on('w3', 9)],
+      sets: [
+        set({ workoutId: 'w1', weightKg: 40, reps: 20 }),
+        set({ workoutId: 'w2', weightKg: 60, reps: 5 }),
+        set({ workoutId: 'w3', weightKg: 60, reps: 5, completedAt: null }),
+        set({ workoutId: 'w3', weightKg: 60, reps: 5, deletedAt: '2026-11-09T10:30:00.000Z' }),
+        set({ workoutId: 'w3', weightKg: 60, reps: 0 }),
+      ],
+      measure: 'e1rm',
+    })
+    expect(points).toEqual([])
+  })
+
+  it('counts a workout still in progress with the sets done so far', () => {
+    const points = strengthHistory({
+      exerciseId: BENCH,
+      workouts: [on('w1', 2), on('w3', 9, { endedAt: null })],
+      sets: sets.filter(({ workoutId }) => workoutId !== 'w2'),
+      measure: 'heaviest',
+    })
+    expect(points.map(({ workoutId }) => workoutId)).toEqual(['w1', 'w3'])
   })
 })

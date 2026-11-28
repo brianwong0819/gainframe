@@ -1,6 +1,13 @@
 import { domainConfig } from '../config.ts'
 import type { Workout, WorkoutExercise, WorkoutSet } from '../schemas/workout.ts'
-import { findPersonalRecords, type LoadRules, type RecordKind, totalVolumeKg } from './workout.ts'
+import type { LocalDate } from '../schemas/row.ts'
+import {
+  estimateOneRepMax,
+  findPersonalRecords,
+  type LoadRules,
+  type RecordKind,
+  totalVolumeKg,
+} from './workout.ts'
 
 export interface ExerciseSummary {
   slot: WorkoutExercise
@@ -210,4 +217,82 @@ function topSet(sets: readonly WorkoutSet[]): WorkoutSet | null {
           : best,
       null,
     )
+}
+
+// What the strength chart plots for one exercise ("Progress charts" in
+// docs/design-system.md): the estimated 1RM, the heaviest set, or, for a
+// bodyweight exercise, the most reps.
+export type StrengthMeasure = 'e1rm' | 'heaviest' | 'reps'
+
+export interface StrengthPoint {
+  workoutId: string
+  localDate: LocalDate
+  // The workout's best set of the exercise by the measure.
+  set: WorkoutSet
+  // In kg for e1rm and heaviest, in reps for reps.
+  value: number
+  // Higher than every earlier point; the first point never is.
+  record: boolean
+}
+
+// A set's value by `measure`, with the tie-break among equal values; null for
+// a set the measure cannot use (an e1RM above `domainConfig.e1rmMaxReps`).
+function measured(set: WorkoutSet, measure: StrengthMeasure): [number, number] | null {
+  switch (measure) {
+    case 'e1rm': {
+      const e1rm = estimateOneRepMax(set.weightKg, set.reps)
+      return e1rm === null || e1rm <= 0 ? null : [e1rm, set.reps]
+    }
+    case 'heaviest':
+      return [set.weightKg, set.reps]
+    case 'reps':
+      return [set.reps, set.weightKg]
+  }
+}
+
+// One point per workout that has a counted set of `exerciseId`, oldest first:
+// that workout's best set by `measure`. Counted sets are completed working or
+// failure sets with at least one rep, as for records; deleted workouts and
+// sets are skipped. A workout still in progress counts with the sets done so far.
+export function strengthHistory(input: {
+  exerciseId: string
+  workouts: readonly Workout[]
+  sets: readonly WorkoutSet[]
+  measure: StrengthMeasure
+}): StrengthPoint[] {
+  const { exerciseId, measure } = input
+  const best = new Map<string, { set: WorkoutSet; value: [number, number] }>()
+  for (const set of input.sets) {
+    if (
+      set.exerciseId !== exerciseId ||
+      set.deletedAt !== null ||
+      set.completedAt === null ||
+      (set.kind !== 'working' && set.kind !== 'failure') ||
+      set.reps < 1
+    ) {
+      continue
+    }
+    const value = measured(set, measure)
+    if (value === null) continue
+    const current = best.get(set.workoutId)
+    if (
+      current === undefined ||
+      value[0] > current.value[0] ||
+      (value[0] === current.value[0] && value[1] > current.value[1])
+    ) {
+      best.set(set.workoutId, { set, value })
+    }
+  }
+  let highest = -Infinity
+  return input.workouts
+    .filter((workout) => workout.deletedAt === null && best.has(workout.id))
+    .toSorted((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt))
+    .flatMap((workout, index) => {
+      const top = best.get(workout.id)
+      if (top === undefined) return []
+      const value = top.value[0]
+      const record = index > 0 && value > highest
+      highest = Math.max(highest, value)
+      return [{ workoutId: workout.id, localDate: workout.localDate, set: top.set, value, record }]
+    })
 }
