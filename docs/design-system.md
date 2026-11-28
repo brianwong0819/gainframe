@@ -133,7 +133,7 @@ The save button ("记入晚餐 / Log dinner") is docked at the bottom. Saving re
 | No food recognised | Advice on framing and light | Retake, enter by hand |
 | Daily cap reached | The count and when it resets | Frequent, enter by hand |
 
-Each failure names its cause (design change at bw's request, 2026-11-23): "AI 服务暂时用不了" when the model cannot be reached (no Retry, since it would not help), "估算太久没回应" and "估算没有完成" with Retry, and for a photo the model cannot count, its reason (no food, too dark, blurry, part of the meal out of frame) with a matching tip and Retake. Each estimated item shows a small `AI` tag with its confidence (把握高 / 中 / 低).
+Each failure names its cause (design change at bw's request, 2026-11-23): "AI 服务暂时用不了" when the model cannot be reached (no Retry, since it would not help), "估算太久没回应" and "估算没有完成" with Retry, and for a photo the model cannot count, its reason (no food, too dark, blurry, part of the meal out of frame) with a matching tip and Retake. Each estimated item shows a small `AI` tag, the word 把握 / confidence and the level (高 / 中 / 低, High / Medium / Low) as a pill: accent for high, neutral for medium, `--short` for low, so the level never reads as part of the label (bw, 2026-11-28).
 
 A meal waiting for its estimate counts as zero in the day's totals and says so in its row; it never shows invented numbers.
 

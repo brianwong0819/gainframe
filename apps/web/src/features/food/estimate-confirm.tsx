@@ -38,6 +38,12 @@ export type EstimateRow = FoodEstimateItem & { remember: boolean }
 export const toRows = (items: readonly FoodEstimateItem[]): EstimateRow[] =>
   items.map((item) => ({ ...item, remember: false }))
 
+const CONFIDENCE_STYLE: Record<FoodEstimateItem['confidence'], string> = {
+  high: 'bg-accent-wash text-accent',
+  medium: 'bg-sunk text-ink-2',
+  low: 'bg-short-wash text-short',
+}
+
 const portionSizes: readonly PortionSize[] = ['small', 'regular', 'large']
 
 const readSaved = () => savedFoods(db)
@@ -248,9 +254,14 @@ export function EstimateConfirm({
                     {t('kcal', { value: whole.format(item.kcal) })}
                     {item.nutrients === 'model' && ` · ${t('modelFigures')}`}
                   </span>
-                  <span className="text-label text-ink-3">
-                    <span className="text-accent">{t('aiTag')}</span>{' '}
-                    {t(`confidence.${item.confidence}`)}
+                  <span className="flex items-center gap-4 text-label text-ink-3">
+                    <span className="text-accent">{t('aiTag')}</span>
+                    {t('confidenceLabel')}
+                    <span
+                      className={`rounded-ctl px-8 font-semibold ${CONFIDENCE_STYLE[item.confidence]}`}
+                    >
+                      {t(`confidence.${item.confidence}`)}
+                    </span>
                   </span>
                 </span>
                 <Pressable
