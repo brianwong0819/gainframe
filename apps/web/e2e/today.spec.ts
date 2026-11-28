@@ -8,7 +8,14 @@ test.use({ locale: 'zh-CN' })
 test('Today starts a workout and then shows the week it counts for', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('还没有完成的训练。')).toBeVisible()
-  await page.getByRole('button', { name: '开始训练' }).click()
+  // The protein card leads; the workout is one row below it, not a tall card.
+  const protein = page.locator('section').filter({ hasText: '蛋白质' }).first()
+  const start = page.getByRole('button', { name: '开始训练' })
+  const [proteinBox, startBox] = [await protein.boundingBox(), await start.boundingBox()]
+  expect(proteinBox).not.toBeNull()
+  expect(startBox).not.toBeNull()
+  expect(proteinBox?.y ?? 0).toBeLessThan(startBox?.y ?? 0)
+  await start.click()
   await expect(page).toHaveURL(/\/workout\/session\/?$/)
 
   await page.getByRole('button', { name: '添加动作' }).click()

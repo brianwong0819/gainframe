@@ -64,13 +64,19 @@ export const visionReplySchema = z.object({
 // either, so the user says whether the dish had less, the usual or more.
 export const oilSauceSchema = z.enum(['less', 'usual', 'more'])
 
+// The longest assumptions line a text estimate returns.
+const ASSUMPTIONS_MAX_CHARS = 240
+
 // A meal item's `aiRaw` for an estimated item: the model's item, whether the
 // user kept "remember this correction" on when correcting it, and the meal's
 // oil and sauce choice (M3-06). Remembered corrections are sent with later
-// estimates as reference.
+// estimates as reference. `assumptions` is a text estimate's assumptions line
+// (M3-10), kept so the meal sheet can show it after saving; null for a photo,
+// and absent on items saved before it was stored.
 export const estimateAiRawSchema = visionItemSchema.extend({
   remember: z.boolean(),
   oilSauce: oilSauceSchema,
+  assumptions: z.string().min(1).max(ASSUMPTIONS_MAX_CHARS).nullable().optional(),
 })
 
 export type VisionItem = z.infer<typeof visionItemSchema>
@@ -141,7 +147,7 @@ const textQuestionSchema = z.object({
 export const textMealReplySchema = z.object({
   dishName: z.string().min(1).max(120).nullable(),
   questions: z.array(textQuestionSchema).max(TEXT_QUESTIONS_MAX),
-  assumptions: z.string().min(1).max(240).nullable(),
+  assumptions: z.string().min(1).max(ASSUMPTIONS_MAX_CHARS).nullable(),
   items: z.array(visionItemSchema).max(ESTIMATE_ITEMS_MAX),
 })
 

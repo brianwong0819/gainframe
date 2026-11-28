@@ -189,6 +189,8 @@
     "gramsDown": "Less {name}",
     "gramsUp": "More {name}",
     "removeItem": "Remove",
+    "aiGrams": "AI estimated {grams} g",
+    "oilSauceWas": "Oil and sauce: {choice}",
     "proteinLabel": "Protein",
     "kcalLabel": "Energy",
     "proteinOf": "Protein of {name}, g",
@@ -381,6 +383,7 @@
     "planNotePlaceholder": "Shown every time you do this exercise: seat height, grip, a cue…",
     "removeItem": "Remove from this day",
     "upNext": "Day {n} of {count} · {plan}",
+    "startShort": "Start",
     "startDay": "Start “{day}”",
     "otherDay": "Another day",
     "emptyWorkout": "Empty workout",
@@ -642,6 +645,7 @@
       "body": "Photo and described estimates can each run {count} times a day. More from {time}."
     },
     "aiTag": "AI",
+    "confidenceLabel": "confidence",
     "proteinLabel": "Protein",
     "kcalLabel": "Energy",
     "unitKcal": "kcal",
@@ -712,9 +716,9 @@
       "cut_off": "Part of the meal is out of frame; add anything missing by hand."
     },
     "confidence": {
-      "high": "sure",
-      "medium": "fairly sure",
-      "low": "unsure"
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
     },
     "no_text_food": {
       "title": "No food in the description",

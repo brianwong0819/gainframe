@@ -27,6 +27,7 @@ import { ChoiceGroup } from '@/ui/choice-group'
 import { Pressable } from '@/ui/pressable'
 import { Stepper } from '@/ui/stepper'
 
+import { AiConfidence } from './ai-confidence'
 import { type Correction, CorrectionSheet, type ItemToCorrect } from './correction-sheet'
 import { loadFoodTable } from './food-table'
 import { GRAM_STEP, parseGrams } from './grams'
@@ -70,6 +71,7 @@ export function EstimateConfirm({
   onItemsChange,
   mealType,
   notice,
+  assumptions = null,
   kept,
 }: {
   dishName: string | null
@@ -78,6 +80,9 @@ export function EstimateConfirm({
   mealType: MealType
   // A line above the totals: a photo issue, or a text estimate's assumptions.
   notice?: ReactNode
+  // A text estimate's assumptions line, stored with each item so the meal
+  // sheet can show it after saving.
+  assumptions?: string | null
   // A photo kept while offline: the meal is logged at the time it was taken
   // and replaces it.
   kept?: { id: string; takenAt: string }
@@ -179,7 +184,7 @@ export function EstimateConfirm({
         proteinG: item.proteinG,
         kcal: item.kcal,
         source: 'ai',
-        aiRaw: { ...item.raw, remember: item.remember, oilSauce },
+        aiRaw: { ...item.raw, remember: item.remember, oilSauce, assumptions },
       })),
       ...(kept === undefined ? {} : { pendingPhotoId: kept.id }),
     })
@@ -248,10 +253,7 @@ export function EstimateConfirm({
                     {t('kcal', { value: whole.format(item.kcal) })}
                     {item.nutrients === 'model' && ` · ${t('modelFigures')}`}
                   </span>
-                  <span className="text-label text-ink-3">
-                    <span className="text-accent">{t('aiTag')}</span>{' '}
-                    {t(`confidence.${item.confidence}`)}
-                  </span>
+                  <AiConfidence confidence={item.confidence} />
                 </span>
                 <Pressable
                   aria-label={t('remove', { name })}
