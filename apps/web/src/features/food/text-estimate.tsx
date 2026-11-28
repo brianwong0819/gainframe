@@ -237,6 +237,7 @@ export function TextEstimate() {
             setResult({ run: request.run, phase: { ...phase, items } })
           }}
           mealType={mealType}
+          assumptions={phase.assumptions}
           notice={
             <>
               {phase.assumptions !== null && (

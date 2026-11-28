@@ -189,6 +189,8 @@
     "gramsDown": "减少{name}",
     "gramsUp": "增加{name}",
     "removeItem": "移除",
+    "aiGrams": "AI 原估 {grams} g",
+    "oilSauceWas": "油和酱：{choice}",
     "proteinLabel": "蛋白质",
     "kcalLabel": "热量",
     "proteinOf": "{name}的蛋白质 g",
