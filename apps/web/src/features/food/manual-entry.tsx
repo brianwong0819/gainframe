@@ -274,6 +274,7 @@ export function ManualEntry() {
         value={mealType}
         onChange={setMealType}
         optionLabel={(option) => tFood(`mealType.${option}`)}
+        chips
       />
       {foods !== undefined && (
         <input

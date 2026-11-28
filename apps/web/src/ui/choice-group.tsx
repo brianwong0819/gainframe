@@ -19,15 +19,18 @@ export function ChoiceGroup<T extends string>({
   value,
   onChange,
   optionLabel,
+  chips = false,
 }: {
   label: string
   options: readonly T[]
   value: T
   onChange: (value: T) => void
   optionLabel: (option: T) => string
+  // Keeps the chips for a short list; the add-food page does, see STATUS.
+  chips?: boolean
 }) {
   const labelId = useId()
-  if (options.length <= SEGMENTS_MAX) {
+  if (!chips && options.length <= SEGMENTS_MAX) {
     return (
       <div className="flex flex-col gap-8">
         <span aria-hidden="true" className="text-label text-ink-3">

@@ -94,7 +94,7 @@ Three tabs, Today / Workout / Food, at `/`, `/workout` and `/food` (`src/app/(ta
 
 One kind of control per kind of choice (layout review 2, 2026-11-28):
 
-- **Exactly one of 2 to 4 options** (meal type, set kind, language, chart range, sex, phase): `SegmentedControl`, a sunk track with the picked segment raised on `--surface`. `ChoiceGroup` adds the label above it and falls back to wrapping chips beyond 4 options (equipment, RPE).
+- **Exactly one of 2 to 4 options** (meal type, set kind, language, chart range, sex, phase): `SegmentedControl`, a sunk track with the picked segment raised on `--surface`. `ChoiceGroup` adds the label above it and falls back to wrapping chips beyond 4 options (equipment, RPE). The add-food page keeps chips for now (see STATUS).
 - **Filters** (muscle groups, "练过 / Done") and options the AI offers: chips, `--ink` fill when on.
 - **Answering a question with a short list** (portion size, a correction): the card-style options already in the confirm list.
 
