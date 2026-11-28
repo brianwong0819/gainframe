@@ -32,6 +32,9 @@ const readWeight = () => weightData(db)
 const ranges = ['4w', '12w', 'all'] as const
 type Range = (typeof ranges)[number]
 const rangeDays: Record<Exclude<Range, 'all'>, number> = { '4w': 28, '12w': 84 }
+// Until bw picks a range, the page opens on 4 weeks while the weigh-ins cover
+// less than that, and on 12 weeks after.
+const SHORT_HISTORY_DAYS = rangeDays['4w']
 const WEEKS_LISTED = 5
 
 /**
@@ -58,7 +61,7 @@ export function WeightProgress() {
     signDisplay: 'exceptZero',
   })
   const [today] = useState<LocalDate>(() => toLocalDate(new Date().toISOString(), deviceTimeZone()))
-  const [range, setRange] = useState<Range>('12w')
+  const [picked, setPicked] = useState<Range | null>(null)
   const [ranged, setRanged] = useState(false)
   const data = useLiveQuery(readWeight)
   if (data === undefined) return null
@@ -67,8 +70,12 @@ export function WeightProgress() {
   const trend = weightTrend(days)
   const showTrend = weighInsNeeded(days) === 0
   const firstDate = trend[0]?.localDate ?? today
-  const from = range === 'all' ? firstDate : addDays(today, 1 - rangeDays[range])
-  const points = trend.filter(({ localDate }) => localDate >= from)
+  const shortHistory = firstDate > addDays(today, 1 - SHORT_HISTORY_DAYS)
+  const range = picked ?? (shortHistory ? '4w' : '12w')
+  const rangeStart = range === 'all' ? firstDate : addDays(today, 1 - rangeDays[range])
+  const points = trend.filter(({ localDate }) => localDate >= rangeStart)
+  // The axis starts at the first weigh-in in the range, not at an empty edge.
+  const from = points[0]?.localDate ?? rangeStart
   const first = points[0]
   const weekly = weeklyRate(days)
   const wedge =
@@ -87,7 +94,7 @@ export function WeightProgress() {
           options={ranges}
           value={range}
           onChange={(next) => {
-            setRange(next)
+            setPicked(next)
             setRanged(true)
           }}
           optionLabel={(option) => t(`range.${option}`)}
