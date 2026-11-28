@@ -28,6 +28,7 @@ export {
   withFoodEdits,
 } from './domain/food-estimate.ts'
 export { searchByName } from './domain/name-search.ts'
+export { type ProteinPace, proteinPace } from './domain/protein-pace.ts'
 export {
   addDays,
   fillProteinGap,

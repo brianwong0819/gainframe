@@ -8,6 +8,7 @@ import { db } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
 import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
+import { Verdict } from '@/ui/verdict'
 
 import { formatClock } from './clock'
 
@@ -74,13 +75,16 @@ interface SessionHeaderProps {
   // Completed sets out of all sets of the workout.
   done: number
   total: number
+  // The estimated time the sets still to do take, with their rests.
+  remainingS: number
   onFinish: () => void
 }
 
 // The top of the workout in progress: the way back and the finish button, the
 // plan day being done (or "Workout" for one started empty), the time since it
-// started, and one segment per set, filled as sets are completed.
-export function SessionHeader({ workout, done, total, onFinish }: SessionHeaderProps) {
+// started with a verdict line of the sets left and about how long they take,
+// and one segment per set, filled as sets are completed.
+export function SessionHeader({ workout, done, total, remainingS, onFinish }: SessionHeaderProps) {
   const t = useTranslations('workout')
   const elapsedS = useElapsedS(workout.startedAt)
   const day = useWorkoutDay(workout.planDayId)
@@ -110,6 +114,15 @@ export function SessionHeader({ workout, done, total, onFinish }: SessionHeaderP
           <span className="text-label text-ink-3">{t('elapsed')}</span>
         </p>
       </div>
+      {done < total && (
+        <Verdict
+          tone="ok"
+          word={t('remainingSets', { count: total - done })}
+          className="justify-end"
+        >
+          {t('remainingTime', { minutes: Math.max(1, Math.round(remainingS / 60)) })}
+        </Verdict>
+      )}
       <SetProgress done={done} total={total} />
     </header>
   )

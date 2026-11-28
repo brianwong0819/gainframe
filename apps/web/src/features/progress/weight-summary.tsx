@@ -20,7 +20,7 @@ import { useState } from 'react'
 import { weightData } from '@/db/body-metrics'
 import { db } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
-import { RateLine, RateTag } from '@/features/body/weight-card'
+import { RateVerdict } from '@/features/body/weight-card'
 import { WeighInButton } from '@/features/body/weigh-in-button'
 import { formatShortDay } from '@/features/history/dates'
 import { deviceTimeZone } from '@/i18n/time-zone'
@@ -149,14 +149,11 @@ export function WeightSummary() {
         <h2>{tWeight('averageHeading')}</h2>
         <Chevron direction="right" />
       </div>
-      <div className="flex items-end justify-between gap-12 pt-4">
-        <p className="flex items-baseline gap-4">
-          <span className="num text-title">{tenth.format(latest.averageKg)}</span>
-          <span className="text-label text-ink-2">kg</span>
-        </p>
-        {status !== null && <RateTag status={status} />}
-      </div>
-      <RateLine weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />
+      <p className="flex items-baseline gap-4 pt-4">
+        <span className="num text-title">{tenth.format(latest.averageKg)}</span>
+        <span className="text-label text-ink-2">kg</span>
+      </p>
+      <RateVerdict weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />
       <div ref={box} className="mt-8" style={{ height: HEIGHT }}>
         {width > 0 && (
           <svg width={width} height={HEIGHT} role="img" aria-label={t('weightChartLabel')}>

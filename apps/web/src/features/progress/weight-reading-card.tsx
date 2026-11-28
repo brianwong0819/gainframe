@@ -13,7 +13,7 @@ import { motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
-import { RateLine, RateTag } from '@/features/body/weight-card'
+import { RateVerdict } from '@/features/body/weight-card'
 import { formatDay, formatShortDay } from '@/features/history/dates'
 import { fade } from '@/ui/motion'
 import { RollingNumber } from '@/ui/rolling-number'
@@ -21,8 +21,8 @@ import { RollingNumber } from '@/ui/rolling-number'
 import { WeightChart, WeightLegend } from './weight-chart'
 
 /**
- * The weight page's main card: the 7-day average with the weekly rate and the
- * status tag, the chart and its legend. Reading the chart puts the day under
+ * The weight page's main card: the 7-day average with the weekly rate as a
+ * verdict line, the chart and its legend. Reading the chart puts the day under
  * the finger in the header. The reading lives here, not in the page, so a
  * drag re-renders this card only; a new range mounts a new card.
  */
@@ -93,7 +93,7 @@ export function WeightReadingCard({
   } else if (showTrend) {
     label = t('averageLabel', { date: latestDate })
     value = latest.averageKg
-    sub = <RateLine weekly={weekly} averageKg={latest.averageKg} phase={phase} />
+    sub = <RateVerdict weekly={weekly} averageKg={latest.averageKg} phase={phase} />
   } else {
     label = t('latestLabel', { date: latestDate })
     value = latest.weightKg
@@ -102,10 +102,7 @@ export function WeightReadingCard({
 
   return (
     <section className="flex flex-col gap-4 rounded-group bg-surface p-16">
-      <div className="flex items-center justify-between gap-12">
-        <h2 className="text-label text-ink-2">{label}</h2>
-        {read === undefined && showTrend && status !== null && <RateTag status={status} />}
-      </div>
+      <h2 className="text-label text-ink-2">{label}</h2>
       <p className="flex items-baseline gap-4 pt-4">
         <span className="num text-title">
           {read === undefined ? <RollingNumber value={tenth.format(value)} /> : tenth.format(value)}
