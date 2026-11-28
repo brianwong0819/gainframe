@@ -117,6 +117,12 @@ test('diagnose drag frames', async ({ page }) => {
   await record(page, right, left, box.y + box.height / 2, 'chart-first')
   // 3. The chart drag again, warm.
   await record(page, right, left, box.y + box.height / 2, 'chart-second')
+  // 5. The chart drag with the header left unchanged: hairline only.
+  await page.evaluate(() => Object.assign(window, { diagNoHeader: true }))
+  await record(page, right, left, box.y + box.height / 2, 'chart-hairline-only')
+  await record(page, right, left, box.y + box.height / 2, 'chart-hairline-only-2')
+  await page.evaluate(() => Object.assign(window, { diagNoHeader: false }))
+  await record(page, right, left, box.y + box.height / 2, 'chart-with-header-3')
   // 4. Dead area again, warm.
   await record(page, right, left, title.y + title.height / 2, 'dead-area-warm')
 })

@@ -75,7 +75,8 @@ export function WeightReadingCard({
 
   const showTrend = needed === 0
   const status = weekly === null ? null : rateStatus(weekly.pctPerWeek, phase)
-  const read = reading === null ? undefined : points[reading]
+  const read =
+    reading === null || Reflect.get(globalThis, 'diagNoHeader') === true ? undefined : points[reading]
   const latestDate =
     latest.localDate === today ? t('today') : formatShortDay(latest.localDate, locale)
 
