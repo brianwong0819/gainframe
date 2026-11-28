@@ -10,7 +10,7 @@ import {
   sexSchema,
 } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 import type { CalculatorAnswers } from '@/db/profile'
 import { ChoiceGroup } from '@/ui/choice-group'
@@ -21,6 +21,10 @@ import { Stepper } from '@/ui/stepper'
 import { parseBirthYear, parseHeightCm, parseWeightKg } from './targets'
 
 const { proteinGPerKg, step } = domainConfig.estimate
+
+function hero(chunks: ReactNode) {
+  return <span className="num text-section text-ink">{chunks}</span>
+}
 
 function NumberField({
   label,
@@ -177,11 +181,11 @@ export function TargetCalculator({
       >
         <span className="text-label text-ink-3">{t('result')}</span>
         <p className="flex flex-wrap items-baseline gap-x-16 gap-y-4">
-          <span className="num text-section">
-            {t('proteinResult', { protein: whole.format(estimate.proteinG) })}
+          <span className="text-label text-ink-2">
+            {t.rich('proteinResult', { protein: whole.format(estimate.proteinG), num: hero })}
           </span>
-          <span className="num text-section">
-            {t('energyResult', { kcal: whole.format(estimate.kcal) })}
+          <span className="text-label text-ink-2">
+            {t.rich('energyResult', { kcal: whole.format(estimate.kcal), num: hero })}
           </span>
         </p>
         <p className="num text-label text-ink-3">

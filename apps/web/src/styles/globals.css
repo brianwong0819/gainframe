@@ -459,10 +459,19 @@
   }
 }
 
+/*
+ * Figures: every number gets tabular digits so columns and counters do not
+ * shift. Only a hero figure (num on the same element as a display, title or
+ * section size) is set in Martian Mono; smaller figures stay in the system
+ * font, where the wide monospace would look spaced out next to body text.
+ */
 @utility num {
-  font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+
+  &:is(.text-display, .text-title, .text-section) {
+    font-family: var(--font-num);
+    letter-spacing: -0.02em;
+  }
 }
 
 /*

@@ -4,7 +4,7 @@ Source of truth for how Gainframe looks and moves. The clickable reference is `d
 
 ## Principles
 
-1. **Numbers are the hero.** Weights, reps, grams and kcal are big and set in a monospaced numeral font; everything else stays quiet.
+1. **Numbers are the hero.** The one figure a card or screen is about (protein to go, the rest countdown, a weight) is big and set in a monospaced numeral font, with its unit smaller in `ink-2`; every other figure stays in the system font with tabular digits, and everything else stays quiet.
 2. **One question per screen.** Today: have I eaten enough? Workout: is this set done? Confirm: is this meal right?
 3. **One accent colour, with meaning.** Cobalt only for "moving toward the goal". Amber only for "below target", always with text too.
 4. **Thumb zone.** Primary actions sit in the lower half of the screen.
@@ -24,7 +24,7 @@ A screen that looks finished but is slow or unclear to use is not done. These ru
 
 ## Tokens
 
-Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src/styles/globals.css` replaces Tailwind's default theme with these tokens, so only token utilities exist: colours `bg-surface` / `text-ink-2` / `border-line`, spacing `p-16` / `gap-28` (the number is the pixel value), radii `rounded-ctl` / `rounded-group` / `rounded-media` / `rounded-sheet` / `rounded-full`, type `text-title` / `text-section` / `text-body` / `text-label`, numbers `num` (Martian Mono, tabular). A value outside the system has no class. Components use tokens only. `/dev/kitchen-sink` shows every token and preset; it is built for `next dev` and the dev deploy only.
+Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src/styles/globals.css` replaces Tailwind's default theme with these tokens, so only token utilities exist: colours `bg-surface` / `text-ink-2` / `border-line`, spacing `p-16` / `gap-28` (the number is the pixel value), radii `rounded-ctl` / `rounded-group` / `rounded-media` / `rounded-sheet` / `rounded-full`, type `text-title` / `text-section` / `text-body` / `text-label`, numbers `num` (tabular digits; Martian Mono only with a display, title or section size). A value outside the system has no class. Components use tokens only. `/dev/kitchen-sink` shows every token and preset; it is built for `next dev` and the dev deploy only.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
@@ -38,7 +38,7 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | `--logo-disc` | `#FFFFFF` | `#FFFFFF` | the disc under a third-party mark that its brand rules require on white (Google) |
 | `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
 
-Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); numbers use **Martian Mono** (self-hosted) with `tabular-nums`. Display 48/300 (the rest countdown only), title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
+Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); every figure carries `num` (`tabular-nums`), and only a hero figure, with `num` on the same element as `text-display`, `text-title` or `text-section`, is set in **Martian Mono** (self-hosted). A unit beside a hero figure is its own `text-label text-ink-2` element. Display 48/300 (the rest countdown only), title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
 
 Spacing scale: 4 · 8 · 12 · 16 · 20 · 28 · 40 — nothing else. Radii: control 12, group 20, media/sheet 24–28, pills fully round.
 
