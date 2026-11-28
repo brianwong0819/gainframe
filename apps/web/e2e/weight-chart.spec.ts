@@ -12,7 +12,7 @@ test.use({ locale: 'zh-CN' })
 const DAY_MS = 24 * 60 * 60 * 1000
 // 50 ms, not the 34 ms target: in CI WebKit each new reading costs 25 to 60
 // ms on the larger iPhones while Chromium stays at 17 ms (measured in #213).
-// Back to 34 ms with the fix; follow-up in docs/STATUS.md (L-055).
+// Back to 34 ms with the fix; follow-up in docs/STATUS.md (L-056).
 const P95_FRAME_MS = 50
 const STALL_FRAME_MS = 100
 const DRAG_STEPS = 40
