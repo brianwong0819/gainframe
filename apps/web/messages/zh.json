@@ -943,6 +943,54 @@
       "causeTooFast": "体重涨得偏快，可以把每日热量目标调低一点。",
       "notEnough": "这两周只记了 {logged} 天饮食，记满 {min} 天就能和体重对一下。",
       "openFood": "看饮食记录"
+    },
+    "volume": {
+      "title": "训练量",
+      "heading": "训练量 · 近 7 天",
+      "setsUnit": "组",
+      "inTarget": "{count} 个肌群在目标区",
+      "noneInTarget": "还没有肌群进目标区",
+      "low": "{muscle}偏少",
+      "empty": "练完一次，练到的肌群就会在这里上色。",
+      "start": "去训练",
+      "figureLabel": "近 7 天各肌群的组数：{summary}"
+    },
+    "muscles": {
+      "heading": "各肌群",
+      "range": "近 7 天 · {from}–{to}",
+      "front": "正面",
+      "back": "背面",
+      "legendLabel": "颜色说明",
+      "legend": {
+        "none": "未练",
+        "low": "1–4.5 组",
+        "effective": "5–9.5 组",
+        "target": "10 组以上"
+      },
+      "zone": {
+        "none": "未练",
+        "indirect": "没专门练",
+        "low": "偏少",
+        "effective": "有效",
+        "target": "目标区",
+        "high": "很多"
+      },
+      "targetNote": "组 · 目标区 10–20",
+      "line": {
+        "none": "近 7 天没有练到。",
+        "indirect": "只在别的动作里带到 {sets} 组。近 4 周没专门练，所以不算偏少。",
+        "low": "再练 {toEffective} 组到有效区，{toTarget} 组进目标区。",
+        "effective": "有效，再练 {toTarget} 组进目标区。",
+        "target": "在每周 10–20 组的目标区。",
+        "high": "超过 20 组，再多收益变小，注意恢复。"
+      },
+      "counted": "算进来的组",
+      "countedSets": "{sets} 组",
+      "half": " × ½",
+      "find": "找{muscle}动作",
+      "rowsLabel": "各肌群组数",
+      "rowLabel": "{muscle}，{sets} 组，{zone}",
+      "footnote": "主肌群每组算 1 组，次肌群算 ½ 组。热身组不算。浅蓝带是每周 10–20 组的目标区。"
     }
   }
 }

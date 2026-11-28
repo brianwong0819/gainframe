@@ -27,6 +27,9 @@ export interface MuscleVolume {
   contributions: MuscleContribution[]
 }
 
+/** The muscle map's fill: 0 untrained, 1 under the effective band, 2 effective, 3 the target zone or more. */
+export type MuscleHeat = 0 | 1 | 2 | 3
+
 export type MuscleZone = 'none' | 'indirect' | 'low' | 'effective' | 'target' | 'high'
 
 /**
@@ -114,8 +117,8 @@ export function muscleZone(sets: number, trainedDirectly: boolean): MuscleZone {
   return 'high'
 }
 
-/** The muscle map's fill: 0 untrained, 1 under the effective band, 2 effective, 3 the target zone or more. */
-export function muscleHeat(sets: number): 0 | 1 | 2 | 3 {
+/** The muscle map's fill for a group's sets. */
+export function muscleHeat(sets: number): MuscleHeat {
   const { effective, target } = domainConfig.muscleVolume.zones
   if (sets === 0) return 0
   if (sets < effective) return 1

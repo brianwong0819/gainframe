@@ -24,6 +24,9 @@
   --color-accent-wash: var(--accent-wash);
   --color-accent-soft: var(--accent-soft);
   --color-short: var(--short);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
   --color-short-wash: var(--short-wash);
   --color-scrim: var(--scrim);
   --color-chalk: var(--chalk);

@@ -16,6 +16,7 @@ import { useLiveQuery } from '@/db/use-live-query'
 import { BackLink } from '@/ui/back-link'
 import { Pressable } from '@/ui/pressable'
 import { Sheet } from '@/ui/sheet'
+import { useIdFromHash } from '@/ui/use-id-from-hash'
 
 import { AddToPlan } from '../plans/add-to-plan'
 import { formatSetWeight, isBodyweight } from '../workout/exercise-info'
@@ -108,9 +109,14 @@ export function ExerciseLibrary() {
   const tForm = useTranslations('exerciseForm')
   const tDetail = useTranslations('exerciseDetail')
   const tMuscle = useTranslations('muscle')
+  const tVolume = useTranslations('progress.volume')
   const custom = useCustomExercises()
   const [query, setQuery] = useState('')
-  const [muscle, setMuscle] = useState<MuscleGroup | null>(null)
+  // `/workout/exercises#<muscle>` opens filtered to that group, from the volume
+  // page's selected muscle; back then returns there.
+  const fromHash = muscleGroupSchema.safeParse(useIdFromHash())
+  const [picked, setMuscle] = useState<MuscleGroup | null | undefined>(undefined)
+  const muscle = picked === undefined ? (fromHash.success ? fromHash.data : null) : picked
   const [doneOnly, setDoneOnly] = useState(false)
   const best = useBestSets()
   const units = useLiveQuery(loadWeightUnits)
@@ -148,7 +154,11 @@ export function ExerciseLibrary() {
   return (
     <main className="flex flex-col gap-20">
       <header className="flex flex-col gap-8">
-        <BackLink href="/workout" label={t('back')} />
+        {fromHash.success ? (
+          <BackLink href="/progress/volume" label={tVolume('title')} />
+        ) : (
+          <BackLink href="/workout" label={t('back')} />
+        )}
         <div className="flex items-end justify-between gap-12">
           <div className="flex flex-col gap-4">
             <h1 className="text-title">{t('title')}</h1>
