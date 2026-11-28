@@ -119,6 +119,22 @@ export const domainConfig = {
       cut: { min: -1, max: -0.5 },
     },
   },
+  // Weekly sets per muscle group (M4-08, "Muscle map" in
+  // docs/design-system.md). A completed set other than a warm-up counts 1 for
+  // the exercise's primary muscle and `secondaryShare` for each secondary
+  // one: fractional counting of indirect sets fits the dose-response data
+  // best (Pelland et al. 2024). Zones follow the bands Schoenfeld, Ogborn and
+  // Krieger 2017 compared (under 5, 5 to 9, 10 or more weekly sets): low
+  // below `effective`, effective below `target`, the target zone up to and
+  // including `high`, then high, where more sets add little (Pelland et al.
+  // 2024). A group under `effective` reads as low only when it was trained as
+  // a primary muscle within the last `directDays` days.
+  muscleVolume: {
+    days: 7,
+    directDays: 28,
+    secondaryShare: 0.5,
+    zones: { effective: 5, target: 10, high: 20 },
+  },
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.
