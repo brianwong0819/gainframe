@@ -612,6 +612,8 @@
     "photoAlt": "The meal photo",
     "retake": "Retake",
     "byHand": "Enter it by hand",
+    "manual": "Enter by hand",
+    "photoTip": "Shoot the whole plate in good light, with the cutlery in view, for a closer estimate.",
     "wait": "Estimating, usually 3 to 8 seconds. The photo is only used for this estimate.",
     "itemCount": "{count, plural, one {# item} other {# items}}",
     "protein": "{value} g protein",
@@ -921,9 +923,10 @@
         "close": "Over the last two weeks your energy was close to the target, "
       },
       "protein": "and met the protein target on {met} of {logged} days.",
-      "causeOnTarget": "You are eating enough, and your weight is rising as planned.",
-      "causeEatMore": "Not eating enough is the likely reason the weight is rising slowly; one more of your usual portions a day should do.",
-      "causeUnlogged": "Energy is on target but the weight is rising slowly: some meals may be unlogged, or the daily target may need raising.",
+      "causeOnTarget": "Your weight is rising as planned, so what you eat now works.",
+      "causeOnTargetSet": "Your weight is rising as planned, so what you eat now works. You could set the daily energy target to what you actually eat, {kcal} kcal.",
+      "causeEatMore": "Your weight is rising slowly, most likely from eating too little. One more of your usual portions a day should do.",
+      "causeUnlogged": "You are eating enough but the weight is rising slowly. Some meals may be unlogged, or the daily target may need raising.",
       "causeTooFast": "Your weight is rising fast; consider lowering the daily energy target a little.",
       "notEnough": "{logged, plural, one {Only # day} other {Only # days}} of food logged in the last two weeks. Log {min} to compare it with your weight.",
       "openFood": "Open the food log"

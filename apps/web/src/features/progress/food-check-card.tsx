@@ -44,13 +44,17 @@ export function FoodCheckCard({
     if (profile === undefined) return null
     const dates = Array.from({ length: SPAN }, (_, index) => addDays(today, index - SPAN))
     const days = await Promise.all(dates.map((date) => foodDay(db, date)))
-    return foodCheck(
-      days.map(({ meals, totals }) => ({ ...totals, meals: meals.length })),
-      { proteinG: profile.proteinValue, kcal: profile.kcalTarget },
-    )
+    return {
+      check: foodCheck(
+        days.map(({ meals, totals }) => ({ ...totals, meals: meals.length })),
+        { proteinG: profile.proteinValue, kcal: profile.kcalTarget },
+      ),
+      kcalTarget: profile.kcalTarget,
+    }
   }, [today])
-  const check = useLiveQuery(read)
-  if (check === undefined || check === null) return null
+  const result = useLiveQuery(read)
+  if (result === undefined || result === null) return null
+  const { check, kcalTarget } = result
 
   const enough = check.loggedDays >= minLoggedDays
   const gap = Math.abs(check.kcalVsTarget)
@@ -58,7 +62,11 @@ export function FoodCheckCard({
   // Causes are written for gaining, the phase the app is built around.
   let cause: string | null = null
   if (enough && (phase ?? 'bulk') === 'bulk') {
-    if (status === 'onTarget') cause = t('causeOnTarget')
+    if (status === 'onTarget')
+      cause =
+        energy === 'close'
+          ? t('causeOnTarget')
+          : t('causeOnTargetSet', { kcal: whole.format(kcalTarget + check.kcalVsTarget) })
     else if (status === 'tooSlow')
       cause = energy === 'below' ? t('causeEatMore') : t('causeUnlogged')
     else if (status === 'tooFast') cause = t('causeTooFast')
@@ -72,11 +80,11 @@ export function FoodCheckCard({
       </div>
       {enough ? (
         <>
-          <p className="text-body">
+          {cause !== null && <p className="text-body font-semibold">{cause}</p>}
+          <p className={cause === null ? 'text-body' : 'text-label text-ink-2'}>
             {t(`energy.${energy}`, { kcal: whole.format(gap) })}
             {t('protein', { met: check.proteinMetDays, logged: check.loggedDays })}
           </p>
-          {cause !== null && <p className="text-body">{cause}</p>}
         </>
       ) : (
         <p className="text-body text-ink-2">

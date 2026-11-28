@@ -612,6 +612,8 @@
     "photoAlt": "这餐的照片",
     "retake": "重拍",
     "byHand": "不等了，手动输入",
+    "manual": "手动输入",
+    "photoTip": "拍整盘，光线亮一点，最好把餐具也拍进去，估算会更准。",
     "wait": "正在估算，通常要 3 到 8 秒。照片只用于这次估算。",
     "itemCount": "{count} 样",
     "protein": "蛋白质 {value} g",
@@ -921,9 +923,10 @@
         "close": "这两周平均每天的热量和目标差不多，"
       },
       "protein": "蛋白质 {met} / {logged} 天达标。",
-      "causeOnTarget": "吃得够，体重也在按计划涨。",
-      "causeEatMore": "体重偏慢很可能是热量没吃够，每天再加一份常吃的就够了。",
-      "causeUnlogged": "热量够了体重还偏慢：可能有几餐没记，或者每日目标该调高一点。",
+      "causeOnTarget": "体重在按计划涨，现在的吃法有效。",
+      "causeOnTargetSet": "体重在按计划涨，现在的吃法有效。可以把每日热量目标改成你实际吃的 {kcal} kcal。",
+      "causeEatMore": "体重涨得偏慢，很可能是没吃够。每天再加一份常吃的就够了。",
+      "causeUnlogged": "吃够了体重还涨得偏慢，可能有几餐没记，或者每日目标该调高一点。",
       "causeTooFast": "体重涨得偏快，可以把每日热量目标调低一点。",
       "notEnough": "这两周只记了 {logged} 天饮食，记满 {min} 天就能和体重对一下。",
       "openFood": "看饮食记录"

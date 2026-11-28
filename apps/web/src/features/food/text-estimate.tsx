@@ -176,6 +176,13 @@ export function TextEstimate() {
   return (
     <div className="flex flex-col gap-20">
       <h1 className="text-title">{t('title')}</h1>
+      <ChoiceGroup
+        label={tEstimate('mealType')}
+        options={mealTypeSchema.options}
+        value={mealType}
+        onChange={setMealType}
+        optionLabel={(option) => tFood(`mealType.${option}`)}
+      />
       <div className="flex flex-col gap-8">
         <label htmlFor={fieldId} className="text-label text-ink-3">
           {t('label')}
@@ -203,21 +210,16 @@ export function TextEstimate() {
         </p>
       </div>
       {showEstimate && (
-        <Pressable
-          disabled={!canEstimate}
-          onClick={submit}
-          className="rounded-full bg-ink px-16 py-12 text-body font-semibold text-bg disabled:bg-sunk disabled:text-ink-3"
-        >
-          {phase === null ? t('estimate') : t('estimateAgain')}
-        </Pressable>
+        <div className="screen-dock flex">
+          <Pressable
+            disabled={!canEstimate}
+            onClick={submit}
+            className="min-w-0 flex-1 rounded-full bg-ink px-16 py-12 text-body font-semibold text-bg disabled:bg-sunk disabled:text-ink-3"
+          >
+            {phase === null ? t('estimate') : t('estimateAgain')}
+          </Pressable>
+        </div>
       )}
-      <ChoiceGroup
-        label={tEstimate('mealType')}
-        options={mealTypeSchema.options}
-        value={mealType}
-        onChange={setMealType}
-        optionLabel={(option) => tFood(`mealType.${option}`)}
-      />
       {phase?.kind === 'estimating' && (
         <>
           <EstimateSkeleton />
