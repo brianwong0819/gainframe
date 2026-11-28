@@ -330,21 +330,31 @@
 
   .screen-dock {
     position: sticky;
-    bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + var(--space-8));
+    bottom: calc(var(--tab-bar-top) + var(--space-8));
   }
 
   /* A dock that carries only buttons sits on a full-width band in the page
      colour with a hairline, so list rows scroll under it instead of showing
-     through the gaps beside the buttons. */
+     through the gaps beside the buttons. The band's ground runs on to the
+     screen's bottom edge, so the floating tab bar stands on it and no rows
+     show between the two. */
   .screen-dock-band {
     position: sticky;
-    bottom: calc(var(--tab-bar-height) + var(--safe-bottom));
+    bottom: var(--tab-bar-top);
     margin-inline: calc(-1 * max(var(--space-20), var(--safe-left)))
       calc(-1 * max(var(--space-20), var(--safe-right)));
     padding: var(--space-8) max(var(--space-20), var(--safe-right)) var(--space-8)
       max(var(--space-20), var(--safe-left));
     background: var(--bg);
     box-shadow: inset 0 1px 0 var(--line);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 100% 0 auto;
+      height: var(--tab-bar-top);
+      background: var(--bg);
+    }
   }
 
   /* The docked panel (the set being edited, or the finish prompt once every
@@ -376,47 +386,43 @@
     }
   }
 
-  /* Room for the fixed tab bar below the last content of a tab screen. */
+  /* Room for the floating tab bar below the last content of a tab screen. */
   .tab-content {
-    padding-bottom: var(--tab-bar-height);
+    padding-bottom: calc(var(--tab-bar-height) + var(--space-8));
   }
 
+  /* A capsule floating one gutter in from each side and clear of the home
+     indicator; the selected tab is a smaller capsule inside it. */
   .tab-bar {
     position: fixed;
-    inset: auto 0 0;
-    z-index: 30;
-    height: calc(var(--tab-bar-height) + var(--safe-bottom));
-    padding: var(--space-4) max(var(--space-16), var(--safe-right)) var(--safe-bottom)
+    inset: auto max(var(--space-16), var(--safe-right)) var(--tab-bar-lift)
       max(var(--space-16), var(--safe-left));
+    z-index: 30;
+    height: var(--tab-bar-height);
+    padding: var(--space-4);
+    border-radius: calc(var(--tab-bar-height) / 2);
     background: var(--glass);
     backdrop-filter: saturate(1.4) blur(var(--space-20));
-    box-shadow: inset 0 1px 0 var(--line);
+    box-shadow: inset 0 0 0 1px var(--line);
   }
 
   .tab-row {
     position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    height: calc(var(--tab-bar-height) - var(--space-12));
+    height: 100%;
   }
 
-  /* The selected-tab pill slides between tabs with the std spring. */
+  /* The selected-tab capsule slides between tabs with the std spring. */
   .tab-knob {
     position: absolute;
-    inset-block: var(--space-4);
+    inset-block: 0;
     left: 0;
-    display: flex;
-    justify-content: center;
     width: calc(100% / 3);
+    border-radius: calc(var(--tab-bar-height) / 2 - var(--space-4));
+    background: var(--sunk);
     pointer-events: none;
     transition: transform var(--dur-std) var(--ease-std);
-  }
-
-  .tab-knob::after {
-    content: '';
-    width: var(--tab-knob-width);
-    border-radius: var(--radius-ctl);
-    background: var(--sunk);
   }
 
   .tab-row[data-active='-1'] .tab-knob {

@@ -50,9 +50,15 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 
-  /* Tab bar: its height above the home indicator, and the selected-tab knob. */
+  /*
+   * The floating tab bar: the capsule's height, its gap above the screen's
+   * bottom edge (clear of the home indicator, one step above the edge on a
+   * phone without one), and the distance from that edge to its top, which
+   * docks stand on.
+   */
   --tab-bar-height: 64px;
-  --tab-knob-width: 72px;
+  --tab-bar-lift: max(var(--space-8), calc(var(--safe-bottom) - var(--space-8)));
+  --tab-bar-top: calc(var(--tab-bar-lift) + var(--tab-bar-height));
 
   --radius-ctl: 12px;
   --radius-group: 20px;
