@@ -47,11 +47,32 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
-### L-054 · 2026-11-27 · ai · The food prompt was twice the size the docs said
+### L-057 · 2026-11-27 · ai · The food prompt was twice the size the docs said
 - **What happened:** while cutting the tokens per estimate, Anthropic's token-counting endpoint put the photo prompt at 74,718 input tokens. `docs/ai.md`, the eval's price notes and ADR-0008 said about 35,000, so the cost per photo was about twice the planned USD 0.004.
 - **Root cause:** the figure was estimated from the character count (about 3.7 characters per token). Ids such as `sgfoodid-F05040011` and local names split into far more tokens than English prose, and no rule asked for a measured count.
 - **Fix:** PR `claude/project-thread-rbn4l0`: the prompt names entries by position (vision v3, text-meal v2), 48,034 tokens; the docs carry the measured counts.
 - **Prevention:** "Models and cost" in `docs/ai.md`: token figures for a prompt come from the counting endpoint (`messages.count_tokens`, free), never from a character count, and are re-measured when a prompt version or the food table changes.
+- **Status:** documented
+
+### L-056 · 2026-11-28 · ui · The weight chart's frame test hid that every new reading is slow in WebKit
+- **What happened:** after L-054 the drag test failed main on iPhone 17 Pro Max (p95 37 ms). A diagnostic run on all six devices (#213) showed that in CI WebKit each move that changes the reading takes 25 to 60 ms, while a drag over an empty part of the page and every Chromium device stay at 16 to 17 ms. The steady frames later in the drag were moves past the last weigh-in, where the reading does not change.
+- **Root cause:** not found yet. Drawing the hairline and its dot on their own layer did not help, so it is not a repaint of the series; the header text that changes on each reading is being measured next.
+- **Fix:** none yet. bw chose to unblock main: the 95th percentile limit is 50 ms until the fix, which brings it back to 34 ms.
+- **Prevention:** a frame-time test drags only over positions where every move changes what is drawn, so its frames measure the work it is meant to measure.
+- **Status:** open
+
+### L-055 · 2026-11-28 · auth · Google sign-in on the iPhone stayed on "Signing in…" in dev and prod
+- **What happened:** bw (2026-11-28) could not sign in with Google in the installed app or in Safari, in dev or in prod: the page stayed on "Signing in…" until bw left the app, then said to check the network. Diagnostics held only `Transaction aborted` and, later, `Attempt to open a cursor in database without an in-progress transaction`. Email sign-in, which Cognito answered at once from its own session, worked.
+- **Root cause:** after the redirect back through Google, WebKit left the page's IndexedDB transactions pending, the reported behaviour of WebKit bugs 324058 (transactions never start after a cross-site round trip with a service worker, fixed in WebKit nightly 2026-09) and 315804 (a readwrite transaction never completes in an installed PWA, fixed in Safari 26). The sign-in page waited on that write with no limit, and the exchange swallowed its own errors, so nothing recorded which step hung.
+- **Fix:** PR #214 records the exchange's answer and gives it a 30 s limit. PR `m2/sign-in-idb-hang` keeps the exchanged session in localStorage when the write takes over 5 s, reloads, and stores it from the fresh page, recording how long IndexedDB hung.
+- **Prevention:** a step that waits on IndexedDB right after a cross-site redirect has a time limit and a path that does not depend on that page's IndexedDB; every failure the user sees as an error message is also recorded in Diagnostics with its cause (no `catch` that maps an error to a message without recording it).
+- **Status:** documented
+
+### L-054 · 2026-11-27 · ci · The weight chart drag test failed main on one 51 ms frame
+- **What happened:** after #208 and #209, `e2e/weight-chart.spec.ts` failed Device layout on main for iPhone SE (WebKit): one frame of 41 took 51 ms against a 50 ms limit, while the others took 7 to 23 ms. Every PR rebased on main inherited the red check.
+- **Root cause:** the test failed on the single longest frame. On a shared CI runner a stray frame over 50 ms happens without any work from the app, so the check measured the runner as much as the chart.
+- **Fix:** PR `m4/04-frame-p95`, agreed by bw: the 95th percentile must stay under 34 ms (two frames at 60 Hz) and no frame may reach 100 ms. A redraw of the page on each move, the defect the test was written for, makes most frames long and still fails.
+- **Prevention:** "Tests" in `docs/conventions.md`: a frame-time test judges a percentile plus a hard stall limit, never the single longest frame.
 - **Status:** documented
 
 ### L-053 · 2026-11-27 · infra · The first prod apply failed on a parameter the owner had already stored, and printed the new user pool ID

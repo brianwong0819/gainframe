@@ -10,6 +10,7 @@ import { SignInCard } from '@/features/account/sign-in-card'
 import { formatDay } from '@/features/history/dates'
 import { TodayProteinCard } from '@/features/food/today-protein-card'
 import { SettingsLink } from '@/features/settings/settings-link'
+import { ProgressRow } from '@/features/progress/progress-row'
 import { NextWorkout, useWorkoutOverview } from '@/features/workout/next-workout'
 import { RecentRecords } from '@/features/workout/recent-records'
 import { WeekCard } from '@/features/workout/week-card'
@@ -53,6 +54,7 @@ export default function TodayPage() {
             }
           />
           <WeightCard />
+          <ProgressRow />
           {overview.history.length === 0 ? (
             <p className="text-body text-ink-2">{t('empty')}</p>
           ) : (

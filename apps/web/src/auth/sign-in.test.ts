@@ -137,7 +137,31 @@ describe('sign-in by redirect', () => {
 
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('{}', { status: 400 })))
     await expect(finishSignIn(config, await redirectBack())).rejects.toEqual(
-      new SignInError('exchange'),
+      new SignInError('exchange', 'token endpoint answered 400'),
     )
+  })
+
+  it("names Cognito's refusal, so Diagnostics shows why the exchange failed", async () => {
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve(new Response('{"error":"invalid_grant"}', { status: 400 })),
+    )
+    await expect(finishSignIn(config, await redirectBack())).rejects.toEqual(
+      new SignInError('exchange', 'token endpoint answered 400 invalid_grant'),
+    )
+
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Load failed')))
+    await expect(finishSignIn(config, await redirectBack())).rejects.toEqual(
+      new SignInError('exchange', 'TypeError: Load failed'),
+    )
+  })
+
+  it('gives up on a token request that never answers', async () => {
+    let signal: AbortSignal | undefined
+    vi.stubGlobal('fetch', (_url: URL, init: RequestInit) => {
+      signal = init.signal ?? undefined
+      return Promise.reject(new DOMException('timed out', 'TimeoutError'))
+    })
+    await expect(finishSignIn(config, await redirectBack())).rejects.toBeInstanceOf(SignInError)
+    expect(signal).toBeInstanceOf(AbortSignal)
   })
 })

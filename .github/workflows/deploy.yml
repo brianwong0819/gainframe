@@ -1,10 +1,13 @@
 name: Deploy
 
-# Deploys main to dev once CI has passed on it, then to prod once the owner
-# approves the prod Environment. workflow_run runs this file from main, so the
-# dev job's OIDC subject is ref:refs/heads/main; a job in an Environment gets
-# environment:prod instead. The apply role's trust policy lists both. The steps
-# are the composite action .github/actions/deploy.
+# Deploys main to dev once CI has passed on it, then to prod without a person
+# (ADR-0009): prod waits for the owner only when its plan deletes or replaces
+# a resource or a new migration is not additive, and a prod deploy that fails
+# is rolled back to the release that was serving. workflow_run runs this file
+# from main, so a job outside an Environment has the OIDC subject
+# ref:refs/heads/main and a job in the prod Environment environment:prod; the
+# apply role's trust policy lists both. The steps are the composite action
+# .github/actions/deploy.
 on:
   workflow_run:
     workflows: [CI]
@@ -68,12 +71,162 @@ jobs:
           release: ${{ github.event.workflow_run.head_sha }}
           dev-pages: '1'
 
-  # Waits for the owner's approval in the prod Environment (required reviewer,
-  # main only). An approval can come after a newer commit has deployed, so the
-  # tip is checked again and an older commit never replaces a newer one (L-022).
+  # Decides whether prod may deploy on its own. It reads the release prod is
+  # serving (the rollback target), plans prod, and lists what needs the owner:
+  # a plan that deletes or replaces a resource, or a migration added since the
+  # serving release that is not additive. Outside the prod Environment, so its
+  # run does not count as a prod deployment.
+  prod-check:
+    name: Check prod changes
+    needs: dev
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+    outputs:
+      deploy: ${{ steps.tip.outputs.deploy }}
+      previous: ${{ steps.serving.outputs.previous }}
+      gate: ${{ steps.gate.outputs.gate }}
+    steps:
+      # An older commit never replaces a newer one (L-022).
+      - id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tip=$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)
+          if [ "${tip}" = "${SHA}" ]; then
+            echo "deploy=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::notice::skipped: ${SHA} is no longer main's tip"
+            echo "deploy=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.tip.outputs.deploy == 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        if: steps.tip.outputs.deploy == 'true'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.tip.outputs.deploy == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Build the API
+        # The api module zips the bundle, so the plan needs it.
+        if: steps.tip.outputs.deploy == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @gainframe/api build
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        if: steps.tip.outputs.deploy == 'true'
+        with:
+          terraform_version: 1.16.7
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        if: steps.tip.outputs.deploy == 'true'
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/gainframe-ci-apply
+          aws-region: ap-southeast-1
+      - name: Plan prod
+        if: steps.tip.outputs.deploy == 'true'
+        working-directory: infra/envs/prod
+        env:
+          RELEASE: ${{ github.event.workflow_run.head_sha }}
+        # Only the plan's summary and the addresses it deletes are printed.
+        run: |
+          terraform init
+          ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt"
+          terraform plan -no-color -lock-timeout=5m "-var=release=${RELEASE}" -out=plan.tfplan > "${RUNNER_TEMP}/plan.txt"
+          grep -E '^(Plan:|No changes\.)' "${RUNNER_TEMP}/plan.txt" || true
+          terraform show -json plan.tfplan > "${RUNNER_TEMP}/plan.json"
+          jq -r '.resource_changes[] | select(.change.actions | index("delete")) | .address' \
+            "${RUNNER_TEMP}/plan.json" > "${RUNNER_TEMP}/deletes.txt"
+          rm "${RUNNER_TEMP}/plan.json" plan.tfplan
+      - id: serving
+        name: Find the serving release
+        # The rollback target. Empty before prod's first deploy.
+        if: steps.tip.outputs.deploy == 'true'
+        working-directory: infra/envs/prod
+        run: |
+          site_url=$(terraform output -raw site_url 2> /dev/null || true)
+          previous=""
+          if [ -n "${site_url}" ]; then
+            page=$(curl -sS --max-time 20 "${site_url}/" || true)
+            previous=$(grep -oE '<meta name="release" content="[0-9a-f]{40}"' <<< "${page}" | grep -oE '[0-9a-f]{40}' || true)
+          fi
+          if [ -n "${previous}" ] && ! git cat-file -e "${previous}^{commit}" 2> /dev/null; then
+            echo "::warning::prod serves ${previous}, which is not in this repository"
+            previous=""
+          fi
+          echo "Prod serves: ${previous:-nothing}"
+          echo "previous=${previous}" >> "${GITHUB_OUTPUT}"
+      - id: gate
+        name: Decide whether the owner must approve
+        if: steps.tip.outputs.deploy == 'true'
+        env:
+          PREVIOUS: ${{ steps.serving.outputs.previous }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          reasons=()
+          while read -r address; do
+            [ -n "${address}" ] && reasons+=("the plan deletes or replaces ${address}")
+          done < "${RUNNER_TEMP}/deletes.txt"
+          if [ -z "${PREVIOUS}" ]; then
+            reasons+=("prod serves no known release, so there is nothing to roll back to")
+          else
+            risky=$(.github/scripts/risky-migrations.sh "${PREVIOUS}" "${SHA}")
+            while read -r file; do
+              [ -n "${file}" ] && reasons+=("${file} is not an additive migration")
+            done <<< "${risky}"
+          fi
+          if [ "${#reasons[@]}" -eq 0 ]; then
+            echo "Prod deploys without approval."
+            echo "gate=false" >> "${GITHUB_OUTPUT}"
+          else
+            for reason in "${reasons[@]}"; do echo "::warning::needs approval: ${reason}"; done
+            echo "gate=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+  # Runs only when prod-check found something the owner must see. The
+  # prod-approval Environment has the owner as its required reviewer.
+  prod-approval:
+    name: Owner approval
+    needs: prod-check
+    if: needs.prod-check.outputs.deploy == 'true' && needs.prod-check.outputs.gate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: prod-approval
+    permissions:
+      actions: read
+    steps:
+      # GitHub creates a missing Environment without protection on first use,
+      # and this job would then pass unapproved.
+      - name: Check the Environment requires a reviewer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rules=$(gh api "repos/${GITHUB_REPOSITORY}/environments/prod-approval" \
+            --jq '[.protection_rules[] | select(.type == "required_reviewers")] | length')
+          if [ "${rules}" = "0" ]; then
+            echo "::error::the prod-approval Environment has no required reviewer (infra/envs/prod/README.md)"
+            exit 1
+          fi
+          echo "Approved; the reasons are in the Check prod changes job."
+
   prod:
     name: Deploy prod
-    needs: dev
+    needs: [prod-check, prod-approval]
+    # prod-approval is skipped when no approval is needed.
+    if: >-
+      always() && needs.prod-check.result == 'success' && needs.prod-check.outputs.deploy == 'true'
+      && (needs.prod-approval.result == 'success' || needs.prod-approval.result == 'skipped')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: prod
@@ -87,6 +240,7 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TF_INPUT: 'false'
     steps:
+      # An approval can come after a newer commit has deployed (L-022).
       - id: tip
         env:
           GH_TOKEN: ${{ github.token }}
@@ -96,7 +250,7 @@ jobs:
           if [ "${tip}" = "${SHA}" ]; then
             echo "deploy=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "::notice::skipped: ${SHA} is no longer main's tip; approve the newer run"
+            echo "::notice::skipped: ${SHA} is no longer main's tip"
             echo "deploy=false" >> "${GITHUB_OUTPUT}"
           fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -110,3 +264,66 @@ jobs:
           environment: prod
           account-id: ${{ secrets.AWS_ACCOUNT_ID }}
           release: ${{ github.event.workflow_run.head_sha }}
+
+  # Redeploys the release prod served before a failed deploy, with that
+  # release's own code and action. Its migrations are already applied, so
+  # migrate is a no-op, and every migration since is additive (prod-check), so
+  # the older code runs on the newer schema. The database is not rolled back.
+  # A rollback whose plan would delete a resource stops for the owner instead:
+  # it would remove what the failed release added.
+  prod-rollback:
+    name: Roll prod back
+    needs: [prod-check, prod]
+    if: always() && needs.prod.result == 'failure' && needs.prod-check.outputs.previous != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: prod
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      PREVIOUS: ${{ needs.prod-check.outputs.previous }}
+    steps:
+      - run: echo "::error::prod failed to deploy ${{ github.event.workflow_run.head_sha }}; rolling back to ${PREVIOUS}"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prod-check.outputs.previous }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.7
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/gainframe-ci-apply
+          aws-region: ap-southeast-1
+      - name: Refuse a rollback that deletes
+        working-directory: infra/envs/prod
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @gainframe/api build
+          terraform init
+          ../../../.github/scripts/mask-cognito-ids.sh "${RUNNER_TEMP}/redact.txt"
+          terraform plan -no-color -lock-timeout=5m "-var=release=${PREVIOUS}" -out=plan.tfplan > "${RUNNER_TEMP}/plan.txt"
+          deletes=$(terraform show -json plan.tfplan \
+            | jq -r '.resource_changes[] | select(.change.actions | index("delete")) | .address')
+          rm plan.tfplan
+          if [ -n "${deletes}" ]; then
+            echo "::error::rolling back would delete: ${deletes//$'\n'/, }. Not rolled back; fix forward or approve a manual rollback."
+            exit 1
+          fi
+      - uses: ./.github/actions/deploy
+        with:
+          environment: prod
+          account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+          release: ${{ needs.prod-check.outputs.previous }}

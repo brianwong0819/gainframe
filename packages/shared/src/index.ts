@@ -114,6 +114,7 @@ export {
   weighInsNeeded,
   weightTrend,
 } from './domain/body-weight.ts'
+export { type FoodCheck, foodCheck } from './domain/food-check.ts'
 export { displayWeight, fromKg, stepToGrid, toKg } from './domain/weight-unit.ts'
 export {
   bestWeightKg,

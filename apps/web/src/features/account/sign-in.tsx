@@ -5,6 +5,12 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { type AuthConfig, readAuthConfig } from '@/auth/config'
 import {
+  clearFinished,
+  type FinishedSession,
+  readFinished,
+  stashFinished,
+} from '@/auth/finished-session'
+import {
   finishSignIn,
   isSignInRedirect,
   SignInError,
@@ -50,18 +56,93 @@ function subscribeRedirect(listener: () => void) {
   return () => redirectListeners.delete(listener)
 }
 
-function finishRedirect(authConfig: AuthConfig) {
-  const params = new URLSearchParams(window.location.search)
-  if (redirectState?.step === 'finishing' || !isSignInRedirect(params)) return
-  window.history.replaceState(null, '', window.location.pathname)
-  setRedirect({ step: 'finishing' })
-  finishSignIn(authConfig, params)
-    .then(async (session) => {
-      const uploading = (await pendingRowCount(db)) > 0
-      await saveSession(db, session)
+// A healthy write of the session takes milliseconds. Past this, WebKit has left
+// the page's IndexedDB transactions pending after the redirect back from
+// Google (src/auth/finished-session.ts), and the page reloads to store it.
+const STORE_TIMEOUT_MS = 5 * 1000
+
+class StoreTimeout extends Error {
+  constructor() {
+    super(`storing the session took over ${String(STORE_TIMEOUT_MS)} ms`)
+    this.name = 'StoreTimeout'
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new StoreTimeout())
+    }, STORE_TIMEOUT_MS)
+    promise.then(resolve, reject).finally(() => {
+      clearTimeout(timer)
+    })
+  })
+}
+
+// `uploading`: whether the device held changes for the account before it joined.
+async function saveAndCount(finished: FinishedSession): Promise<boolean> {
+  const uploading = (await pendingRowCount(db)) > 0
+  await saveSession(db, finished.session)
+  return uploading
+}
+
+function store(finished: FinishedSession) {
+  const startedAt = Date.now()
+  withTimeout(saveAndCount(finished))
+    .then((uploading) => {
+      clearFinished()
+      // Kept as a measurement of the WebKit hang, not as a failure.
+      if (finished.reloadedAt !== null) {
+        const hungMs = String(finished.reloadedAt - finished.savedAt)
+        reportError(
+          'error',
+          new Error(`sign-in stored after a reload; IndexedDB hung ${hungMs} ms`),
+        )
+      }
       setRedirect({ step: 'signedIn', uploading, at: Date.now() })
     })
     .catch((error: unknown) => {
+      if (
+        error instanceof StoreTimeout &&
+        finished.reloadedAt === null &&
+        stashFinished({ ...finished, reloadedAt: Date.now() })
+      ) {
+        window.location.replace(window.location.pathname)
+        return
+      }
+      clearFinished()
+      const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error)
+      reportError(
+        'unhandledrejection',
+        new Error(
+          `storing the session failed after ${String(Date.now() - startedAt)} ms: ${reason}`,
+          {
+            cause: error,
+          },
+        ),
+      )
+      setRedirect({ step: 'failed', failure: 'exchange' })
+    })
+}
+
+function finishRedirect(authConfig: AuthConfig) {
+  if (redirectState?.step === 'finishing') return
+  const params = new URLSearchParams(window.location.search)
+  if (!isSignInRedirect(params)) {
+    // The page reloaded to store a session that the previous page could not.
+    const finished = readFinished(Date.now())
+    if (finished === null) return
+    setRedirect({ step: 'finishing' })
+    store(finished)
+    return
+  }
+  window.history.replaceState(null, '', window.location.pathname)
+  setRedirect({ step: 'finishing' })
+  finishSignIn(authConfig, params).then(
+    (session) => {
+      store({ session, savedAt: Date.now(), reloadedAt: null })
+    },
+    (error: unknown) => {
       // The accounts were just linked; the second Google sign-in succeeds.
       if (error instanceof SignInError && error.failure === 'linked') {
         startSignIn(authConfig, 'google', true).catch((retryError: unknown) => {
@@ -70,12 +151,17 @@ function finishRedirect(authConfig: AuthConfig) {
         })
         return
       }
-      if (!(error instanceof SignInError)) reportError('unhandledrejection', error)
+      // A refused or failed exchange is recorded with what Cognito answered, so
+      // Diagnostics shows why; a cancelled sign-in is not an error.
+      if (!(error instanceof SignInError) || error.failure === 'exchange') {
+        reportError('unhandledrejection', error)
+      }
       setRedirect({
         step: 'failed',
         failure: error instanceof SignInError ? error.failure : 'exchange',
       })
-    })
+    },
+  )
 }
 
 // What is at stake, in numbers: the records that exist only on this device.

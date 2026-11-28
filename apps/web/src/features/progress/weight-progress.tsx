@@ -4,8 +4,8 @@ import {
   addDays,
   compositionChange,
   dailyWeights,
-  type LocalDate,
   rateStatus,
+  type LocalDate,
   targetRange,
   toLocalDate,
   weeklyAverages,
@@ -13,22 +13,19 @@ import {
   weighInsNeeded,
   weightTrend,
 } from '@gainframe/shared'
-import { motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { weightData } from '@/db/body-metrics'
 import { db } from '@/db/client'
 import { useLiveQuery } from '@/db/use-live-query'
-import { RateLine, RateTag } from '@/features/body/weight-card'
 import { WeighInButton } from '@/features/body/weigh-in-button'
-import { formatDay, formatShortDay } from '@/features/history/dates'
+import { formatShortDay } from '@/features/history/dates'
 import { deviceTimeZone } from '@/i18n/time-zone'
-import { fade } from '@/ui/motion'
-import { RollingNumber } from '@/ui/rolling-number'
 import { SegmentedControl } from '@/ui/segmented-control'
 
-import { WeightChart, WeightLegend } from './weight-chart'
+import { FoodCheckCard } from './food-check-card'
+import { WeightReadingCard } from './weight-reading-card'
 
 const readWeight = () => weightData(db)
 
@@ -39,14 +36,12 @@ const WEEKS_LISTED = 5
 
 /**
  * The weight page ("Progress charts" in docs/design-system.md): the range
- * control, the card with the 7-day average, the weekly rate and the chart,
- * the weekly averages, the change between two scans, and "Log today's
- * weight" docked at the bottom. Reading the chart puts the day under the
- * finger in the card header.
+ * control, the card with the 7-day average and the chart, the comparison
+ * with the food log, the weekly averages, the change between two scans, and "Log today's weight" docked at
+ * the bottom.
  */
 export function WeightProgress() {
   const t = useTranslations('progress.weight')
-  const tWeight = useTranslations('weight')
   const locale = useLocale()
   const tenth = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
@@ -65,7 +60,6 @@ export function WeightProgress() {
   const [today] = useState<LocalDate>(() => toLocalDate(new Date().toISOString(), deviceTimeZone()))
   const [range, setRange] = useState<Range>('12w')
   const [ranged, setRanged] = useState(false)
-  const [reading, setReading] = useState<number | null>(null)
   const data = useLiveQuery(readWeight)
   if (data === undefined) return null
 
@@ -76,49 +70,14 @@ export function WeightProgress() {
   const from = range === 'all' ? firstDate : addDays(today, 1 - rangeDays[range])
   const points = trend.filter(({ localDate }) => localDate >= from)
   const first = points[0]
-  const latest = trend.at(-1)
   const weekly = weeklyRate(days)
-  const status = weekly === null ? null : rateStatus(weekly.pctPerWeek, data.phase)
   const wedge =
     showTrend && first !== undefined
       ? targetRange(first.averageKg, first.localDate, [first.localDate, today], data.phase)
       : null
   const weeks = weeklyAverages(days, WEEKS_LISTED)
   const scans = compositionChange(data.rows)
-  const read = reading === null ? undefined : points[reading]
   const loggedToday = data.rows.at(-1)?.localDate === today
-  const spanDays = (Date.parse(`${today}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000
-  const middle = addDays(from, Math.round(spanDays / 2))
-
-  let header
-  if (read !== undefined) {
-    header = {
-      label: t('readingLabel', { date: formatDay(read.localDate, locale) }),
-      value: showTrend ? read.averageKg : read.weightKg,
-      sub: (
-        <p className="num text-label text-ink-2">
-          {t('readingWeighIn', { weight: tenth.format(read.weightKg) })}
-        </p>
-      ),
-    }
-  } else if (latest !== undefined) {
-    const date = latest.localDate === today ? t('today') : formatShortDay(latest.localDate, locale)
-    header = showTrend
-      ? {
-          label: t('averageLabel', { date }),
-          value: latest.averageKg,
-          sub: <RateLine weekly={weekly} averageKg={latest.averageKg} phase={data.phase} />,
-        }
-      : {
-          label: t('latestLabel', { date }),
-          value: latest.weightKg,
-          sub: (
-            <p className="text-label text-ink-2">
-              {tWeight('needMore', { count: weighInsNeeded(days) })}
-            </p>
-          ),
-        }
-  }
 
   return (
     <>
@@ -130,68 +89,29 @@ export function WeightProgress() {
           onChange={(next) => {
             setRange(next)
             setRanged(true)
-            setReading(null)
           }}
           optionLabel={(option) => t(`range.${option}`)}
         />
       )}
-      <section className="flex flex-col gap-4 rounded-group bg-surface p-16">
-        {header === undefined ? (
-          <p className="text-body text-ink-2">{tWeight('empty')}</p>
-        ) : (
-          <>
-            <div className="flex items-center justify-between gap-12">
-              <h2 className="text-label text-ink-2">{header.label}</h2>
-              {read === undefined && showTrend && status !== null && <RateTag status={status} />}
-            </div>
-            <p className="flex items-baseline gap-4 pt-4">
-              <span className="num text-title">
-                {read === undefined ? (
-                  <RollingNumber value={tenth.format(header.value)} />
-                ) : (
-                  tenth.format(header.value)
-                )}
-              </span>
-              <span className="text-label text-ink-2">kg</span>
-            </p>
-            {header.sub}
-            <div className="pt-8">
-              {points.length === 0 ? (
-                <p className="py-28 text-center text-body text-ink-2">{t('noneInRange')}</p>
-              ) : (
-                <motion.div
-                  key={range}
-                  initial={ranged ? { opacity: 0 } : false}
-                  animate={{ opacity: 1 }}
-                  transition={fade}
-                >
-                  <WeightChart
-                    points={points}
-                    range={wedge}
-                    status={status}
-                    from={from}
-                    to={today}
-                    xLabels={[
-                      formatShortDay(from, locale),
-                      formatShortDay(middle, locale),
-                      t('today'),
-                    ]}
-                    yFormat={(value) => tenth.format(value)}
-                    reading={reading}
-                    onRead={setReading}
-                    draw={!ranged}
-                  />
-                </motion.div>
-              )}
-            </div>
-            {showTrend && points.length > 0 && (
-              <div className="pt-8">
-                <WeightLegend />
-              </div>
-            )}
-          </>
-        )}
-      </section>
+      <WeightReadingCard
+        key={range}
+        points={points}
+        latest={trend.at(-1)}
+        wedge={wedge}
+        weekly={weekly}
+        phase={data.phase}
+        needed={weighInsNeeded(days)}
+        from={from}
+        today={today}
+        draw={!ranged}
+      />
+      {trend.length > 0 && (
+        <FoodCheckCard
+          today={today}
+          status={weekly === null || !showTrend ? null : rateStatus(weekly.pctPerWeek, data.phase)}
+          phase={data.phase}
+        />
+      )}
 
       {weeks.length > 0 && (
         <section className="rounded-group bg-surface px-16 pt-16 pb-4">
