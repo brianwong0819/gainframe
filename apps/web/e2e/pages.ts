@@ -19,6 +19,7 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'weight', path: '/progress/weight', parent: '/progress' },
   { name: 'exercise-progress', path: '/progress/exercise', parent: '/progress' },
   { name: 'volume', path: '/progress/volume', parent: '/progress' },
+  { name: 'protein', path: '/progress/protein', parent: '/progress' },
   { name: 'settings', path: '/settings', parent: '/' },
   { name: 'diagnostics', path: '/settings/diagnostics', parent: '/settings' },
   { name: 'sign-in', path: '/settings/sign-in', parent: '/settings' },
