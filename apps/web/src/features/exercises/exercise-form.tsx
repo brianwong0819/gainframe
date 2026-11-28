@@ -22,7 +22,7 @@ import {
   REST_MAX_S,
   REST_STEP_S,
 } from './library'
-import { MuscleMap } from './muscle-map'
+import { MuscleMap, roleLevels } from './muscle-map'
 
 const fieldClass =
   'w-full rounded-ctl bg-sunk px-16 py-12 text-input text-ink placeholder:text-ink-3'
@@ -69,10 +69,9 @@ function MusclePicker({
           {t('muscleHint')}
         </span>
       </div>
-      <div className="rounded-group bg-bg px-40 py-20">
+      <div className="px-20">
         <MuscleMap
-          primary={draft.muscle}
-          secondary={draft.secondaryMuscles}
+          levels={roleLevels(draft.muscle, draft.secondaryMuscles)}
           label={t('mapLabel')}
           onPick={onPick}
         />
