@@ -2,14 +2,15 @@
 
 import { useTranslations } from 'next-intl'
 
+import { ProteinCard } from '@/features/progress/protein-card'
 import { StrengthCard } from '@/features/progress/strength-card'
 import { VolumeCard } from '@/features/progress/volume-card'
 import { WeightSummary } from '@/features/progress/weight-summary'
 import { BackLink } from '@/ui/back-link'
 
 // Progress ("Progress charts" in docs/design-system.md): below Today, one card
-// per question: weight, strength (M4-06), then training volume by muscle
-// (M4-08); protein follows in M4-07.
+// per question: weight, strength (M4-06), training volume by muscle (M4-08)
+// and protein (M4-07).
 export default function ProgressPage() {
   const t = useTranslations('progress')
   const tToday = useTranslations('today')
@@ -22,6 +23,7 @@ export default function ProgressPage() {
       <WeightSummary />
       <StrengthCard />
       <VolumeCard />
+      <ProteinCard />
     </main>
   )
 }

@@ -1057,6 +1057,45 @@
       "footnote": "主肌群每组算 1 组，次肌群算 ½ 组。热身组不算。浅蓝带是每周 10–20 组的目标区。",
       "weekRange": "{from}–{to} 那周",
       "backToRecent": "回到近 7 天"
+    },
+    "protein": {
+      "title": "蛋白质",
+      "heading": "蛋白质 · 近 14 天",
+      "metOf": "/ {logged} 天达标",
+      "chartLabel": "每天的蛋白质和目标线，{logged} 天里 {met} 天达标",
+      "energyChartLabel": "每天的热量和目标线",
+      "noTargets": "设好每日蛋白质和热量目标，这里就能看每天够不够。",
+      "setTargets": "去设目标",
+      "empty": "记了饮食，这里会显示每天蛋白质够不够。",
+      "logMeal": "记一餐",
+      "noneLogged": "这段时间没有记饮食。",
+      "onTarget": "平均达标",
+      "short": "每天差 {grams} g",
+      "averageLine": "平均 {average} g · 目标 {target} g",
+      "kcalTarget": "目标 {kcal} kcal",
+      "kcalClose": "和热量目标差不多",
+      "kcalAbove": "平均每天多吃 {kcal} kcal",
+      "kcalBelow": "平均每天少吃 {kcal} kcal",
+      "rangeLabel": "时间范围",
+      "range": {
+        "2w": "2 周",
+        "4w": "4 周"
+      },
+      "span": "{from}–{to}",
+      "proteinHeading": "蛋白质",
+      "energyHeading": "热量",
+      "dayNone": "这天没有记饮食。",
+      "dayMet": "达标",
+      "dayShort": "差 {grams} g",
+      "target": "目标 {grams} g",
+      "barLabel": "{date}，蛋白质 {protein} 克，{kcal} 千卡",
+      "barNone": "{date}，没记",
+      "proteinNote": "只算记了饮食的天。今天还没过完，不算在内。点一根柱子看那天。",
+      "kcalPerDay": "kcal / 天",
+      "daysHeading": "每天",
+      "daysColumns": "蛋白质 · 热量",
+      "metTag": "达标",
+      "notLogged": "没记"
     }
   }
 }

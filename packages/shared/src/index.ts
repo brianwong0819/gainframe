@@ -120,7 +120,7 @@ export {
   weighInsNeeded,
   weightTrend,
 } from './domain/body-weight.ts'
-export { type FoodCheck, foodCheck } from './domain/food-check.ts'
+export { type FoodCheck, foodCheck, proteinMet } from './domain/food-check.ts'
 export {
   type MuscleContribution,
   type MuscleHeat,

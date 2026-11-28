@@ -1,4 +1,5 @@
 import {
+  addDays,
   currentFoods,
   type Food,
   habitualFoods,
@@ -26,6 +27,43 @@ export interface MealWithItems {
 export interface FoodDay {
   meals: MealWithItems[]
   totals: NutritionTotals
+}
+
+export interface DayIntake extends NutritionTotals {
+  localDate: LocalDate
+  meals: number
+}
+
+/**
+ * Each day from `from` to `to`, oldest first, with its live meals' totals and
+ * how many meals were logged; a day without a meal has zeros.
+ */
+export async function intakeByDay(
+  db: GainframeDb,
+  from: LocalDate,
+  to: LocalDate,
+): Promise<DayIntake[]> {
+  const meals = await db.meals
+    .where('localDate')
+    .between(from, to, true, true)
+    .filter((meal) => meal.deletedAt === null)
+    .toArray()
+  const items = await db.mealItems
+    .where('mealId')
+    .anyOf(meals.map((meal) => meal.id))
+    .filter((item) => item.deletedAt === null)
+    .toArray()
+  const days: DayIntake[] = []
+  for (let date = from; date <= to; date = addDays(date, 1)) {
+    const own = meals.filter((meal) => meal.localDate === date)
+    const ids = new Set(own.map((meal) => meal.id))
+    days.push({
+      localDate: date,
+      meals: own.length,
+      ...nutritionTotals(items.filter((item) => ids.has(item.mealId))),
+    })
+  }
+  return days
 }
 
 /** A day's live meals, newest first, each with its live items in order. */

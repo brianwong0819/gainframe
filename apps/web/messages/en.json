@@ -1057,6 +1057,45 @@
       "footnote": "A set counts 1 for its main muscle and ½ for each secondary muscle. Warm-ups do not count. The light band is the weekly target zone of 10–20 sets.",
       "weekRange": "Week of {from}–{to}",
       "backToRecent": "Back to the last 7 days"
+    },
+    "protein": {
+      "title": "Protein",
+      "heading": "Protein · last 14 days",
+      "metOf": "/ {logged} days on target",
+      "chartLabel": "Daily protein against the target line: {met} of {logged} days on target",
+      "energyChartLabel": "Daily energy against the target line",
+      "noTargets": "Set your daily protein and energy targets to see whether each day was enough.",
+      "setTargets": "Set targets",
+      "empty": "Log your meals and this shows whether each day had enough protein.",
+      "logMeal": "Log a meal",
+      "noneLogged": "No meals logged in this span.",
+      "onTarget": "On target on average",
+      "short": "{grams} g short a day",
+      "averageLine": "average {average} g · target {target} g",
+      "kcalTarget": "target {kcal} kcal",
+      "kcalClose": "Close to the energy target",
+      "kcalAbove": "{kcal} kcal over a day",
+      "kcalBelow": "{kcal} kcal under a day",
+      "rangeLabel": "Range",
+      "range": {
+        "2w": "2 weeks",
+        "4w": "4 weeks"
+      },
+      "span": "{from}–{to}",
+      "proteinHeading": "Protein",
+      "energyHeading": "Energy",
+      "dayNone": "No meals logged this day.",
+      "dayMet": "Target met",
+      "dayShort": "{grams} g short",
+      "target": "target {grams} g",
+      "barLabel": "{date}, {protein} g protein, {kcal} kcal",
+      "barNone": "{date}, not logged",
+      "proteinNote": "Only days with meals logged count. Today is not over, so it is left out. Tap a bar to see that day.",
+      "kcalPerDay": "kcal a day",
+      "daysHeading": "Each day",
+      "daysColumns": "Protein · energy",
+      "metTag": "Met",
+      "notLogged": "Not logged"
     }
   }
 }

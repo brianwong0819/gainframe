@@ -23,6 +23,8 @@ import { RollingNumber } from '@/ui/rolling-number'
 import { SegmentedControl } from '@/ui/segmented-control'
 import { Verdict } from '@/ui/verdict'
 
+import { BAR_RADIUS, barPath } from './day-bars'
+
 const readVolumeData = async () => {
   const [workouts, sets, custom] = await Promise.all([
     db.workouts.filter((workout) => workout.deletedAt === null).toArray(),
@@ -35,18 +37,11 @@ const readVolumeData = async () => {
 const measures = ['sets', 'kg'] as const
 type Measure = (typeof measures)[number]
 const HEIGHT = 150
-const RADIUS = 4
 const MAX_BAR_W = 16
 
 const valueOf: Record<Measure, (week: WeekVolume) => number> = {
   sets: ({ sets }) => sets,
   kg: ({ volumeKg }) => volumeKg,
-}
-
-// A bar with rounded top corners, from the baseline up to `top`.
-function barPath(x: number, width: number, top: number, base: number): string {
-  const r = Math.min(RADIUS, width / 2, Math.max(0, base - top))
-  return `M${String(x)},${String(base)}V${String(top + r)}Q${String(x)},${String(top)} ${String(x + r)},${String(top)}H${String(x + width - r)}Q${String(x + width)},${String(top)} ${String(x + width)},${String(top + r)}V${String(base)}Z`
 }
 
 /**
@@ -88,7 +83,7 @@ export function WeeklyVolume({
   const max = Math.max(...weeks.map(value), average ?? 0, 1)
   const pitch = width / weeks.length
   const barW = Math.max(2, Math.min(MAX_BAR_W, pitch - 6))
-  const y = (shown: number) => HEIGHT - (shown / max) * (HEIGHT - RADIUS)
+  const y = (shown: number) => HEIGHT - (shown / max) * (HEIGHT - BAR_RADIUS)
   const shown = value(week)
   const inProgress = index === current
   const label = inProgress
