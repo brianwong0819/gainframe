@@ -134,8 +134,11 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
                     )}
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-4">
-                    <span className="num text-body text-accent">
-                      {t('proteinShort', { value: whole.format(totals.proteinG) })}
+                    <span className="text-body text-ink-2">
+                      {t.rich('proteinRich', {
+                        value: whole.format(totals.proteinG),
+                        figure: (chunks) => <span className="num text-accent">{chunks}</span>,
+                      })}
                     </span>
                     <span className="num text-label text-ink-3">
                       {t('kcalShort', { value: whole.format(totals.kcal) })}
