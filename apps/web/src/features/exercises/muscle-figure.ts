@@ -26,10 +26,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import type { MuscleGroup } from '@gainframe/shared'
+import type { TrainedMuscle } from '@gainframe/shared'
 
 /** A muscle group, or `none` for a muscle that belongs to no group (adductors, abductors, neck, shins). */
-export type FigurePart = Exclude<MuscleGroup, 'full_body'> | 'none'
+export type FigurePart = TrainedMuscle | 'none'
 
 export const FIGURE_VIEW_BOX = '16 26 992 946'
 

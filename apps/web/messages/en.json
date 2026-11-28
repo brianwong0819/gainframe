@@ -943,6 +943,54 @@
       "causeTooFast": "Your weight is rising fast; consider lowering the daily energy target a little.",
       "notEnough": "{logged, plural, one {Only # day} other {Only # days}} of food logged in the last two weeks. Log {min} to compare it with your weight.",
       "openFood": "Open the food log"
+    },
+    "volume": {
+      "title": "Volume",
+      "heading": "Volume · last 7 days",
+      "setsUnit": "sets",
+      "inTarget": "{count, plural, one {# group} other {# groups}} in the target zone",
+      "noneInTarget": "No group in the target zone yet",
+      "low": "{muscle} low",
+      "empty": "Finish a workout and the muscles it trained are coloured here.",
+      "start": "Start a workout",
+      "figureLabel": "Sets per muscle group in the last 7 days: {summary}"
+    },
+    "muscles": {
+      "heading": "By muscle",
+      "range": "Last 7 days · {from}–{to}",
+      "front": "Front",
+      "back": "Back",
+      "legendLabel": "Colour key",
+      "legend": {
+        "none": "None",
+        "low": "1–4.5 sets",
+        "effective": "5–9.5 sets",
+        "target": "10+ sets"
+      },
+      "zone": {
+        "none": "Not trained",
+        "indirect": "Not trained directly",
+        "low": "Low",
+        "effective": "Effective",
+        "target": "Target zone",
+        "high": "High"
+      },
+      "targetNote": "sets · target zone 10–20",
+      "line": {
+        "none": "Not trained in the last 7 days.",
+        "indirect": "Only {sets} sets from other exercises. Not trained directly in the last 4 weeks, so not counted as low.",
+        "low": "{toEffective} more sets to reach effective, {toTarget} to reach the target zone.",
+        "effective": "Effective. {toTarget} more sets to reach the target zone.",
+        "target": "In the weekly target zone of 10–20 sets.",
+        "high": "Over 20 sets. More adds little now; watch your recovery."
+      },
+      "counted": "Sets that counted",
+      "countedSets": "{sets} sets",
+      "half": " × ½",
+      "find": "Find {muscle} exercises",
+      "rowsLabel": "Sets per muscle group",
+      "rowLabel": "{muscle}, {sets} sets, {zone}",
+      "footnote": "A set counts 1 for its main muscle and ½ for each secondary muscle. Warm-ups do not count. The light band is the weekly target zone of 10–20 sets."
     }
   }
 }

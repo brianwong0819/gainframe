@@ -4,7 +4,7 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
 - **Current task:** M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal; M3-03 offline photos built (PR `m3/03-offline-photos`). M3-04 is done: dev calls Claude Haiku 5.5 through Anthropic's API (ADR-0008), first real call ok on 2026-11-27; prod still needs its own key (`infra/envs/prod/README.md`). The real checks of M3-03, M3-05, M3-06 and M3-10 are now bw logging real meals; M3-08 `pnpm eval:vision` built (PR `m3/08-eval-vision`), its first real run waits on the M3-09 photos
-- **M4 in parallel** (no AI needed): M4-02 and M4-04 done (Progress page below Today, weight page with the chart, weekly list, composition change and the food-log check); M4-08 muscle map in progress (the new figure is in; next the weekly sets per muscle, then the muscle section on `/progress/volume`); M4-06 strength chart and M4-07 volume and protein charts follow, each in its own thread
+- **M4 in parallel** (no AI needed): M4-02 and M4-04 done (Progress page below Today, weight page with the chart, weekly list, composition change and the food-log check); M4-08 muscle map done (`/progress/volume` with the muscle section, the Progress page's volume card, the new figure in the exercise detail and form); next M4-06 strength chart and M4-07 volume and protein charts (its weekly bars go above the muscle section), each in its own thread
 - **Last updated:** 2026-11-28
 
 ## Now

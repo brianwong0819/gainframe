@@ -17,6 +17,7 @@ export const pages: { name: string; path: string; parent?: string }[] = [
   { name: 'food-describe', path: '/food/describe', parent: '/food/add' },
   { name: 'progress', path: '/progress', parent: '/' },
   { name: 'weight', path: '/progress/weight', parent: '/progress' },
+  { name: 'volume', path: '/progress/volume', parent: '/progress' },
   { name: 'settings', path: '/settings', parent: '/' },
   { name: 'diagnostics', path: '/settings/diagnostics', parent: '/settings' },
   { name: 'sign-in', path: '/settings/sign-in', parent: '/settings' },

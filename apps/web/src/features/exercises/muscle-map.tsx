@@ -1,13 +1,8 @@
-import type { MuscleGroup } from '@gainframe/shared'
+import type { MuscleGroup, MuscleHeat, TrainedMuscle } from '@gainframe/shared'
 
-import { FIGURE_PARTS, FIGURE_VIEW_BOX, type FigurePart, SILHOUETTES } from './muscle-figure'
+import { FIGURE_PARTS, FIGURE_VIEW_BOX, SILHOUETTES } from './muscle-figure'
 
-type FigureMuscle = Exclude<FigurePart, 'none'>
-
-/** 0 untrained, then the three heat fills; 3 is the accent. */
-export type HeatLevel = 0 | 1 | 2 | 3
-
-export type MuscleLevels = Partial<Record<FigureMuscle, HeatLevel>>
+export type MuscleLevels = Partial<Record<TrainedMuscle, MuscleHeat>>
 
 /** An exercise's muscles as levels: the primary in the accent, the secondary ones lightest. */
 export function roleLevels(
@@ -41,9 +36,9 @@ export function MuscleMap({
   onPick,
 }: {
   levels: MuscleLevels
-  selected?: FigureMuscle | undefined
+  selected?: TrainedMuscle | undefined
   label: string
-  onPick?: ((muscle: FigureMuscle) => void) | undefined
+  onPick?: ((muscle: TrainedMuscle) => void) | undefined
 }) {
   return (
     <svg

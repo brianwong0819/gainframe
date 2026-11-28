@@ -6,6 +6,7 @@
     "/food/describe",
     "/food/photo",
     "/progress",
+    "/progress/volume",
     "/progress/weight",
     "/settings",
     "/settings/account",

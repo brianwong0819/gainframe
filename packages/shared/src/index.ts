@@ -120,6 +120,7 @@ export {
 export { type FoodCheck, foodCheck } from './domain/food-check.ts'
 export {
   type MuscleContribution,
+  type MuscleHeat,
   muscleHeat,
   type MuscleVolume,
   muscleVolume,
