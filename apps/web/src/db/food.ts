@@ -1,6 +1,7 @@
 import {
   currentFoods,
   type Food,
+  habitualFoods,
   type LocalDate,
   type Meal,
   type MealItem,
@@ -62,6 +63,21 @@ export async function knownFoods(
     pastFoods(await db.mealItems.toArray(), order),
     await db.foods.toArray(),
   )
+}
+
+/**
+ * The foods eaten on enough different days lately to count as habits, for the
+ * Food tab's one-tap row; a food the user saved under the same name gives its
+ * figures. `today` is the device's local date.
+ */
+export async function habitFoods(db: GainframeDb, today: LocalDate): Promise<PastFood[]> {
+  const [meals, items] = await Promise.all([db.meals.toArray(), db.mealItems.toArray()])
+  const dayOf = new Map(meals.filter((m) => m.deletedAt === null).map((m) => [m.id, m.localDate]))
+  const dated = items.flatMap((item) => {
+    const localDate = dayOf.get(item.mealId)
+    return localDate === undefined ? [] : [{ ...item, localDate }]
+  })
+  return withLibraryPortions(habitualFoods(dated, today), await db.foods.toArray())
 }
 
 /** The user's live foods and edits of table entries (M3-12). */

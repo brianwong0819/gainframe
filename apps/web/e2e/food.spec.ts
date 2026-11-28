@@ -110,6 +110,59 @@ test('"新建食物" opens its sheet even when tapped as soon as it shows', asyn
   await expect(page.getByRole('dialog', { name: '新建食物' }).getByLabel('名称')).toBeVisible()
 })
 
+// Two earlier days on which a food was eaten, written straight into IndexedDB:
+// with today's meal that makes the three days a food needs to count as frequent.
+async function seedEarlierMeals(page: Page, name: string) {
+  await page.evaluate(
+    (food) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('gainframe')
+        open.onerror = () => {
+          reject(new Error('IndexedDB did not open'))
+        }
+        open.onsuccess = () => {
+          const transaction = open.result.transaction(['meals', 'mealItems'], 'readwrite')
+          for (const daysAgo of [1, 2]) {
+            const at = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+            const base = {
+              userId: null,
+              createdAt: at.toISOString(),
+              updatedAt: at.toISOString(),
+              deletedAt: null,
+            }
+            const mealId = crypto.randomUUID()
+            transaction.objectStore('meals').put({
+              ...base,
+              id: mealId,
+              eatenAt: at.toISOString(),
+              localDate: at.toLocaleDateString('en-CA'),
+              mealType: 'lunch',
+              name: null,
+              photoKey: null,
+            })
+            transaction.objectStore('mealItems').put({
+              ...base,
+              id: crypto.randomUUID(),
+              mealId,
+              position: 0,
+              name: food,
+              grams: 100,
+              proteinG: 31,
+              kcal: 165,
+              source: 'manual',
+              aiRaw: null,
+            })
+          }
+          transaction.oncomplete = () => {
+            open.result.close()
+            resolve()
+          }
+        }
+      }),
+    name,
+  )
+}
+
 test('a frequent food is logged in one tap and undone, and a meal is edited', async ({ page }) => {
   await page.goto('/food/add')
   await page.getByRole('button', { name: '新建食物' }).click()
@@ -123,6 +176,11 @@ test('a frequent food is logged in one tap and undone, and a meal is edited', as
   await expect(page).toHaveURL(/\/food\/?$/)
   const meals = page.getByRole('list').filter({ hasText: '鸡胸肉' }).last()
   await expect(meals.getByRole('listitem')).toHaveCount(1)
+
+  // Eaten on one day only, the food is not frequent yet: the row stays hidden.
+  await expect(page.getByRole('heading', { name: '常吃' })).toBeHidden()
+  await seedEarlierMeals(page, '鸡胸肉')
+  await page.reload()
 
   await page.getByRole('button', { name: '记一份鸡胸肉' }).click()
   await expect(page.getByText('已记入 鸡胸肉')).toBeVisible()

@@ -31,6 +31,7 @@ export { searchByName } from './domain/name-search.ts'
 export {
   addDays,
   fillProteinGap,
+  habitualFoods,
   mealTypeAt,
   nutritionTotals,
   type NutritionTotals,

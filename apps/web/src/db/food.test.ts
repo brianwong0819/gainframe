@@ -6,6 +6,7 @@ import { localDateSchema } from '@gainframe/shared'
 import {
   foodDay,
   type FoodValues,
+  habitFoods,
   knownFoods,
   logMeal,
   type NewMealItem,
@@ -148,5 +149,24 @@ describe('food library', () => {
     expect(frequent?.grams).toBe(30)
     expect(frequent?.proteinG).toBeCloseTo(20.58, 2)
     expect((await foodDay(db, day)).totals).toEqual({ proteinG: 17, kcal: 108 })
+  })
+
+  it('lists a food as a habit only once it was eaten on three different local days', async () => {
+    const eat = (eatenAt: string) =>
+      logMeal(db, repos, {
+        eatenAt,
+        timeZone: KL,
+        mealType: 'lunch',
+        items: [food('Egg', 6, 78)],
+      })
+    await eat('2026-11-20T04:00:00.000Z')
+    await eat('2026-11-22T04:00:00.000Z')
+    await eat('2026-11-22T10:00:00.000Z')
+    expect(await habitFoods(db, day)).toEqual([])
+    // 16:30 UTC is 00:30 the next day in Kuala Lumpur: a third local day.
+    await eat('2026-11-22T16:30:00.000Z')
+    expect((await habitFoods(db, localDateSchema.parse('2026-11-23'))).map((f) => f.name)).toEqual([
+      'Egg',
+    ])
   })
 })
