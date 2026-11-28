@@ -27,11 +27,11 @@ describe('parseThemeColors', () => {
 
   it('fails the build when a colour is missing or not a hex value', () => {
     const dark =
-      ":root[data-theme='dark'] { --bg: #000000; --surface: #111111; --ink: #ffffff; --ink-2: #888888; --accent: #0000ff; }"
+      ":root[data-theme='dark'] { --bg: #000000; --surface-opaque: #111111; --ink: #ffffff; --ink-2: #888888; --accent: #0000ff; }"
     expect(() => parseThemeColors(dark)).toThrow('no ":root" block')
     expect(() =>
       parseThemeColors(
-        `:root { --bg: #ffffff; --surface: #ffffff; --ink: rgb(0 0 0); --ink-2: #888888; --accent: #0000ff; }\n${dark}`,
+        `:root { --bg: #ffffff; --surface-opaque: #ffffff; --ink: rgb(0 0 0); --ink-2: #888888; --accent: #0000ff; }\n${dark}`,
       ),
     ).toThrow('no hex --ink')
   })
