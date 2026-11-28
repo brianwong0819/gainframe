@@ -46,6 +46,8 @@ Checks that earlier PRs left for bw on the iPhone. Each one is part of M1-13; a 
 
 ## Follow-ups (noticed, not in scope yet)
 
+- AI tokens (2026-11-27): the first `pnpm eval:vision` run compares vision v3 (entries named by position) with v2 (`--prompts 2,3`) and the text set; v3 is served before it, by bw's choice. The image size sent to the model (about 1,000 to 2,500 tokens of the 48,000 per photo) is chosen in the same run.
+- Seven foods appear twice under the same name from two sources with different figures (Langsat, Salak, Mysore pak, Idli, Beef burger, Coleslaw, Samosa); the SG FoodID curation meant to leave out foods MyFCD already has. Decide per pair which to keep.
 - Weight chart reading in WebKit: each new reading takes 25 to 60 ms in CI WebKit (L-056, measured in draft PR #213). Find the cause (next: the header text that changes on each reading), then set `P95_FRAME_MS` in `e2e/weight-chart.spec.ts` back to 34 ms and drag only over days with data. Check on the iPhone that reading the chart feels smooth.
 - The "和饮食对一下" card writes its causes for gaining only; maintain and cut show the energy and protein lines without a cause.
 - The first AI call after the dev database had been idle failed in `ai_usage.reserve` with "Failed query" (Lambda request c9a791c8, 2026-11-27); the same call a minute later succeeded. Probably a connection dropped while Neon's compute was suspended. Measure first (log the pg error's `code` and `cause`, which Drizzle's wrapper hides), then decide on a retry for connection errors in `createPool` or the AI pipeline (L-023).

@@ -43,7 +43,7 @@ export const aiConfig = z
         maxTokens: 2048,
         timeoutMs: 12_000,
         dailyCap: FOOD_ESTIMATES_PER_DAY,
-        promptVersion: 2,
+        promptVersion: 3,
       },
       // A description costs far less than a photo; the cap is the same number.
       textMeal: {
@@ -52,7 +52,7 @@ export const aiConfig = z
         maxTokens: 2048,
         timeoutMs: 12_000,
         dailyCap: FOOD_ESTIMATES_PER_DAY,
-        promptVersion: 1,
+        promptVersion: 2,
       },
       // The deploy's one real call (ai-check.ts); its cap covers a busy day of deploys.
       check: {

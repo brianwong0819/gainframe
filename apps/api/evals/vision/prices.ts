@@ -2,7 +2,7 @@
 // prices from Anthropic's model table, checked 2026-11-24; Bedrock bills
 // Claude through AWS Marketplace and may differ, so confirm on the Bedrock
 // pricing page before choosing a model on cost alone. Claude Haiku 5.5's price
-// applies to prompts up to 100,000 tokens; the photo prompt is about 35,000.
+// applies to prompts up to 100,000 tokens; the photo prompt is about 48,000 (docs/ai.md).
 // Cache reads cost a tenth of input and cache writes 1.25 times input.
 export interface ModelPrice {
   input: number

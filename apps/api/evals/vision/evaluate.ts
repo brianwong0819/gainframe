@@ -1,12 +1,17 @@
-import { type FoodEstimateRequest, type FoodTableEntry, resolveEstimate } from '@gainframe/shared'
+import {
+  type FoodEstimateRequest,
+  type FoodTableEntry,
+  resolveEstimate,
+  type VisionReply,
+} from '@gainframe/shared'
 import { FOOD_TABLE } from '@gainframe/shared/food-table'
 
 import { createAi } from '../../src/ai/generate.ts'
 import type { AiContent, AiProvider, AiUsage } from '../../src/ai/provider.ts'
 import {
-  estimateReplySchema,
   TEXT_MEAL_SYSTEM,
   textMealReplyCheckedSchema,
+  textMealReplyToTable,
   textMealRequest,
   visionPromptFor,
 } from '../../src/food/estimate.ts'
@@ -73,24 +78,39 @@ export interface EvalOptions {
   log: Logger
 }
 
+// One call's request: a photo with its prompt version, or a description
+// (`photoPrompt` null) with the served text prompt.
+interface EvalRequest {
+  system: string
+  content: readonly AiContent[]
+  photoPrompt: ReturnType<typeof visionPromptFor> | null
+}
+
 const truthOf = (item: EvalCase): Truth => ({ proteinG: item.proteinG, kcal: item.kcal })
 
 async function runOnce(
   ai: EvalAi,
   model: string,
-  request: {
-    system: string
-    content: readonly AiContent[]
-    text: boolean
-  },
+  request: EvalRequest,
   log: Logger,
 ): Promise<RunResult> {
   const common = { userId: 'eval', log, system: request.system, content: request.content }
-  const result = request.text
-    ? await ai.generate({ ...common, feature: 'textMeal', schema: textMealReplyCheckedSchema })
-    : await ai.generate({ ...common, feature: 'vision', schema: estimateReplySchema })
-  if (!result.ok) return { ok: false, outcome: result.outcome }
-  const items = resolveEstimate(result.value, ENTRIES)
+  let reply: Pick<VisionReply, 'items'>
+  if (request.photoPrompt === null) {
+    const result = await ai.generate({
+      ...common,
+      feature: 'textMeal',
+      schema: textMealReplyCheckedSchema,
+    })
+    if (!result.ok) return { ok: false, outcome: result.outcome }
+    reply = textMealReplyToTable(result.value)
+  } else {
+    const prompt = request.photoPrompt
+    const result = await ai.generate({ ...common, feature: 'vision', schema: prompt.schema })
+    if (!result.ok) return { ok: false, outcome: result.outcome }
+    reply = prompt.toTableIds(result.value)
+  }
+  const items = resolveEstimate(reply, ENTRIES)
   return {
     ok: true,
     proteinG: items.reduce((sum, item) => sum + item.proteinG, 0),
@@ -110,11 +130,7 @@ export async function evaluate(options: EvalOptions): Promise<ReportRow[]> {
   const repeat = async (
     ai: EvalAi,
     model: string,
-    build: (item: EvalCase) => Promise<{
-      system: string
-      content: readonly AiContent[]
-      text: boolean
-    }>,
+    build: (item: EvalCase) => Promise<EvalRequest>,
     cases: readonly EvalCase[],
   ) => {
     const results: CaseRuns[] = []
@@ -144,7 +160,7 @@ export async function evaluate(options: EvalOptions): Promise<ReportRow[]> {
               { type: 'image', mediaType: photo.type, data: photo.base64 },
               { type: 'text', text: prompt.request },
             ],
-            text: false,
+            photoPrompt: prompt,
           }
         },
         options.cases,
@@ -168,7 +184,7 @@ export async function evaluate(options: EvalOptions): Promise<ReportRow[]> {
                 ),
               },
             ],
-            text: true,
+            photoPrompt: null,
           }),
         described,
       )

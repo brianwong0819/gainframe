@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-057 · 2026-11-27 · ai · The food prompt was twice the size the docs said
+- **What happened:** while cutting the tokens per estimate, Anthropic's token-counting endpoint put the photo prompt at 74,718 input tokens. `docs/ai.md`, the eval's price notes and ADR-0008 said about 35,000, so the cost per photo was about twice the planned USD 0.004.
+- **Root cause:** the figure was estimated from the character count (about 3.7 characters per token). Ids such as `sgfoodid-F05040011` and local names split into far more tokens than English prose, and no rule asked for a measured count.
+- **Fix:** PR `claude/project-thread-rbn4l0`: the prompt names entries by position (vision v3, text-meal v2), 48,034 tokens; the docs carry the measured counts.
+- **Prevention:** "Models and cost" in `docs/ai.md`: token figures for a prompt come from the counting endpoint (`messages.count_tokens`, free), never from a character count, and are re-measured when a prompt version or the food table changes.
+- **Status:** documented
+
 ### L-056 · 2026-11-28 · ui · The weight chart's frame test hid that every new reading is slow in WebKit
 - **What happened:** after L-054 the drag test failed main on iPhone 17 Pro Max (p95 37 ms). A diagnostic run on all six devices (#213) showed that in CI WebKit each move that changes the reading takes 25 to 60 ms, while a drag over an empty part of the page and every Chromium device stay at 16 to 17 ms. The steady frames later in the drag were moves past the last weigh-in, where the reading does not change.
 - **Root cause:** not found yet. Drawing the hairline and its dot on their own layer did not help, so it is not a repaint of the series; the header text that changes on each reading is being measured next.
