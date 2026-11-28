@@ -135,6 +135,9 @@ export const domainConfig = {
     secondaryShare: 0.5,
     zones: { effective: 5, target: 10, high: 20 },
   },
+  // The volume page's weekly bars: how many weeks are drawn, and how many full
+  // weeks before the current one the average hairline covers.
+  weeklyVolume: { weeks: 12, averageWeeks: 8 },
 } as const
 
 // Sync limits (ADR-0003), shared so the client batches to what the server accepts.

@@ -3,6 +3,7 @@
 import {
   domainConfig,
   type Exercise,
+  type LocalDate,
   type MuscleVolume,
   type MuscleZone,
   muscleHeat,
@@ -93,13 +94,28 @@ export function MuscleLegend() {
  * every group as a row. The rows are the control that always works; tapping
  * the figure selects the same row.
  */
-export function MuscleSection() {
-  const week = useMuscleWeek()
+export function MuscleSection({
+  selected,
+  onReset,
+}: {
+  // A week picked on the weekly bars, or null for the last seven days.
+  selected: { from: LocalDate; to: LocalDate } | null
+  onReset: () => void
+}) {
+  const week = useMuscleWeek(selected)
   if (week === undefined) return null
-  return <MuscleSectionView week={week} />
+  return <MuscleSectionView week={week} picked={selected !== null} onReset={onReset} />
 }
 
-function MuscleSectionView({ week }: { week: MuscleWeek }) {
+function MuscleSectionView({
+  week,
+  picked: weekPicked,
+  onReset,
+}: {
+  week: MuscleWeek
+  picked: boolean
+  onReset: () => void
+}) {
   const t = useTranslations('progress.muscles')
   const tVolume = useTranslations('progress.volume')
   const tMuscle = useTranslations('muscle')
@@ -117,12 +133,20 @@ function MuscleSectionView({ week }: { week: MuscleWeek }) {
           {t('heading')}
         </h2>
         <span className="text-label text-ink-2">
-          {t('range', {
+          {t(weekPicked ? 'weekRange' : 'range', {
             from: formatShortDay(week.from, locale),
             to: formatShortDay(week.to, locale),
           })}
         </span>
       </div>
+      {weekPicked && (
+        <Pressable
+          onClick={onReset}
+          className="-mt-4 self-start py-8 text-label font-semibold text-accent"
+        >
+          {t('backToRecent')}
+        </Pressable>
+      )}
 
       <div className="flex flex-col gap-12 rounded-group bg-surface p-16">
         <p className="flex justify-around text-caption text-ink-3" aria-hidden>
