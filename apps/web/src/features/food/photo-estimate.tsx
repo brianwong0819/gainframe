@@ -120,7 +120,10 @@ function NewPhotoEstimate() {
     return (
       <div className="flex flex-col gap-20">
         <h1 className="text-title">{t('title')}</h1>
-        <p className="text-body text-ink-2">{t('noPhoto')}</p>
+        <div className="flex flex-col gap-4">
+          <p className="text-body text-ink-2">{t('noPhoto')}</p>
+          <p className="text-label text-ink-3">{t('photoTip')}</p>
+        </div>
         <PhotoPicker
           onPick={retake}
           className="rounded-full bg-accent px-16 py-12 text-center text-body font-semibold text-accent-ink"
@@ -131,7 +134,7 @@ function NewPhotoEstimate() {
           href="/food/add"
           className="rounded-full bg-sunk px-16 py-12 text-center text-body font-semibold text-ink"
         >
-          {t('byHand')}
+          {t('manual')}
         </PressableLink>
       </div>
     )

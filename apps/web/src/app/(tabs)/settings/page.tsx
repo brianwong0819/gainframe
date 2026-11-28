@@ -44,9 +44,14 @@ export default function SettingsPage() {
           <Chevron direction="right" />
         </span>
       </PressableLink>
-      <section className="flex flex-col gap-8">
-        <h2 className="text-label text-ink-3">{t('dataSources')}</h2>
-        <ul className="flex flex-col gap-4 text-label text-ink-2">
+      <details className="group rounded-group bg-surface">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-12 p-16 text-body text-ink [&::-webkit-details-marker]:hidden">
+          {t('dataSources')}
+          <span className="text-ink-3 group-open:rotate-90">
+            <Chevron direction="right" />
+          </span>
+        </summary>
+        <ul className="flex flex-col gap-8 px-16 pb-16 text-label text-ink-2">
           {SOURCES.map(({ key, href }) => (
             <li key={key}>
               <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
@@ -55,7 +60,7 @@ export default function SettingsPage() {
             </li>
           ))}
         </ul>
-      </section>
+      </details>
     </main>
   )
 }
