@@ -47,6 +47,13 @@ Area tags: `workout`, `food`, `sync`, `auth`, `ai`, `infra`, `ci`, `ui`, `motion
 
 _Newest first._
 
+### L-055 · 2026-11-28 · auth · Google sign-in on the iPhone stayed on "Signing in…" in dev and prod
+- **What happened:** bw (2026-11-28) could not sign in with Google in the installed app or in Safari, in dev or in prod: the page stayed on "Signing in…" until bw left the app, then said to check the network. Diagnostics held only `Transaction aborted` and, later, `Attempt to open a cursor in database without an in-progress transaction`. Email sign-in, which Cognito answered at once from its own session, worked.
+- **Root cause:** after the redirect back through Google, WebKit left the page's IndexedDB transactions pending, the reported behaviour of WebKit bugs 324058 (transactions never start after a cross-site round trip with a service worker, fixed in WebKit nightly 2026-09) and 315804 (a readwrite transaction never completes in an installed PWA, fixed in Safari 26). The sign-in page waited on that write with no limit, and the exchange swallowed its own errors, so nothing recorded which step hung.
+- **Fix:** PR #214 records the exchange's answer and gives it a 30 s limit. PR `m2/sign-in-idb-hang` keeps the exchanged session in localStorage when the write takes over 5 s, reloads, and stores it from the fresh page, recording how long IndexedDB hung.
+- **Prevention:** a step that waits on IndexedDB right after a cross-site redirect has a time limit and a path that does not depend on that page's IndexedDB; every failure the user sees as an error message is also recorded in Diagnostics with its cause (no `catch` that maps an error to a message without recording it).
+- **Status:** documented
+
 ### L-054 · 2026-11-27 · ci · The weight chart drag test failed main on one 51 ms frame
 - **What happened:** after #208 and #209, `e2e/weight-chart.spec.ts` failed Device layout on main for iPhone SE (WebKit): one frame of 41 took 51 ms against a 50 ms limit, while the others took 7 to 23 ms. Every PR rebased on main inherited the red check.
 - **Root cause:** the test failed on the single longest frame. On a shared CI runner a stray frame over 50 ms happens without any work from the app, so the check measured the runner as much as the chart.
