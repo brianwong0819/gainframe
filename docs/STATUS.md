@@ -4,8 +4,8 @@ The handover note between sessions: where the project is now, what waits on bw, 
 
 - **Milestone:** M2 Accounts + sync (bw's device checks) and M3 Food logging
 - **Current task:** M3-06 confirm screen built (photo screen, oil and sauce row, name-correction sheet with "remember this correction", small / regular / large for low-confidence items); ticked after bw logs a real meal; M3-03 offline photos built (PR `m3/03-offline-photos`). M3-04 is done: dev calls Claude Haiku 5.5 through Anthropic's API (ADR-0008), first real call ok on 2026-11-27; prod still needs its own key (`infra/envs/prod/README.md`). The real checks of M3-03, M3-05, M3-06 and M3-10 are now bw logging real meals; M3-08 `pnpm eval:vision` built (PR `m3/08-eval-vision`), its first real run waits on the M3-09 photos
-- **M4 in parallel** (no AI needed): M4-02 and M4-04 done (Progress page below Today, weight page with the chart, weekly list, composition change and the food-log check); next M4-06 strength chart and M4-07 volume and protein charts, each in its own thread
-- **Last updated:** 2026-11-27
+- **M4 in parallel** (no AI needed): M4-02 and M4-04 done (Progress page below Today, weight page with the chart, weekly list, composition change and the food-log check); next M4-06 strength chart, M4-07 volume and protein charts and M4-08 muscle map (designed 2026-11-28), each in its own thread
+- **Last updated:** 2026-11-28
 
 ## Now
 
@@ -16,7 +16,7 @@ State on 2026-11-27, after the global review (PR `m3/review-thread-rules`). What
 - **M2-07 prod** is done: prod first deployed on 2026-11-27 (PR #206, L-053) and passed its smoke test, database and AI checks included. With ADR-0009, prod deploys automatically after dev.
 - **M3**: M3-01, M3-02, M3-04, M3-11, M3-12 and M3-13 are done. M3-03 (offline photos), M3-05 (photo estimate), M3-06 (confirm screen) and M3-10 (text estimate) are built and ticked after bw logs real meals on dev. M3-08 `pnpm eval:vision` is built; its first real run waits on the M3-09 photos. AI calls go to Anthropic's API (ADR-0008) and only for the Cognito group `ai` (M3-13).
 - **M4**: M4-02 (weigh-ins) and M4-04 (Progress page and weight chart, visx; shared `Plot`, `SegmentedControl`) are done; M4-01 part (a) is merged. Next are M4-06 and M4-07, which reuse `src/ui/plot.tsx`.
-- **Design decisions made ahead of their milestones** are in `docs/design-system.md`: "Food logging", "Accounts and backup", "Progress charts", "Correcting a done set", "Ticking ahead".
+- **Design decisions made ahead of their milestones** are in `docs/design-system.md`: "Food logging", "Accounts and backup", "Progress charts" (with "Muscle map"), "Correcting a done set", "Ticking ahead".
 - **Thread rules**: one project thread per small task, with a short handoff once the context grows ("Project threads" in `docs/working-with-claude.md`).
 
 ## Field week checklist (pending iPhone checks)

@@ -151,8 +151,10 @@ Done when: the first screen shows what is left for today and this week's weight 
   Verify: reading along the line is smooth on the iPhone (bw has no Mac for the Safari timeline, so an e2e spec samples the frames in WebKit and fails on a long one); fixture tests cover the target range and a user with fewer than seven weigh-ins.
 - [ ] **M4-06 Strength chart**: `/progress/exercise#<id>` (estimated 1RM or heaviest set per workout, records marked, most reps for bodyweight exercises), the strength card of the Progress page, and the link from `ExerciseDetail`. The best set of each workout is a pure function beside `bestSets`. The shaded plateau span and its card are added by M5-04 and M5-05.
   Verify: fixture tests cover records, a bodyweight exercise and an exercise done once; the page for an exercise done once shows the first-days state.
-- [ ] **M4-07 Volume and protein charts**: `/progress/volume` (weekly working sets or kg, the week in progress, sets per muscle group against the weekly guideline), the protein card of the Progress page and its detail page (daily protein and energy against the targets, designed in this task). Weekly sets per muscle group is a pure function; the guideline lives in config.
+- [ ] **M4-07 Volume and protein charts**: `/progress/volume` (weekly working sets or kg, the week in progress, sets per muscle group against the weekly guideline), the protein card of the Progress page and its detail page (daily protein and energy against the targets, designed in this task). Weekly sets per muscle group (one per primary muscle, a half per secondary muscle, for any date range) and its zone are pure functions; the zone limits live in config.
   Verify: fixture tests cover a week in progress, a week with no workout and a set of an exercise without a primary muscle.
+- [ ] **M4-08 Muscle volume map** (designed 2026-11-28, "Muscle map" in [design-system.md](design-system.md)): the tinted front and back figure, the selected group's card and the zone rows on `/progress/volume`, and the small figure on the Progress page's volume card. Extends `MuscleMap` with a level per group (two new tokens, `--heat-1` and `--heat-2`) instead of a second drawing. Builds on M4-07's weekly sets per muscle; the "trained directly in the last four weeks" check is a pure function beside it.
+
 - [ ] **M4-05 Wide layout** (done last in the milestone; it keeps its number because ADR-0004 refers to it): two-column desktop layout for reviewers on laptops.
   Verify: no stretched single-column pages at 1440 px.
 
@@ -164,9 +166,9 @@ Done when: seeded plateau data triggers an analysis, and a Monday report arrives
   Verify: 👤 "Send test notification" arrives on the iPhone.
 - [ ] **M5-02 Lock-screen rest notification**: completing a set schedules a one-off EventBridge Scheduler job that sends a push when rest ends; skipping rest cancels it. The end time is the workout's synced `restEndsAt` (M1-06); ±15 s moves the job, and ending the rest (or undoing the set) cancels it.
   Verify: lock the phone after a set and the notification arrives on time; skipping rest sends nothing.
-- [ ] **M5-03 Nudge rules engine**: pure functions with configurable thresholds; first rule: high-volume session with a large protein gap.
+- [ ] **M5-03 Nudge rules engine**: pure functions with configurable thresholds; first rule: high-volume session with a large protein gap; second rule: a muscle group trained directly in the last four weeks stayed under 5 sets in each of the last two weeks ("Muscle map" in [design-system.md](design-system.md)).
   Verify: fixture tests cover triggering and non-triggering cases.
-- [ ] **M5-04 Plateau rules**: an exercise's e1RM flat for 3 weeks (≥ 3 sessions); weekly average weight flat for 2 weeks.
+- [ ] **M5-04 Plateau rules**: an exercise's e1RM flat for 3 weeks (≥ 3 sessions); weekly average weight flat for 2 weeks. The plateau card lists the primary muscle group's average weekly sets over the span, and the M5-05 and M5-06 snapshots carry each group's weekly sets and zone.
   Verify: fixture tests cover trigger, no-trigger and boundaries.
 - [ ] **M5-05 Plateau analysis**: snapshot → AI structured explanation and suggestions → `nudges` → push. Numbers are references to snapshot fields that code fills in ("Prompts" in [ai.md](ai.md)).
   Verify: for seeded plateau data, the analysis cites real numbers from the snapshot.
