@@ -982,6 +982,32 @@
       "record": "新纪录",
       "timesUnit": "次"
     },
+    "weekly": {
+      "measureLabel": "看哪个数字",
+      "measure": {
+        "sets": "组数",
+        "kg": "kg"
+      },
+      "unit": {
+        "sets": "组",
+        "kg": "kg"
+      },
+      "thisWeek": "本周 · 到今天",
+      "thisWeekShort": "本周",
+      "weekOf": "{date}那周",
+      "notOver": "这周还没结束",
+      "average": "近 8 周平均每周 {value}",
+      "noAverage": "练满一周后显示平均",
+      "atAverage": "和平均差不多",
+      "aboveAverage": "比平均多 {value}",
+      "belowAverage": "比平均少 {value}",
+      "chartLabel": "近 12 周每周训练量，横线是近 8 周平均。点一根柱子看那一周",
+      "barLabel": "{date}那周，{value}",
+      "footnote": {
+        "sets": "只算正式组，热身组不算。横线是近 8 周的平均。点一根柱子，下面的肌群就换成那一周。",
+        "kg": "重量 × 次数的总和，热身组不算；腿的动作重，所以 kg 主要看腿。点一根柱子，下面的肌群就换成那一周。"
+      }
+    },
     "volume": {
       "title": "训练量",
       "heading": "训练量 · 近 7 天",
@@ -1028,7 +1054,9 @@
       "find": "找{muscle}动作",
       "rowsLabel": "各肌群组数",
       "rowLabel": "{muscle}，{sets} 组，{zone}",
-      "footnote": "主肌群每组算 1 组，次肌群算 ½ 组。热身组不算。浅蓝带是每周 10–20 组的目标区。"
+      "footnote": "主肌群每组算 1 组，次肌群算 ½ 组。热身组不算。浅蓝带是每周 10–20 组的目标区。",
+      "weekRange": "{from}–{to} 那周",
+      "backToRecent": "回到近 7 天"
     }
   }
 }

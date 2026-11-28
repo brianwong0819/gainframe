@@ -45,11 +45,14 @@ export interface MuscleWeek {
 }
 
 /**
- * Sets per muscle group over the last seven days, today included ("Muscle
- * map" in docs/design-system.md), kept current as sets change; undefined
- * while loading.
+ * Sets per muscle group over the last seven days, today included, or over
+ * `week` when a week bar is selected ("Muscle map" in docs/design-system.md),
+ * kept current as sets change; undefined while loading. "Trained directly"
+ * looks back four weeks from the range's last day.
  */
-export function useMuscleWeek(): MuscleWeek | undefined {
+export function useMuscleWeek(
+  week: { from: LocalDate; to: LocalDate } | null = null,
+): MuscleWeek | undefined {
   const [today] = useState<LocalDate>(() => toLocalDate(new Date().toISOString(), deviceTimeZone()))
   const data = useLiveQuery(readMuscleData)
   if (data === undefined) return undefined
@@ -62,17 +65,18 @@ export function useMuscleWeek(): MuscleWeek | undefined {
     muscles.set(id, { muscle, secondaryMuscles })
   }
   const { days, directDays } = domainConfig.muscleVolume
-  const from = addDays(today, 1 - days)
-  const volume = muscleVolume({ ...data, muscles, from, to: today })
-  const recent = muscleVolume({ ...data, muscles, from: addDays(today, 1 - directDays), to: today })
+  const to = week === null ? today : week.to
+  const from = week === null ? addDays(today, 1 - days) : week.from
+  const volume = muscleVolume({ ...data, muscles, from, to })
+  const recent = muscleVolume({ ...data, muscles, from: addDays(to, 1 - directDays), to })
   const inRange = new Set(
     data.workouts
-      .filter(({ localDate }) => localDate >= from && localDate <= today)
+      .filter(({ localDate }) => localDate >= from && localDate <= to)
       .map(({ id }) => id),
   )
   return {
     from,
-    to: today,
+    to,
     volume,
     direct: trainedDirectly(recent),
     setsDone: data.sets.filter(({ workoutId }) => inRange.has(workoutId)).length,

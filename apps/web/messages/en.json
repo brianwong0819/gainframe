@@ -982,6 +982,32 @@
       "record": "Record",
       "timesUnit": "times"
     },
+    "weekly": {
+      "measureLabel": "Measure",
+      "measure": {
+        "sets": "Sets",
+        "kg": "kg"
+      },
+      "unit": {
+        "sets": "sets",
+        "kg": "kg"
+      },
+      "thisWeek": "This week · so far",
+      "thisWeekShort": "This week",
+      "weekOf": "Week of {date}",
+      "notOver": "Week in progress",
+      "average": "8-week average {value}",
+      "noAverage": "The average appears after a full week",
+      "atAverage": "About average",
+      "aboveAverage": "{value} above average",
+      "belowAverage": "{value} below average",
+      "chartLabel": "Weekly training volume for 12 weeks, with the 8-week average as a line. Tap a bar to see that week",
+      "barLabel": "Week of {date}, {value}",
+      "footnote": {
+        "sets": "Working sets only; warm-ups are not counted. The line is the 8-week average. Tap a bar to show that week's muscles below.",
+        "kg": "Weight × reps, warm-ups not counted; leg exercises are heavy, so kg mostly follows legs. Tap a bar to show that week's muscles below."
+      }
+    },
     "volume": {
       "title": "Volume",
       "heading": "Volume · last 7 days",
@@ -1028,7 +1054,9 @@
       "find": "Find {muscle} exercises",
       "rowsLabel": "Sets per muscle group",
       "rowLabel": "{muscle}, {sets} sets, {zone}",
-      "footnote": "A set counts 1 for its main muscle and ½ for each secondary muscle. Warm-ups do not count. The light band is the weekly target zone of 10–20 sets."
+      "footnote": "A set counts 1 for its main muscle and ½ for each secondary muscle. Warm-ups do not count. The light band is the weekly target zone of 10–20 sets.",
+      "weekRange": "Week of {from}–{to}",
+      "backToRecent": "Back to the last 7 days"
     }
   }
 }

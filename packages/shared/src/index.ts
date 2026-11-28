@@ -92,12 +92,15 @@ export {
   type ValueChange,
 } from './domain/superset.ts'
 export {
+  averageFullWeeks,
   estimateDurationS,
   lastOfPlanDay,
   summarizeWeek,
   totalWorkouts,
   type WeekSummary,
+  type WeekVolume,
   weekDates,
+  weeklyVolume,
 } from './domain/week.ts'
 export {
   compositionChange,

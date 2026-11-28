@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { localDateSchema } from '../schemas/row.ts'
-import type { Workout } from '../schemas/workout.ts'
+import type { Workout, WorkoutSet } from '../schemas/workout.ts'
 import {
+  averageFullWeeks,
   estimateDurationS,
   lastOfPlanDay,
   summarizeWeek,
   totalWorkouts,
   weekDates,
+  weeklyVolume,
 } from './week.ts'
 import type { WorkoutSummaryEntry } from './workout-summary.ts'
 
@@ -128,5 +130,90 @@ describe('estimateDurationS', () => {
 
   it('is zero for a day without exercises', () => {
     expect(estimateDurationS([])).toBe(0)
+  })
+})
+
+describe('weeklyVolume', () => {
+  const BENCH = '01960000-0000-7000-8000-0000000000e1'
+  const BURPEE = '01960000-0000-7000-8000-0000000000e2'
+  const row = { userId: null, createdAt: '', updatedAt: '', deletedAt: null }
+  function workout(id: string, localDate: string, deletedAt: string | null = null): Workout {
+    return {
+      ...row,
+      deletedAt,
+      id,
+      startedAt: `${localDate}T10:00:00.000Z`,
+      endedAt: null,
+      planDayId: null,
+      localDate: date(localDate),
+      note: null,
+      restStartedAt: null,
+      restEndsAt: null,
+    }
+  }
+  let next = 0
+  function set(workoutId: string, fields: Partial<WorkoutSet> = {}): WorkoutSet {
+    next += 1
+    return {
+      ...row,
+      id: String(next),
+      workoutExerciseId: 'slot',
+      workoutId,
+      exerciseId: BENCH,
+      position: next,
+      kind: 'working',
+      weightKg: 50,
+      reps: 10,
+      rpe: null,
+      completedAt: '2026-11-01T10:00:00.000Z',
+      ...fields,
+    }
+  }
+  const load = { isBodyweight: () => false, bodyWeightKg: null }
+  // Today is Wednesday 2026-11-25; its week runs from 11-23 to 11-29.
+  const today = date('2026-11-25')
+  const workouts = [
+    workout('now', '2026-11-24'),
+    workout('last', '2026-11-16'),
+    workout('sunday', '2026-11-22'),
+    workout('gone', '2026-11-17', '2026-11-18T00:00:00.000Z'),
+    workout('old', '2026-09-01'),
+  ]
+  const sets = [
+    set('now'),
+    set('now', { exerciseId: BURPEE, weightKg: 0 }),
+    set('now', { kind: 'warmup' }),
+    set('now', { completedAt: null }),
+    set('now', { deletedAt: '2026-11-24T11:00:00.000Z' }),
+    set('last'),
+    set('sunday', { weightKg: 60 }),
+    set('gone'),
+    set('old'),
+  ]
+  const weeks = weeklyVolume({ workouts, sets, load, today })
+
+  it('gives twelve Monday-to-Sunday weeks ending with the week in progress', () => {
+    expect(weeks).toHaveLength(12)
+    expect(weeks.at(-1)).toMatchObject({ from: '2026-11-23', to: '2026-11-29' })
+    expect(weeks[0]).toMatchObject({ from: '2026-09-07', to: '2026-09-13' })
+  })
+
+  it('counts a week in progress, including an exercise without a muscle group', () => {
+    expect(weeks.at(-1)).toMatchObject({ sets: 2, volumeKg: 500 })
+  })
+
+  it('puts a Sunday workout in its own week and skips deleted workouts', () => {
+    expect(weeks.at(-2)).toMatchObject({ from: '2026-11-16', sets: 2, volumeKg: 1100 })
+  })
+
+  it('keeps a week with no workout as zero', () => {
+    expect(weeks.at(-3)).toMatchObject({ sets: 0, volumeKg: 0 })
+  })
+
+  it('averages the full weeks since the first workout, without the week in progress', () => {
+    expect(averageFullWeeks(weeks, ({ sets }) => sets)).toBe(2)
+    const sparse = weeks.map((week, index) => (index === 8 ? { ...week, sets: 4 } : week))
+    expect(averageFullWeeks(sparse, ({ sets }) => sets)).toBe(2)
+    expect(averageFullWeeks(weeks.slice(-1), ({ sets }) => sets)).toBeNull()
   })
 })
