@@ -170,6 +170,7 @@
       "snack": "Snack"
     },
     "proteinShort": "{value} g protein",
+    "proteinRich": "<figure>{value} g</figure> protein",
     "kcalShort": "{value} kcal",
     "grams": "{value} g",
     "delete": "Delete",

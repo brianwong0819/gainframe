@@ -203,9 +203,7 @@ export function ManualEntry() {
             }}
             className="p-4 text-ink"
           >
-            <span
-              className={`flex size-40 items-center justify-center rounded-full ${count > 0 ? 'bg-sunk' : 'bg-accent text-accent-ink'}`}
-            >
+            <span className={`flex size-40 items-center justify-center rounded-full bg-sunk`}>
               <Sign plus />
             </span>
           </Pressable>
@@ -343,12 +341,12 @@ export function ManualEntry() {
       )}
       {/* The dock writes, so it renders only once the foods have loaded (L-028). */}
       {foods !== undefined && (
-        <div className="screen-dock flex gap-8">
+        <div className="screen-dock-band flex gap-8">
           <Pressable
             onClick={() => {
               setCreating(true)
             }}
-            className="rounded-full bg-surface px-16 py-12 text-body font-semibold text-ink"
+            className="rounded-full bg-sunk px-16 py-12 text-body font-semibold text-ink"
           >
             {t('newFood')}
           </Pressable>
@@ -357,7 +355,7 @@ export function ManualEntry() {
             onClick={() => {
               void save()
             }}
-            className="min-w-0 flex-1 truncate rounded-full bg-accent px-16 py-12 text-body font-semibold text-accent-ink disabled:bg-sunk disabled:text-ink-3"
+            className="min-w-0 flex-1 truncate rounded-full bg-accent px-16 py-12 text-body font-semibold text-accent-ink disabled:bg-sunk disabled:font-normal disabled:text-ink-3"
           >
             {chosen.length === 0
               ? t('chooseFirst')
