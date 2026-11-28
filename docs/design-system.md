@@ -29,14 +29,22 @@ Defined once in `apps/web/src/styles/tokens.css` as CSS variables. `apps/web/src
 | Token | Light | Dark | Use |
 |---|---|---|---|
 | `--bg` | `#EEEFEB` | `#0A0B0D` | page ground (chalk / near-black) |
-| `--surface` | `#FFFFFF` | `#141619` | raised groups |
-| `--sunk` | `#E3E5E0` | `#1D2024` | tracks, steppers |
+| `--surface` | `#FFFFFF` | white at 4.5% | raised groups |
+| `--sunk` | `#E3E5E0` | white at 7% | tracks, steppers |
+| `--surface-opaque` / `--sunk-opaque` | `#FFFFFF` / `#E3E5E0` | `#141619` / `#1D2024` | what `--surface` / `--sunk` become on a layer above other content (see "Dark glow" below) |
+| `--glow` | none | cobalt radial gradient | the page ground's one glow (see "Dark glow" below) |
 | `--ink` / `--ink-2` / `--ink-3` | `#0D0F11` / `#575E66` / `#8E949B` | `#F0F1EE` / `#9BA1A9` / `#5E646C` | text levels |
 | `--line` | `#DADDD7` | `#25282D` | hairlines |
 | `--accent` | `#2340E0` | `#7389FF` | toward-goal only |
 | `--short` | `#A85A14` | `#E39A54` | below target only |
 | `--logo-disc` | `#FFFFFF` | `#FFFFFF` | the disc under a third-party mark that its brand rules require on white (Google) |
-| `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only (with a backdrop blur); nothing else is translucent |
+| `--glass` | `--bg` at 82% | `--bg` at 80% | the tab bar's ground only; the only translucent layer with a backdrop blur |
+
+**Dark glow** (bw, 2026-11-28). In dark mode only, the page ground carries one static radial glow in the accent, centred near the top of the screen (`--glow`, painted by `body::before`, fixed to the screen), and `--surface` / `--sunk` are white at low opacity, so the glow shows through the groups; on the plain ground they read the same as the old `#141619` / `#1D2024`. The status bar strip (`.status-bar-fill`, see "Screen edges") paints the same image at the same size, so the top has no seam. Rules:
+- The glow is the only gradient in the app. It never moves or animates, and there is no second one (no per-page colour, no glow behind a figure). Light mode has none: on a light ground it reads as a stain, and its groups stay opaque white.
+- No backdrop blur on groups; the tab bar's is the only one. Translucency costs nothing on scroll without it.
+- A layer above other content keeps opaque groups: sheets (`.sheet-panel`), the workout dock (`.dock-panel`) and anything drawn over a photo or another group take `.layer-opaque`, which maps `--surface` / `--sunk` to their opaque values for the layer and everything in it. A swipe row's hidden action rides beside the row, never beneath it (`src/ui/swipe-row.tsx`).
+- Reduce Transparency (`prefers-reduced-transparency`, not supported by WebKit yet) and Increase Contrast (`prefers-contrast: more`) turn both off: opaque groups, no glow. Reduce Motion is unaffected, since nothing moves.
 
 Type: UI uses the system stack (`-apple-system, "SF Pro Text", "PingFang SC", …`); every figure carries `num` (`tabular-nums`), and only a hero figure, with `num` on the same element as `text-display`, `text-title` or `text-section`, is set in **Martian Mono** (self-hosted). A unit beside a hero figure is its own `text-label text-ink-2` element. Display 48/300 (the rest countdown only), title 30/650, section 24/650, body 15/400, label 13/500, caption 11/500 (tab bar labels only), input 16/400 (text fields only: iOS Safari zooms the page into a field whose text is smaller than 16 px).
 
@@ -250,7 +258,7 @@ Today (surplus gauge, today's workout, weight 7-day average with target corridor
 
 ## Screen edges
 
-The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `--safe-top` + `--space-20` at the top, `--safe-bottom` + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS 26 and later draw a home-screen web app full screen and blur a band below the status bar (the "scroll pocket") unless an opaque fixed element touches the top edge across most of the width; the root layout's `.status-bar-fill` strip (the status bar's height, `--bg`) is that element and must stay.
+The app runs full screen (`viewport-fit=cover`), under the status bar and the home indicator. Screen content is padded by `--safe-top` + `--space-20` at the top, `--safe-bottom` + `--space-20` at the bottom (plus the tab bar once it exists), and `max(--space-20, inset)` at each side, as in the prototype. iOS 26 and later draw a home-screen web app full screen and blur a band below the status bar (the "scroll pocket") unless an opaque fixed element touches the top edge across most of the width; the root layout's `.status-bar-fill` strip (the status bar's height, `--bg` under `--glow`) is that element and must stay.
 
 The `--safe-*` tokens are the only place that reads `env(safe-area-inset-*)` (a unit test enforces it), so the device tests can replace them with real values.
 
@@ -273,7 +281,7 @@ The iOS splash screen shows the mark centred at 42% of the screen width (`src/pw
 Claude may — and should — study strong interfaces and effects before building a screen, and bring in what fits. Good places to look: Motion's examples, Radix primitives, Vaul/Sonner (Emil Kowalski), Rauno Freiberg's interaction notes, React Bits, Magic UI, Aceternity UI, Apple's Human Interface Guidelines, Mobbin and the best fitness/finance apps for patterns.
 
 Rules for bringing something in:
-1. **It must fit this file.** Rebuild it with our tokens and the three springs. If it needs a new colour, a fourth celebration tier, a gradient/glow, or would make the app look like the source site, don't use it.
+1. **It must fit this file.** Rebuild it with our tokens and the three springs. If it needs a new colour, a fourth celebration tier, a gradient or glow beyond dark mode's one, or would make the app look like the source site, don't use it.
 2. **Check the licence.** MIT/Apache/ISC code may be adapted; record the source in `docs/design/credits.md` (what, URL, licence). Paid templates, "all rights reserved" code, or anything without a licence: inspiration only — reimplement from scratch, never copy.
 3. **Prefer re-implementing over installing.** A small effect is usually 30–80 lines on top of Motion. A new package still needs bw's OK (CLAUDE.md).
 4. **Stay in the task.** If it belongs to the current task's screen, add it and say so in the PR with a before/after recording. If it belongs elsewhere, put it in STATUS "Follow-ups" with the link.

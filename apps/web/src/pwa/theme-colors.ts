@@ -29,7 +29,8 @@ function readBlock(css: string, selector: string): SchemeColors {
   }
   return {
     bg: read('bg'),
-    surface: read('surface'),
+    // Dark --surface is translucent; images need the opaque group colour.
+    surface: read('surface-opaque'),
     ink: read('ink'),
     ink2: read('ink-2'),
     accent: read('accent'),
