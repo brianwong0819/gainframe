@@ -189,6 +189,8 @@
     "gramsDown": "Less {name}",
     "gramsUp": "More {name}",
     "removeItem": "Remove",
+    "aiGrams": "AI estimated {grams} g",
+    "oilSauceWas": "Oil and sauce: {choice}",
     "proteinLabel": "Protein",
     "kcalLabel": "Energy",
     "proteinOf": "Protein of {name}, g",

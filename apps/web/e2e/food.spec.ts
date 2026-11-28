@@ -427,6 +427,17 @@ test('a photo kept offline is confirmed from the Food tab once estimated', async
   await expect(page.getByRole('img', { name: '这餐的照片' })).toBeVisible()
   await page.getByRole('button', { name: '记入晚餐' }).click()
   await expect(page).toHaveURL(/\/food\/?$/)
-  await expect(page.getByRole('button', { name: /晚餐 Nasi lemak 蛋白质 18/ })).toBeVisible()
+  const logged = page.getByRole('button', { name: /晚餐 · AI Nasi lemak 蛋白质 18/ })
+  await expect(logged).toBeVisible()
   await expect(page.getByText('待估算', { exact: true })).toHaveCount(0)
+
+  // After saving, the meal sheet still shows what the estimate said.
+  await logged.click()
+  const meal = page.getByRole('dialog', { name: 'Nasi lemak' })
+  await expect(meal).toContainText('把握中')
+  await expect(meal.getByText('AI 看到的：nasi lemak with egg')).toBeVisible()
+  await expect(meal.getByText('油和酱：正常')).toBeVisible()
+  await expect(meal.getByText(/AI 原估/)).toHaveCount(0)
+  await meal.getByRole('button', { name: '增加Nasi lemak' }).click()
+  await expect(meal.getByText('AI 看到的：nasi lemak with egg · AI 原估 300 g')).toBeVisible()
 })

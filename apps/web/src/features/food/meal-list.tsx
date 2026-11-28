@@ -1,6 +1,13 @@
 'use client'
 
-import { type MealItem, mealItemSchema, mealTypeSchema, scalePortion } from '@gainframe/shared'
+import {
+  type EstimateAiRaw,
+  estimateAiRawSchema,
+  type MealItem,
+  mealItemSchema,
+  mealTypeSchema,
+  scalePortion,
+} from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
@@ -14,6 +21,7 @@ import { Stepper } from '@/ui/stepper'
 import { SwipeRow } from '@/ui/swipe-row'
 
 import { formatTime } from '../history/dates'
+import { AiConfidence } from './ai-confidence'
 import { GRAM_STEP, parseGrams } from './grams'
 
 // A typed protein or energy figure, or null for anything the schema rejects.
@@ -79,11 +87,23 @@ function setGrams(item: MealItem, grams: number) {
 
 const mealTitle = ({ meal, items }: MealWithItems) => meal.name ?? items[0]?.name ?? ''
 
-// A day's meals, newest first. A tap opens the meal's sheet, where its type,
-// each item's grams, protein and energy, and its items can be changed; a swipe left deletes it,
-// and the sheet offers the same delete for those who cannot swipe.
+// The model's estimate stored with an AI item, or null for any other item and
+// for an estimate saved in a shape this version cannot read.
+function estimateOf(item: MealItem): EstimateAiRaw | null {
+  if (item.source !== 'ai') return null
+  const estimate = estimateAiRawSchema.safeParse(item.aiRaw)
+  return estimate.success ? estimate.data : null
+}
+
+// A day's meals, newest first, with the AI source tag on estimated meals. A tap
+// opens the meal's sheet, where its type, each item's grams, protein and energy,
+// and its items can be changed, and an estimated item shows what the model saw,
+// its confidence and its own grams; a swipe left deletes the meal, and the sheet
+// offers the same delete for those who cannot swipe.
 export function MealList({ meals }: { meals: MealWithItems[] }) {
   const t = useTranslations('food')
+  const tEstimate = useTranslations('estimate')
+  const tDescribe = useTranslations('describe')
   const locale = useLocale()
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 })
   const tenths = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 })
@@ -91,6 +111,8 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const opened = meals.find(({ meal }) => meal.id === openId)
+  // The meal-level choices of an estimate, the same on each of its items.
+  const openedEstimate = opened?.items.map(estimateOf).find((estimate) => estimate !== null)
   const remove = (mealId: string) => {
     setSwipedId(null)
     setSheetOpen(false)
@@ -125,6 +147,12 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
                   <span className="flex min-w-0 flex-col gap-4">
                     <span className="num text-label text-ink-3">
                       {formatTime(meal.eatenAt, locale)} · {t(`mealType.${meal.mealType}`)}
+                      {items.some((item) => item.source === 'ai') && (
+                        <>
+                          {' · '}
+                          <span className="text-accent">{tEstimate('aiTag')}</span>
+                        </>
+                      )}
                     </span>
                     <span className="truncate text-body text-ink">{mealTitle(entry)}</span>
                     {items.length > 1 && (
@@ -173,69 +201,97 @@ export function MealList({ meals }: { meals: MealWithItems[] }) {
               optionLabel={(option) => t(`mealType.${option}`)}
             />
             <ul className="flex flex-col gap-16">
-              {opened.items.map((item) => (
-                <li key={item.id} className="flex flex-col gap-8">
-                  <span className="truncate text-body text-ink">{item.name}</span>
-                  <div className="flex items-center gap-8">
-                    <div className="min-w-0 flex-1">
-                      <Stepper
-                        value={whole.format(item.grams)}
-                        editValue={String(item.grams)}
-                        inputMode="decimal"
-                        label={t('gramsOf', { name: item.name })}
-                        unit="g"
-                        onEnter={(text) => {
-                          const grams = parseGrams(text)
-                          if (grams !== null) setGrams(item, grams)
+              {opened.items.map((item) => {
+                const estimate = estimateOf(item)
+                return (
+                  <li key={item.id} className="flex flex-col gap-8">
+                    <span className="flex min-w-0 flex-col gap-4">
+                      <span className="truncate text-body text-ink">{item.name}</span>
+                      {estimate !== null && (
+                        <>
+                          <AiConfidence confidence={estimate.confidence} />
+                          <span className="text-label text-ink-3">
+                            {tEstimate('seen', { seen: estimate.seen })}
+                            {Math.round(estimate.grams) !== Math.round(item.grams) &&
+                              ` · ${t('aiGrams', { grams: whole.format(estimate.grams) })}`}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                    <div className="flex items-center gap-8">
+                      <div className="min-w-0 flex-1">
+                        <Stepper
+                          value={whole.format(item.grams)}
+                          editValue={String(item.grams)}
+                          inputMode="decimal"
+                          label={t('gramsOf', { name: item.name })}
+                          unit="g"
+                          onEnter={(text) => {
+                            const grams = parseGrams(text)
+                            if (grams !== null) setGrams(item, grams)
+                          }}
+                          canDecrease={item.grams > GRAM_STEP}
+                          decreaseLabel={t('gramsDown', { name: item.name })}
+                          increaseLabel={t('gramsUp', { name: item.name })}
+                          onStep={(direction) => {
+                            setGrams(item, item.grams + direction * GRAM_STEP)
+                          }}
+                        />
+                      </div>
+                      <Pressable
+                        onClick={() => {
+                          if (opened.items.length === 1) remove(opened.meal.id)
+                          else void repositories.mealItems.remove(item.id)
                         }}
-                        canDecrease={item.grams > GRAM_STEP}
-                        decreaseLabel={t('gramsDown', { name: item.name })}
-                        increaseLabel={t('gramsUp', { name: item.name })}
-                        onStep={(direction) => {
-                          setGrams(item, item.grams + direction * GRAM_STEP)
+                        className="shrink-0 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
+                      >
+                        {t('removeItem')}
+                      </Pressable>
+                    </div>
+                    <div className="grid grid-cols-2 gap-8">
+                      <NutrientField
+                        label={t('proteinLabel')}
+                        accessibleName={t('proteinOf', { name: item.name })}
+                        unit="g"
+                        value={tenths.format(item.proteinG)}
+                        editValue={editText(item.proteinG)}
+                        inputMode="decimal"
+                        onEnter={(text) => {
+                          const proteinG = parseNutrient(text, 'proteinG')
+                          if (proteinG !== null)
+                            void repositories.mealItems.update(item.id, { proteinG })
+                        }}
+                      />
+                      <NutrientField
+                        label={t('kcalLabel')}
+                        accessibleName={t('kcalOf', { name: item.name })}
+                        unit="kcal"
+                        value={whole.format(item.kcal)}
+                        editValue={editText(item.kcal)}
+                        inputMode="decimal"
+                        onEnter={(text) => {
+                          const kcal = parseNutrient(text, 'kcal')
+                          if (kcal !== null) void repositories.mealItems.update(item.id, { kcal })
                         }}
                       />
                     </div>
-                    <Pressable
-                      onClick={() => {
-                        if (opened.items.length === 1) remove(opened.meal.id)
-                        else void repositories.mealItems.remove(item.id)
-                      }}
-                      className="shrink-0 rounded-full bg-sunk px-16 py-12 text-label font-semibold text-ink-2"
-                    >
-                      {t('removeItem')}
-                    </Pressable>
-                  </div>
-                  <div className="grid grid-cols-2 gap-8">
-                    <NutrientField
-                      label={t('proteinLabel')}
-                      accessibleName={t('proteinOf', { name: item.name })}
-                      unit="g"
-                      value={tenths.format(item.proteinG)}
-                      editValue={editText(item.proteinG)}
-                      inputMode="decimal"
-                      onEnter={(text) => {
-                        const proteinG = parseNutrient(text, 'proteinG')
-                        if (proteinG !== null)
-                          void repositories.mealItems.update(item.id, { proteinG })
-                      }}
-                    />
-                    <NutrientField
-                      label={t('kcalLabel')}
-                      accessibleName={t('kcalOf', { name: item.name })}
-                      unit="kcal"
-                      value={whole.format(item.kcal)}
-                      editValue={editText(item.kcal)}
-                      inputMode="decimal"
-                      onEnter={(text) => {
-                        const kcal = parseNutrient(text, 'kcal')
-                        if (kcal !== null) void repositories.mealItems.update(item.id, { kcal })
-                      }}
-                    />
-                  </div>
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ul>
+            {openedEstimate !== undefined && (
+              <div className="flex flex-col gap-4 text-label text-ink-3">
+                <p>
+                  {t('oilSauceWas', {
+                    choice: tEstimate(`oilSauceChoice.${openedEstimate.oilSauce}`),
+                  })}
+                </p>
+                {openedEstimate.assumptions !== undefined &&
+                  openedEstimate.assumptions !== null && (
+                    <p>{tDescribe('assumed', { assumptions: openedEstimate.assumptions })}</p>
+                  )}
+              </div>
+            )}
             <ConfirmButton
               label={t('deleteMeal')}
               confirmLabel={t('deleteMealConfirm')}
