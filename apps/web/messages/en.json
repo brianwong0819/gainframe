@@ -327,7 +327,8 @@
     "back": "Back",
     "mapLabel": "Muscle map. Primary: {primary}. Secondary: {secondary}.",
     "cues": "Form cues",
-    "edit": "Edit"
+    "edit": "Edit",
+    "progress": "See strength progress"
   },
   "setKind": {
     "warmup": "Warm-up",
@@ -943,6 +944,43 @@
       "causeTooFast": "Your weight is rising fast; consider lowering the daily energy target a little.",
       "notEnough": "{logged, plural, one {Only # day} other {Only # days}} of food logged in the last two weeks. Log {min} to compare it with your weight.",
       "openFood": "Open the food log"
+    },
+    "strength": {
+      "heading": "Strength · best set of each workout",
+      "changeHeading": "Change",
+      "empty": "Exercises you do appear here; do one twice to see its trend.",
+      "start": "Start a workout",
+      "showAll": "All exercises done ({count})",
+      "rowLabel": "Strength of {name}",
+      "measureLabel": "Measure",
+      "measure": {
+        "e1rm": "Estimated 1RM",
+        "heaviest": "Heaviest set",
+        "reps": "Most reps"
+      },
+      "repsUnit": "reps",
+      "onceShort": "Done once",
+      "chartLabel": "Best set of each workout, with records as filled blue points",
+      "legendRecord": "Record",
+      "legendOther": "Other workouts",
+      "notFound": "This exercise could not be found.",
+      "workouts": "{count, plural, one {Done # time} other {Done # times}}",
+      "today": "Today",
+      "none": "Not done yet. Complete a set and the first point appears here.",
+      "readingRecord": "{date} · Record",
+      "latestLabel": "{measure} · {date}",
+      "needMore": "One more workout to draw the trend.",
+      "rising": "Rising",
+      "notRising": "Not rising",
+      "since": "since {date}",
+      "bests": {
+        "heaviest": "Heaviest",
+        "mostReps": "Most reps",
+        "count": "Workouts"
+      },
+      "recent": "Recent workouts · best set",
+      "record": "Record",
+      "timesUnit": "times"
     },
     "volume": {
       "title": "Volume",

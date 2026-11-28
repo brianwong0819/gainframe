@@ -4,11 +4,16 @@ import { builtInExerciseCues } from '@gainframe/shared'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 
+import { Chevron } from '@/ui/chevron'
+import { PressableLink } from '@/ui/pressable'
+
 import { formatRest, type LibraryEntry } from './library'
 import { MuscleMap, roleLevels } from './muscle-map'
+import { useBestSets } from './use-best-sets'
 
-// The detail of an exercise: where it works and how it is set up, followed by
-// the caller's actions (`children`). A custom exercise has no mechanic or cues.
+// The detail of an exercise: where it works and how it is set up, a link to
+// its strength chart once it has been done, then the caller's actions
+// (`children`). A custom exercise has no mechanic or cues.
 export function ExerciseDetail({
   exercise,
   children,
@@ -20,6 +25,7 @@ export function ExerciseDetail({
   const tMuscle = useTranslations('muscle')
   const tEquipment = useTranslations('equipment')
   const locale = useLocale()
+  const done = useBestSets()?.has(exercise.id) ?? false
   const cues = builtInExerciseCues(exercise.id)?.[locale] ?? []
   const primary = tMuscle(exercise.muscle)
   const { secondaryMuscles } = exercise
@@ -78,6 +84,17 @@ export function ExerciseDetail({
           <dd className="num text-body text-ink">{formatRest(exercise.defaultRestS)}</dd>
         </div>
       </dl>
+      {done && (
+        <PressableLink
+          href={`/progress/exercise#${exercise.id}`}
+          className="-mt-8 flex items-center justify-between gap-12 border-t border-line py-12 text-body font-medium text-ink"
+        >
+          {t('progress')}
+          <span className="text-ink-3">
+            <Chevron direction="right" />
+          </span>
+        </PressableLink>
+      )}
       {children}
     </div>
   )

@@ -327,7 +327,8 @@
     "back": "背面",
     "mapLabel": "肌肉示意图。主要：{primary}；辅助：{secondary}。",
     "cues": "动作要点",
-    "edit": "编辑"
+    "edit": "编辑",
+    "progress": "看力量变化"
   },
   "setKind": {
     "warmup": "热身",
@@ -943,6 +944,43 @@
       "causeTooFast": "体重涨得偏快，可以把每日热量目标调低一点。",
       "notEnough": "这两周只记了 {logged} 天饮食，记满 {min} 天就能和体重对一下。",
       "openFood": "看饮食记录"
+    },
+    "strength": {
+      "heading": "力量 · 每次训练最好的一组",
+      "changeHeading": "变化",
+      "empty": "练过的动作会列在这里，练两次就能看到变化。",
+      "start": "去训练",
+      "showAll": "全部练过的动作（{count}）",
+      "rowLabel": "{name} 的力量变化",
+      "measureLabel": "看哪个数字",
+      "measure": {
+        "e1rm": "估算 1RM",
+        "heaviest": "最重一组",
+        "reps": "最多次数"
+      },
+      "repsUnit": "次",
+      "onceShort": "练过 1 次",
+      "chartLabel": "每次训练最好的一组，新纪录用蓝色实心点标出",
+      "legendRecord": "新纪录",
+      "legendOther": "其他训练",
+      "notFound": "找不到这个动作。",
+      "workouts": "练过 {count} 次",
+      "today": "今天",
+      "none": "还没练过这个动作。练完一组，这里就会出现第一个点。",
+      "readingRecord": "{date} · 新纪录",
+      "latestLabel": "{measure} · {date}",
+      "needMore": "再练一次，就能画出变化。",
+      "rising": "在涨",
+      "notRising": "没涨",
+      "since": "{date}以来",
+      "bests": {
+        "heaviest": "最重",
+        "mostReps": "最多次数",
+        "count": "练过"
+      },
+      "recent": "最近几次 · 最好的一组",
+      "record": "新纪录",
+      "timesUnit": "次"
     },
     "volume": {
       "title": "训练量",

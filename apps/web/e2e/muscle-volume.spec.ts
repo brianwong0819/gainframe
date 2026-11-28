@@ -7,7 +7,10 @@ test.use({ locale: 'zh-CN' })
 
 test('a completed set counts for its muscles on the volume page', async ({ page }) => {
   await page.goto('/progress')
-  await expect(page.getByRole('link', { name: '去训练' })).toBeVisible()
+  const card = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: '训练量 · 近 7 天' }) })
+  await expect(card.getByRole('link', { name: '去训练' })).toBeVisible()
 
   await page.goto('/workout')
   await page.getByRole('button', { name: '开始训练' }).click()
