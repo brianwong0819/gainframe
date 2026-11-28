@@ -1,5 +1,6 @@
 import { domainConfig } from '../config.ts'
 import type { MealItem, MealType } from '../schemas/food.ts'
+import type { FoodEstimateItem } from '../schemas/food-estimate.ts'
 import { type LocalDate, localDateSchema } from '../schemas/row.ts'
 
 export interface NutritionTotals {
@@ -119,6 +120,29 @@ export function scalePortion(
 ): Pick<MealItem, 'grams' | 'proteinG' | 'kcal'> {
   const ratio = grams / item.grams
   return { grams, proteinG: item.proteinG * ratio, kcal: item.kcal * ratio }
+}
+
+type Figures = Pick<FoodEstimateItem, 'grams' | 'proteinG' | 'kcal' | 'nutrients'>
+
+// The figures for a portion of `grams` of a food the model estimated again
+// from its name (an estimated item renamed on the confirm screen): the
+// estimate's items are summed and scaled to the portion, since the portion
+// came from the photo. `model` when any item had no table entry. Null when
+// the estimate had no items.
+export function reestimatedFigures(grams: number, estimate: readonly Figures[]): Figures | null {
+  const sum = estimate.reduce(
+    (total, item) => ({
+      grams: total.grams + item.grams,
+      proteinG: total.proteinG + item.proteinG,
+      kcal: total.kcal + item.kcal,
+    }),
+    { grams: 0, proteinG: 0, kcal: 0 },
+  )
+  if (sum.grams <= 0) return null
+  return {
+    ...scalePortion(sum, grams),
+    nutrients: estimate.some((item) => item.nutrients === 'model') ? 'model' : 'table',
+  }
 }
 
 // Up to `max` of the user's frequent foods that fill a protein gap with the

@@ -16,7 +16,7 @@ import {
 } from '@gainframe/shared'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { db, repositories } from '@/db/client'
 import { foodDay, logMeal, savedFoods } from '@/db/food'
@@ -31,13 +31,18 @@ import { AiConfidence } from './ai-confidence'
 import { type Correction, CorrectionSheet, type ItemToCorrect } from './correction-sheet'
 import { loadFoodTable } from './food-table'
 import { GRAM_STEP, parseGrams } from './grams'
+import { reestimateByName, type Refigured } from './reestimate'
 
 // An estimated item as the user has checked it: `remember` is set when its
-// name was corrected with "remember this correction" on.
-export type EstimateRow = FoodEstimateItem & { remember: boolean }
+// name was corrected with "remember this correction" on; `refigure` follows
+// the estimate again of an item renamed to a food the library does not have.
+export type EstimateRow = FoodEstimateItem & {
+  remember: boolean
+  refigure: 'pending' | 'done' | 'failed' | null
+}
 
 export const toRows = (items: readonly FoodEstimateItem[]): EstimateRow[] =>
-  items.map((item) => ({ ...item, remember: false }))
+  items.map((item) => ({ ...item, remember: false, refigure: null }))
 
 const portionSizes: readonly PortionSize[] = ['small', 'regular', 'large']
 
@@ -96,6 +101,12 @@ export function EstimateConfirm({
   const [correcting, setCorrecting] = useState<{ index: number; item: ItemToCorrect } | null>(null)
   const [saving, setSaving] = useState(false)
   const [table, setTable] = useState<readonly FoodTableEntry[] | null>(null)
+  // The rows and their setter as last rendered, for an estimate that answers
+  // after the user changed them.
+  const latest = useRef({ items, onItemsChange })
+  useEffect(() => {
+    latest.current = { items, onItemsChange }
+  })
   const saved = useLiveQuery(readSaved)
   const proteinTarget = useLiveQuery(readProteinTarget)
   const [mealDay] = useState(() =>
@@ -135,12 +146,44 @@ export function EstimateConfirm({
     )
   }
 
+  // Applies a renamed item's new figures, at the grams it has by then; a row
+  // removed or renamed again in the meantime is left alone.
+  const refigure = (row: EstimateRow, figures: Refigured | null) => {
+    const current = latest.current
+    current.onItemsChange(
+      current.items.map((item) => {
+        if (item.raw !== row.raw || item.name !== row.name || item.refigure !== 'pending') {
+          return item
+        }
+        if (figures === null) return { ...item, refigure: 'failed' }
+        return {
+          ...item,
+          ...scalePortion(figures, item.grams),
+          nutrients: figures.nutrients,
+          refigure: 'done',
+        }
+      }),
+    )
+  }
+
   const correct = (index: number, correction: Correction, remember: boolean) => {
     onItemsChange(
       items.map((item, i) => {
         if (i !== index) return item
         if (correction.kind === 'name') {
-          return { ...item, name: correction.name, entryId: null, remember }
+          const renamed: EstimateRow = {
+            ...item,
+            name: correction.name,
+            entryId: null,
+            remember,
+            refigure: 'pending',
+          }
+          void reestimateByName(renamed.name, renamed.grams, locale === 'zh' ? 'zh' : 'en').then(
+            (figures) => {
+              refigure(renamed, figures)
+            },
+          )
+          return renamed
         }
         const { food } = correction
         return {
@@ -151,6 +194,7 @@ export function EstimateConfirm({
           kcal: (food.kcalPer100G * item.grams) / 100,
           nutrients: 'table',
           remember,
+          refigure: null,
         }
       }),
     )
@@ -192,6 +236,7 @@ export function EstimateConfirm({
   }
 
   const afterToday = (day?.totals.proteinG ?? 0) + totals.proteinG
+  const refiguring = items.some((item) => item.refigure === 'pending')
 
   return (
     <>
@@ -245,14 +290,25 @@ export function EstimateConfirm({
                     {name}
                     <Pencil />
                   </Pressable>
-                  <span className="num text-label text-ink-3">
-                    <span className="text-accent">
-                      {t('protein', { value: whole.format(item.proteinG) })}
+                  {item.refigure === 'pending' ? (
+                    <span role="status" className="text-label text-ink-3">
+                      {t('reestimating')}
                     </span>
-                    {' · '}
-                    {t('kcal', { value: whole.format(item.kcal) })}
-                    {item.nutrients === 'model' && ` · ${t('modelFigures')}`}
-                  </span>
+                  ) : (
+                    <span className="num text-label text-ink-3">
+                      <span className="text-accent">
+                        {t('protein', { value: whole.format(item.proteinG) })}
+                      </span>
+                      {' · '}
+                      {t('kcal', { value: whole.format(item.kcal) })}
+                      {item.nutrients === 'model' && ` · ${t('modelFigures')}`}
+                    </span>
+                  )}
+                  {(item.refigure === 'done' || item.refigure === 'failed') && (
+                    <span className="text-label text-ink-3">
+                      {t(item.refigure === 'done' ? 'reestimated' : 'reestimateFailed')}
+                    </span>
+                  )}
                   <AiConfidence confidence={item.confidence} />
                 </span>
                 <Pressable
@@ -346,7 +402,7 @@ export function EstimateConfirm({
       />
       <div className="screen-dock flex">
         <Pressable
-          disabled={items.length === 0 || saving}
+          disabled={items.length === 0 || saving || refiguring}
           onClick={() => {
             void save()
           }}

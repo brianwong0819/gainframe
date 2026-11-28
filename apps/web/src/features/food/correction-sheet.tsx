@@ -11,8 +11,8 @@ import { Sheet } from '@/ui/sheet'
 const MATCHES_MAX = 5
 
 // What the user picked instead of the estimate's name: a food from the
-// library (its figures replace the estimate's), or only a name (the estimate's
-// figures stay).
+// library (its figures replace the estimate's), or only a name (the item is
+// estimated again by that name; the estimate's figures stay if that fails).
 export type Correction = { kind: 'food'; food: LibraryFood } | { kind: 'name'; name: string }
 
 export interface ItemToCorrect {
@@ -112,7 +112,7 @@ export function CorrectionSheet({
                   className={pillClass}
                 >
                   <span className="text-body">{nameOnly}</span>
-                  <span className="text-label opacity-70">{t('keepFigures')}</span>
+                  <span className="text-label opacity-70">{t('reestimateByName')}</span>
                 </Pressable>
               )}
             </div>

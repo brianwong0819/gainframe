@@ -8,6 +8,7 @@ import {
   mealTypeAt,
   nutritionTotals,
   pastFoods,
+  reestimatedFigures,
   scalePortion,
 } from './nutrition.ts'
 
@@ -172,6 +173,30 @@ describe('scalePortion', () => {
       proteinG: 22.5,
       kcal: 375,
     })
+  })
+})
+
+describe('reestimatedFigures', () => {
+  it('sums the estimate and scales it to the portion', () => {
+    const estimate = [
+      { grams: 300, proteinG: 10, kcal: 400, nutrients: 'table' as const },
+      { grams: 100, proteinG: 20, kcal: 200, nutrients: 'table' as const },
+    ]
+    expect(reestimatedFigures(200, estimate)).toEqual({
+      grams: 200,
+      proteinG: 15,
+      kcal: 300,
+      nutrients: 'table',
+    })
+  })
+
+  it('is tagged model when any item has model figures, and null without items', () => {
+    const estimate = [
+      { grams: 100, proteinG: 5, kcal: 100, nutrients: 'table' as const },
+      { grams: 100, proteinG: 5, kcal: 100, nutrients: 'model' as const },
+    ]
+    expect(reestimatedFigures(100, estimate)?.nutrients).toBe('model')
+    expect(reestimatedFigures(100, [])).toBeNull()
   })
 })
 
